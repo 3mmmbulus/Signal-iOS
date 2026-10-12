@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "เพิ่มคำบรรยาย…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "ยกเลิกการเลือก %@ แล้ว";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "ลากเพื่อจัดลำดับใหม่";
+"IMAGE_PICKER_TELLOMI_EDIT" = "แก้ไข";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "คุณจำกัดการเข้าถึงรูปภาพของ Tellomi";
 "IMAGE_PICKER_TELLOMI_MORE" = "ตัวเลือกเพิ่มเติม";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "รูปภาพ";

@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "کیپشن شامل کریں…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ کا انتخاب ختم کر دیا گیا";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "ترتیب بدلنے کے لیے گھسیٹیں";
+"IMAGE_PICKER_TELLOMI_EDIT" = "ترتیب دیں";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "آپ نے Tellomi کی تصاویر تک رسائی محدود کر دی ہے۔";
 "IMAGE_PICKER_TELLOMI_MORE" = "مزید اختیارات";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "تصویر";

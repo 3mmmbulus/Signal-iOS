@@ -14,6 +14,8 @@ struct TellomiPhotoPickerItem: Hashable {
     let duration: TimeInterval
     /// 实况照片：格子左上角小图标（P-8）；开关与按实况发出是 #1263（P-4）。
     let isLivePhoto: Bool
+    /// 动图（GIF 等）：上游预览页不支持裁剪 / 绘制（按通用附件处理），查看器里不给这两个快捷。
+    let isAnimatedImage: Bool
     /// 原图像素尺寸：「只看已选」按原比例排卡片（P-3）。
     let pixelSize: CGSize
     let asset: PHAsset?
@@ -143,6 +145,7 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
             isVideo: asset.mediaType == .video,
             duration: asset.duration,
             isLivePhoto: asset.mediaSubtypes.contains(.photoLive),
+            isAnimatedImage: asset.playbackStyle == .imageAnimated,
             pixelSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight),
             asset: asset,
         )

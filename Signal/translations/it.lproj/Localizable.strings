@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Aggiungi una didascalia…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Deselezionato: %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Trascina per riordinare";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Modifica";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Hai limitato l’accesso di Tellomi alle tue foto.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Altre opzioni";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";

@@ -475,6 +475,7 @@
 		239DBCA1027D85E16C11786A /* TellomiPhotoPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BF6E064DDF3E1085083E438 /* TellomiPhotoPickerViewController.swift */; };
 		BF9C6F42ABF94F621448439C /* TellomiAttachmentDock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C8173BFD53FB4A4AF68697 /* TellomiAttachmentDock.swift */; };
 		D6217F643104401FFA7CD61B /* TellomiPhotoPickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B599009DE0559655534C804 /* TellomiPhotoPickerCell.swift */; };
+		4D8E0B3A6C91F25E7A0D3B48 /* TellomiPhotoPickerAlbumViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1A5E2B9F04D3A18E6B2C71 /* TellomiPhotoPickerAlbumViewer.swift */; };
 		DA66C4ABA2043F4C710F78AE /* TellomiPhotoPickerSelectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7107933336E3B66B41937B57 /* TellomiPhotoPickerSelectedView.swift */; };
 		4FD6D8A602E2AC192EF6B209 /* TellomiPhotoPickerGridLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E84BADEC424F2148B287A6 /* TellomiPhotoPickerGridLayout.swift */; };
 		2E174D0E19C84099DB6A1FF9 /* TellomiPhotoPickerCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA940CD8AD849697C5D7DCD /* TellomiPhotoPickerCamera.swift */; };
@@ -4813,6 +4814,7 @@
 		0BF6E064DDF3E1085083E438 /* TellomiPhotoPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPhotoPickerViewController.swift; sourceTree = "<group>"; };
 		D4C8173BFD53FB4A4AF68697 /* TellomiAttachmentDock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAttachmentDock.swift; sourceTree = "<group>"; };
 		3B599009DE0559655534C804 /* TellomiPhotoPickerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPhotoPickerCell.swift; sourceTree = "<group>"; };
+		7C1A5E2B9F04D3A18E6B2C71 /* TellomiPhotoPickerAlbumViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPhotoPickerAlbumViewer.swift; sourceTree = "<group>"; };
 		7107933336E3B66B41937B57 /* TellomiPhotoPickerSelectedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPhotoPickerSelectedView.swift; sourceTree = "<group>"; };
 		45E84BADEC424F2148B287A6 /* TellomiPhotoPickerGridLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPhotoPickerGridLayout.swift; sourceTree = "<group>"; };
 		7AA940CD8AD849697C5D7DCD /* TellomiPhotoPickerCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPhotoPickerCamera.swift; sourceTree = "<group>"; };
@@ -9439,6 +9441,7 @@
 				0BF6E064DDF3E1085083E438 /* TellomiPhotoPickerViewController.swift */,
 				D4C8173BFD53FB4A4AF68697 /* TellomiAttachmentDock.swift */,
 				3B599009DE0559655534C804 /* TellomiPhotoPickerCell.swift */,
+				7C1A5E2B9F04D3A18E6B2C71 /* TellomiPhotoPickerAlbumViewer.swift */,
 				7107933336E3B66B41937B57 /* TellomiPhotoPickerSelectedView.swift */,
 				45E84BADEC424F2148B287A6 /* TellomiPhotoPickerGridLayout.swift */,
 				7AA940CD8AD849697C5D7DCD /* TellomiPhotoPickerCamera.swift */,
@@ -19468,6 +19471,7 @@
 				239DBCA1027D85E16C11786A /* TellomiPhotoPickerViewController.swift in Sources */,
 				BF9C6F42ABF94F621448439C /* TellomiAttachmentDock.swift in Sources */,
 				D6217F643104401FFA7CD61B /* TellomiPhotoPickerCell.swift in Sources */,
+				4D8E0B3A6C91F25E7A0D3B48 /* TellomiPhotoPickerAlbumViewer.swift in Sources */,
 				DA66C4ABA2043F4C710F78AE /* TellomiPhotoPickerSelectedView.swift in Sources */,
 				4FD6D8A602E2AC192EF6B209 /* TellomiPhotoPickerGridLayout.swift in Sources */,
 				2E174D0E19C84099DB6A1FF9 /* TellomiPhotoPickerCamera.swift in Sources */,

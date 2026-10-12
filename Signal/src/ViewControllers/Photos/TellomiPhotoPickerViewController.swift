@@ -248,7 +248,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private lazy var selectedView: TellomiPhotoPickerSelectedView = {
         let selectedView = TellomiPhotoPickerSelectedView(library: library, chatBackground: chatBackground, bubbleColor: bubbleColor)
         selectedView.onDeselect = { [weak self] id in self?.deselectInSelectedView(id) }
-        selectedView.onOpen = { [weak self] itemId in self?.openSelectionForEditing(startingAt: itemId) }
+        selectedView.onOpen = { [weak self] itemId in self?.openSelectionForEditing(startingAt: itemId, tool: nil) }
         selectedView.onReorder = { [weak self] ids in self?.applyReorder(ids) }
         selectedView.isHidden = true
         return selectedView
@@ -710,15 +710,34 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         }
     }
 
-    /// P-10：点照片本身（不是勾）：选上（没选的话），然后进上游的预览 / 编辑页。
+    /// 点照片本身（不是勾）：打开整本相册的查看器，从点的那张开始看，不自动选中（V-1）。
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
         guard let currentAlbum else { return }
-        let item = library.item(at: indexPath.item, in: currentAlbum)
+        presentAlbumViewer(album: currentAlbum, startingAt: indexPath.item)
+    }
+
+    private func presentAlbumViewer(album: TellomiPhotoPickerAlbum, startingAt index: Int) {
+        let viewer = TellomiPhotoPickerAlbumViewer(library: library, album: album, initialIndex: index)
+        viewer.selectionNumber = { [weak self] itemId in self?.selectionNumber(for: itemId) }
+        viewer.selectedCount = { [weak self] in self?.selectedIds.count ?? 0 }
+        viewer.onToggle = { [weak self] item in self?.toggleSelection(item) }
+        viewer.onShowSelected = { [weak self, weak viewer] in
+            viewer?.dismiss(animated: true) { self?.showSelectedOnly() }
+        }
+        viewer.onEdit = { [weak self, weak viewer] item, tool in
+            viewer?.dismiss(animated: false) { self?.editFromAlbumViewer(item, tool: tool) }
+        }
+        viewer.onClose = { [weak viewer] in viewer?.dismiss(animated: true) }
+        viewer.modalPresentationStyle = .overFullScreen
+        present(viewer, animated: true)
+    }
+
+    private func editFromAlbumViewer(_ item: TellomiPhotoPickerItem, tool: TellomiApprovalEditTool?) {
         if selectionNumber(for: item.id) == nil {
             guard setSelection(item: item, selected: true) else { return }
         }
-        openSelectionForEditing(startingAt: item.id)
+        openSelectionForEditing(startingAt: item.id, tool: tool)
     }
 
     // MARK: - Selection
@@ -784,7 +803,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_AT_MOST_FORMAT", comment: "Toast when trying to select more photos than allowed. Embeds {{ the maximum }}."),
             OWSFormat.formatInt(maxSelection),
         )
-        ToastController(text: text).presentToastView(from: .bottom, of: view, inset: view.safeAreaInsets.bottom + 80)
+        let host: UIView = presentedViewController?.view ?? view
+        ToastController(text: text).presentToastView(from: .bottom, of: host, inset: view.safeAreaInsets.bottom + 80)
     }
 
     /// 「✓N」「···」、底部说明栏跟着选中的数量出现 / 收起。
@@ -1037,7 +1057,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     /// P-10：进上游的预览 / 编辑页（裁剪、涂鸦、文字、模糊、画质、一次性查看都在那里），盖在网格上面：
     /// 在那里取消就回到网格、选中的都还在；在那里发送就照常发出。点的是哪张，进来先看到哪张（上游默认从第一张开始）。
-    private func openSelectionForEditing(startingAt itemId: String) {
+    /// `tool` 有值时（查看器底部的「裁剪」「绘制」）页面出来后直接打开对应的工具。
+    private func openSelectionForEditing(startingAt itemId: String, tool: TellomiApprovalEditTool?) {
         let items = selectedIds.compactMap { selectedItems[$0] }
         guard !items.isEmpty, let approvalDataSource else { return }
         let messageBody = messageBodyForSending
@@ -1053,11 +1074,16 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 stickerSheetDelegate: self.stickerSheetDelegate,
             )
             approval.modalPresentationStyle = .overFullScreen
+            let page = approval.viewControllers.first as? AttachmentApprovalViewController
             if let index = items.firstIndex(where: { $0.id == itemId }) {
-                (approval.viewControllers.first as? AttachmentApprovalViewController)?.tellomiShowItem(at: index)
+                page?.tellomiShowItem(at: index)
             }
             self.editingItems = zip(items, attachments).map { ($0.id, $1.rawValue) }
-            self.present(approval, animated: true)
+            self.present(approval, animated: true) {
+                if let tool {
+                    page?.tellomiActivateTool(tool)
+                }
+            }
         }
     }
 

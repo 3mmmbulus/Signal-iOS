@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Tambah kapsyen…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ dinyahpilih";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Seret untuk susun semula";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Edit";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Anda telah mengehadkan akses Tellomi kepada foto anda.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Lagi pilihan";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";

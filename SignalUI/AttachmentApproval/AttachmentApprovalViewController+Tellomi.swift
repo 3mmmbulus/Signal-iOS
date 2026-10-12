@@ -14,4 +14,18 @@ extension AttachmentApprovalViewController {
         guard items.indices.contains(index), !items[index].isIdenticalTo(currentItem) else { return }
         setCurrentItem(items[index], direction: .forward, animated: false)
     }
+
+    public func tellomiActivateTool(_ tool: TellomiApprovalEditTool) {
+        switch tool {
+        case .pen:
+            currentPageViewController?.activatePenTool()
+        case .crop:
+            currentPageViewController?.activateCropTool()
+        }
+    }
+}
+
+public enum TellomiApprovalEditTool {
+    case pen
+    case crop
 }

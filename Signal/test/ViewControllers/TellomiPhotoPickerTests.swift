@@ -419,20 +419,24 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(picker.captionTextForTesting.count, afterHold, "松手就停")
     }
 
-    /// 点照片本身：选上并进上游的预览 / 编辑页（盖在网格上面），先看到点的那张；那里删掉一张，网格里也取消；那里取消回到网格、选中的还在；
-    /// 那里改说明，网格的说明和会话输入框跟着变；那里发送照常交给会话页。
+    /// 网格里点照片进整本相册的查看器（不自动选中）；查看器里「编辑」才进上游的预览 / 编辑页（盖在网格上面），先看到当前这张。
+    /// 那里删掉一张，网格里也取消；那里取消回到网格、选中的还在；那里改说明，网格的说明和会话输入框跟着变；那里发送照常交给会话页。
     @MainActor
-    func testTapPhotoOpensUpstreamEditorOverTheGrid() async throws {
+    func testAlbumViewerEditOpensUpstreamEditorOverTheGrid() async throws {
         let hosted = host()
         defer { hosted.tearDown() }
         let picker = hosted.picker
 
         picker.tapCheckForTesting(itemIndex: 3)
         picker.tapItemForTesting(itemIndex: 4)
-        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"])
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed, "点照片进了整本相册的查看器")
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3"], "点开查看不自动选中")
+        try XCTUnwrap(albumViewer(over: picker)).tapEditForTesting()
 
         let opened = await waitUntil { self.approvalViewController(over: picker) != nil }
-        XCTAssertTrue(opened, "进了上游的预览 / 编辑页")
+        XCTAssertTrue(opened, "编辑进了上游的预览 / 编辑页")
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "编辑会先选上当前这张")
         let approval = try XCTUnwrap(approvalViewController(over: picker))
         XCTAssertTrue(
             approval.currentItem?.attachment.rawValue === hosted.library.attachmentsById["r4"]?.rawValue,
@@ -461,7 +465,162 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertFalse(sent.separately)
     }
 
+    /// 查看器底部「绘制」「裁剪」：和「编辑」一样先选上当前这张、进上游的预览 / 编辑页，并直接打开对应的工具。
+    @MainActor
+    func testAlbumViewerPenAndCropShortcutsOpenTheMatchingUpstreamTool() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapCheckForTesting(itemIndex: 3)
+        picker.tapItemForTesting(itemIndex: 4)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertTrue(viewer.isCropShownForTesting, "图片上有「裁剪」")
+        XCTAssertTrue(viewer.isPenShownForTesting, "图片上有「绘制」")
+
+        viewer.tapToolForTesting(.pen)
+        let penOpened = await waitUntil { self.approvalViewController(over: picker) != nil }
+        XCTAssertTrue(penOpened, "绘制进了上游的预览 / 编辑页")
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "和「编辑」一样先选上当前这张")
+        let penApproval = try XCTUnwrap(approvalViewController(over: picker))
+        XCTAssertTrue(penApproval.currentItem?.attachment.rawValue === hosted.library.attachmentsById["r4"]?.rawValue)
+        let penToolOnScreen = await waitUntil { penApproval.currentPageViewController?.presentedViewController is ImageEditorViewController }
+        XCTAssertTrue(penToolOnScreen, "直接打开了上游的涂鸦工具")
+
+        picker.attachmentApprovalDidCancel()
+        let penClosed = await waitUntil { picker.presentedViewController == nil }
+        XCTAssertTrue(penClosed)
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let reviewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(reviewed)
+        try XCTUnwrap(albumViewer(over: picker)).tapToolForTesting(.crop)
+        let cropOpened = await waitUntil { self.approvalViewController(over: picker) != nil }
+        XCTAssertTrue(cropOpened, "裁剪进了上游的预览 / 编辑页")
+        let cropApproval = try XCTUnwrap(approvalViewController(over: picker))
+        let cropToolOnScreen = await waitUntil { cropApproval.currentPageViewController?.presentedViewController is ImageEditorCropViewController }
+        XCTAssertTrue(cropToolOnScreen, "直接打开了上游的裁剪工具")
+    }
+
+    /// 视频没有「裁剪」「绘制」（上游对视频没有这两个工具），底部只剩「编辑」。
+    @MainActor
+    func testAlbumViewerHidesImageToolsForVideos() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 1)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertFalse(viewer.isCropShownForTesting, "视频不显示「裁剪」")
+        XCTAssertFalse(viewer.isPenShownForTesting, "视频不显示「绘制」")
+    }
+
+    /// 动图（GIF）：上游预览页不支持裁剪 / 绘制，底部和视频一样只剩「编辑」。
+    @MainActor
+    func testAlbumViewerHidesImageToolsForAnimatedImages() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 5)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertFalse(viewer.isCropShownForTesting, "动图不显示「裁剪」")
+        XCTAssertFalse(viewer.isPenShownForTesting, "动图不显示「绘制」")
+    }
+
+    /// 网格点照片：进整本相册的查看器，先看到点的那张，点开不自动选中。
+    @MainActor
+    func testTapPhotoOpensAlbumViewerAtThatPhotoWithoutSelecting() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let opened = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(opened, "点照片进了整本相册的查看器")
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertEqual(viewer.pageIndexForTesting, 4)
+        XCTAssertEqual(picker.selectedIdsForTesting, [])
+    }
+
+    /// 查看器里：右上角勾选即时增减；计数点开切出已选，网格收起。
+    @MainActor
+    func testAlbumViewerCheckTogglesAndCountShowsSelected() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let opened = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(opened)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+
+        viewer.tapCheckForTesting()
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r4"])
+        XCTAssertEqual(viewer.checkNumberTextForTesting, "1")
+        XCTAssertTrue(viewer.isCountShownForTesting)
+
+        viewer.tapCheckForTesting()
+        XCTAssertEqual(picker.selectedIdsForTesting, [])
+        XCTAssertFalse(viewer.isCountShownForTesting)
+
+        viewer.tapCheckForTesting()
+        viewer.tapCountForTesting()
+        let switched = await waitUntil { picker.presentedViewController == nil && picker.collectionViewForTesting.isHidden }
+        XCTAssertTrue(switched, "计数点开切出已选，网格收起")
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r4"])
+    }
+
+    /// 查看器里单击照片：切换选中，和右上角勾选一样即时增减（照 Telegram `TGMediaPickerGalleryPhotoItemView` 单击）。
+    @MainActor
+    func testAlbumViewerSingleTapOnPhotoTogglesSelection() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let opened = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(opened)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+
+        viewer.tapPhotoForTesting()
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r4"])
+        XCTAssertEqual(viewer.checkNumberTextForTesting, "1")
+
+        viewer.tapPhotoForTesting()
+        XCTAssertEqual(picker.selectedIdsForTesting, [])
+        XCTAssertNil(viewer.checkNumberTextForTesting)
+    }
+
     // MARK: - P-11 上限
+
+    /// 下滑关闭：距离 128 或速度 700 任一达到即关。
+    @MainActor
+    func testAlbumViewerDismissRuleMatchesTelegramThresholds() {
+        XCTAssertFalse(TellomiPhotoPickerAlbumViewer.shouldDismiss(distance: 127, velocity: 699))
+        XCTAssertTrue(TellomiPhotoPickerAlbumViewer.shouldDismiss(distance: 128, velocity: 0))
+        XCTAssertTrue(TellomiPhotoPickerAlbumViewer.shouldDismiss(distance: 10, velocity: -700))
+        XCTAssertEqual(TellomiPhotoPickerAlbumViewer.dismissProgress(distance: -75), 0.5, accuracy: 0.0001)
+        XCTAssertEqual(TellomiPhotoPickerAlbumViewer.dismissProgress(distance: 400), 1)
+    }
+
+    func testAlbumViewerZoomLimitsFollowTelegramFormula() {
+        let bounds = CGSize(width: 400, height: 800)
+        let wide = TellomiPhotoPickerAlbumViewer.zoomLimits(bounds: bounds, content: CGSize(width: 4000, height: 2000))
+        XCTAssertEqual(wide.normal, 0.1, accuracy: 0.0001)
+        XCTAssertEqual(wide.minimum, 0.05, accuracy: 0.0001)
+        XCTAssertEqual(wide.maximum, 0.4, accuracy: 0.0001)
+
+        let tiny = TellomiPhotoPickerAlbumViewer.zoomLimits(bounds: bounds, content: CGSize(width: 10000, height: 1000))
+        XCTAssertEqual(tiny.minimum, 0.04, accuracy: 0.0001)
+        XCTAssertEqual(tiny.maximum, 0.8, accuracy: 0.0001)
+    }
 
     /// 选满之后再勾（或滑过去）选不上，并提示「一次最多选 N 张」。
     @MainActor
@@ -1303,6 +1462,11 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
     }
 
     @MainActor
+    private func albumViewer(over picker: TellomiPhotoPickerViewController) -> TellomiPhotoPickerAlbumViewer? {
+        picker.presentedViewController as? TellomiPhotoPickerAlbumViewer
+    }
+
+    @MainActor
     private func approvalViewController(over picker: TellomiPhotoPickerViewController) -> AttachmentApprovalViewController? {
         (picker.presentedViewController as? UINavigationController)?.viewControllers.first as? AttachmentApprovalViewController
     }
@@ -1422,12 +1586,13 @@ private final class FakePhotoLibrary: TellomiPhotoPickerLibrary {
                 isVideo: index == 1 || index == 7,
                 duration: index == 1 ? 75 : 3_725,
                 isLivePhoto: index == 2,
+                isAnimatedImage: index == 5,
                 pixelSize: Self.pixelSizes[index % Self.pixelSizes.count],
                 asset: nil,
             )
         }
         screenshots = (0..<3).map { index in
-            TellomiPhotoPickerItem(id: "s\(index)", isVideo: false, duration: 0, isLivePhoto: false, pixelSize: CGSize(width: 1170, height: 2532), asset: nil)
+            TellomiPhotoPickerItem(id: "s\(index)", isVideo: false, duration: 0, isLivePhoto: false, isAnimatedImage: false, pixelSize: CGSize(width: 1170, height: 2532), asset: nil)
         }
     }
 

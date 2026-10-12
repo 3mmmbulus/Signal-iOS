@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Afegeix una llegenda…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Desseleccionat: %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Arrossega per reordenar";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Edita";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Has limitat l'accés de Tellomi a les teves fotos.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Més opcions";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";

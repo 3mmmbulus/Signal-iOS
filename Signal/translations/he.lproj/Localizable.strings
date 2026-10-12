@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "הוספת כיתוב…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "הבחירה ב-%@ בוטלה";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "יש לגרור כדי לשנות את הסדר";
+"IMAGE_PICKER_TELLOMI_EDIT" = "ערוך";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "הגבלת את הגישה של Tellomi לתמונות שלך.";
 "IMAGE_PICKER_TELLOMI_MORE" = "אפשרויות נוספות";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "תמונה";

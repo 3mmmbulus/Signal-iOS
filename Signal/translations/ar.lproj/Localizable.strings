@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "إضافة تعليق…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "تم إلغاء تحديد %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "اسحب لإعادة الترتيب";
+"IMAGE_PICKER_TELLOMI_EDIT" = "تحرير";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "لقد قيّدتَ وصول Tellomi إلى صورك.";
 "IMAGE_PICKER_TELLOMI_MORE" = "المزيد من الخيارات";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "صورة";

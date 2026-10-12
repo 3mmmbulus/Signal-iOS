@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Adaugă o descriere…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Deselectat: %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Trage pentru a reordona";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Editează";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ai limitat accesul Tellomi la fotografiile tale.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Mai multe opțiuni";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotografie";

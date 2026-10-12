@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Добавете надпис…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Отменен избор: %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Плъзнете, за да пренаредите";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Редактиране";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ограничили сте достъпа на Tellomi до снимките си.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Още опции";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Снимка";

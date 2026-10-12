@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Lisää kuvateksti…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ poistettu valinnasta";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Muuta järjestystä vetämällä";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Muokkaa";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Olet rajoittanut Tellomin pääsyä kuviisi.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Lisää vaihtoehtoja";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Kuva";

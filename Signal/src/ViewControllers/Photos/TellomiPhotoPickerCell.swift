@@ -8,7 +8,7 @@ import SignalUI
 
 /// Tellomi（tellomi/tellomi#1261 P-8，照 Telegram `MediaPickerGridItem` 的格子）：正方形缩略图；右上角编号勾
 /// （29 的圆区，离上、右各 3；右上角 44 × 44 整块都算点勾；白色 1.5 描边 + 阴影，选中填强调色并显示第几张）；视频右下角时长；实况照片左上角小图标。
-/// 点勾选上 / 取消；点照片本身由网格决定（进单张预览 / 编辑，P-10）。
+/// 点勾选上 / 取消；点照片本身由网格决定（打开整本相册的查看器，V-1）。
 final class TellomiPhotoPickerCell: UICollectionViewCell {
 
     static let reuseIdentifier = "TellomiPhotoPickerCell"

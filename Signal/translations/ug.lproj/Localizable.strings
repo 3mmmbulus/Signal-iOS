@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "چۈشەندۈرۈش قوشۇڭ…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ تاللاش بىكار قىلىندى";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "تەرتىپىنى ئۆزگەرتىش ئۈچۈن سۆرەڭ";
+"IMAGE_PICKER_TELLOMI_EDIT" = "تەھرىر";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "سىز Tellomi نىڭ رەسىملىرىڭىزنى زىيارەت قىلىشىنى چەكلىدىڭىز.";
 "IMAGE_PICKER_TELLOMI_MORE" = "تېخىمۇ كۆپ تاللانما";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "رەسىم";

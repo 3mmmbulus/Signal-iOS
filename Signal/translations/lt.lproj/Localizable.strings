@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Pridėti antraštę…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Atžymėta: %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Vilkite, kad pakeistumėte tvarką";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Redaguoti";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Apribojote Tellomi prieigą prie nuotraukų.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Daugiau parinkčių";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Nuotrauka";

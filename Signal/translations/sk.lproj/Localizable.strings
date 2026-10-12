@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Pridať popis…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Zrušený výber: %@";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Presunutím zmeníte poradie";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Upraviť";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Obmedzili ste prístup aplikácie Tellomi k vašim fotkám.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Ďalšie možnosti";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotka";

@@ -5221,6 +5221,9 @@
 /* Hint in the photo picker's selected-only view that the photos can be dragged to change their order. */
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "拖动可调整顺序";
 
+/* Button in the album viewer of the photo picker that opens the preview and editing screen for the photo being viewed. */
+"IMAGE_PICKER_TELLOMI_EDIT" = "编辑";
+
 /* Banner at the top of the photo picker when the user gave Tellomi access to only some photos. */
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "你已限制 Tellomi 访问照片。";
 

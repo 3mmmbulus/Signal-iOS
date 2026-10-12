@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Tilføj en billedtekst…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ fravalgt";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Træk for at ændre rækkefølgen";
+"IMAGE_PICKER_TELLOMI_EDIT" = "Redigér";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Du har begrænset Tellomis adgang til dine billeder.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Flere muligheder";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";

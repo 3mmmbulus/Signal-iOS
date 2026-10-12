@@ -11024,6 +11024,7 @@
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "कैप्शन जोड़ें…";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ का चयन हटाया गया";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "क्रम बदलने के लिए खींचें";
+"IMAGE_PICKER_TELLOMI_EDIT" = "एडिट करें";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "आपने Tellomi का फ़ोटो ऐक्सेस सीमित कर दिया है।";
 "IMAGE_PICKER_TELLOMI_MORE" = "और विकल्प";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "फ़ोटो";
