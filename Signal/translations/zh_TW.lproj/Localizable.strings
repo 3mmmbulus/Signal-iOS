@@ -2375,7 +2375,7 @@
 "COMPOSE_SCREEN_MISSING_CONTACTS_CTA" = "開啟設定";
 
 /* Multi-line label explaining why compose-screen contact picker is empty. */
-"COMPOSE_SCREEN_MISSING_CONTACTS_PERMISSION" = "你可以在 iOS 設定中允許取用聯絡資訊，以確認哪位聯絡人是 Tellomi 的使用者。";
+"COMPOSE_SCREEN_MISSING_CONTACTS_PERMISSION" = "你可以在 iOS 設定中允許取用聯絡資訊，以便在 Tellomi 中顯示你為聯絡人儲存的名字。";
 
 /* Tellomi: shown at the top of the compose / member picker before the user has been asked for contacts access. Explains what contacts are used for. */
 "COMPOSE_SCREEN_CONTACTS_PERMISSION_PURPOSE_TELLOMI" = "允許存取聯絡人後，Tellomi 會顯示您為聯絡人儲存的名字。聯絡人不會上傳。";
@@ -6856,7 +6856,7 @@
 "ONBOARDING_MODE_SWITCH_WARNING_PROVISIONING" = "註冊此iPad將在現有使用相同電話號碼註冊的任何其他裝置上禁用Tellomi。";
 
 /* Description of the 'Contacts' permission in the 'onboarding permissions' view. */
-"ONBOARDING_PERMISSIONS_CONTACTS_DESCRIPTION" = "找到你認識的人。你的聯絡人名單已加密，Tellomi 服務無法看到。";
+"ONBOARDING_PERMISSIONS_CONTACTS_DESCRIPTION" = "用於在 Tellomi 中顯示您為聯絡人儲存的名字。聯絡人不會上傳。";
 
 /* Title introducing the 'Contacts' permission in the 'onboarding permissions' view. */
 "ONBOARDING_PERMISSIONS_CONTACTS_TITLE" = "聯絡資訊";
