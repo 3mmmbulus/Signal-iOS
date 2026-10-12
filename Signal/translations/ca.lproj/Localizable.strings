@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Cerca noms de fitxers, llegendes i enllaços";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Aquesta versió s'ha d'actualitzar per enviar i rebre missatges. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "En actualitzar, es conserven tots els xats d'aquest telèfon.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Novetats d'aquesta actualització";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Versió %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Cal actualitzar aquesta versió per continuar enviant i rebent missatges.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Aquesta versió té un problema de seguretat. Per protegir el teu compte i els teus missatges, actualitza-la per continuar utilitzant Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Aquesta versió ja no es pot comunicar amb el servidor. Actualitza per continuar enviant i rebent missatges.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Actualitza Tellomi per continuar";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Actualitza ara";

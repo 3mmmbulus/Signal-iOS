@@ -238,6 +238,18 @@
 /* Tellomi: On the 'update required' page, reassurance that updating keeps the chats on this phone. */
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Updating keeps all the chats on this phone.";
 
+/* Tellomi: Text button on the 'update required' page. Opens the release notes on our website. */
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "What's in this update";
+
+/* Tellomi: On the 'update required' page, the version the update installs. Embeds {{ version number, e.g. 0.1.5 }}. */
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Version %@";
+
+/* Tellomi: On the 'update required' page, why the app must be updated, when the reason is neither security nor the server protocol. */
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "This version needs an update to keep sending and receiving messages.";
+
+/* Tellomi: On the 'update required' page, why the app must be updated: this version has a security problem. */
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "This version has a security problem. To protect your account and messages, update to keep using Tellomi.";
+
 /* Tellomi: On the 'update required' page, why the app must be updated: the server no longer accepts this version. */
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "This version can no longer communicate with the server. Update to keep sending and receiving messages.";
 

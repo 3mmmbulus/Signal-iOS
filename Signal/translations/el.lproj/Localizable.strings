@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Αναζήτηση ονομάτων αρχείων, λεζαντών και συνδέσμων";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Αυτή η έκδοση χρειάζεται ενημέρωση για να στείλεις και να λάβεις μηνύματα. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Η ενημέρωση διατηρεί όλες τις συνομιλίες σε αυτό το τηλέφωνο.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Τι νέο υπάρχει σε αυτή την ενημέρωση";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Έκδοση %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Αυτή η έκδοση χρειάζεται ενημέρωση για να συνεχίσετε να στέλνετε και να λαμβάνετε μηνύματα.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Αυτή η έκδοση έχει πρόβλημα ασφαλείας. Για να προστατέψετε τον λογαριασμό και τα μηνύματά σας, ενημερώστε την για να συνεχίσετε να χρησιμοποιείτε το Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Αυτή η έκδοση δεν μπορεί πλέον να επικοινωνήσει με τον διακομιστή. Ενημέρωσε το Tellomi για να συνεχίσεις να στέλνεις και να λαμβάνεις μηνύματα.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Ενημέρωσε το Tellomi για να συνεχίσεις";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Ενημέρωση τώρα";

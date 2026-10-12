@@ -78,6 +78,15 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
     /// Tellomi：阻断页上确认了「暂不更新，只看聊天记录」（owner 2026-09-24 规则 1）。
     var updateRequiredViewChatsOnlyHandler: (@MainActor () -> Void)?
 
+    /// Tellomi（tellomi/tellomi#1491）：阻断页上随更新清单变的原因、版本、「了解更新内容」和「立即更新」的去处。
+    var updateRequiredPageInfo: TellomiUpdateRequiredPageInfo = .serverRejected {
+        didSet {
+            AssertIsOnMainThread()
+            guard updateRequiredPageInfo != oldValue else { return }
+            updateRequiredBlockingViewController.pageInfo = updateRequiredPageInfo
+        }
+    }
+
     var isScreenBlockActive: Bool = false {
         didSet {
             AssertIsOnMainThread()
@@ -226,16 +235,22 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
 
     /// 拆成静态方法，是为了用例能走这里真的接线（taishi 审查 b15 启用前置 2）。
     static func makeUpdateRequiredBlockingViewController(host: TellomiUpdateRequiredBlockHost) -> TellomiUpdateRequiredAppBlockingViewController {
-        return TellomiUpdateRequiredAppBlockingViewController(
-            openUpdatePage: {
-                // 阻断页只在 appStoreUrl 就是我们配的更新渠道时才会出现
-                // （TellomiUpdateRequiredMonitoringManager.hasUpdateChannel），不会把人送去装别的 App。
-                UIApplication.shared.open(TSConstants.appStoreUrl)
+        let viewController = TellomiUpdateRequiredAppBlockingViewController(
+            openUpdatePage: { [weak host] in
+                // 阻断页只在有我们自己的更新渠道时才会出现（TellomiUpdateRequiredMonitoringManager.hasUpdateChannel）：
+                // 更新清单里验过签的 TestFlight 公开链接（只认 TestFlight / App Store 主机），或者 appStoreUrl 就是我们配的那条。
+                // 不会把人送去装别的 App。
+                UIApplication.shared.open(host?.updateRequiredPageInfo.updateUrl ?? TSConstants.appStoreUrl)
+            },
+            openNotes: { url in
+                UIApplication.shared.open(url)
             },
             viewChatsOnly: { [weak host] in
                 host?.updateRequiredViewChatsOnlyHandler?()
             },
         )
+        viewController.pageInfo = host.updateRequiredPageInfo
+        return viewController
     }
 
     private lazy var updateRequiredBlockingWindow: UIWindow = {

@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "جستجوی نام فایل، توضیحات و پیوندها";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "برای ارسال و دریافت پیام باید این نسخه را به‌روزرسانی کنید. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "با به‌روزرسانی، همهٔ گفتگوهای این گوشی حفظ می‌شود.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "چه چیزهایی در این به‌روزرسانی هست";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "نسخهٔ %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "برای ادامهٔ ارسال و دریافت پیام، این نسخه باید به‌روزرسانی شود.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "این نسخه یک مشکل امنیتی دارد. برای محافظت از حساب و پیام‌هایتان، به‌روزرسانی کنید تا بتوانید به استفاده از Tellomi ادامه دهید.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "این نسخه دیگر نمی‌تواند با سرور ارتباط برقرار کند. برای ادامهٔ ارسال و دریافت پیام، به‌روزرسانی کنید.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "برای ادامه، Tellomi را به‌روزرسانی کنید";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "اکنون به‌روزرسانی کنید";

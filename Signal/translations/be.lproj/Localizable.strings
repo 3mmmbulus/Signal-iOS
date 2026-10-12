@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Пошук па назвах файлаў, подпісах і спасылках";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Каб адпраўляць і атрымліваць паведамленні, гэтую версію трэба абнавіць. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Пасля абнаўлення ўсе чаты на гэтым тэлефоне захоўваюцца.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Што новага ў гэтым абнаўленні";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Версія %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Гэтую версію трэба абнавіць, каб працягваць адпраўляць і атрымліваць паведамленні.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "У гэтай версіі ёсць праблема з бяспекай. Каб абараніць свой уліковы запіс і паведамленні, абнавіце праграму і працягвайце карыстацца Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Гэтая версія больш не можа злучацца з серверам. Абнавіце, каб працягваць адпраўляць і атрымліваць паведамленні.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Абнавіце Tellomi, каб працягнуць";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Абнавіць зараз";

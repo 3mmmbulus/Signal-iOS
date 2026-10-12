@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Cari nama file, keterangan, dan tautan";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Versi ini perlu diperbarui untuk mengirim dan menerima pesan. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Memperbarui tetap menyimpan semua obrolan di ponsel ini.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Yang baru di pembaruan ini";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Versi %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Versi ini perlu diperbarui agar Anda dapat terus mengirim dan menerima pesan.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Versi ini memiliki masalah keamanan. Untuk melindungi akun dan pesan Anda, perbarui agar dapat terus menggunakan Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Versi ini tidak dapat lagi berkomunikasi dengan server. Perbarui untuk terus mengirim dan menerima pesan.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Perbarui Tellomi untuk melanjutkan";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Perbarui sekarang";

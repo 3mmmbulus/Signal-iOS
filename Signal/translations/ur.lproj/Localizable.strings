@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "فائل کے نام، کیپشن اور لنکس تلاش کریں";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "پیغامات بھیجنے اور موصول کرنے کے لیے اس ورژن کو اپ ڈیٹ کرنا ضروری ہے۔ %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "اپ ڈیٹ کرنے سے اس فون پر موجود تمام چیٹس برقرار رہتی ہیں۔";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "اس اپ ڈیٹ میں کیا ہے";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "ورژن %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "پیغامات بھیجنا اور وصول کرنا جاری رکھنے کے لیے اس ورژن کو اپ ڈیٹ کرنا ضروری ہے۔";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "اس ورژن میں سیکیورٹی کا مسئلہ ہے۔ اپنے اکاؤنٹ اور پیغامات کی حفاظت کے لیے اپ ڈیٹ کریں اور Tellomi کا استعمال جاری رکھیں۔";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "یہ ورژن اب سرور سے رابطہ نہیں کر سکتا۔ پیغامات بھیجنا اور موصول کرنا جاری رکھنے کے لیے اپ ڈیٹ کریں۔";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "جاری رکھنے کے لیے Tellomi اپ ڈیٹ کریں";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "ابھی اپ ڈیٹ کریں";

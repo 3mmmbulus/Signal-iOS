@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Keresés fájlnevek, feliratok és hivatkozások között";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Ez a verzió frissítést igényel az üzenetek küldéséhez és fogadásához. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "A frissítés után a telefonon lévő összes csevegés megmarad.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Újdonságok ebben a frissítésben";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "%@ verzió";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Ezt a verziót frissíteni kell, hogy továbbra is küldhess és fogadhass üzeneteket.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Ebben a verzióban biztonsági probléma van. A fiókod és az üzeneteid védelme érdekében frissíts, hogy tovább használhasd a Tellomit.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Ez a verzió már nem tud kommunikálni a szerverrel. Frissíts, hogy továbbra is küldhess és fogadhass üzeneteket.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "A folytatáshoz frissítsd a Tellomit";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Frissítés most";

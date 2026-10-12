@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "ھۆججەت نامى، چۈشەندۈرۈش ۋە ئۇلانمىلارنى ئىزدەش";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "ئۇچۇر ئەۋەتىش ۋە قوبۇل قىلىش ئۈچۈن بۇ نەشرىنى يېڭىلاش كېرەك. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "يېڭىلىسىڭىز، بۇ تېلېفوندىكى بارلىق پاراڭلار ساقلىنىدۇ.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "بۇ يېڭىلاشتىكى يېڭىلىقلار";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "نەشرى %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "ئۇچۇر ئەۋەتىش ۋە قوبۇل قىلىشنى داۋاملاشتۇرۇش ئۈچۈن بۇ نەشرىنى يېڭىلاش كېرەك.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "بۇ نەشرىدە بىخەتەرلىك مەسىلىسى بار. ھېساباتىڭىز ۋە ئۇچۇرلىرىڭىزنى قوغداش ئۈچۈن يېڭىلاپ، Tellomi نى داۋاملىق ئىشلىتىڭ.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "بۇ نەشرى ئەمدى مۇلازىمېتىر بىلەن ئالاقىلىشالمايدۇ. ئۇچۇر ئەۋەتىش ۋە قوبۇل قىلىشنى داۋام قىلىش ئۈچۈن يېڭىلاڭ.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "داۋاملاشتۇرۇش ئۈچۈن Tellomi نى يېڭىلاڭ";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "ھازىر يېڭىلاش";

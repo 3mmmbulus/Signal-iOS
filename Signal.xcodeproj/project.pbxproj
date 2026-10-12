@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5D24AF865D30E1687821D5EA /* TellomiUpdateManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */; };
+		A7E949506E56B5E62D2F9FA4 /* TellomiUpdateManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */; };
 		040277FA303DCFA6009C1468 /* LocalFileBackupAttachmentRestoreProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040277F9303DCF9B009C1468 /* LocalFileBackupAttachmentRestoreProgress.swift */; };
 		040277FE303DE4F2009C1468 /* ChatListViewController+LocalFileBackupRestoreProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040277FD303DE4F2009C1468 /* ChatListViewController+LocalFileBackupRestoreProgressView.swift */; };
 		040506F82F7EEF3B0078B769 /* RemoteReleaseNotesFetchingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040506F72F7EEF290078B769 /* RemoteReleaseNotesFetchingManager.swift */; };
@@ -4390,6 +4392,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateManifests.swift; sourceTree = "<group>"; };
+		9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateManifest.swift; sourceTree = "<group>"; };
 		040277F9303DCF9B009C1468 /* LocalFileBackupAttachmentRestoreProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileBackupAttachmentRestoreProgress.swift; sourceTree = "<group>"; };
 		040277FD303DE4F2009C1468 /* ChatListViewController+LocalFileBackupRestoreProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChatListViewController+LocalFileBackupRestoreProgressView.swift"; sourceTree = "<group>"; };
 		040506F72F7EEF290078B769 /* RemoteReleaseNotesFetchingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteReleaseNotesFetchingManager.swift; sourceTree = "<group>"; };
@@ -16225,6 +16229,8 @@
 				6675F64C2925C012007A311E /* APNSRotationStore.swift */,
 				724329682BE3A0C60089206A /* AppContext.swift */,
 				F9C5CB6F289453B200548EEE /* AppExpiry.swift */,
+				A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */,
+				9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */,
 				F9C5CB81289453B200548EEE /* AppReadiness.swift */,
 				F972180528DE37A200113D9F /* AppVersion.swift */,
 				F9C5CB38289453B200548EEE /* Array+SSK.swift */,
@@ -19853,6 +19859,8 @@
 				720547F52B9C97EC00E2CF2F /* APNSRotationStore.swift in Sources */,
 				724329692BE3A0C60089206A /* AppContext.swift in Sources */,
 				F9C5CE40289453B400548EEE /* AppExpiry.swift in Sources */,
+				5D24AF865D30E1687821D5EA /* TellomiUpdateManifests.swift in Sources */,
+				A7E949506E56B5E62D2F9FA4 /* TellomiUpdateManifest.swift in Sources */,
 				F9C5CE52289453B400548EEE /* AppReadiness.swift in Sources */,
 				725465642BA0369D00EABFD2 /* AppSetup.swift in Sources */,
 				F972180628DE37A200113D9F /* AppVersion.swift in Sources */,

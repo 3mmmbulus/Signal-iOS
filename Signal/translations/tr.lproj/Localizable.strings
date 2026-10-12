@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Dosya adlarında, açıklamalarda ve bağlantılarda ara";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Bu sürümün mesaj gönderip alabilmesi için güncellenmesi gerekiyor. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Güncelleme, bu telefondaki tüm sohbetleri korur.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Bu güncellemede neler var";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Sürüm %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Mesaj göndermeye ve almaya devam etmek için bu sürümün güncellenmesi gerekiyor.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Bu sürümde bir güvenlik sorunu var. Hesabını ve mesajlarını korumak için güncelle ve Tellomi'yi kullanmaya devam et.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Bu sürüm artık sunucuyla iletişim kuramıyor. Mesaj göndermeye ve almaya devam etmek için güncelle.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Devam etmek için Tellomi'yi güncelle";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Şimdi Güncelle";

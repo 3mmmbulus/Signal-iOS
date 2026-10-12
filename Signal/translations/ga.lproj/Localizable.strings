@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Cuardaigh ainmneacha comhad, fotheidil agus naisc";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Ní mór an leagan seo a nuashonrú chun teachtaireachtaí a sheoladh agus a fháil. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Fanfaidh do chomhráite uile ar an nguthán seo tar éis an nuashonraithe.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Cad atá sa nuashonrú seo";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Leagan %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Ní mór an leagan seo a nuashonrú chun leanúint ar aghaidh ag seoladh agus ag fáil teachtaireachtaí.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Tá fadhb slándála sa leagan seo. Chun do chuntas agus do theachtaireachtaí a chosaint, nuashonraigh é chun leanúint ar aghaidh ag úsáid Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Ní féidir leis an leagan seo cumarsáid a dhéanamh leis an bhfreastalaí a thuilleadh. Nuashonraigh chun leanúint de theachtaireachtaí a sheoladh agus a fháil.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Nuashonraigh Tellomi chun leanúint ar aghaidh";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Nuashonraigh anois";

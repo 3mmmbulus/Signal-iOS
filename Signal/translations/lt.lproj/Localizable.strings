@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Ieškoti failų pavadinimų, antraščių ir nuorodų";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Norint siųsti ir gauti žinutes, šią versiją reikia atnaujinti. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Atnaujinus visi pokalbiai šiame telefone išliks.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Kas naujo šiame atnaujinime";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Versija %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Kad galėtumėte toliau siųsti ir gauti žinutes, šią versiją reikia atnaujinti.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Šioje versijoje yra saugumo problema. Kad apsaugotumėte savo paskyrą ir žinutes, atnaujinkite programėlę ir toliau naudokitės Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Ši versija nebegali ryšiuotis su serveriu. Atnaujinkite, kad galėtumėte toliau siųsti ir gauti žinutes.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Norėdami tęsti, atnaujinkite Tellomi";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Atnaujinti dabar";

@@ -10967,6 +10967,10 @@
 "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Søg i filnavne, billedtekster og links";
 "APP_EXPIRED_BOTTOM_TELLOMI" = "Denne version skal opdateres for at kunne sende og modtage beskeder. %1$@";
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "Når du opdaterer, beholder du alle chats på denne telefon.";
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "Nyt i denne opdatering";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "Version %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "Denne version skal opdateres, så du kan fortsætte med at sende og modtage beskeder.";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "Denne version har et sikkerhedsproblem. Opdater for at beskytte din konto og dine beskeder og fortsætte med at bruge Tellomi.";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "Denne version kan ikke længere kommunikere med serveren. Opdater for at kunne fortsætte med at sende og modtage beskeder.";
 "APP_EXPIRED_TELLOMI_BLOCKING_TITLE" = "Opdater Tellomi for at fortsætte";
 "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON" = "Opdater nu";

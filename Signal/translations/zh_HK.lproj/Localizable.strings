@@ -239,6 +239,10 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT" = "更新不會影響手機上的聊天紀錄。";
 
 /* Tellomi: On the 'update required' page, why the app must be updated: the server no longer accepts this version. */
+"APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE" = "了解更新內容";
+"APP_EXPIRED_TELLOMI_BLOCKING_NEW_VERSION" = "新版本 %@";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_OTHER" = "此版本需要更新，更新後才能繼續收發訊息。";
+"APP_EXPIRED_TELLOMI_BLOCKING_REASON_SECURITY" = "此版本存在安全問題，為保護你的帳戶和訊息，請更新後繼續使用。";
 "APP_EXPIRED_TELLOMI_BLOCKING_REASON_SERVER_REJECTED" = "此版本已無法與伺服器正常通訊，更新後才能繼續收發訊息。";
 
 /* Tellomi: Title of the full-screen page shown when this version of the app can no longer be used and must be updated. */

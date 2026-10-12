@@ -159,6 +159,22 @@ public final class AppExpiry {
         await updateExpirationState(newState, db: db)
     }
 
+    /// Tellomi（tellomi/tellomi#1491，需求 app-update-and-version-policy §3.2.1「撤销」、§3.3「现状」）：更新清单撤销了「必须」，
+    /// 把服务端判定的过期（499 的 `.immediately`、远程配置的 `.atDate`）改回默认——只按构建年龄算。
+    /// 本机构建过了有效期的不动（owner 2026-09-24 规则 2：到期只降成只读，换新版才解）。
+    /// 发 `AppExpiryDidChange`，聊天连接（`OWSChatConnection.appExpiryDidChange`）随之重连；服务端如果还在拒，下一次 499 会再置回来。
+    ///
+    /// - Returns: 是否真的放行了
+    @discardableResult
+    public func tellomiReleaseServerExpiry(now: Date, db: any DB) async -> Bool {
+        guard isExpired(now: now), !isBuildTooOld(now: now) else {
+            return false
+        }
+        Logger.warn("")
+        await updateExpirationState(.init(appVersion: appVersion.wrappedValue.rawValue, mode: .default), db: db)
+        return true
+    }
+
     public static let AppExpiryDidChange = Notification.Name("AppExpiryDidChange")
 
     public var expirationDate: Date {
