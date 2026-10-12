@@ -1788,5 +1788,149 @@ Yritä uudelleen %1$d tunnin kuluttua.</string>
 			<string>Käyttäjänimessä on oltava vähintään %1$d merkkiä</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Voit asettaa käyttäjänimen %d päivän kuluttua</string>
+			<key>other</key>
+			<string>Voit asettaa käyttäjänimen %d päivän kuluttua</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld jäsen</string>
+			<key>other</key>
+			<string>%ld jäsentä</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld tarra</string>
+			<key>other</key>
+			<string>%ld tarraa</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld kappale</string>
+			<key>other</key>
+			<string>%ld kappaletta</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Käyttäjänimessä saa olla enintään %d merkki.</string>
+			<key>other</key>
+			<string>Käyttäjänimessä saa olla enintään %d merkkiä.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vaihdoit käyttäjänimesi äskettäin. Voit vaihtaa sen uudelleen %d päivän kuluttua. Siihen asti voit vain palauttaa alkuperäisen käyttäjänimesi.</string>
+			<key>other</key>
+			<string>Vaihdoit käyttäjänimesi äskettäin. Voit vaihtaa sen uudelleen %d päivän kuluttua. Siihen asti voit vain palauttaa alkuperäisen käyttäjänimesi.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Käyttäjänimen vaihtaminen nollaa nykyisen QR-koodisi ja linkkisi, etkä voi vaihtaa sitä uudelleen %d päivään. Oletko varma?</string>
+			<key>other</key>
+			<string>Käyttäjänimen vaihtaminen nollaa nykyisen QR-koodisi ja linkkisi, etkä voi vaihtaa sitä uudelleen %d päivään. Oletko varma?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Tämä poistaa käyttäjänimesi ja poistaa QR-koodisi ja linkkisi käytöstä. Käyttäjänimi ”%2$@” pysyy varattuna sinulle %3$d päivän ajan; jos asetat käyttäjänimen sinä aikana, et voi vaihtaa sitä uudelleen %1$d päivään. Jos vaihdoit käyttäjänimesi viimeisten %1$d päivän aikana, voit poistamisen jälkeen vaihtaa sen vain takaisin alkuperäiseen käyttäjänimeen. Oletko varma?</string>
+			<key>other</key>
+			<string>Tämä poistaa käyttäjänimesi ja poistaa QR-koodisi ja linkkisi käytöstä. Käyttäjänimi ”%2$@” pysyy varattuna sinulle %3$d päivän ajan; jos asetat käyttäjänimen sinä aikana, et voi vaihtaa sitä uudelleen %1$d päivään. Jos vaihdoit käyttäjänimesi viimeisten %1$d päivän aikana, voit poistamisen jälkeen vaihtaa sen vain takaisin alkuperäiseen käyttäjänimeen. Oletko varma?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Poistit käyttäjänimesi alle %2$d päivää sitten, joten sen asettaminen nyt lasketaan vaihdoksi: et voi vaihtaa sitä uudelleen %d päivään. Oletko varma?</string>
+			<key>other</key>
+			<string>Poistit käyttäjänimesi alle %2$d päivää sitten, joten sen asettaminen nyt lasketaan vaihdoksi: et voi vaihtaa sitä uudelleen %d päivään. Oletko varma?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

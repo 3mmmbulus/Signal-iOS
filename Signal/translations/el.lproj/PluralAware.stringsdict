@@ -1788,5 +1788,149 @@
 			<string>Τα ονόματα χρήστη πρέπει να ξεκινούν με τουλάχιστον %1$d χαρακτήρες</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Μπορείς να ορίσεις όνομα χρήστη σε %d ημέρα</string>
+			<key>other</key>
+			<string>Μπορείς να ορίσεις όνομα χρήστη σε %d ημέρες</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld μέλος</string>
+			<key>other</key>
+			<string>%ld μέλη</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld αυτοκόλλητο</string>
+			<key>other</key>
+			<string>%ld αυτοκόλλητα</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld κομμάτι</string>
+			<key>other</key>
+			<string>%ld κομμάτια</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Τα ονόματα χρήστη πρέπει να έχουν το πολύ %d χαρακτήρα.</string>
+			<key>other</key>
+			<string>Τα ονόματα χρήστη πρέπει να έχουν το πολύ %d χαρακτήρες.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Άλλαξες πρόσφατα το όνομα χρήστη σου. Μπορείς να το αλλάξεις ξανά σε %d ημέρα. Μέχρι τότε, μπορείς να επιστρέψεις μόνο στο αρχικό σου όνομα χρήστη.</string>
+			<key>other</key>
+			<string>Άλλαξες πρόσφατα το όνομα χρήστη σου. Μπορείς να το αλλάξεις ξανά σε %d ημέρες. Μέχρι τότε, μπορείς να επιστρέψεις μόνο στο αρχικό σου όνομα χρήστη.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Η αλλαγή του ονόματος χρήστη σου θα επαναφέρει τον υπάρχοντα κωδικό QR και σύνδεσμό σου και δεν θα μπορείς να το αλλάξεις ξανά για %d ημέρα. Είσαι σίγουρος/η;</string>
+			<key>other</key>
+			<string>Η αλλαγή του ονόματος χρήστη σου θα επαναφέρει τον υπάρχοντα κωδικό QR και σύνδεσμό σου και δεν θα μπορείς να το αλλάξεις ξανά για %d ημέρες. Είσαι σίγουρος/η;</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Αυτό θα αφαιρέσει το όνομα χρήστη σου και θα απενεργοποιήσει τον κωδικό QR και τον σύνδεσμό σου. Το “%2$@” παραμένει δεσμευμένο για σένα για %3$d ημέρες· αν ορίσεις όνομα χρήστη μέσα σε αυτό το διάστημα, δεν θα μπορείς να το αλλάξεις ξανά για %1$d ημέρα. Αν άλλαξες το όνομα χρήστη σου την τελευταία %1$d ημέρα, μετά τη διαγραφή θα μπορείς να επιστρέψεις μόνο στο αρχικό σου όνομα χρήστη. Είσαι σίγουρος/η;</string>
+			<key>other</key>
+			<string>Αυτό θα αφαιρέσει το όνομα χρήστη σου και θα απενεργοποιήσει τον κωδικό QR και τον σύνδεσμό σου. Το “%2$@” παραμένει δεσμευμένο για σένα για %3$d ημέρες· αν ορίσεις όνομα χρήστη μέσα σε αυτό το διάστημα, δεν θα μπορείς να το αλλάξεις ξανά για %1$d ημέρες. Αν άλλαξες το όνομα χρήστη σου τις τελευταίες %1$d ημέρες, μετά τη διαγραφή θα μπορείς να επιστρέψεις μόνο στο αρχικό σου όνομα χρήστη. Είσαι σίγουρος/η;</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Διέγραψες το όνομα χρήστη σου πριν από λιγότερο από %2$d ημέρες, οπότε ο ορισμός ενός τώρα μετράει ως αλλαγή: δεν θα μπορείς να το αλλάξεις ξανά για %d ημέρα. Είσαι σίγουρος/η;</string>
+			<key>other</key>
+			<string>Διέγραψες το όνομα χρήστη σου πριν από λιγότερο από %2$d ημέρες, οπότε ο ορισμός ενός τώρα μετράει ως αλλαγή: δεν θα μπορείς να το αλλάξεις ξανά για %d ημέρες. Είσαι σίγουρος/η;</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

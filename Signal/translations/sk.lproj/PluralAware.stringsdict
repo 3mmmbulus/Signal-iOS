@@ -2240,5 +2240,185 @@ Skúste to znova o %1$d hodín.</string>
 			<string>Používateľské mená musia obsahovať minimálne %1$d znakov</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Používateľské meno si môžete nastaviť o %d deň</string>
+			<key>few</key>
+			<string>Používateľské meno si môžete nastaviť o %d dni</string>
+			<key>many</key>
+			<string>Používateľské meno si môžete nastaviť o %d dňa</string>
+			<key>other</key>
+			<string>Používateľské meno si môžete nastaviť o %d dní</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld člen</string>
+			<key>few</key>
+			<string>%ld členovia</string>
+			<key>many</key>
+			<string>%ld člena</string>
+			<key>other</key>
+			<string>%ld členov</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld nálepka</string>
+			<key>few</key>
+			<string>%ld nálepky</string>
+			<key>many</key>
+			<string>%ld nálepky</string>
+			<key>other</key>
+			<string>%ld nálepiek</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld skladba</string>
+			<key>few</key>
+			<string>%ld skladby</string>
+			<key>many</key>
+			<string>%ld skladby</string>
+			<key>other</key>
+			<string>%ld skladieb</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Používateľské mená môžu mať najviac %d znak.</string>
+			<key>few</key>
+			<string>Používateľské mená môžu mať najviac %d znaky.</string>
+			<key>many</key>
+			<string>Používateľské mená môžu mať najviac %d znaku.</string>
+			<key>other</key>
+			<string>Používateľské mená môžu mať najviac %d znakov.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nedávno ste zmenili svoje používateľské meno. Znova ho môžete zmeniť o %d deň. Dovtedy ho môžete zmeniť len späť na pôvodné používateľské meno.</string>
+			<key>few</key>
+			<string>Nedávno ste zmenili svoje používateľské meno. Znova ho môžete zmeniť o %d dni. Dovtedy ho môžete zmeniť len späť na pôvodné používateľské meno.</string>
+			<key>many</key>
+			<string>Nedávno ste zmenili svoje používateľské meno. Znova ho môžete zmeniť o %d dňa. Dovtedy ho môžete zmeniť len späť na pôvodné používateľské meno.</string>
+			<key>other</key>
+			<string>Nedávno ste zmenili svoje používateľské meno. Znova ho môžete zmeniť o %d dní. Dovtedy ho môžete zmeniť len späť na pôvodné používateľské meno.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Zmenou používateľského mena sa resetuje váš existujúci QR kód a odkaz a nebudete ho môcť znova zmeniť %d deň. Naozaj chcete pokračovať?</string>
+			<key>few</key>
+			<string>Zmenou používateľského mena sa resetuje váš existujúci QR kód a odkaz a nebudete ho môcť znova zmeniť %d dni. Naozaj chcete pokračovať?</string>
+			<key>many</key>
+			<string>Zmenou používateľského mena sa resetuje váš existujúci QR kód a odkaz a nebudete ho môcť znova zmeniť %d dňa. Naozaj chcete pokračovať?</string>
+			<key>other</key>
+			<string>Zmenou používateľského mena sa resetuje váš existujúci QR kód a odkaz a nebudete ho môcť znova zmeniť %d dní. Naozaj chcete pokračovať?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Týmto sa odstráni vaše používateľské meno a vypne sa váš QR kód a odkaz. Meno „%2$@“ zostane pre vás rezervované %3$d dní; ak si počas tejto doby nastavíte používateľské meno, nebudete ho môcť znova zmeniť %1$d deň. Ak ste svoje používateľské meno zmenili za posledný %1$d deň, po odstránení ho môžete zmeniť len späť na pôvodné používateľské meno. Naozaj chcete pokračovať?</string>
+			<key>few</key>
+			<string>Týmto sa odstráni vaše používateľské meno a vypne sa váš QR kód a odkaz. Meno „%2$@“ zostane pre vás rezervované %3$d dní; ak si počas tejto doby nastavíte používateľské meno, nebudete ho môcť znova zmeniť %1$d dni. Ak ste svoje používateľské meno zmenili za posledné %1$d dni, po odstránení ho môžete zmeniť len späť na pôvodné používateľské meno. Naozaj chcete pokračovať?</string>
+			<key>many</key>
+			<string>Týmto sa odstráni vaše používateľské meno a vypne sa váš QR kód a odkaz. Meno „%2$@“ zostane pre vás rezervované %3$d dní; ak si počas tejto doby nastavíte používateľské meno, nebudete ho môcť znova zmeniť %1$d dňa. Ak ste svoje používateľské meno zmenili za posledného %1$d dňa, po odstránení ho môžete zmeniť len späť na pôvodné používateľské meno. Naozaj chcete pokračovať?</string>
+			<key>other</key>
+			<string>Týmto sa odstráni vaše používateľské meno a vypne sa váš QR kód a odkaz. Meno „%2$@“ zostane pre vás rezervované %3$d dní; ak si počas tejto doby nastavíte používateľské meno, nebudete ho môcť znova zmeniť %1$d dní. Ak ste svoje používateľské meno zmenili za posledných %1$d dní, po odstránení ho môžete zmeniť len späť na pôvodné používateľské meno. Naozaj chcete pokračovať?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Svoje používateľské meno ste odstránili pred menej ako %2$d dňami, takže jeho nastavenie sa teraz počíta ako zmena: nebudete ho môcť znova zmeniť %d deň. Naozaj chcete pokračovať?</string>
+			<key>few</key>
+			<string>Svoje používateľské meno ste odstránili pred menej ako %2$d dňami, takže jeho nastavenie sa teraz počíta ako zmena: nebudete ho môcť znova zmeniť %d dni. Naozaj chcete pokračovať?</string>
+			<key>many</key>
+			<string>Svoje používateľské meno ste odstránili pred menej ako %2$d dňami, takže jeho nastavenie sa teraz počíta ako zmena: nebudete ho môcť znova zmeniť %d dňa. Naozaj chcete pokračovať?</string>
+			<key>other</key>
+			<string>Svoje používateľské meno ste odstránili pred menej ako %2$d dňami, takže jeho nastavenie sa teraz počíta ako zmena: nebudete ho môcť znova zmeniť %d dní. Naozaj chcete pokračovať?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -1788,5 +1788,149 @@
 			<string>Kullanıcı adları en az %1$d karakterle başlamalıdır</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d gün sonra kullanıcı adı belirleyebilirsin</string>
+			<key>other</key>
+			<string>%d gün sonra kullanıcı adı belirleyebilirsin</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld üye</string>
+			<key>other</key>
+			<string>%ld üye</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld çıkartma</string>
+			<key>other</key>
+			<string>%ld çıkartma</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld parça</string>
+			<key>other</key>
+			<string>%ld parça</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Kullanıcı adları en fazla %d karakter olabilir.</string>
+			<key>other</key>
+			<string>Kullanıcı adları en fazla %d karakter olabilir.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Kullanıcı adını yakın zamanda değiştirdin. %d gün sonra tekrar değiştirebilirsin. O zamana kadar yalnızca önceki kullanıcı adına geri dönebilirsin.</string>
+			<key>other</key>
+			<string>Kullanıcı adını yakın zamanda değiştirdin. %d gün sonra tekrar değiştirebilirsin. O zamana kadar yalnızca önceki kullanıcı adına geri dönebilirsin.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Kullanıcı adını değiştirmek mevcut QR kodunu ve bağlantını sıfırlar; ayrıca %d gün boyunca tekrar değiştiremezsin. Emin misin?</string>
+			<key>other</key>
+			<string>Kullanıcı adını değiştirmek mevcut QR kodunu ve bağlantını sıfırlar; ayrıca %d gün boyunca tekrar değiştiremezsin. Emin misin?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Bu işlem kullanıcı adını kaldırır, QR kodunu ve bağlantını devre dışı bırakır. “%2$@” kullanıcı adı %3$d gün boyunca sana ayrılmış kalır; bu süre içinde bir kullanıcı adı belirlersen %1$d gün boyunca tekrar değiştiremezsin. Son %1$d gün içinde kullanıcı adını değiştirdiysen, sildikten sonra yalnızca önceki kullanıcı adına dönebilirsin. Emin misin?</string>
+			<key>other</key>
+			<string>Bu işlem kullanıcı adını kaldırır, QR kodunu ve bağlantını devre dışı bırakır. “%2$@” kullanıcı adı %3$d gün boyunca sana ayrılmış kalır; bu süre içinde bir kullanıcı adı belirlersen %1$d gün boyunca tekrar değiştiremezsin. Son %1$d gün içinde kullanıcı adını değiştirdiysen, sildikten sonra yalnızca önceki kullanıcı adına dönebilirsin. Emin misin?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Kullanıcı adını %2$d günden kısa süre önce sildin; bu yüzden şimdi bir tane belirlemek de değişiklik sayılır: %d gün boyunca tekrar değiştiremezsin. Emin misin?</string>
+			<key>other</key>
+			<string>Kullanıcı adını %2$d günden kısa süre önce sildin; bu yüzden şimdi bir tane belirlemek de değişiklik sayılır: %d gün boyunca tekrar değiştiremezsin. Emin misin?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

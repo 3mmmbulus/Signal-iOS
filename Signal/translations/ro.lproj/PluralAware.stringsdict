@@ -2014,5 +2014,167 @@
 			<string>Numele de utilizator trebuie să înceapă cu cel puțin %1$d de caractere</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Poți seta un nume de utilizator peste %d zi</string>
+			<key>few</key>
+			<string>Poți seta un nume de utilizator peste %d zile</string>
+			<key>other</key>
+			<string>Poți seta un nume de utilizator peste %d de zile</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld membru</string>
+			<key>few</key>
+			<string>%ld membri</string>
+			<key>other</key>
+			<string>%ld de membri</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld autocolant</string>
+			<key>few</key>
+			<string>%ld autocolante</string>
+			<key>other</key>
+			<string>%ld de autocolante</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld piesă</string>
+			<key>few</key>
+			<string>%ld piese</string>
+			<key>other</key>
+			<string>%ld de piese</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Numele de utilizator pot avea cel mult %d caracter.</string>
+			<key>few</key>
+			<string>Numele de utilizator pot avea cel mult %d caractere.</string>
+			<key>other</key>
+			<string>Numele de utilizator pot avea cel mult %d de caractere.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Ți-ai schimbat recent numele de utilizator. Îl poți schimba din nou peste %d zi. Până atunci, poți reveni doar la numele de utilizator inițial.</string>
+			<key>few</key>
+			<string>Ți-ai schimbat recent numele de utilizator. Îl poți schimba din nou peste %d zile. Până atunci, poți reveni doar la numele de utilizator inițial.</string>
+			<key>other</key>
+			<string>Ți-ai schimbat recent numele de utilizator. Îl poți schimba din nou peste %d de zile. Până atunci, poți reveni doar la numele de utilizator inițial.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Schimbarea numelui de utilizator va reseta codul QR și linkul existente, iar timp de %d zi nu îl vei mai putea schimba din nou. Ești sigur?</string>
+			<key>few</key>
+			<string>Schimbarea numelui de utilizator va reseta codul QR și linkul existente, iar timp de %d zile nu îl vei mai putea schimba din nou. Ești sigur?</string>
+			<key>other</key>
+			<string>Schimbarea numelui de utilizator va reseta codul QR și linkul existente, iar timp de %d de zile nu îl vei mai putea schimba din nou. Ești sigur?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Această acțiune îți va elimina numele de utilizator și îți va dezactiva codul QR și linkul. „%2$@” rămâne rezervat pentru tine timp de %3$d zile; dacă îți setezi un nume de utilizator în acest interval, nu îl vei mai putea schimba timp de %1$d zi. Dacă ți-ai schimbat numele de utilizator în ultima %1$d zi, după ștergere vei putea reveni doar la numele de utilizator inițial. Ești sigur?</string>
+			<key>few</key>
+			<string>Această acțiune îți va elimina numele de utilizator și îți va dezactiva codul QR și linkul. „%2$@” rămâne rezervat pentru tine timp de %3$d zile; dacă îți setezi un nume de utilizator în acest interval, nu îl vei mai putea schimba timp de %1$d zile. Dacă ți-ai schimbat numele de utilizator în ultimele %1$d zile, după ștergere vei putea reveni doar la numele de utilizator inițial. Ești sigur?</string>
+			<key>other</key>
+			<string>Această acțiune îți va elimina numele de utilizator și îți va dezactiva codul QR și linkul. „%2$@” rămâne rezervat pentru tine timp de %3$d zile; dacă îți setezi un nume de utilizator în acest interval, nu îl vei mai putea schimba timp de %1$d de zile. Dacă ți-ai schimbat numele de utilizator în ultimele %1$d de zile, după ștergere vei putea reveni doar la numele de utilizator inițial. Ești sigur?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Ți-ai șters numele de utilizator în urmă cu mai puțin de %2$d zile, așa că setarea unuia acum contează ca o schimbare: nu îl vei mai putea schimba timp de %d zi. Ești sigur?</string>
+			<key>few</key>
+			<string>Ți-ai șters numele de utilizator în urmă cu mai puțin de %2$d zile, așa că setarea unuia acum contează ca o schimbare: nu îl vei mai putea schimba timp de %d zile. Ești sigur?</string>
+			<key>other</key>
+			<string>Ți-ai șters numele de utilizator în urmă cu mai puțin de %2$d zile, așa că setarea unuia acum contează ca o schimbare: nu îl vei mai putea schimba timp de %d de zile. Ești sigur?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

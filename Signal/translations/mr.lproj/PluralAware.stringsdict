@@ -1788,5 +1788,149 @@
 			<string>वापरकर्ता नाव हे कमीत कमी %1$d वर्णांनी सुरू होणे आवश्यक आहे</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>तुम्ही %d दिवसानंतर वापरकर्तानाव सेट करू शकता</string>
+			<key>other</key>
+			<string>तुम्ही %d दिवसांनंतर वापरकर्तानाव सेट करू शकता</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld सदस्य</string>
+			<key>other</key>
+			<string>%ld सदस्य</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld स्टिकर</string>
+			<key>other</key>
+			<string>%ld स्टिकर</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld ट्रॅक</string>
+			<key>other</key>
+			<string>%ld ट्रॅक</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>वापरकर्तानावात जास्तीत जास्त %d अक्षर असू शकते.</string>
+			<key>other</key>
+			<string>वापरकर्तानावात जास्तीत जास्त %d अक्षरे असू शकतात.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>तुम्ही अलीकडे तुमचे वापरकर्तानाव बदलले आहे. तुम्ही ते %d दिवसानंतर पुन्हा बदलू शकता. तोपर्यंत तुम्ही फक्त तुमच्या मूळ वापरकर्तानावावर परत बदलू शकता.</string>
+			<key>other</key>
+			<string>तुम्ही अलीकडे तुमचे वापरकर्तानाव बदलले आहे. तुम्ही ते %d दिवसांनंतर पुन्हा बदलू शकता. तोपर्यंत तुम्ही फक्त तुमच्या मूळ वापरकर्तानावावर परत बदलू शकता.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>वापरकर्तानाव बदलल्याने तुमचा सध्याचा QR कोड आणि लिंक रीसेट होईल, आणि तुम्ही ते %d दिवस पुन्हा बदलू शकणार नाही. तुम्हाला खात्री आहे का?</string>
+			<key>other</key>
+			<string>वापरकर्तानाव बदलल्याने तुमचा सध्याचा QR कोड आणि लिंक रीसेट होईल, आणि तुम्ही ते %d दिवस पुन्हा बदलू शकणार नाही. तुम्हाला खात्री आहे का?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>यामुळे तुमचे वापरकर्तानाव काढून टाकले जाईल आणि तुमचा QR कोड व लिंक निष्क्रिय होईल. “%2$@” हे %3$d दिवस तुमच्यासाठी राखीव राहील; त्या काळात तुम्ही वापरकर्तानाव सेट केल्यास, तुम्ही ते %1$d दिवस पुन्हा बदलू शकणार नाही. तुम्ही गेल्या %1$d दिवसात तुमचे वापरकर्तानाव बदलले असल्यास, ते हटवल्यानंतर तुम्ही फक्त तुमच्या मूळ वापरकर्तानावावर परत बदलू शकता. तुम्हाला खात्री आहे का?</string>
+			<key>other</key>
+			<string>यामुळे तुमचे वापरकर्तानाव काढून टाकले जाईल आणि तुमचा QR कोड व लिंक निष्क्रिय होईल. “%2$@” हे %3$d दिवस तुमच्यासाठी राखीव राहील; त्या काळात तुम्ही वापरकर्तानाव सेट केल्यास, तुम्ही ते %1$d दिवस पुन्हा बदलू शकणार नाही. तुम्ही गेल्या %1$d दिवसांत तुमचे वापरकर्तानाव बदलले असल्यास, ते हटवल्यानंतर तुम्ही फक्त तुमच्या मूळ वापरकर्तानावावर परत बदलू शकता. तुम्हाला खात्री आहे का?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>तुम्ही तुमचे वापरकर्तानाव %2$d दिवसांपेक्षा कमी वेळापूर्वी हटवले होते, त्यामुळे आता ते सेट करणे हा बदल मानला जातो: तुम्ही ते %d दिवस पुन्हा बदलू शकणार नाही. तुम्हाला खात्री आहे का?</string>
+			<key>other</key>
+			<string>तुम्ही तुमचे वापरकर्तानाव %2$d दिवसांपेक्षा कमी वेळापूर्वी हटवले होते, त्यामुळे आता ते सेट करणे हा बदल मानला जातो: तुम्ही ते %d दिवस पुन्हा बदलू शकणार नाही. तुम्हाला खात्री आहे का?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

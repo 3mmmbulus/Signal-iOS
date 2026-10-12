@@ -2692,5 +2692,221 @@
 			<string>يجب أن تبدأ أسماء المُستخدِمين بـ %1$d رمزٍ على الأقل</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>يمكنك تعيين اسم مستخدم بعد %d أيام</string>
+			<key>one</key>
+			<string>يمكنك تعيين اسم مستخدم بعد %d يوم</string>
+			<key>two</key>
+			<string>يمكنك تعيين اسم مستخدم بعد %d يومين</string>
+			<key>few</key>
+			<string>يمكنك تعيين اسم مستخدم بعد %d أيام</string>
+			<key>many</key>
+			<string>يمكنك تعيين اسم مستخدم بعد %d يومًا</string>
+			<key>other</key>
+			<string>يمكنك تعيين اسم مستخدم بعد %d يوم</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>zero</key>
+			<string>%ld أعضاء</string>
+			<key>one</key>
+			<string>%ld عضو</string>
+			<key>two</key>
+			<string>%ld عضوان</string>
+			<key>few</key>
+			<string>%ld أعضاء</string>
+			<key>many</key>
+			<string>%ld عضوًا</string>
+			<key>other</key>
+			<string>%ld عضو</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>zero</key>
+			<string>%ld مُلصَقات</string>
+			<key>one</key>
+			<string>%ld مُلصَق</string>
+			<key>two</key>
+			<string>%ld مُلصَقان</string>
+			<key>few</key>
+			<string>%ld مُلصَقات</string>
+			<key>many</key>
+			<string>%ld مُلصَقًا</string>
+			<key>other</key>
+			<string>%ld مُلصَق</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>zero</key>
+			<string>%ld أغانٍ</string>
+			<key>one</key>
+			<string>%ld أغنية</string>
+			<key>two</key>
+			<string>%ld أغنيتان</string>
+			<key>few</key>
+			<string>%ld أغانٍ</string>
+			<key>many</key>
+			<string>%ld أغنيةً</string>
+			<key>other</key>
+			<string>%ld أغنية</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>يجب ألا يتجاوز اسم المستخدم %d أحرف.</string>
+			<key>one</key>
+			<string>يجب ألا يتجاوز اسم المستخدم %d حرف.</string>
+			<key>two</key>
+			<string>يجب ألا يتجاوز اسم المستخدم %d حرفين.</string>
+			<key>few</key>
+			<string>يجب ألا يتجاوز اسم المستخدم %d أحرف.</string>
+			<key>many</key>
+			<string>يجب ألا يتجاوز اسم المستخدم %d حرفًا.</string>
+			<key>other</key>
+			<string>يجب ألا يتجاوز اسم المستخدم %d حرف.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>غيّرتَ اسم المستخدم مؤخرًا. يمكنك تغييره مرة أخرى بعد %d أيام. حتى ذلك الحين، يمكنك فقط الرجوع إلى اسم المستخدم الأصلي.</string>
+			<key>one</key>
+			<string>غيّرتَ اسم المستخدم مؤخرًا. يمكنك تغييره مرة أخرى بعد %d يوم. حتى ذلك الحين، يمكنك فقط الرجوع إلى اسم المستخدم الأصلي.</string>
+			<key>two</key>
+			<string>غيّرتَ اسم المستخدم مؤخرًا. يمكنك تغييره مرة أخرى بعد %d يومين. حتى ذلك الحين، يمكنك فقط الرجوع إلى اسم المستخدم الأصلي.</string>
+			<key>few</key>
+			<string>غيّرتَ اسم المستخدم مؤخرًا. يمكنك تغييره مرة أخرى بعد %d أيام. حتى ذلك الحين، يمكنك فقط الرجوع إلى اسم المستخدم الأصلي.</string>
+			<key>many</key>
+			<string>غيّرتَ اسم المستخدم مؤخرًا. يمكنك تغييره مرة أخرى بعد %d يومًا. حتى ذلك الحين، يمكنك فقط الرجوع إلى اسم المستخدم الأصلي.</string>
+			<key>other</key>
+			<string>غيّرتَ اسم المستخدم مؤخرًا. يمكنك تغييره مرة أخرى بعد %d يوم. حتى ذلك الحين، يمكنك فقط الرجوع إلى اسم المستخدم الأصلي.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>سيؤدي تغيير اسم المستخدم إلى إعادة تعيين كود الـ QR والرابط الحاليين، ولن تتمكن من تغييره مرة أخرى لمدة %d أيام. هل أنت متأكد؟</string>
+			<key>one</key>
+			<string>سيؤدي تغيير اسم المستخدم إلى إعادة تعيين كود الـ QR والرابط الحاليين، ولن تتمكن من تغييره مرة أخرى لمدة %d يوم. هل أنت متأكد؟</string>
+			<key>two</key>
+			<string>سيؤدي تغيير اسم المستخدم إلى إعادة تعيين كود الـ QR والرابط الحاليين، ولن تتمكن من تغييره مرة أخرى لمدة %d يومين. هل أنت متأكد؟</string>
+			<key>few</key>
+			<string>سيؤدي تغيير اسم المستخدم إلى إعادة تعيين كود الـ QR والرابط الحاليين، ولن تتمكن من تغييره مرة أخرى لمدة %d أيام. هل أنت متأكد؟</string>
+			<key>many</key>
+			<string>سيؤدي تغيير اسم المستخدم إلى إعادة تعيين كود الـ QR والرابط الحاليين، ولن تتمكن من تغييره مرة أخرى لمدة %d يومًا. هل أنت متأكد؟</string>
+			<key>other</key>
+			<string>سيؤدي تغيير اسم المستخدم إلى إعادة تعيين كود الـ QR والرابط الحاليين، ولن تتمكن من تغييره مرة أخرى لمدة %d يوم. هل أنت متأكد؟</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>سيؤدي هذا إلى إزالة اسم المستخدم الخاص بك وتعطيل كود الـ QR والرابط الخاصين بك. يبقى “%2$@” محجوزًا لك لمدة %3$d يومًا؛ وإذا عيّنتَ اسم مستخدم خلال هذه المدة، فلن تتمكن من تغييره مرة أخرى لمدة %1$d أيام. وإذا غيّرتَ اسم المستخدم خلال آخر %1$d أيام، فلن تتمكن بعد حذفه إلا من الرجوع إلى اسم المستخدم الأصلي. هل أنت متأكد؟</string>
+			<key>one</key>
+			<string>سيؤدي هذا إلى إزالة اسم المستخدم الخاص بك وتعطيل كود الـ QR والرابط الخاصين بك. يبقى “%2$@” محجوزًا لك لمدة %3$d يومًا؛ وإذا عيّنتَ اسم مستخدم خلال هذه المدة، فلن تتمكن من تغييره مرة أخرى لمدة %1$d يوم. وإذا غيّرتَ اسم المستخدم خلال آخر %1$d يوم، فلن تتمكن بعد حذفه إلا من الرجوع إلى اسم المستخدم الأصلي. هل أنت متأكد؟</string>
+			<key>two</key>
+			<string>سيؤدي هذا إلى إزالة اسم المستخدم الخاص بك وتعطيل كود الـ QR والرابط الخاصين بك. يبقى “%2$@” محجوزًا لك لمدة %3$d يومًا؛ وإذا عيّنتَ اسم مستخدم خلال هذه المدة، فلن تتمكن من تغييره مرة أخرى لمدة %1$d يومين. وإذا غيّرتَ اسم المستخدم خلال آخر %1$d يومين، فلن تتمكن بعد حذفه إلا من الرجوع إلى اسم المستخدم الأصلي. هل أنت متأكد؟</string>
+			<key>few</key>
+			<string>سيؤدي هذا إلى إزالة اسم المستخدم الخاص بك وتعطيل كود الـ QR والرابط الخاصين بك. يبقى “%2$@” محجوزًا لك لمدة %3$d يومًا؛ وإذا عيّنتَ اسم مستخدم خلال هذه المدة، فلن تتمكن من تغييره مرة أخرى لمدة %1$d أيام. وإذا غيّرتَ اسم المستخدم خلال آخر %1$d أيام، فلن تتمكن بعد حذفه إلا من الرجوع إلى اسم المستخدم الأصلي. هل أنت متأكد؟</string>
+			<key>many</key>
+			<string>سيؤدي هذا إلى إزالة اسم المستخدم الخاص بك وتعطيل كود الـ QR والرابط الخاصين بك. يبقى “%2$@” محجوزًا لك لمدة %3$d يومًا؛ وإذا عيّنتَ اسم مستخدم خلال هذه المدة، فلن تتمكن من تغييره مرة أخرى لمدة %1$d يومًا. وإذا غيّرتَ اسم المستخدم خلال آخر %1$d يومًا، فلن تتمكن بعد حذفه إلا من الرجوع إلى اسم المستخدم الأصلي. هل أنت متأكد؟</string>
+			<key>other</key>
+			<string>سيؤدي هذا إلى إزالة اسم المستخدم الخاص بك وتعطيل كود الـ QR والرابط الخاصين بك. يبقى “%2$@” محجوزًا لك لمدة %3$d يومًا؛ وإذا عيّنتَ اسم مستخدم خلال هذه المدة، فلن تتمكن من تغييره مرة أخرى لمدة %1$d يوم. وإذا غيّرتَ اسم المستخدم خلال آخر %1$d يوم، فلن تتمكن بعد حذفه إلا من الرجوع إلى اسم المستخدم الأصلي. هل أنت متأكد؟</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>zero</key>
+			<string>لقد حذفتَ اسم المستخدم منذ أقل من %2$d يومًا، لذا يُعد تعيين اسم جديد الآن تغييرًا: لن تتمكن من تغييره مرة أخرى لمدة %d أيام. هل أنت متأكد؟</string>
+			<key>one</key>
+			<string>لقد حذفتَ اسم المستخدم منذ أقل من %2$d يومًا، لذا يُعد تعيين اسم جديد الآن تغييرًا: لن تتمكن من تغييره مرة أخرى لمدة %d يوم. هل أنت متأكد؟</string>
+			<key>two</key>
+			<string>لقد حذفتَ اسم المستخدم منذ أقل من %2$d يومًا، لذا يُعد تعيين اسم جديد الآن تغييرًا: لن تتمكن من تغييره مرة أخرى لمدة %d يومين. هل أنت متأكد؟</string>
+			<key>few</key>
+			<string>لقد حذفتَ اسم المستخدم منذ أقل من %2$d يومًا، لذا يُعد تعيين اسم جديد الآن تغييرًا: لن تتمكن من تغييره مرة أخرى لمدة %d أيام. هل أنت متأكد؟</string>
+			<key>many</key>
+			<string>لقد حذفتَ اسم المستخدم منذ أقل من %2$d يومًا، لذا يُعد تعيين اسم جديد الآن تغييرًا: لن تتمكن من تغييره مرة أخرى لمدة %d يومًا. هل أنت متأكد؟</string>
+			<key>other</key>
+			<string>لقد حذفتَ اسم المستخدم منذ أقل من %2$d يومًا، لذا يُعد تعيين اسم جديد الآن تغييرًا: لن تتمكن من تغييره مرة أخرى لمدة %d يوم. هل أنت متأكد؟</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

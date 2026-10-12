@@ -1788,5 +1788,149 @@ Prøv igjen om %1$d timer.</string>
 			<string>Brukernavnet må inneholde minst %1$d tegn.</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Du kan angi et brukernavn om %d dag</string>
+			<key>other</key>
+			<string>Du kan angi et brukernavn om %d dager</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld medlem</string>
+			<key>other</key>
+			<string>%ld medlemmer</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld klistremerke</string>
+			<key>other</key>
+			<string>%ld klistremerker</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld spor</string>
+			<key>other</key>
+			<string>%ld spor</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Brukernavn kan ha høyst %d tegn.</string>
+			<key>other</key>
+			<string>Brukernavn kan ha høyst %d tegn.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Du har nylig endret brukernavnet ditt. Du kan endre det igjen om %d dag. Frem til da kan du bare bytte tilbake til det opprinnelige brukernavnet.</string>
+			<key>other</key>
+			<string>Du har nylig endret brukernavnet ditt. Du kan endre det igjen om %d dager. Frem til da kan du bare bytte tilbake til det opprinnelige brukernavnet.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Hvis du endrer brukernavnet, tilbakestilles den eksisterende QR-koden og lenken din, og du kan ikke endre det igjen på %d dag. Er du sikker?</string>
+			<key>other</key>
+			<string>Hvis du endrer brukernavnet, tilbakestilles den eksisterende QR-koden og lenken din, og du kan ikke endre det igjen på %d dager. Er du sikker?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dette fjerner brukernavnet ditt og deaktiverer QR-koden og lenken din. «%2$@» forblir reservert for deg i %3$d dager; hvis du angir et brukernavn i løpet av den tiden, kan du ikke endre det igjen på %1$d dag. Hvis du har endret brukernavnet ditt i løpet av den siste %1$d dagen, kan du etter sletting bare bytte tilbake til det opprinnelige brukernavnet. Er du sikker?</string>
+			<key>other</key>
+			<string>Dette fjerner brukernavnet ditt og deaktiverer QR-koden og lenken din. «%2$@» forblir reservert for deg i %3$d dager; hvis du angir et brukernavn i løpet av den tiden, kan du ikke endre det igjen på %1$d dager. Hvis du har endret brukernavnet ditt i løpet av de siste %1$d dagene, kan du etter sletting bare bytte tilbake til det opprinnelige brukernavnet. Er du sikker?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Du slettet brukernavnet ditt for mindre enn %2$d dager siden, så å angi ett nå regnes som en endring: du kan ikke endre det igjen på %d dag. Er du sikker?</string>
+			<key>other</key>
+			<string>Du slettet brukernavnet ditt for mindre enn %2$d dager siden, så å angi ett nå regnes som en endring: du kan ikke endre det igjen på %d dager. Er du sikker?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

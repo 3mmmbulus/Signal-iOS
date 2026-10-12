@@ -1788,5 +1788,149 @@ Tente novamente em %1$d horas.</string>
 			<string>Os nomes de usuários precisam conter pelo menos %1$d caracteres</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Você poderá definir um nome de usuário em %d dia</string>
+			<key>other</key>
+			<string>Você poderá definir um nome de usuário em %d dias</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld membro</string>
+			<key>other</key>
+			<string>%ld membros</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld figurinha</string>
+			<key>other</key>
+			<string>%ld figurinhas</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld faixa</string>
+			<key>other</key>
+			<string>%ld faixas</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nomes de usuário devem ter no máximo %d caractere.</string>
+			<key>other</key>
+			<string>Nomes de usuário devem ter no máximo %d caracteres.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Você alterou seu nome de usuário recentemente. Você poderá alterá-lo novamente em %d dia. Até lá, só será possível voltar ao seu nome de usuário original.</string>
+			<key>other</key>
+			<string>Você alterou seu nome de usuário recentemente. Você poderá alterá-lo novamente em %d dias. Até lá, só será possível voltar ao seu nome de usuário original.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Alterar seu nome de usuário redefinirá seu código QR e seu link atuais, e você não poderá alterá-lo novamente por %d dia. Tem certeza?</string>
+			<key>other</key>
+			<string>Alterar seu nome de usuário redefinirá seu código QR e seu link atuais, e você não poderá alterá-lo novamente por %d dias. Tem certeza?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Isso removerá seu nome de usuário e desativará seu código QR e seu link. “%2$@” continua reservado para você por %3$d dias; se você definir um nome de usuário nesse período, não poderá alterá-lo novamente por %1$d dia. Se você alterou seu nome de usuário nos últimos %1$d dia, só poderá voltar ao seu nome de usuário original depois de apagá-lo. Tem certeza?</string>
+			<key>other</key>
+			<string>Isso removerá seu nome de usuário e desativará seu código QR e seu link. “%2$@” continua reservado para você por %3$d dias; se você definir um nome de usuário nesse período, não poderá alterá-lo novamente por %1$d dias. Se você alterou seu nome de usuário nos últimos %1$d dias, só poderá voltar ao seu nome de usuário original depois de apagá-lo. Tem certeza?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Você apagou seu nome de usuário há menos de %2$d dias, então defini-lo agora conta como uma alteração: você não poderá alterá-lo novamente por %d dia. Tem certeza?</string>
+			<key>other</key>
+			<string>Você apagou seu nome de usuário há menos de %2$d dias, então defini-lo agora conta como uma alteração: você não poderá alterá-lo novamente por %d dias. Tem certeza?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

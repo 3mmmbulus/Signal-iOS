@@ -1788,5 +1788,149 @@
 			<string>Минималан број знакова који мора бити на почетку корисничког имена је %1$d</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Корисничко име можете да поставите за %d дан</string>
+			<key>other</key>
+			<string>Корисничко име можете да поставите за %d дана</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld члан</string>
+			<key>other</key>
+			<string>Чланова: %ld</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld налепница</string>
+			<key>other</key>
+			<string>Налепница: %ld</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld песма</string>
+			<key>other</key>
+			<string>Песама: %ld</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Корисничка имена могу да имају највише %d знак.</string>
+			<key>other</key>
+			<string>Корисничка имена могу да имају највише %d знакова.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Недавно сте променили корисничко име. Поново можете да га промените за %d дан. До тада можете само да се вратите на своје првобитно корисничко име.</string>
+			<key>other</key>
+			<string>Недавно сте променили корисничко име. Поново можете да га промените за %d дана. До тада можете само да се вратите на своје првобитно корисничко име.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Променом корисничког имена ресетоваћете постојећи QR кôд и линк, а нећете моћи поново да га промените у наредних %d дан. Да ли сте сигурни?</string>
+			<key>other</key>
+			<string>Променом корисничког имена ресетоваћете постојећи QR кôд и линк, а нећете моћи поново да га промените у наредних %d дана. Да ли сте сигурни?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Ово ће уклонити ваше корисничко име и онемогућити ваш QR кôд и линк. „%2$@“ остаје резервисано за вас %3$d дана; ако у том периоду поставите корисничко име, нећете моћи поново да га промените у наредних %1$d дан. Ако сте променили корисничко име у последњих %1$d дан, након брисања можете само да се вратите на своје првобитно корисничко име. Да ли сте сигурни?</string>
+			<key>other</key>
+			<string>Ово ће уклонити ваше корисничко име и онемогућити ваш QR кôд и линк. „%2$@“ остаје резервисано за вас %3$d дана; ако у том периоду поставите корисничко име, нећете моћи поново да га промените у наредних %1$d дана. Ако сте променили корисничко име у последњих %1$d дана, након брисања можете само да се вратите на своје првобитно корисничко име. Да ли сте сигурни?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Избрисали сте корисничко име пре мање од %2$d дана, па се његово постављање сада рачуна као промена: нећете моћи поново да га промените у наредних %d дан. Да ли сте сигурни?</string>
+			<key>other</key>
+			<string>Избрисали сте корисничко име пре мање од %2$d дана, па се његово постављање сада рачуна као промена: нећете моћи поново да га промените у наредних %d дана. Да ли сте сигурни?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

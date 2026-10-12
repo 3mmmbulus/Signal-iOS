@@ -2240,5 +2240,185 @@ Spróbuj ponownie za %1$d godziny.</string>
 			<string>Pierwsza część nazwy użytkownika musi mieć co najmniej %1$d znaku</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nazwę użytkownika możesz ustawić za %d dzień</string>
+			<key>few</key>
+			<string>Nazwę użytkownika możesz ustawić za %d dni</string>
+			<key>many</key>
+			<string>Nazwę użytkownika możesz ustawić za %d dni</string>
+			<key>other</key>
+			<string>Nazwę użytkownika możesz ustawić za %d dnia</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld członek</string>
+			<key>few</key>
+			<string>%ld członków</string>
+			<key>many</key>
+			<string>%ld członków</string>
+			<key>other</key>
+			<string>%ld członka</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld naklejka</string>
+			<key>few</key>
+			<string>%ld naklejki</string>
+			<key>many</key>
+			<string>%ld naklejek</string>
+			<key>other</key>
+			<string>%ld naklejki</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld utwór</string>
+			<key>few</key>
+			<string>%ld utwory</string>
+			<key>many</key>
+			<string>%ld utworów</string>
+			<key>other</key>
+			<string>%ld utworu</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nazwa użytkownika może mieć maksymalnie %d znak.</string>
+			<key>few</key>
+			<string>Nazwa użytkownika może mieć maksymalnie %d znaki.</string>
+			<key>many</key>
+			<string>Nazwa użytkownika może mieć maksymalnie %d znaków.</string>
+			<key>other</key>
+			<string>Nazwa użytkownika może mieć maksymalnie %d znaku.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nazwa użytkownika została niedawno zmieniona. Możesz ją zmienić ponownie za %d dzień. Do tego czasu możesz tylko przywrócić pierwotną nazwę użytkownika.</string>
+			<key>few</key>
+			<string>Nazwa użytkownika została niedawno zmieniona. Możesz ją zmienić ponownie za %d dni. Do tego czasu możesz tylko przywrócić pierwotną nazwę użytkownika.</string>
+			<key>many</key>
+			<string>Nazwa użytkownika została niedawno zmieniona. Możesz ją zmienić ponownie za %d dni. Do tego czasu możesz tylko przywrócić pierwotną nazwę użytkownika.</string>
+			<key>other</key>
+			<string>Nazwa użytkownika została niedawno zmieniona. Możesz ją zmienić ponownie za %d dnia. Do tego czasu możesz tylko przywrócić pierwotną nazwę użytkownika.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Zmiana nazwy użytkownika zresetuje Twój obecny kod QR i link, a przez %d dzień nie będzie można jej zmienić ponownie. Czy na pewno?</string>
+			<key>few</key>
+			<string>Zmiana nazwy użytkownika zresetuje Twój obecny kod QR i link, a przez %d dni nie będzie można jej zmienić ponownie. Czy na pewno?</string>
+			<key>many</key>
+			<string>Zmiana nazwy użytkownika zresetuje Twój obecny kod QR i link, a przez %d dni nie będzie można jej zmienić ponownie. Czy na pewno?</string>
+			<key>other</key>
+			<string>Zmiana nazwy użytkownika zresetuje Twój obecny kod QR i link, a przez %d dnia nie będzie można jej zmienić ponownie. Czy na pewno?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Spowoduje to usunięcie Twojej nazwy użytkownika oraz wyłączenie kodu QR i linku. „%2$@” pozostanie zarezerwowana dla Ciebie przez %3$d dni; jeśli w tym czasie ustawisz nazwę użytkownika, przez %1$d dzień nie będzie można jej ponownie zmienić. Jeśli nazwa użytkownika była zmieniana w ciągu ostatniego %1$d dnia, po jej usunięciu możesz tylko przywrócić pierwotną nazwę użytkownika. Czy na pewno?</string>
+			<key>few</key>
+			<string>Spowoduje to usunięcie Twojej nazwy użytkownika oraz wyłączenie kodu QR i linku. „%2$@” pozostanie zarezerwowana dla Ciebie przez %3$d dni; jeśli w tym czasie ustawisz nazwę użytkownika, przez %1$d dni nie będzie można jej ponownie zmienić. Jeśli nazwa użytkownika była zmieniana w ciągu ostatnich %1$d dni, po jej usunięciu możesz tylko przywrócić pierwotną nazwę użytkownika. Czy na pewno?</string>
+			<key>many</key>
+			<string>Spowoduje to usunięcie Twojej nazwy użytkownika oraz wyłączenie kodu QR i linku. „%2$@” pozostanie zarezerwowana dla Ciebie przez %3$d dni; jeśli w tym czasie ustawisz nazwę użytkownika, przez %1$d dni nie będzie można jej ponownie zmienić. Jeśli nazwa użytkownika była zmieniana w ciągu ostatnich %1$d dni, po jej usunięciu możesz tylko przywrócić pierwotną nazwę użytkownika. Czy na pewno?</string>
+			<key>other</key>
+			<string>Spowoduje to usunięcie Twojej nazwy użytkownika oraz wyłączenie kodu QR i linku. „%2$@” pozostanie zarezerwowana dla Ciebie przez %3$d dni; jeśli w tym czasie ustawisz nazwę użytkownika, przez %1$d dnia nie będzie można jej ponownie zmienić. Jeśli nazwa użytkownika była zmieniana w ciągu ostatnich %1$d dnia, po jej usunięciu możesz tylko przywrócić pierwotną nazwę użytkownika. Czy na pewno?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Usunięto Twoją nazwę użytkownika mniej niż %2$d dni temu, więc jej ustawienie teraz liczy się jako zmiana: przez %d dzień nie będzie można zmienić jej ponownie. Czy na pewno?</string>
+			<key>few</key>
+			<string>Usunięto Twoją nazwę użytkownika mniej niż %2$d dni temu, więc jej ustawienie teraz liczy się jako zmiana: przez %d dni nie będzie można zmienić jej ponownie. Czy na pewno?</string>
+			<key>many</key>
+			<string>Usunięto Twoją nazwę użytkownika mniej niż %2$d dni temu, więc jej ustawienie teraz liczy się jako zmiana: przez %d dni nie będzie można zmienić jej ponownie. Czy na pewno?</string>
+			<key>other</key>
+			<string>Usunięto Twoją nazwę użytkownika mniej niż %2$d dni temu, więc jej ustawienie teraz liczy się jako zmiana: przez %d dnia nie będzie można zmienić jej ponownie. Czy na pewno?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

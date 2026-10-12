@@ -1788,5 +1788,149 @@
 			<string>نام کاربری باید با حداقل %1$d نویسه شروع شود</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d روز دیگر می‌توانید نام کاربری تعیین کنید</string>
+			<key>other</key>
+			<string>%d روز دیگر می‌توانید نام کاربری تعیین کنید</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld عضو</string>
+			<key>other</key>
+			<string>%ld عضو</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld استیکر</string>
+			<key>other</key>
+			<string>%ld استیکر</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld آهنگ</string>
+			<key>other</key>
+			<string>%ld آهنگ</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>نام کاربری می‌تواند حداکثر %d نویسه داشته باشد.</string>
+			<key>other</key>
+			<string>نام کاربری می‌تواند حداکثر %d نویسه داشته باشد.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>اخیراً نام کاربری خود را تغییر داده‌اید. %d روز دیگر می‌توانید دوباره آن را تغییر دهید. تا آن زمان فقط می‌توانید به نام کاربری اصلی‌تان برگردید.</string>
+			<key>other</key>
+			<string>اخیراً نام کاربری خود را تغییر داده‌اید. %d روز دیگر می‌توانید دوباره آن را تغییر دهید. تا آن زمان فقط می‌توانید به نام کاربری اصلی‌تان برگردید.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>تغییر نام کاربری، کد QR و پیوند فعلی شما را بازنشانی می‌کند و تا %d روز نمی‌توانید دوباره آن را تغییر دهید. مطمئن هستید؟</string>
+			<key>other</key>
+			<string>تغییر نام کاربری، کد QR و پیوند فعلی شما را بازنشانی می‌کند و تا %d روز نمی‌توانید دوباره آن را تغییر دهید. مطمئن هستید؟</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>این کار نام کاربری شما را حذف می‌کند و کد QR و پیوندتان را غیرفعال می‌کند. «%2$@» تا %3$d روز برای شما محفوظ می‌ماند؛ اگر در این مدت نام کاربری تعیین کنید، تا %1$d روز نمی‌توانید دوباره آن را تغییر دهید. اگر در %1$d روز گذشته نام کاربری خود را تغییر داده‌اید، پس از حذف فقط می‌توانید به نام کاربری اصلی‌تان برگردید. مطمئن هستید؟</string>
+			<key>other</key>
+			<string>این کار نام کاربری شما را حذف می‌کند و کد QR و پیوندتان را غیرفعال می‌کند. «%2$@» تا %3$d روز برای شما محفوظ می‌ماند؛ اگر در این مدت نام کاربری تعیین کنید، تا %1$d روز نمی‌توانید دوباره آن را تغییر دهید. اگر در %1$d روز گذشته نام کاربری خود را تغییر داده‌اید، پس از حذف فقط می‌توانید به نام کاربری اصلی‌تان برگردید. مطمئن هستید؟</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>کمتر از %2$d روز پیش نام کاربری خود را حذف کرده‌اید، بنابراین تعیین نام کاربری اکنون یک تغییر محسوب می‌شود: تا %d روز نمی‌توانید دوباره آن را تغییر دهید. مطمئن هستید؟</string>
+			<key>other</key>
+			<string>کمتر از %2$d روز پیش نام کاربری خود را حذف کرده‌اید، بنابراین تعیین نام کاربری اکنون یک تغییر محسوب می‌شود: تا %d روز نمی‌توانید دوباره آن را تغییر دهید. مطمئن هستید؟</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

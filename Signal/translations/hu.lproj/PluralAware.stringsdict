@@ -1788,5 +1788,149 @@ Próbáld meg %1$d óra múlva.</string>
 			<string>A felhasználóneveknek legalább %1$d karakterrel kell kezdődniük</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d nap múlva állíthatsz be felhasználónevet</string>
+			<key>other</key>
+			<string>%d nap múlva állíthatsz be felhasználónevet</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld tag</string>
+			<key>other</key>
+			<string>%ld tag</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld matrica</string>
+			<key>other</key>
+			<string>%ld matrica</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld dal</string>
+			<key>other</key>
+			<string>%ld dal</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>A felhasználónév legfeljebb %d karakterből állhat.</string>
+			<key>other</key>
+			<string>A felhasználónév legfeljebb %d karakterből állhat.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nemrég módosítottad a felhasználónevedet. %d nap múlva módosíthatod újra. Addig csak az eredeti felhasználónevedre változtathatod vissza.</string>
+			<key>other</key>
+			<string>Nemrég módosítottad a felhasználónevedet. %d nap múlva módosíthatod újra. Addig csak az eredeti felhasználónevedre változtathatod vissza.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>A felhasználóneved módosítása visszaállítja a meglévő QR-kódodat és hivatkozásodat, és %d napig nem módosíthatod újra. Biztos vagy benne?</string>
+			<key>other</key>
+			<string>A felhasználóneved módosítása visszaállítja a meglévő QR-kódodat és hivatkozásodat, és %d napig nem módosíthatod újra. Biztos vagy benne?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Ezzel eltávolítod a felhasználónevedet, és érvényteleníted a QR-kódodat és a hivatkozásodat. A(z) „%2$@” név %3$d napig számodra marad fenntartva; ha ez idő alatt új felhasználónevet állítasz be, %1$d napig nem módosíthatod újra. Ha az elmúlt %1$d napban módosítottad a felhasználónevedet, törlés után csak az eredeti felhasználónevedre változtathatod vissza. Biztos vagy benne?</string>
+			<key>other</key>
+			<string>Ezzel eltávolítod a felhasználónevedet, és érvényteleníted a QR-kódodat és a hivatkozásodat. A(z) „%2$@” név %3$d napig számodra marad fenntartva; ha ez idő alatt új felhasználónevet állítasz be, %1$d napig nem módosíthatod újra. Ha az elmúlt %1$d napban módosítottad a felhasználónevedet, törlés után csak az eredeti felhasználónevedre változtathatod vissza. Biztos vagy benne?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Kevesebb mint %2$d napja törölted a felhasználónevedet, ezért az új beállítása módosításnak számít: %d napig nem módosíthatod újra. Biztos vagy benne?</string>
+			<key>other</key>
+			<string>Kevesebb mint %2$d napja törölted a felhasználónevedet, ezért az új beállítása módosításnak számít: %d napig nem módosíthatod újra. Biztos vagy benne?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

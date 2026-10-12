@@ -1788,5 +1788,149 @@ Inténtalo de nuevo en %1$d horas.</string>
 			<string>Los alias deben comenzar con al menos %1$d caracteres</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Podrás establecer un alias dentro de %d día</string>
+			<key>other</key>
+			<string>Podrás establecer un alias dentro de %d días</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld miembro</string>
+			<key>other</key>
+			<string>%ld miembros</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld sticker</string>
+			<key>other</key>
+			<string>%ld stickers</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld canción</string>
+			<key>other</key>
+			<string>%ld canciones</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>El alias debe tener como máximo %d carácter.</string>
+			<key>other</key>
+			<string>El alias debe tener como máximo %d caracteres.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Has cambiado tu alias hace poco. Podrás volver a cambiarlo dentro de %d día. Hasta entonces, solo puedes volver a tu alias original.</string>
+			<key>other</key>
+			<string>Has cambiado tu alias hace poco. Podrás volver a cambiarlo dentro de %d días. Hasta entonces, solo puedes volver a tu alias original.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Si cambias tu alias, se restablecerán tu código QR y tu enlace actuales, y no podrás volver a cambiarlo durante %d día. ¿Seguro?</string>
+			<key>other</key>
+			<string>Si cambias tu alias, se restablecerán tu código QR y tu enlace actuales, y no podrás volver a cambiarlo durante %d días. ¿Seguro?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Se eliminará tu alias y se desactivarán tu código QR y tu enlace. “%2$@” seguirá reservado para ti durante %3$d días; si estableces un alias en ese tiempo, no podrás volver a cambiarlo durante %1$d día. Si has cambiado tu alias en el último %1$d día, solo podrás volver a tu alias original después de eliminarlo. ¿Seguro?</string>
+			<key>other</key>
+			<string>Se eliminará tu alias y se desactivarán tu código QR y tu enlace. “%2$@” seguirá reservado para ti durante %3$d días; si estableces un alias en ese tiempo, no podrás volver a cambiarlo durante %1$d días. Si has cambiado tu alias en los últimos %1$d días, solo podrás volver a tu alias original después de eliminarlo. ¿Seguro?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Has eliminado tu alias hace menos de %2$d días, así que establecer uno ahora cuenta como un cambio: no podrás volver a cambiarlo durante %d día. ¿Seguro?</string>
+			<key>other</key>
+			<string>Has eliminado tu alias hace menos de %2$d días, así que establecer uno ahora cuenta como un cambio: no podrás volver a cambiarlo durante %d días. ¿Seguro?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

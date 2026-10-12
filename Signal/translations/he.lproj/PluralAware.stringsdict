@@ -2240,5 +2240,185 @@
 			<string>שמות משתמש חייבים להכיל לפחות %1$d תווים</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>אפשר להגדיר שם משתמש בעוד %d יום</string>
+			<key>two</key>
+			<string>אפשר להגדיר שם משתמש בעוד %d ימים</string>
+			<key>many</key>
+			<string>אפשר להגדיר שם משתמש בעוד %d יום</string>
+			<key>other</key>
+			<string>אפשר להגדיר שם משתמש בעוד %d ימים</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld חבר</string>
+			<key>two</key>
+			<string>%ld חברים</string>
+			<key>many</key>
+			<string>%ld חברים</string>
+			<key>other</key>
+			<string>%ld חברים</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld מדבקה</string>
+			<key>two</key>
+			<string>%ld מדבקות</string>
+			<key>many</key>
+			<string>%ld מדבקות</string>
+			<key>other</key>
+			<string>%ld מדבקות</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld שיר</string>
+			<key>two</key>
+			<string>%ld שירים</string>
+			<key>many</key>
+			<string>%ld שירים</string>
+			<key>other</key>
+			<string>%ld שירים</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>שמות משתמש יכולים לכלול %d תו לכל היותר.</string>
+			<key>two</key>
+			<string>שמות משתמש יכולים לכלול %d תווים לכל היותר.</string>
+			<key>many</key>
+			<string>שמות משתמש יכולים לכלול %d תווים לכל היותר.</string>
+			<key>other</key>
+			<string>שמות משתמש יכולים לכלול %d תווים לכל היותר.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>שינית לאחרונה את שם המשתמש שלך. אפשר לשנות אותו שוב בעוד %d יום. עד אז אפשר רק לחזור לשם המשתמש המקורי שלך.</string>
+			<key>two</key>
+			<string>שינית לאחרונה את שם המשתמש שלך. אפשר לשנות אותו שוב בעוד %d ימים. עד אז אפשר רק לחזור לשם המשתמש המקורי שלך.</string>
+			<key>many</key>
+			<string>שינית לאחרונה את שם המשתמש שלך. אפשר לשנות אותו שוב בעוד %d יום. עד אז אפשר רק לחזור לשם המשתמש המקורי שלך.</string>
+			<key>other</key>
+			<string>שינית לאחרונה את שם המשתמש שלך. אפשר לשנות אותו שוב בעוד %d ימים. עד אז אפשר רק לחזור לשם המשתמש המקורי שלך.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>שינוי שם המשתמש יאפס את קוד ה-QR והקישור הקיימים שלך, ולא תהיה לך אפשרות לשנות אותו שוב במשך %d יום. להמשיך?</string>
+			<key>two</key>
+			<string>שינוי שם המשתמש יאפס את קוד ה-QR והקישור הקיימים שלך, ולא תהיה לך אפשרות לשנות אותו שוב במשך %d ימים. להמשיך?</string>
+			<key>many</key>
+			<string>שינוי שם המשתמש יאפס את קוד ה-QR והקישור הקיימים שלך, ולא תהיה לך אפשרות לשנות אותו שוב במשך %d יום. להמשיך?</string>
+			<key>other</key>
+			<string>שינוי שם המשתמש יאפס את קוד ה-QR והקישור הקיימים שלך, ולא תהיה לך אפשרות לשנות אותו שוב במשך %d ימים. להמשיך?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>פעולה זו תסיר את שם המשתמש שלך ותשבית את קוד ה-QR והקישור שלך. ”%2$@” נשאר שמור עבורך למשך %3$d ימים; אם תגדיר שם משתמש בזמן הזה, לא תהיה לך אפשרות לשנות אותו שוב במשך %1$d יום. אם שינית את שם המשתמש שלך במהלך %1$d היום האחרון, לאחר המחיקה תוכל רק לחזור לשם המשתמש המקורי. להמשיך?</string>
+			<key>two</key>
+			<string>פעולה זו תסיר את שם המשתמש שלך ותשבית את קוד ה-QR והקישור שלך. ”%2$@” נשאר שמור עבורך למשך %3$d ימים; אם תגדיר שם משתמש בזמן הזה, לא תהיה לך אפשרות לשנות אותו שוב במשך %1$d ימים. אם שינית את שם המשתמש שלך במהלך %1$d הימים האחרונים, לאחר המחיקה תוכל רק לחזור לשם המשתמש המקורי. להמשיך?</string>
+			<key>many</key>
+			<string>פעולה זו תסיר את שם המשתמש שלך ותשבית את קוד ה-QR והקישור שלך. ”%2$@” נשאר שמור עבורך למשך %3$d ימים; אם תגדיר שם משתמש בזמן הזה, לא תהיה לך אפשרות לשנות אותו שוב במשך %1$d יום. אם שינית את שם המשתמש שלך במהלך %1$d הימים האחרונים, לאחר המחיקה תוכל רק לחזור לשם המשתמש המקורי. להמשיך?</string>
+			<key>other</key>
+			<string>פעולה זו תסיר את שם המשתמש שלך ותשבית את קוד ה-QR והקישור שלך. ”%2$@” נשאר שמור עבורך למשך %3$d ימים; אם תגדיר שם משתמש בזמן הזה, לא תהיה לך אפשרות לשנות אותו שוב במשך %1$d ימים. אם שינית את שם המשתמש שלך במהלך %1$d הימים האחרונים, לאחר המחיקה תוכל רק לחזור לשם המשתמש המקורי. להמשיך?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>מחקת את שם המשתמש שלך לפני פחות מ-%2$d ימים, ולכן הגדרת שם משתמש עכשיו נחשבת לשינוי: לא תהיה לך אפשרות לשנות אותו שוב במשך %d יום. להמשיך?</string>
+			<key>two</key>
+			<string>מחקת את שם המשתמש שלך לפני פחות מ-%2$d ימים, ולכן הגדרת שם משתמש עכשיו נחשבת לשינוי: לא תהיה לך אפשרות לשנות אותו שוב במשך %d ימים. להמשיך?</string>
+			<key>many</key>
+			<string>מחקת את שם המשתמש שלך לפני פחות מ-%2$d ימים, ולכן הגדרת שם משתמש עכשיו נחשבת לשינוי: לא תהיה לך אפשרות לשנות אותו שוב במשך %d יום. להמשיך?</string>
+			<key>other</key>
+			<string>מחקת את שם המשתמש שלך לפני פחות מ-%2$d ימים, ולכן הגדרת שם משתמש עכשיו נחשבת לשינוי: לא תהיה לך אפשרות לשנות אותו שוב במשך %d ימים. להמשיך?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

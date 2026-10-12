@@ -2240,5 +2240,185 @@ Bandykite vėl po %1$d val.</string>
 			<string>Naudotojų vardai privalo prasidėti bent %1$d simbolių</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Naudotojo vardą galėsite nustatyti po %d dienos</string>
+			<key>few</key>
+			<string>Naudotojo vardą galėsite nustatyti po %d dienų</string>
+			<key>many</key>
+			<string>Naudotojo vardą galėsite nustatyti po %d dienos</string>
+			<key>other</key>
+			<string>Naudotojo vardą galėsite nustatyti po %d dienų</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld narys</string>
+			<key>few</key>
+			<string>%ld nariai</string>
+			<key>many</key>
+			<string>%ld nario</string>
+			<key>other</key>
+			<string>%ld narių</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld lipdukas</string>
+			<key>few</key>
+			<string>%ld lipdukai</string>
+			<key>many</key>
+			<string>%ld lipduko</string>
+			<key>other</key>
+			<string>%ld lipdukų</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld takelis</string>
+			<key>few</key>
+			<string>%ld takeliai</string>
+			<key>many</key>
+			<string>%ld takelio</string>
+			<key>other</key>
+			<string>%ld takelių</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Naudotojo vardas gali turėti ne daugiau kaip %d simbolį.</string>
+			<key>few</key>
+			<string>Naudotojo vardas gali turėti ne daugiau kaip %d simbolius.</string>
+			<key>many</key>
+			<string>Naudotojo vardas gali turėti ne daugiau kaip %d simbolio.</string>
+			<key>other</key>
+			<string>Naudotojo vardas gali turėti ne daugiau kaip %d simbolių.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Neseniai pakeitėte naudotojo vardą. Vėl jį pakeisti galėsite po %d dienos. Iki tol galėsite jį pakeisti tik atgal į pradinį naudotojo vardą.</string>
+			<key>few</key>
+			<string>Neseniai pakeitėte naudotojo vardą. Vėl jį pakeisti galėsite po %d dienų. Iki tol galėsite jį pakeisti tik atgal į pradinį naudotojo vardą.</string>
+			<key>many</key>
+			<string>Neseniai pakeitėte naudotojo vardą. Vėl jį pakeisti galėsite po %d dienos. Iki tol galėsite jį pakeisti tik atgal į pradinį naudotojo vardą.</string>
+			<key>other</key>
+			<string>Neseniai pakeitėte naudotojo vardą. Vėl jį pakeisti galėsite po %d dienų. Iki tol galėsite jį pakeisti tik atgal į pradinį naudotojo vardą.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Pakeitus naudotojo vardą, jūsų esamas QR kodas ir nuoroda bus nustatyti iš naujo, o vėl jo pakeisti negalėsite dar %d dieną. Ar tikrai?</string>
+			<key>few</key>
+			<string>Pakeitus naudotojo vardą, jūsų esamas QR kodas ir nuoroda bus nustatyti iš naujo, o vėl jo pakeisti negalėsite dar %d dienas. Ar tikrai?</string>
+			<key>many</key>
+			<string>Pakeitus naudotojo vardą, jūsų esamas QR kodas ir nuoroda bus nustatyti iš naujo, o vėl jo pakeisti negalėsite dar %d dienos. Ar tikrai?</string>
+			<key>other</key>
+			<string>Pakeitus naudotojo vardą, jūsų esamas QR kodas ir nuoroda bus nustatyti iš naujo, o vėl jo pakeisti negalėsite dar %d dienų. Ar tikrai?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Tai pašalins jūsų naudotojo vardą ir išjungs QR kodą bei nuorodą. „%2$@“ jums bus rezervuotas %3$d d.; jei per tą laiką nustatysite naudotojo vardą, vėl jo pakeisti negalėsite dar %1$d dieną. Jei naudotojo vardą keitėte per pastarąją %1$d dieną, jį ištrynę galėsite pakeisti tik atgal į pradinį. Ar tikrai?</string>
+			<key>few</key>
+			<string>Tai pašalins jūsų naudotojo vardą ir išjungs QR kodą bei nuorodą. „%2$@“ jums bus rezervuotas %3$d d.; jei per tą laiką nustatysite naudotojo vardą, vėl jo pakeisti negalėsite dar %1$d dienas. Jei naudotojo vardą keitėte per pastarąsias %1$d dienas, jį ištrynę galėsite pakeisti tik atgal į pradinį. Ar tikrai?</string>
+			<key>many</key>
+			<string>Tai pašalins jūsų naudotojo vardą ir išjungs QR kodą bei nuorodą. „%2$@“ jums bus rezervuotas %3$d d.; jei per tą laiką nustatysite naudotojo vardą, vėl jo pakeisti negalėsite dar %1$d dienos. Jei naudotojo vardą keitėte per pastarąsias %1$d dienos, jį ištrynę galėsite pakeisti tik atgal į pradinį. Ar tikrai?</string>
+			<key>other</key>
+			<string>Tai pašalins jūsų naudotojo vardą ir išjungs QR kodą bei nuorodą. „%2$@“ jums bus rezervuotas %3$d d.; jei per tą laiką nustatysite naudotojo vardą, vėl jo pakeisti negalėsite dar %1$d dienų. Jei naudotojo vardą keitėte per pastarąsias %1$d dienų, jį ištrynę galėsite pakeisti tik atgal į pradinį. Ar tikrai?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Naudotojo vardą ištrynėte mažiau nei prieš %2$d d., todėl jį nustačius dabar tai bus laikoma pakeitimu: vėl jo pakeisti negalėsite dar %d dieną. Ar tikrai?</string>
+			<key>few</key>
+			<string>Naudotojo vardą ištrynėte mažiau nei prieš %2$d d., todėl jį nustačius dabar tai bus laikoma pakeitimu: vėl jo pakeisti negalėsite dar %d dienas. Ar tikrai?</string>
+			<key>many</key>
+			<string>Naudotojo vardą ištrynėte mažiau nei prieš %2$d d., todėl jį nustačius dabar tai bus laikoma pakeitimu: vėl jo pakeisti negalėsite dar %d dienos. Ar tikrai?</string>
+			<key>other</key>
+			<string>Naudotojo vardą ištrynėte mažiau nei prieš %2$d d., todėl jį nustačius dabar tai bus laikoma pakeitimu: vėl jo pakeisti negalėsite dar %d dienų. Ar tikrai?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -2240,5 +2240,185 @@
 			<string>Імёны карыстальнікаў мусяць быць не меншы за %1$d сімвалаў</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Імя карыстальніка можна будзе ўсталяваць праз %d дзень</string>
+			<key>few</key>
+			<string>Імя карыстальніка можна будзе ўсталяваць праз %d дні</string>
+			<key>many</key>
+			<string>Імя карыстальніка можна будзе ўсталяваць праз %d дзён</string>
+			<key>other</key>
+			<string>Імя карыстальніка можна будзе ўсталяваць праз %d дня</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld удзельнік</string>
+			<key>few</key>
+			<string>%ld удзельнікі</string>
+			<key>many</key>
+			<string>%ld удзельнікаў</string>
+			<key>other</key>
+			<string>%ld удзельніка</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld стыкер</string>
+			<key>few</key>
+			<string>%ld стыкеры</string>
+			<key>many</key>
+			<string>%ld стыкераў</string>
+			<key>other</key>
+			<string>%ld стыкера</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld трэк</string>
+			<key>few</key>
+			<string>%ld трэкі</string>
+			<key>many</key>
+			<string>%ld трэкаў</string>
+			<key>other</key>
+			<string>%ld трэка</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Імя карыстальніка можа змяшчаць не больш за %d сімвал.</string>
+			<key>few</key>
+			<string>Імя карыстальніка можа змяшчаць не больш за %d сімвалы.</string>
+			<key>many</key>
+			<string>Імя карыстальніка можа змяшчаць не больш за %d сімвалаў.</string>
+			<key>other</key>
+			<string>Імя карыстальніка можа змяшчаць не больш за %d сімвала.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Вы нядаўна змянілі імя карыстальніка. Змяніць яго зноў можна будзе праз %d дзень. Да гэтага часу можна толькі вярнуць першапачатковае імя карыстальніка.</string>
+			<key>few</key>
+			<string>Вы нядаўна змянілі імя карыстальніка. Змяніць яго зноў можна будзе праз %d дні. Да гэтага часу можна толькі вярнуць першапачатковае імя карыстальніка.</string>
+			<key>many</key>
+			<string>Вы нядаўна змянілі імя карыстальніка. Змяніць яго зноў можна будзе праз %d дзён. Да гэтага часу можна толькі вярнуць першапачатковае імя карыстальніка.</string>
+			<key>other</key>
+			<string>Вы нядаўна змянілі імя карыстальніка. Змяніць яго зноў можна будзе праз %d дня. Да гэтага часу можна толькі вярнуць першапачатковае імя карыстальніка.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Пасля змены імя карыстальніка ваш бягучы QR-код і спасылка будуць скінуты, а змяніць яго зноў можна будзе толькі праз %d дзень. Вы ўпэўнены?</string>
+			<key>few</key>
+			<string>Пасля змены імя карыстальніка ваш бягучы QR-код і спасылка будуць скінуты, а змяніць яго зноў можна будзе толькі праз %d дні. Вы ўпэўнены?</string>
+			<key>many</key>
+			<string>Пасля змены імя карыстальніка ваш бягучы QR-код і спасылка будуць скінуты, а змяніць яго зноў можна будзе толькі праз %d дзён. Вы ўпэўнены?</string>
+			<key>other</key>
+			<string>Пасля змены імя карыстальніка ваш бягучы QR-код і спасылка будуць скінуты, а змяніць яго зноў можна будзе толькі праз %d дня. Вы ўпэўнены?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Гэта выдаліць ваша імя карыстальніка і адключыць ваш QR-код і спасылку. «%2$@» застанецца зарэзерваваным за вамі яшчэ %3$d дн.; калі вы ўсталюеце імя карыстальніка ў гэты час, змяніць яго зноў можна будзе толькі праз %1$d дзень. Калі вы змянілі імя карыстальніка за апошні %1$d дзень, пасля выдалення можна будзе толькі вярнуць першапачатковае імя карыстальніка. Вы ўпэўнены?</string>
+			<key>few</key>
+			<string>Гэта выдаліць ваша імя карыстальніка і адключыць ваш QR-код і спасылку. «%2$@» застанецца зарэзерваваным за вамі яшчэ %3$d дн.; калі вы ўсталюеце імя карыстальніка ў гэты час, змяніць яго зноў можна будзе толькі праз %1$d дні. Калі вы змянілі імя карыстальніка за апошнія %1$d дні, пасля выдалення можна будзе толькі вярнуць першапачатковае імя карыстальніка. Вы ўпэўнены?</string>
+			<key>many</key>
+			<string>Гэта выдаліць ваша імя карыстальніка і адключыць ваш QR-код і спасылку. «%2$@» застанецца зарэзерваваным за вамі яшчэ %3$d дн.; калі вы ўсталюеце імя карыстальніка ў гэты час, змяніць яго зноў можна будзе толькі праз %1$d дзён. Калі вы змянілі імя карыстальніка за апошнія %1$d дзён, пасля выдалення можна будзе толькі вярнуць першапачатковае імя карыстальніка. Вы ўпэўнены?</string>
+			<key>other</key>
+			<string>Гэта выдаліць ваша імя карыстальніка і адключыць ваш QR-код і спасылку. «%2$@» застанецца зарэзерваваным за вамі яшчэ %3$d дн.; калі вы ўсталюеце імя карыстальніка ў гэты час, змяніць яго зноў можна будзе толькі праз %1$d дня. Калі вы змянілі імя карыстальніка за апошнія %1$d дня, пасля выдалення можна будзе толькі вярнуць першапачатковае імя карыстальніка. Вы ўпэўнены?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Вы выдалілі імя карыстальніка менш чым %2$d дн. таму, таму ўсталяванне новага цяпер лічыцца зменай: змяніць яго зноў можна будзе толькі праз %d дзень. Вы ўпэўнены?</string>
+			<key>few</key>
+			<string>Вы выдалілі імя карыстальніка менш чым %2$d дн. таму, таму ўсталяванне новага цяпер лічыцца зменай: змяніць яго зноў можна будзе толькі праз %d дні. Вы ўпэўнены?</string>
+			<key>many</key>
+			<string>Вы выдалілі імя карыстальніка менш чым %2$d дн. таму, таму ўсталяванне новага цяпер лічыцца зменай: змяніць яго зноў можна будзе толькі праз %d дзён. Вы ўпэўнены?</string>
+			<key>other</key>
+			<string>Вы выдалілі імя карыстальніка менш чым %2$d дн. таму, таму ўсталяванне новага цяпер лічыцца зменай: змяніць яго зноў можна будзе толькі праз %d дня. Вы ўпэўнены?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

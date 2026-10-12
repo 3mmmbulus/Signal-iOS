@@ -1562,5 +1562,131 @@
 			<string>ئىشلەتكۈچى نامى ئاز دېگەندە %1$d ھەرپ بىلەن باشلانغان بولۇشى كېرەك</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d كۈندىن كېيىن ئىشلەتكۈچى نامى تەڭشىيەلەيسىز</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>other</key>
+			<string>%ld ئەزا</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>other</key>
+			<string>%ld چاپلاق</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>other</key>
+			<string>%ld ناخشا</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>ئىشلەتكۈچى نامى ئەڭ كۆپ بولغاندا %d ھەرپ بولۇشى كېرەك.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>ئىشلەتكۈچى نامىڭىزنى يېقىندا ئۆزگەرتتىڭىز. %d كۈندىن كېيىن قايتا ئۆزگەرتەلەيسىز. شۇ ۋاققىچە پەقەت ئەسلىدىكى ئىشلەتكۈچى نامىڭىزغا قايتىپ ئۆزگەرتەلەيسىز.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>ئىشلەتكۈچى نامىنى ئۆزگەرتسىڭىز، نۆۋەتتىكى QR كود ۋە ئۇلانمىڭىز قايتا تەڭشىلىدۇ، ھەمدە %d كۈن ئىچىدە قايتا ئۆزگەرتەلمەيسىز. جەزملەشتۈرەمسىز؟</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>بۇنداق قىلسىڭىز ئىشلەتكۈچى نامىڭىز ئۆچۈرۈلۈپ، QR كود ۋە ئۇلانمىڭىز ئىناۋەتسىز بولىدۇ. «%2$@» %3$d كۈن سىز ئۈچۈن ساقلىنىدۇ؛ بۇ ۋاقىت ئىچىدە ئىشلەتكۈچى نامى تەڭشىسىڭىز، %1$d كۈن ئىچىدە قايتا ئۆزگەرتەلمەيسىز. ئەگەر ئىشلەتكۈچى نامىڭىزنى يېقىنقى %1$d كۈن ئىچىدە ئۆزگەرتكەن بولسىڭىز، ئۆچۈرگەندىن كېيىن پەقەت ئەسلىدىكى ئىشلەتكۈچى نامىڭىزغىلا قايتىپ ئۆزگەرتەلەيسىز. جەزملەشتۈرەمسىز؟</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>ئىشلەتكۈچى نامىڭىزنى %2$d كۈندىن ئاز ۋاقىت بۇرۇن ئۆچۈرگەن، شۇڭا ھازىر تەڭشىسىڭىزمۇ بىر قېتىم ئۆزگەرتىش ھېسابلىنىدۇ: %d كۈن ئىچىدە قايتا ئۆزگەرتەلمەيسىز. جەزملەشتۈرەمسىز؟</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

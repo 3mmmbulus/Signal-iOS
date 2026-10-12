@@ -1788,5 +1788,149 @@ Versuche es in %1$d Stunden erneut.</string>
 			<string>Nutzernamen müssen aus mindestens %1$d Zeichen bestehen</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Du kannst in %d Tag einen Nutzernamen festlegen</string>
+			<key>other</key>
+			<string>Du kannst in %d Tagen einen Nutzernamen festlegen</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Mitglied</string>
+			<key>other</key>
+			<string>%ld Mitglieder</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Sticker</string>
+			<key>other</key>
+			<string>%ld Sticker</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Titel</string>
+			<key>other</key>
+			<string>%ld Titel</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Nutzernamen dürfen höchstens %d Zeichen lang sein.</string>
+			<key>other</key>
+			<string>Nutzernamen dürfen höchstens %d Zeichen lang sein.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Du hast deinen Nutzernamen kürzlich geändert. In %d Tag kannst du ihn erneut ändern. Bis dahin kannst du nur zu deinem ursprünglichen Nutzernamen zurückwechseln.</string>
+			<key>other</key>
+			<string>Du hast deinen Nutzernamen kürzlich geändert. In %d Tagen kannst du ihn erneut ändern. Bis dahin kannst du nur zu deinem ursprünglichen Nutzernamen zurückwechseln.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Wenn du deinen Nutzernamen änderst, werden dein bisheriger QR-Code und dein Link zurückgesetzt, und du kannst ihn %d Tag lang nicht erneut ändern. Bist du sicher?</string>
+			<key>other</key>
+			<string>Wenn du deinen Nutzernamen änderst, werden dein bisheriger QR-Code und dein Link zurückgesetzt, und du kannst ihn %d Tage lang nicht erneut ändern. Bist du sicher?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dadurch wird dein Nutzername entfernt und dein QR-Code und dein Link werden deaktiviert. »%2$@« bleibt %3$d Tage lang für dich reserviert; wenn du in dieser Zeit einen Nutzernamen festlegst, kannst du ihn %1$d Tag lang nicht erneut ändern. Wenn du deinen Nutzernamen vor weniger als %1$d Tag geändert hast, kannst du nach dem Löschen nur zu deinem ursprünglichen Nutzernamen zurückwechseln. Bist du sicher?</string>
+			<key>other</key>
+			<string>Dadurch wird dein Nutzername entfernt und dein QR-Code und dein Link werden deaktiviert. »%2$@« bleibt %3$d Tage lang für dich reserviert; wenn du in dieser Zeit einen Nutzernamen festlegst, kannst du ihn %1$d Tage lang nicht erneut ändern. Wenn du deinen Nutzernamen vor weniger als %1$d Tagen geändert hast, kannst du nach dem Löschen nur zu deinem ursprünglichen Nutzernamen zurückwechseln. Bist du sicher?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Du hast deinen Nutzernamen vor weniger als %2$d Tagen gelöscht, daher gilt das Festlegen jetzt als Änderung: Du kannst ihn %d Tag lang nicht erneut ändern. Bist du sicher?</string>
+			<key>other</key>
+			<string>Du hast deinen Nutzernamen vor weniger als %2$d Tagen gelöscht, daher gilt das Festlegen jetzt als Änderung: Du kannst ihn %d Tage lang nicht erneut ändern. Bist du sicher?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -1788,5 +1788,149 @@ Probeer het over %1$d uur opnieuw.</string>
 			<string>Gebruikersnamen moeten beginnen met minimaal %1$d karakters</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Je kunt over %d dag een gebruikersnaam instellen</string>
+			<key>other</key>
+			<string>Je kunt over %d dagen een gebruikersnaam instellen</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld lid</string>
+			<key>other</key>
+			<string>%ld leden</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld sticker</string>
+			<key>other</key>
+			<string>%ld stickers</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld nummer</string>
+			<key>other</key>
+			<string>%ld nummers</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Gebruikersnamen mogen maximaal %d teken bevatten.</string>
+			<key>other</key>
+			<string>Gebruikersnamen mogen maximaal %d tekens bevatten.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Je hebt je gebruikersnaam onlangs gewijzigd. Je kunt hem over %d dag opnieuw wijzigen. Tot die tijd kun je alleen terug naar je oorspronkelijke gebruikersnaam.</string>
+			<key>other</key>
+			<string>Je hebt je gebruikersnaam onlangs gewijzigd. Je kunt hem over %d dagen opnieuw wijzigen. Tot die tijd kun je alleen terug naar je oorspronkelijke gebruikersnaam.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Als je je gebruikersnaam wijzigt, worden je bestaande QR-code en link gereset en kun je hem %d dag niet opnieuw wijzigen. Weet je het zeker?</string>
+			<key>other</key>
+			<string>Als je je gebruikersnaam wijzigt, worden je bestaande QR-code en link gereset en kun je hem %d dagen niet opnieuw wijzigen. Weet je het zeker?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Hiermee verwijder je je gebruikersnaam en worden je QR-code en link uitgeschakeld. “%2$@” blijft %3$d dagen voor je gereserveerd; als je in die tijd een gebruikersnaam instelt, kun je die %1$d dag niet opnieuw wijzigen. Als je je gebruikersnaam in de afgelopen %1$d dag hebt gewijzigd, kun je na het verwijderen alleen terug naar je oorspronkelijke gebruikersnaam. Weet je het zeker?</string>
+			<key>other</key>
+			<string>Hiermee verwijder je je gebruikersnaam en worden je QR-code en link uitgeschakeld. “%2$@” blijft %3$d dagen voor je gereserveerd; als je in die tijd een gebruikersnaam instelt, kun je die %1$d dagen niet opnieuw wijzigen. Als je je gebruikersnaam in de afgelopen %1$d dagen hebt gewijzigd, kun je na het verwijderen alleen terug naar je oorspronkelijke gebruikersnaam. Weet je het zeker?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Je hebt je gebruikersnaam minder dan %2$d dagen geleden verwijderd, dus een nieuwe instellen telt nu als een wijziging: je kunt hem %d dag niet opnieuw wijzigen. Weet je het zeker?</string>
+			<key>other</key>
+			<string>Je hebt je gebruikersnaam minder dan %2$d dagen geleden verwijderd, dus een nieuwe instellen telt nu als een wijziging: je kunt hem %d dagen niet opnieuw wijzigen. Weet je het zeker?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

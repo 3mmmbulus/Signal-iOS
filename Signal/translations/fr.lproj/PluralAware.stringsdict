@@ -1788,5 +1788,149 @@ Veuillez réessayer dans %1$d heures.</string>
 			<string>La première partie du nom d’utilisateur doit comporter au moins %1$d caractères</string>
 		</dict>
 	</dict>
+	<key>REGISTRATION_PROFILE_USERNAME_COOLDOWN_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vous pourrez définir un nom d'utilisateur dans %d jour</string>
+			<key>other</key>
+			<string>Vous pourrez définir un nom d'utilisateur dans %d jours</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_MEMBER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld membre</string>
+			<key>other</key>
+			<string>%ld membres</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_STICKER_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld sticker</string>
+			<key>other</key>
+			<string>%ld stickers</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_LINK_CARD_TRACK_COUNT_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld titre</string>
+			<key>other</key>
+			<string>%ld titres</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Les noms d'utilisateur ne peuvent pas dépasser %d caractère.</string>
+			<key>other</key>
+			<string>Les noms d'utilisateur ne peuvent pas dépasser %d caractères.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_COOLDOWN_ERROR_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vous avez récemment changé de nom d'utilisateur. Vous pourrez le modifier à nouveau dans %d jour. D'ici là, vous pouvez seulement revenir à votre nom d'utilisateur d'origine.</string>
+			<key>other</key>
+			<string>Vous avez récemment changé de nom d'utilisateur. Vous pourrez le modifier à nouveau dans %d jours. D'ici là, vous pouvez seulement revenir à votre nom d'utilisateur d'origine.</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE_TELLOMI_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Modifier votre nom d'utilisateur réinitialisera votre code QR et votre lien actuels, et vous ne pourrez plus le modifier pendant %d jour. Voulez-vous vraiment continuer ?</string>
+			<key>other</key>
+			<string>Modifier votre nom d'utilisateur réinitialisera votre code QR et votre lien actuels, et vous ne pourrez plus le modifier pendant %d jours. Voulez-vous vraiment continuer ?</string>
+		</dict>
+	</dict>
+	<key>PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_TELLOMI_%d_%@_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Cette action supprimera votre nom d'utilisateur et désactivera votre code QR et votre lien. « %2$@ » reste réservé pour vous pendant %3$d jours ; si vous définissez un nom d'utilisateur pendant ce délai, vous ne pourrez plus le modifier pendant %1$d jour. Si vous avez modifié votre nom d'utilisateur il y a moins de %1$d jour, vous ne pourrez revenir qu'à votre nom d'utilisateur d'origine après l'avoir supprimé. Voulez-vous vraiment continuer ?</string>
+			<key>other</key>
+			<string>Cette action supprimera votre nom d'utilisateur et désactivera votre code QR et votre lien. « %2$@ » reste réservé pour vous pendant %3$d jours ; si vous définissez un nom d'utilisateur pendant ce délai, vous ne pourrez plus le modifier pendant %1$d jours. Si vous avez modifié votre nom d'utilisateur il y a moins de %1$d jours, vous ne pourrez revenir qu'à votre nom d'utilisateur d'origine après l'avoir supprimé. Voulez-vous vraiment continuer ?</string>
+		</dict>
+	</dict>
+	<key>USERNAME_SELECTION_SET_AFTER_DELETE_CONFIRMATION_MESSAGE_TELLOMI_%d_%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vous avez supprimé votre nom d'utilisateur il y a moins de %2$d jours ; en définir un maintenant compte donc comme une modification : vous ne pourrez plus le modifier pendant %d jour. Voulez-vous vraiment continuer ?</string>
+			<key>other</key>
+			<string>Vous avez supprimé votre nom d'utilisateur il y a moins de %2$d jours ; en définir un maintenant compte donc comme une modification : vous ne pourrez plus le modifier pendant %d jours. Voulez-vous vraiment continuer ?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

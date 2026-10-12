@@ -10948,7 +10948,7 @@
 "TELLOMI_LINK_CARD_TELLOMI_USER" = "Tellomi 用户";
 
 /* Tellomi (ADR-0063 §6.1): asks before opening a link whose domain imitates a well-known one; %1$@ is the well-known domain */
-"TELLOMI_LINK_OPEN_LOOKALIKE_MESSAGE" = "这个链接的域名与 %1$@ 相似，但不是它";
+"TELLOMI_LINK_OPEN_LOOKALIKE_MESSAGE" = "这个链接的域名看起来像 %1$@，但它并不是 %1$@";
 
 /* Tellomi (ADR-0063 §6.1): button that opens a link whose domain imitates a well-known one anyway */
 "TELLOMI_LINK_OPEN_OPEN_ANYWAY" = "继续打开";
