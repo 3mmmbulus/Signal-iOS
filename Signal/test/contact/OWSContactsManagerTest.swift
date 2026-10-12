@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import Contacts
 import LibSignalClient
 import XCTest
 
@@ -399,5 +400,64 @@ class OWSContactsManagerTest: SignalBaseTest {
         XCTAssertEqual(OWSContactsManager.tellomiEditingAuthorization(isEditingAllowed: true, status: .authorized), .authorized)
         XCTAssertEqual(OWSContactsManager.tellomiEditingAuthorization(isEditingAllowed: true, status: .limited), .authorized)
         XCTAssertEqual(OWSContactsManager.tellomiEditingAuthorization(isEditingAllowed: false, status: .authorized), .notAllowed)
+    }
+
+    // MARK: - Tellomi：没有 CDSI 时显示通讯录里存的名字（tellomi/tellomi#1346）
+
+    /// 规则：有 CDSI 时照上游，只认 CDS 标过「可发现」的号码；没有 CDSI 时，本机已知、已注册的号码直接认，不查询。
+    func testTellomiSavedNamesMatchKnownRegisteredNumbersOnlyWithoutCDSI() {
+        let (registered, unregistered) = SSKEnvironment.shared.databaseStorageRef.write { tx in
+            (
+                try! SignalRecipient.insertRecord(aci: .randomForTesting(), phoneNumber: E164("+16505550111")!, deviceIds: [.primary], tx: tx),
+                try! SignalRecipient.insertRecord(aci: .randomForTesting(), phoneNumber: E164("+16505550112")!, tx: tx),
+            )
+        }
+        XCTAssertTrue(OWSContactsManager.canShowSystemContactName(for: registered, cdsiAvailable: false))
+        XCTAssertFalse(OWSContactsManager.canShowSystemContactName(for: unregistered, cdsiAvailable: false), "没注册的号码不当成 Tellomi 用户")
+        XCTAssertFalse(OWSContactsManager.canShowSystemContactName(for: registered, cdsiAvailable: true), "有 CDSI 时照上游，要 CDS 标过可发现")
+    }
+
+    /// 端到端：授权通讯录后同步一次，存进通讯录的 Tellomi 用户显示存的名字；没注册的号码不建账户。
+    func testTellomiSyncShowsSavedNamesForKnownUsersWithoutCDSI() async throws {
+        XCTAssertFalse(TSConstants.cdsiAvailable, "这条用例跑的是 Tellomi 的档：没有 CDSI")
+        let userAci = Aci.randomForTesting()
+        let userNumber = E164("+16505550121")!
+        let strangerNumber = E164("+16505550122")!
+        await SSKEnvironment.shared.databaseStorageRef.awaitableWrite { tx in
+            _ = try! SignalRecipient.insertRecord(aci: userAci, phoneNumber: userNumber, deviceIds: [.primary], tx: tx)
+            _ = try! SignalRecipient.insertRecord(aci: .randomForTesting(), phoneNumber: strangerNumber, tx: tx)
+        }
+        let contactsManager = SSKEnvironment.shared.contactManagerImplRef
+
+        contactsManager.updateContacts(
+            [
+                makeSystemContact(givenName: "Ada", familyName: "Lovelace", phoneNumber: "+1 650-555-0121"),
+                makeSystemContact(givenName: "Bob", familyName: "Builder", phoneNumber: "+1 650-555-0122"),
+            ],
+            isUserRequested: true,
+        )
+
+        var account: SignalAccount?
+        let deadline = Date().addingTimeInterval(10)
+        while account == nil, Date() < deadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+            account = SSKEnvironment.shared.databaseStorageRef.read { tx in
+                contactsManager.fetchSignalAccount(forPhoneNumber: userNumber.stringValue, transaction: tx)
+            }
+        }
+        XCTAssertEqual(account?.givenName, "Ada")
+        XCTAssertEqual(account?.recipientServiceId, userAci)
+        let strangerAccount = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            contactsManager.fetchSignalAccount(forPhoneNumber: strangerNumber.stringValue, transaction: tx)
+        }
+        XCTAssertNil(strangerAccount, "没注册的号码只是通讯录里的人，不建账户")
+    }
+
+    private func makeSystemContact(givenName: String, familyName: String, phoneNumber: String) -> SystemContact {
+        let contact = CNMutableContact()
+        contact.givenName = givenName
+        contact.familyName = familyName
+        contact.phoneNumbers = [CNLabeledValue(label: CNLabelPhoneNumberMobile, value: CNPhoneNumber(stringValue: phoneNumber))]
+        return SystemContact(cnContact: contact)
     }
 }

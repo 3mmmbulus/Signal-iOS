@@ -721,12 +721,22 @@ extension OWSContactsManager: ContactManager {
         let recipientDatabaseTable = DependenciesBridge.shared.recipientDatabaseTable
         for phoneNumber in [canonicalPhoneNumber.rawValue] + canonicalPhoneNumber.alternatePhoneNumbers() {
             let recipient = recipientDatabaseTable.fetchRecipient(phoneNumber: phoneNumber.stringValue, transaction: tx)
-            guard let recipient, recipient.isPhoneNumberDiscoverable else {
+            guard let recipient, Self.canShowSystemContactName(for: recipient, cdsiAvailable: TSConstants.cdsiAvailable) else {
                 continue
             }
             return recipient
         }
         return nil
+    }
+
+    /// Tellomi (tellomi/tellomi#1346): this deployment has no CDSI, so no number is ever marked discoverable and the
+    /// names people saved in their address book would never show. Without CDSI, a registered recipient whose number this
+    /// device already knows is matched locally instead: no lookup, nothing sent anywhere to find people.
+    static func canShowSystemContactName(for recipient: SignalRecipient, cdsiAvailable: Bool) -> Bool {
+        if recipient.isPhoneNumberDiscoverable {
+            return true
+        }
+        return !cdsiAvailable && recipient.isRegistered
     }
 
     private func buildSignalAccounts(
