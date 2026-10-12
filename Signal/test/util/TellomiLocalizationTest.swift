@@ -338,3 +338,33 @@ final class TellomiStringsdictBrandTest: XCTestCase {
         }
     }
 }
+
+/// 跨境告知、同意勾选与首次启动提示是法律文本，只有 zh_CN / zh_HK / zh_TW / en 四种定稿（privacy-compliance-hk-cross-border §6.3）。
+/// 其余语言显示英文定稿，粤语显示繁体（香港）定稿，不放未经审定的翻译。
+final class TellomiLegalTextLanguagesTest: XCTestCase {
+
+    private static let legalPrefixes = ["TELLOMI_CROSS_BORDER_", "TELLOMI_CONSENT_", "TELLOMI_FIRST_LAUNCH_"]
+
+    func testOtherLanguagesShowTheReviewedText() throws {
+        let english = try localizable("en")
+        let hongKong = try localizable("zh_HK")
+        let legalKeys = english.keys.filter { key in Self.legalPrefixes.contains { key.hasPrefix($0) } }
+        XCTAssertGreaterThan(legalKeys.count, 40)
+        let localizations = Bundle.main.app.localizations.filter { !["Base", "en", "zh_CN", "zh_HK", "zh_TW"].contains($0) }
+        XCTAssertGreaterThan(localizations.count, 10, "\(localizations)")
+        for localization in localizations {
+            let table = try localizable(localization)
+            let reviewed = localization == "yue" ? hongKong : english
+            let drifted = legalKeys.filter { key in table[key].map { $0 != reviewed[key] } ?? false }.sorted()
+            XCTAssertEqual(drifted, [], localization)
+        }
+    }
+
+    private func localizable(_ localization: String) throws -> [String: String] {
+        let path = try XCTUnwrap(
+            Bundle.main.app.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: localization),
+            "no Localizable.strings for \(localization)",
+        )
+        return try XCTUnwrap(NSDictionary(contentsOfFile: path) as? [String: String], "unreadable table for \(localization)")
+    }
+}

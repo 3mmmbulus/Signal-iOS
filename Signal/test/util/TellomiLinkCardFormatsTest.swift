@@ -169,34 +169,25 @@ final class TellomiLinkCardFormatsTest: XCTestCase {
         }
     }
 
-    /// 没有这几条复数文案的语言（Signal 翻译过的几十种语言）：回落到英文，数字按那个地区排，不是把键名显示出来。
-    func testALanguageWithoutTheKeysFallsBackToEnglishPlurals() throws {
-        // `hasOne`：该语言的复数规则里 1 是「一」（德语、法语），所以 1 读「1 member」；日语没有单复数。
-        let fallbackLanguages: [(folder: String, locale: String, hasOne: Bool)] = [("de", "de_DE", true), ("fr", "fr_FR", true), ("ja", "ja_JP", false)]
-        var tested = [String]()
-        for (folder, localeIdentifier, hasOne) in fallbackLanguages {
-            guard let bundle = languageBundle(folder), bundle.path(forResource: "PluralAware", ofType: "stringsdict") != nil else {
-                continue
-            }
+    /// 其他语言（tellomi/tellomi#1526 补译以后都有这几条复数文案）：按那种语言自己的复数显示，不回落英文、不显示键名。
+    /// 缺键时回落英文的机制由 `TellomiLocalizationTest` 用合成的语言表测，不再依赖哪种真实语言缺键。
+    func testTheBackfilledLanguagesUseTheirOwnPlurals() throws {
+        let languages: [(folder: String, locale: String, one: String, word: String)] = [
+            ("de", "de_DE", "1 Mitglied", "Mitglieder"),
+            ("fr", "fr_FR", "1 membre", "membres"),
+            ("ja", "ja_JP", "メンバー1人", "メンバー"),
+        ]
+        for (folder, localeIdentifier, one, word) in languages {
             let plural = try table(folder, "PluralAware", "stringsdict")
-            guard plural["TELLOMI_LINK_CARD_MEMBER_COUNT_%ld"] == nil else {
-                continue // 以后翻译平台补了这种语言，这条用例就换一种没有的语言
-            }
-            tested.append(folder)
+            XCTAssertNotNil(plural["TELLOMI_LINK_CARD_MEMBER_COUNT_%ld"], folder)
             let strings = try withLanguage(folder) { TellomiFirstPartyCard.Strings.localized(locale: Locale(identifier: localeIdentifier)) }
             try withLanguage(folder) {
-                let one = strings.memberCount(1)
+                XCTAssertEqual(strings.memberCount(1), one, folder)
                 let many = strings.memberCount(12345)
-                XCTAssertFalse(one.contains("TELLOMI") || many.contains("TELLOMI"), "\(folder)：不能显示键名：\(one) / \(many)")
-                XCTAssertTrue(one.hasPrefix("1 member"), "\(folder)：\(one)")
-                if hasOne {
-                    XCTAssertEqual(one, "1 member", folder)
-                }
-                XCTAssertTrue(many.hasSuffix(" members"), "\(folder)：\(many)")
-                XCTAssertTrue(many.hasPrefix("12") && many.contains("345"), "\(folder)：\(many)")
+                XCTAssertFalse(many.contains("TELLOMI"), "\(folder)：不能显示键名：\(many)")
+                XCTAssertTrue(many.contains(word) && many.contains("12") && many.contains("345"), "\(folder)：\(many)")
             }
         }
-        XCTAssertFalse(tested.isEmpty, "no language without the plural keys to test the fallback with")
     }
 
     // MARK: - §3.9 发布日期：按界面语言的「中等长度日期」，今年的不带年

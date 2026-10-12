@@ -1651,7 +1651,7 @@ class TellomiSavedCategoryTest: XCTestCase {
         XCTAssertEqual(tellomiLocalizedString("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_MEDIA", "zh_CN"), "图片与视频")
         XCTAssertEqual(tellomiLocalizedString("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_VOICE", "zh_TW"), "語音")
         XCTAssertEqual(tellomiLocalizedString("ALL_MEDIA_FILE_TYPE_TELLOMI_LINKS", "zh_HK"), "連結")
-        XCTAssertNil(tellomiLocalizedString("ALL_MEDIA_FILE_TYPE_TELLOMI_LINKS", "ja"))
+        XCTAssertNotNil(tellomiLocalizedString("ALL_MEDIA_FILE_TYPE_TELLOMI_LINKS", "ja"))
         XCTAssertEqual(TellomiSavedCategory.links.title, "Links")
     }
 }

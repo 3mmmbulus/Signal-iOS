@@ -314,11 +314,11 @@ class TellomiSavedMessagesForwardTest: SignalBaseTest {
         XCTAssertEqual(contacts.map(\.address), [other])
     }
 
-    func testTheSaveStringsAreTranslatedAndOtherLanguagesFallBackToEnglish() {
+    func testTheSaveStringsAreTranslated() {
         XCTAssertEqual(localizedString("CONTEXT_MENU_FORWARD_MESSAGE_TELLOMI_SAVE", "zh_CN"), "收藏")
         XCTAssertEqual(localizedString("FORWARD_MESSAGE_TELLOMI_SAVED_TOAST", "zh_CN"), "已收藏，点击查看")
         XCTAssertEqual(localizedString("CONTEXT_MENU_FORWARD_MESSAGE_TELLOMI_SAVE", "zh_TW"), "收藏")
-        XCTAssertNil(localizedString("CONTEXT_MENU_FORWARD_MESSAGE_TELLOMI_SAVE", "ja"))
+        XCTAssertNotNil(localizedString("CONTEXT_MENU_FORWARD_MESSAGE_TELLOMI_SAVE", "ja"))
 
         XCTAssertEqual(TellomiSavedMessagesStrings.save, "Save")
         XCTAssertEqual(TellomiSavedMessagesStrings.savedToast, "Saved to Saved Messages. Tap to view.")
