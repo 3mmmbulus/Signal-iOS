@@ -209,7 +209,7 @@
 "ALL_MEDIA_THUMBNAIL_LABEL_VIDEO" = "視像";
 
 /* Title for the view of all your signal connections */
-"ALL_SIGNAL_CONNECTIONS_TITLE" = "所有人脈";
+"ALL_SIGNAL_CONNECTIONS_TITLE" = "所有好友";
 
 /* notification body */
 "APN_Message" = "你可能有新訊息";
@@ -2336,7 +2336,7 @@
 "CONTACT_ABOUT_SHEET_SECONDARY_NAME_TOOLTIP_MESSAGE" = "「 %1$@ 」係呢個人喺 Tellomi 度幫自己改嘅個人檔名。";
 
 /* A label indicating a user is a signal connection. */
-"CONTACT_ABOUT_SHEET_SIGNAL_CONNECTION_LABEL" = "Tellomi 人脈";
+"CONTACT_ABOUT_SHEET_SIGNAL_CONNECTION_LABEL" = "好友";
 
 /* The title for a contact 'about' sheet. */
 "CONTACT_ABOUT_SHEET_TITLE" = "關於";
@@ -2582,7 +2582,7 @@
 "CONVERSATION_PICKER_SECTION_SIGNAL_CONTACTS" = "人";
 
 /* table section header for section containing stories */
-"CONVERSATION_PICKER_SECTION_STORIES" = "限時動態";
+"CONVERSATION_PICKER_SECTION_STORIES" = "快拍";
 
 /* navbar header */
 "CONVERSATION_PICKER_TITLE" = "揀選收件人";
@@ -4763,19 +4763,19 @@
 "GROUP_STORY_NAME_FORMAT" = "%1$@ 畀 %2$@";
 
 /* Text indicating you reacted to a group story (the header on the bubble says \"You\") */
-"GROUP_STORY_REPLY_REACTION_SECOND_PERSON" = "對限時動態傳送咗心情回應";
+"GROUP_STORY_REPLY_REACTION_SECOND_PERSON" = "對快拍傳送咗心情回應";
 
 /* Text indicating someone else reacted to a group story (the header on the bubble says their name, e.g. \"Bob\") */
-"GROUP_STORY_REPLY_REACTION_THIRD_PERSON" = "對限時動態傳送咗心情回應";
+"GROUP_STORY_REPLY_REACTION_THIRD_PERSON" = "對快拍傳送咗心情回應";
 
 /* Button to delete the story on the 'group story settings' view */
-"GROUP_STORY_SETTINGS_DELETE_BUTTON" = "移除群組限時動態";
+"GROUP_STORY_SETTINGS_DELETE_BUTTON" = "移除群組快拍";
 
 /* Action sheet title confirming deletion of a group story on the 'group story settings' view. Embeds {{ group name }} */
 "GROUP_STORY_SETTINGS_DELETE_CONFIRMATION_FORMAT" = "你係咪確定要移除「%1$@」？";
 
 /* Section footer for the 'viewers' section on the 'group story settings' view. Embeds {{ group name }} */
-"GROUP_STORY_SETTINGS_WHO_CAN_VIEW_THIS_FOOTER_FORMAT" = "「%1$@」群組聊天嘅成員可以瀏覽同埋回覆呢個限時動態。你可以更新呢個聊天嘅群組成員資格。";
+"GROUP_STORY_SETTINGS_WHO_CAN_VIEW_THIS_FOOTER_FORMAT" = "「%1$@」群組聊天嘅成員可以瀏覽同埋回覆呢個快拍。你可以更新呢個聊天嘅群組成員資格。";
 
 /* Section header for the 'viewers' section on the 'group story settings' view */
 "GROUP_STORY_SETTINGS_WHO_CAN_VIEW_THIS_HEADER" = "Who Can View This Story";
@@ -5390,7 +5390,7 @@
 "LINK_PREVIEW_UNKNOWN_DOMAIN" = "條拎嘅預覽";
 
 /* Shown in an alert when trying to edit a contact. */
-"LINKED_DEVICE_CONTACTS_NOT_ALLOWED" = "連結咗嘅裝置唔再支援管理系統通訊錄。如果要將 Tellomi 人脈加入電話通訊錄，請你喺主機度打開 Tellomi。";
+"LINKED_DEVICE_CONTACTS_NOT_ALLOWED" = "連結咗嘅裝置唔再支援管理系統通訊錄。如果要將好友加入電話通訊錄，請你喺主機度打開 Tellomi。";
 
 /* Bullet point on the linked devices info sheet, describing what can be linked. */
 "LINKED_DEVICE_INFO_SHEET_BULLET_1" = "你可以連結桌面電腦、平板電腦或者其他手機。";
@@ -6176,31 +6176,31 @@
 "MUTED_BADGE" = "靜咗音";
 
 /* Indicates that there are no sent stories to render */
-"MY_STORIES_NO_STORIES" = "您嘅限時動態更新會喺呢度顯示。";
+"MY_STORIES_NO_STORIES" = "您嘅快拍更新會喺呢度顯示。";
 
 /* Title for the visibility option */
 "MY_STORIES_SETTINGS_VISIBILITY_ALL_SIGNAL_CONNECTIONS_EXCEPT_TITLE" = "All Except...";
 
 /* Title for the visibility option */
-"MY_STORIES_SETTINGS_VISIBILITY_ALL_SIGNAL_CONNECTIONS_TITLE" = "所有 Tellomi 人脈";
+"MY_STORIES_SETTINGS_VISIBILITY_ALL_SIGNAL_CONNECTIONS_TITLE" = "所有好友";
 
 /* Title for the visibility option */
 "MY_STORIES_SETTINGS_VISIBILITY_ONLY_SHARE_WITH_TITLE" = "只係分享俾...";
 
 /* Title for the 'My Stories' view */
-"MY_STORIES_TITLE" = "我嘅限時動態";
+"MY_STORIES_TITLE" = "我嘅快拍";
 
 /* Name for the 'My Story' default story that sends to all the user's contacts. */
-"MY_STORY_NAME" = "我嘅限時動態";
+"MY_STORY_NAME" = "我嘅快拍";
 
 /* Subtitle shown on my story in the conversation picker when sending a story for the first time with unset my story privacy settings. */
-"MY_STORY_PICKER_UNSET_PRIVACY_SUBTITLE" = "選擇邊個可以睇到你嘅限時動態";
+"MY_STORY_PICKER_UNSET_PRIVACY_SUBTITLE" = "選擇邊個可以睇到你嘅快拍";
 
 /* Title for the my story settings sheet */
-"MY_STORY_SETTINGS_SHEET_TITLE" = "「我嘅限時動態」私隱設定";
+"MY_STORY_SETTINGS_SHEET_TITLE" = "「我嘅快拍」私隱設定";
 
 /* Title for the my story settings view */
-"MY_STORY_SETTINGS_TITLE" = "我嘅限時動態";
+"MY_STORY_SETTINGS_TITLE" = "我嘅快拍";
 
 /* Prompt to add to your story */
 "MY_STORY_TAP_TO_ADD" = "㩒一下嚟新增";
@@ -6293,22 +6293,22 @@
 "NEW_NONCONTACT_CONVERSATION_VIEW_TITLE" = "用電話冧把嚟搵";
 
 /* Title for the 'new private story' confirmation view */
-"NEW_PRIVATE_STORY_CONFIRM_TITLE" = "幫限時動態改個名";
+"NEW_PRIVATE_STORY_CONFIRM_TITLE" = "幫快拍改個名";
 
 /* Button to create a new private story */
 "NEW_PRIVATE_STORY_CREATE_BUTTON" = "建立";
 
 /* Message for error alert indicating that a story name is required. */
-"NEW_PRIVATE_STORY_MISSING_NAME_ALERT_MESSAGE" = "限時動態名稱未填。";
+"NEW_PRIVATE_STORY_MISSING_NAME_ALERT_MESSAGE" = "快拍名稱未填。";
 
 /* Title for error alert indicating that a story name is required. */
-"NEW_PRIVATE_STORY_MISSING_NAME_ALERT_TITLE" = "限時動態名稱未填";
+"NEW_PRIVATE_STORY_MISSING_NAME_ALERT_TITLE" = "快拍名稱未填";
 
 /* Section footer for the name text field on the 'new private story' creation view */
-"NEW_PRIVATE_STORY_NAME_FOOTER" = "只有你可以睇到呢個限時動態嘅名。";
+"NEW_PRIVATE_STORY_NAME_FOOTER" = "只有你可以睇到呢個快拍嘅名。";
 
 /* Placeholder text for a new private story name */
-"NEW_PRIVATE_STORY_NAME_PLACEHOLDER" = "限時動態名稱（一定要填㗎）";
+"NEW_PRIVATE_STORY_NAME_PLACEHOLDER" = "快拍名稱（一定要填㗎）";
 
 /* The title for the 'new private story' view. */
 "NEW_PRIVATE_STORY_VIEW_TITLE" = "選擇瀏覽者";
@@ -6323,13 +6323,13 @@
 "NEW_STORY_SHEET_CUSTOM_STORY_SUBTITLE" = "指定嘅人限定遊覽";
 
 /* Title for create custom story row on the 'new story sheet' */
-"NEW_STORY_SHEET_CUSTOM_STORY_TITLE" = "新增自訂限時動態";
+"NEW_STORY_SHEET_CUSTOM_STORY_TITLE" = "新增自訂快拍";
 
 /* Subtitle for create group story row on the 'new story sheet' */
 "NEW_STORY_SHEET_GROUP_STORY_SUBTITLE" = "分享畀現有嘅谷大惠遊覽";
 
 /* Title for create group story row on the 'new story sheet' */
-"NEW_STORY_SHEET_GROUP_STORY_TITLE" = "新嘅群組限時動態";
+"NEW_STORY_SHEET_GROUP_STORY_TITLE" = "新嘅群組快拍";
 
 /* Title for the table cell in conversation settings for presenting the profile nickname editor. */
 "NICKNAME_BUTTON_TITLE" = "花名";
@@ -7616,10 +7616,10 @@
 "PRIVATE_STORY_SETTINGS_ADD_VIEWER_BUTTON" = "加入瀏覽者";
 
 /* Button to delete the story on the 'private story settings' view */
-"PRIVATE_STORY_SETTINGS_DELETE_BUTTON" = "刪除自訂限時動態";
+"PRIVATE_STORY_SETTINGS_DELETE_BUTTON" = "刪除自訂快拍";
 
 /* Action sheet title confirming deletion of a private story on the 'private story settings' view. Embeds {{ $1%@ private story name }} */
-"PRIVATE_STORY_SETTINGS_DELETE_CONFIRMATION_FORMAT" = "係咪確定要刪除「%1$@」呀？分享到呢個限時動態嘅更新都會被刪除。";
+"PRIVATE_STORY_SETTINGS_DELETE_CONFIRMATION_FORMAT" = "係咪確定要刪除「%1$@」呀？分享到呢個快拍嘅更新都會被刪除。";
 
 /* Action sheet button to remove a viewer from a story on the 'private story settings' view. */
 "PRIVATE_STORY_SETTINGS_REMOVE_BUTTON" = "移除";
@@ -7799,13 +7799,13 @@
 "QUOTED_REPLY_ORIGINAL_MESSAGE_REMOTELY_SOURCED" = "搵唔到原來嘅訊息。";
 
 /* Label explaining that the content of a quoted message includes you reacting to someone's story. Embeds {{ %1$@ the story author }}. */
-"QUOTED_REPLY_REACTION_TO_STORY_FORMAT_SECOND_PERSON" = "對 %1$@ 嘅限時動態傳送咗心情回應";
+"QUOTED_REPLY_REACTION_TO_STORY_FORMAT_SECOND_PERSON" = "對 %1$@ 嘅快拍傳送咗心情回應";
 
 /* Label explaining that the content of a quoted message includes someone reacting to your story. */
-"QUOTED_REPLY_REACTION_TO_STORY_FORMAT_THIRD_PERSON" = "對你嘅限時動態傳送咗心情回應";
+"QUOTED_REPLY_REACTION_TO_STORY_FORMAT_THIRD_PERSON" = "對你嘅快拍傳送咗心情回應";
 
 /* Message header when you are quoting a story. Embeds {{ story author name }} */
-"QUOTED_REPLY_STORY_AUTHOR_INDICATOR_FORMAT" = "%1$@ · 限時動態";
+"QUOTED_REPLY_STORY_AUTHOR_INDICATOR_FORMAT" = "%1$@ · 快拍";
 
 /* Indicates this message is a quoted reply to an attachment of unknown type. */
 "QUOTED_REPLY_TYPE_ATTACHMENT" = "附件";
@@ -10010,10 +10010,10 @@
 "STORIES_DELETE_STORY_ACTION" = "刪除";
 
 /* Title asking the user if they are sure they want to delete their story */
-"STORIES_DELETE_STORY_ACTION_SHEET_TITLE" = "係咪要刪除呢個限時動態呀？系統會喺所有收到呢個限時動態嘅人嘅裝置度刪除埋佢㗎喎。";
+"STORIES_DELETE_STORY_ACTION_SHEET_TITLE" = "係咪要刪除呢個快拍呀？系統會喺所有收到呢個快拍嘅人嘅裝置度刪除埋佢㗎喎。";
 
 /* Title asking the user if they are sure they want to delete their story for themselves only. */
-"STORIES_DELETE_STORY_FOR_ME_ACTION_SHEET_TITLE" = "係咪刪除呢個限時動態？因為個谷解散咗，系統剩係會喺你度刪除個限時動態";
+"STORIES_DELETE_STORY_FOR_ME_ACTION_SHEET_TITLE" = "係咪刪除呢個快拍？因為個谷解散咗，系統剩係會喺你度刪除個快拍";
 
 /* Context menu action to forward the selected story */
 "STORIES_FORWARD_STORY_ACTION" = "轉寄";
@@ -10025,22 +10025,22 @@
 "STORIES_GROUP_REPLY_NOT_A_MEMBER" = "You can’t reply to this story because you’re no longer a member of this group.";
 
 /* Header for the hidden stories section of the stories list */
-"STORIES_HIDDEN_SECTION_HEADER" = "隱藏咗嘅限時動態";
+"STORIES_HIDDEN_SECTION_HEADER" = "隱藏咗嘅快拍";
 
 /* Context menu action to hide the selected story */
 "STORIES_HIDE_STORY_ACTION" = "隱藏是日花生";
 
 /* Message asking the user if they are sure they want to hide stories from {{other user's name}} */
-"STORIES_HIDE_STORY_ACTION_SHEET_MESSAGE" = "%1$@ 發佈嘅新限時動態唔會再出現喺限時動態清單嘅頂部。";
+"STORIES_HIDE_STORY_ACTION_SHEET_MESSAGE" = "%1$@ 發佈嘅新快拍唔會再出現喺快拍清單嘅頂部。";
 
 /* Title asking the user if they are sure they want to hide stories from another user */
-"STORIES_HIDE_STORY_ACTION_SHEET_TITLE" = "係咪要隱藏限時動態？";
+"STORIES_HIDE_STORY_ACTION_SHEET_TITLE" = "係咪要隱藏快拍？";
 
 /* Short context menu action to hide the selected story */
 "STORIES_HIDE_STORY_ACTION_SHORT" = "隱藏";
 
 /* Toast shown when a story is successfuly hidden */
-"STORIES_HIDE_STORY_CONFIRMATION_TOAST" = "隱藏咗限時動態";
+"STORIES_HIDE_STORY_CONFIRMATION_TOAST" = "隱藏咗快拍";
 
 /* Context menu action to view metadata about the story */
 "STORIES_INFO_ACTION" = "詳細";
@@ -10055,13 +10055,13 @@
 "STORIES_NO_STORIES_SUBTITLE" = "最新消息會喺度顯示。";
 
 /* Message shown in the Stories tab when the list is empty. */
-"STORIES_NO_STORIES_TITLE" = "唔見有限時動態";
+"STORIES_NO_STORIES_TITLE" = "唔見有快拍";
 
 /* Indicates that this story has no views yet */
 "STORIES_NO_VIEWS_YET" = "未有人遊覽";
 
 /* Section footer for the 'replies & reactions' section in stories settings */
-"STORIES_REPLIES_AND_REACTIONS_FOOTER" = "睇到你限時動態嘅人都可以俾心情回應同回覆。";
+"STORIES_REPLIES_AND_REACTIONS_FOOTER" = "睇到你快拍嘅人都可以俾心情回應同回覆。";
 
 /* Section header for the 'replies & reactions' section in stories settings */
 "STORIES_REPLIES_AND_REACTIONS_HEADER" = "回覆同心情回應";
@@ -10076,19 +10076,19 @@
 "STORIES_SAVE_STORY_ACTION" = "儲存";
 
 /* Footer for the 'Stories' section of the stories settings */
-"STORIES_SETTINGS_STORIES_FOOTER" = "限時動態更新會喺 24 小時後自動銷毀。你可以揀選限時動態嘅分享對象，亦可以為特定對象或者群組建立新嘅限時動態。";
+"STORIES_SETTINGS_STORIES_FOOTER" = "快拍更新會喺 24 小時後自動銷毀。你可以揀選快拍嘅分享對象，亦可以為特定對象或者群組建立新嘅快拍。";
 
 /* Header for the 'Stories' section of the stories settings */
-"STORIES_SETTINGS_STORIES_HEADER" = "限時動態";
+"STORIES_SETTINGS_STORIES_HEADER" = "快拍";
 
 /* Title for the action sheet confirming you want to turn off and delete all stories */
-"STORIES_SETTINGS_TURN_OFF_ACTION_SHEET_MESSAGE" = "你會冇得再分享或者瀏覽限時動態。你最近分享嘅限時動態更新都將會被刪除。";
+"STORIES_SETTINGS_TURN_OFF_ACTION_SHEET_MESSAGE" = "你會冇得再分享或者瀏覽快拍。你最近分享嘅快拍更新都將會被刪除。";
 
 /* Button to turn off and delete stories on the story privacy settings view */
-"STORIES_SETTINGS_TURN_OFF_AND_DELETE_STORIES_BUTTON" = "關閉同刪除限時動態";
+"STORIES_SETTINGS_TURN_OFF_AND_DELETE_STORIES_BUTTON" = "關閉同刪除快拍";
 
 /* Footer for the 'turn off' section of the stories settings */
-"STORIES_SETTINGS_TURN_OFF_FOOTER" = "如果你選擇閂咗限時動態，就冇得再分享自己或者睇其他人嘅限時動態㗎喇。";
+"STORIES_SETTINGS_TURN_OFF_FOOTER" = "如果你選擇閂咗快拍，就冇得再分享自己或者睇其他人嘅快拍㗎喇。";
 
 /* Button to turn off stories on the story privacy settings view */
 "STORIES_SETTINGS_TURN_OFF_STORIES_BUTTON" = "Turn Off Stories";
@@ -10103,7 +10103,7 @@
 "STORIES_SETTINGS_VIEW_RECEIPTS" = "瀏覽標記";
 
 /* Footer for the 'view receipts' section of the stories settings */
-"STORIES_SETTINGS_VIEW_RECEIPTS_FOOTER" = "當有人瀏覽限時動態嗰陣就可以睇到同分享。如果停用呢個功能，你就睇唔到其他人有冇瀏覽你嘅限時動態。";
+"STORIES_SETTINGS_VIEW_RECEIPTS_FOOTER" = "當有人瀏覽快拍嗰陣就可以睇到同分享。如果停用呢個功能，你就睇唔到其他人有冇瀏覽你嘅快拍。";
 
 /* Context menu action to share the selected story */
 "STORIES_SHARE_STORY_ACTION" = "分享";
@@ -10112,16 +10112,16 @@
 "STORIES_TITLE" = "榕樹台";
 
 /* Context menu action to unhide the selected story */
-"STORIES_UNHIDE_STORY_ACTION" = "取消隱藏限時動態";
+"STORIES_UNHIDE_STORY_ACTION" = "取消隱藏快拍";
 
 /* Short context menu action to unhide the selected story */
 "STORIES_UNHIDE_STORY_ACTION_SHORT" = "取消隱藏";
 
 /* Toast shown when a story is successfuly unhidden */
-"STORIES_UNHIDE_STORY_CONFIRMATION_TOAST" = "已經取消咗隱藏限時動態";
+"STORIES_UNHIDE_STORY_CONFIRMATION_TOAST" = "已經取消咗隱藏快拍";
 
 /* Text explaining that you will not see any views for your story because you have view receipts turned off */
-"STORIES_VIEWS_OFF_DESCRIPTION" = "啟用「瀏覽標記」就可以知道邊個睇過你嘅限時動態。";
+"STORIES_VIEWS_OFF_DESCRIPTION" = "啟用「瀏覽標記」就可以知道邊個睇過你嘅快拍。";
 
 /* Title text for the 'views' tab on the stories views & replies sheet */
 "STORIES_VIEWS_TAB" = "觀看";
@@ -10154,22 +10154,22 @@
 "STORY_PRIVACY_SETTINGS" = "私隱";
 
 /* Title for the story privacy settings view */
-"STORY_PRIVACY_TITLE" = "限時動態私隱設定";
+"STORY_PRIVACY_TITLE" = "快拍私隱設定";
 
 /* Text explaining that you reacted to someone else's story. Embeds {{ %1$@ reaction emoji, %2$@ story author name }}. */
-"STORY_REACTION_PREVIEW_FORMAT_SECOND_PERSON" = "你對 %2$@ 嘅限時動態傳送咗 %1$@ 心情回應";
+"STORY_REACTION_PREVIEW_FORMAT_SECOND_PERSON" = "你對 %2$@ 嘅快拍傳送咗 %1$@ 心情回應";
 
 /* Text explaining that someone reacted to your story. Embeds {{ %1$@ reaction emoji }}. */
-"STORY_REACTION_PREVIEW_FORMAT_THIRD_PERSON_REACTS_TO_SECOND_PERSON" = "對你嘅限時動態傳送咗 %1$@ 心情回應";
+"STORY_REACTION_PREVIEW_FORMAT_THIRD_PERSON_REACTS_TO_SECOND_PERSON" = "對你嘅快拍傳送咗 %1$@ 心情回應";
 
 /* Text explaining that someone reacted to another person's story. Embeds {{ %1$@ reaction author's name, %2$@ reaction emoji, %3$@ story author name }}. */
-"STORY_REACTION_PREVIEW_FORMAT_THIRD_PERSON_REACTS_TO_THIRD_PERSON" = "%1$@ 對 %3$@ 嘅限時動態傳送咗 %2$@ 心情回應";
+"STORY_REACTION_PREVIEW_FORMAT_THIRD_PERSON_REACTS_TO_THIRD_PERSON" = "%1$@ 對 %3$@ 嘅快拍傳送咗 %2$@ 心情回應";
 
 /* quote text for a reaction to a story by the user (the header on the bubble says \"You\"). Embeds {{reaction emoji}} */
-"STORY_REACTION_QUOTE_FORMAT_SECOND_PERSON" = "對限時動態傳送咗 %1$@ 心情回應";
+"STORY_REACTION_QUOTE_FORMAT_SECOND_PERSON" = "對快拍傳送咗 %1$@ 心情回應";
 
 /* quote text for a reaction to a story by some other user (the header on the bubble says their name, e.g. \"Bob\"). Embeds {{reaction emoji}} */
-"STORY_REACTION_QUOTE_FORMAT_THIRD_PERSON" = "對限時動態傳送咗 %1$@ 心情回應";
+"STORY_REACTION_QUOTE_FORMAT_THIRD_PERSON" = "對快拍傳送咗 %1$@ 心情回應";
 
 /* Button for replying to a story with no existing replies. */
 "STORY_REPLY_BUTTON" = "回覆";
@@ -10187,10 +10187,10 @@
 "STORY_REPLY_TO_PRIVATE_TEXT_FIELD_PLACEHOLDER" = "回覆 %1$@";
 
 /* Title for the dialog asking user if they wish to resend a failed story message. */
-"STORY_RESEND_FAILED_MESSAGE_ACTION_SHEET" = "傳送唔到限時動態。請你檢查吓網絡連線然後再試過啦。";
+"STORY_RESEND_FAILED_MESSAGE_ACTION_SHEET" = "傳送唔到快拍。請你檢查吓網絡連線然後再試過啦。";
 
 /* Title for the dialog asking user if they wish to resend a partially failed story message. */
-"STORY_RESEND_PARTIALLY_FAILED_MESSAGE_ACTION_SHEET" = "發送唔到呢個限時動態俾部分聯絡人。請檢查你嘅連線，然後再試一次";
+"STORY_RESEND_PARTIALLY_FAILED_MESSAGE_ACTION_SHEET" = "發送唔到呢個快拍俾部分聯絡人。請檢查你嘅連線，然後再試一次";
 
 /* The title for the 'select connections for story' view. */
 "STORY_SELECT_ALLOWED_CONNECTIONS_VIEW_TITLE" = "只係分享俾...";
@@ -10202,7 +10202,7 @@
 "STORY_SEND_FAILED" = "傳送失敗";
 
 /* Body for notification shown when a story fails to send. */
-"STORY_SEND_FAILED_NOTIFICATION_BODY" = "❗️限時動態發送失敗";
+"STORY_SEND_FAILED_NOTIFICATION_BODY" = "❗️快拍發送失敗";
 
 /* Text indicating that you can tap to retry sending */
 "STORY_SEND_FAILED_RETRY" = "撳一下再試一次";
@@ -10229,13 +10229,13 @@
 "STORY_SETTINGS_LEARN_MORE_SHEET_BULLET_3" = "將對方儲存喺手機通訊錄入面";
 
 /* Footer for the explainer sheet for signal connections */
-"STORY_SETTINGS_LEARN_MORE_SHEET_FOOTER" = "你嘅人脈可以睇到你個名同你張相。除非你對佢哋隱藏限時動態，如果唔係佢哋都可以睇到你發送嘅「我的限時動態」。";
+"STORY_SETTINGS_LEARN_MORE_SHEET_FOOTER" = "你嘅好友可以睇到你個名同你張相。除非你對佢哋隱藏快拍，如果唔係佢哋都可以睇到你發送嘅「我的快拍」。";
 
 /* Header for the explainer sheet for signal connections */
-"STORY_SETTINGS_LEARN_MORE_SHEET_HEADER_FORMAT" = "<bold>Tellomi 人脈</bold>係你透過以下方式揀選而且值得信任嘅人：";
+"STORY_SETTINGS_LEARN_MORE_SHEET_HEADER_FORMAT" = "<bold>好友</bold>係你透過以下方式揀選而且值得信任嘅人：";
 
 /* Label for the stories section of the settings view */
-"STORY_SETTINGS_TITLE" = "限時動態";
+"STORY_SETTINGS_TITLE" = "快拍";
 
 /* Section footer for the 'viewers' section on the 'story settings' view */
 "STORY_SETTINGS_WHO_CAN_VIEW_THIS_FOOTER" = "Choose which Tellomi Connections can view your story. Changes won’t affect stories you’ve already sent.";
@@ -10244,10 +10244,10 @@
 "STORY_SETTINGS_WHO_CAN_VIEW_THIS_HEADER" = "Who Can View This Story";
 
 /* Header for the 'viewers' section on the 'story settings' bottom sheet */
-"STORY_SETTINGS_WHO_CAN_VIEW_THIS_SHEET_HEADER" = "揀選邊啲 Tellomi 人脈可以瀏覽你嘅限時動態。你可以隨時喺私隱設定度更改選擇。";
+"STORY_SETTINGS_WHO_CAN_VIEW_THIS_SHEET_HEADER" = "揀選邊啲好友可以瀏覽你嘅快拍。你可以隨時喺私隱設定度更改選擇。";
 
 /* Tooltip text shown when the user selects a story as a destination for a long duration video that will be split into shorter segments. Embeds {{ segment duration in seconds }} */
-"STORY_VIDEO_SEGMENTATION_TOOLTIP_FORMAT" = "發送到限時動態嘅影片會被剪輯成 %1$d 秒嘅短片，並且分成多條限時動態嚟發送。";
+"STORY_VIDEO_SEGMENTATION_TOOLTIP_FORMAT" = "發送到快拍嘅影片會被剪輯成 %1$d 秒嘅短片，並且分成多條快拍嚟發送。";
 
 /* Text shown the first time the user opens the story viewer instructing them how to use it. */
 "STORY_VIEWER_ONBOARDING_1" = "㩒一吓繼續操作";

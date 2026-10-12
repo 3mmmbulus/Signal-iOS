@@ -913,7 +913,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>群組限時快拍 · %1$d 位瀏覽者</string>
+			<string>群組快拍 · %1$d 位瀏覽者</string>
 		</dict>
 	</dict>
 	<key>GROUP_WAS_MIGRATED_USERS_DROPPED_%d</key>
@@ -1333,7 +1333,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>自訂限時快拍 · %1$d 位瀏覽者</string>
+			<string>自訂快拍 · %1$d 位瀏覽者</string>
 		</dict>
 	</dict>
 	<key>RAISED_HANDS_TOAST_MULTIPLE_HANDS_MESSAGE</key>
