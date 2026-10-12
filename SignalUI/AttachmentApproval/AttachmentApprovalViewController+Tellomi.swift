@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+public import SignalServiceKit
 import UIKit
 
 extension AttachmentApprovalViewController {
@@ -13,6 +14,14 @@ extension AttachmentApprovalViewController {
         let items = attachmentApprovalItems
         guard items.indices.contains(index), !items[index].isIdenticalTo(currentItem) else { return }
         setCurrentItem(items[index], direction: .forward, animated: false)
+    }
+
+    /// tellomi/tellomi#1518 E-6：网格里直接发送时，把编辑项里的改动画进附件，与预览页发送走同一段代码；没改过就是原附件。
+    public static func tellomiOutputAttachment(
+        for item: AttachmentApprovalItem,
+        attachmentLimits: OutgoingAttachmentLimits,
+    ) async throws -> PreviewableAttachment {
+        try await prepareAttachment(attachmentApprovalItem: item, attachmentLimits: attachmentLimits)
     }
 
     public func tellomiActivateTool(_ tool: TellomiApprovalEditTool) {

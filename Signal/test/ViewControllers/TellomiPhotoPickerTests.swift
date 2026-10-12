@@ -966,6 +966,50 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r0"])
     }
 
+    /// E-6：预览 / 编辑页里改过的照片，回到网格再进来编辑还在（同一个编辑项）；取消选中再选上也还在（同 Telegram 的编辑上下文）；
+    /// 从网格直接发送时发的是改过的样子，没改过的照发原图。
+    @MainActor
+    func testEditsSurviveLeavingTheEditorAndAreSentFromTheGrid() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 3)
+        picker.tapCheckForTesting(itemIndex: 0)
+
+        let first = try await openEditor(picker, onCard: "r0")
+        let edited = try XCTUnwrap(first.attachmentApprovalItems.last)
+        XCTAssertTrue(edited.attachment.rawValue === hosted.library.attachmentsById["r0"]?.rawValue)
+        let model = try XCTUnwrap(edited.imageEditorModel)
+        let transform = model.currentTransform()
+        model.replace(transform: ImageEditorTransform(
+            outputSizePixels: transform.outputSizePixels,
+            unitTranslation: transform.unitTranslation,
+            rotationRadians: transform.rotationRadians,
+            scaling: transform.scaling,
+            isFlipped: !transform.isFlipped,
+        ))
+        XCTAssertTrue(model.isDirty)
+        await closeEditor(picker)
+
+        let second = try await openEditor(picker, onCard: "r0")
+        XCTAssertTrue(second.attachmentApprovalItems.last === edited, "回到网格再进来，还是同一个编辑项，翻转还在")
+        await closeEditor(picker)
+
+        picker.tapCloseForTesting()
+        XCTAssertEqual(picker.displayMode, .all)
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r0"])
+        let third = try await openEditor(picker, onCard: "r0")
+        XCTAssertTrue(third.attachmentApprovalItems.last === edited, "取消选中再选上，编辑还在")
+        await closeEditor(picker)
+
+        picker.tapCloseForTesting()
+        picker.tapSendForTesting()
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r3", "?"], "r3 没改，发原图；r0 改过，发重新画出来的那张")
+    }
+
     // MARK: - P-8 相机格
 
     /// 「最近」左上角是一格宽、两行高（含中间 1 的间距）的相机实时取景，其它格子绕开它排；换到别的相册就没有。
@@ -1469,6 +1513,26 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
     @MainActor
     private func approvalViewController(over picker: TellomiPhotoPickerViewController) -> AttachmentApprovalViewController? {
         (picker.presentedViewController as? UINavigationController)?.viewControllers.first as? AttachmentApprovalViewController
+    }
+
+    /// 从「只看已选」点卡片进上游的预览 / 编辑页。
+    @MainActor
+    private func openEditor(_ picker: TellomiPhotoPickerViewController, onCard itemId: String) async throws -> AttachmentApprovalViewController {
+        if picker.displayMode != .selected {
+            picker.tapCountPillForTesting()
+        }
+        picker.selectedViewForTesting.layoutIfNeeded()
+        picker.selectedViewForTesting.tapCardForTesting(itemId)
+        let opened = await waitUntil { self.approvalViewController(over: picker) != nil }
+        XCTAssertTrue(opened)
+        return try XCTUnwrap(approvalViewController(over: picker))
+    }
+
+    @MainActor
+    private func closeEditor(_ picker: TellomiPhotoPickerViewController) async {
+        picker.attachmentApprovalDidCancel()
+        let closed = await waitUntil { picker.presentedViewController == nil }
+        XCTAssertTrue(closed)
     }
 
     @MainActor

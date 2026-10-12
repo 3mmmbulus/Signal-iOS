@@ -216,8 +216,28 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
         approvalDataSource: AttachmentApprovalViewControllerDataSource,
         stickerSheetDelegate: StickerPickerSheetDelegate?,
     ) -> OWSNavigationController {
+        return wrappedInNavController(
+            attachmentApprovalItems: attachments.map { AttachmentApprovalItem(attachment: $0, canSave: false) },
+            initialMessageBody: initialMessageBody,
+            hasQuotedReplyDraft: hasQuotedReplyDraft,
+            attachmentLimits: attachmentLimits,
+            approvalDelegate: approvalDelegate,
+            approvalDataSource: approvalDataSource,
+            stickerSheetDelegate: stickerSheetDelegate,
+        )
+    }
 
-        let attachmentApprovalItems = attachments.map { AttachmentApprovalItem(attachment: $0, canSave: false) }
+    /// Tellomi (tellomi/tellomi#1518 E-6): the photo picker hands back the items it already edited, so the edits survive
+    /// going back to the grid and coming in again.
+    public class func wrappedInNavController(
+        attachmentApprovalItems: [AttachmentApprovalItem],
+        initialMessageBody: MessageBody?,
+        hasQuotedReplyDraft: Bool,
+        attachmentLimits: OutgoingAttachmentLimits,
+        approvalDelegate: AttachmentApprovalViewControllerDelegate,
+        approvalDataSource: AttachmentApprovalViewControllerDataSource,
+        stickerSheetDelegate: StickerPickerSheetDelegate?,
+    ) -> OWSNavigationController {
         var options: AttachmentApprovalViewControllerOptions = []
         options.insert(.hasCancel)
         if hasQuotedReplyDraft {
@@ -689,14 +709,14 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
         var results = [PreviewableAttachment]()
         for attachmentApprovalItem in attachmentApprovalItems {
             results.append(
-                try await self.prepareAttachment(attachmentApprovalItem: attachmentApprovalItem),
+                try await Self.prepareAttachment(attachmentApprovalItem: attachmentApprovalItem, attachmentLimits: attachmentLimits),
             )
         }
         return results
     }
 
     /// Returns a new SignalAttachment that reflects changes made in the editor.
-    private func prepareAttachment(attachmentApprovalItem: AttachmentApprovalItem) async throws -> PreviewableAttachment {
+    static func prepareAttachment(attachmentApprovalItem: AttachmentApprovalItem, attachmentLimits: OutgoingAttachmentLimits) async throws -> PreviewableAttachment {
         if let imageEditorModel = attachmentApprovalItem.imageEditorModel, imageEditorModel.isDirty {
             return try await self.prepareImageAttachment(
                 attachmentApprovalItem: attachmentApprovalItem,
@@ -707,6 +727,7 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
             return try await self.prepareVideoAttachment(
                 attachmentApprovalItem: attachmentApprovalItem,
                 videoEditorModel: videoEditorModel,
+                attachmentLimits: attachmentLimits,
             )
         }
         // No editor applies. Use original, un-edited attachment.
@@ -714,7 +735,7 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
     }
 
     @concurrent
-    private func prepareImageAttachment(
+    private static func prepareImageAttachment(
         attachmentApprovalItem: AttachmentApprovalItem,
         imageEditorModel: ImageEditorModel,
     ) async throws -> PreviewableAttachment {
@@ -735,9 +756,10 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
         return PreviewableAttachment.imageAttachmentForNormalizedImage(newImage)
     }
 
-    private func prepareVideoAttachment(
+    private static func prepareVideoAttachment(
         attachmentApprovalItem: AttachmentApprovalItem,
         videoEditorModel: VideoEditorModel,
+        attachmentLimits: OutgoingAttachmentLimits,
     ) async throws -> PreviewableAttachment {
         assert(videoEditorModel.needsRender)
         let fileUrl = try await videoEditorModel.render()

@@ -104,6 +104,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     /// 进上游预览页时每张附件对应网格里的哪一项：在那里删掉一张，网格里也取消勾选。
     private var editingItems = [(itemId: String, attachment: SignalAttachment)]()
+    /// E-6：每张照片在上游预览 / 编辑页里的编辑项（裁剪、涂鸦、视频剪辑都在里面）。回到网格再进来、从网格直接发送都用这一份；
+    /// 取消选中也留着，再选上时编辑还在（同 Telegram 的编辑上下文）。关掉选图面板就没了。
+    private var approvalItems = [String: AttachmentApprovalItem]()
 
     /// P-3：网格还是「只看已选」。
     enum DisplayMode {
@@ -1044,7 +1047,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let items = selectedIds.compactMap { selectedItems[$0] }
         guard !items.isEmpty else { return }
         let messageBody = messageBodyForSending
-        prepareAttachments(for: items) { [weak self] attachments in
+        prepareAttachments(for: items, applyingEditsFrom: approvalItems) { [weak self] attachments in
             guard let self else { return }
             self.delegate?.photoPicker(
                 self,
@@ -1062,10 +1065,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let items = selectedIds.compactMap { selectedItems[$0] }
         guard !items.isEmpty, let approvalDataSource else { return }
         let messageBody = messageBodyForSending
-        prepareAttachments(for: items) { [weak self] attachments in
+        let unprepared = items.filter { approvalItems[$0.id] == nil }
+        prepareAttachments(for: unprepared, applyingEditsFrom: [:]) { [weak self] attachments in
             guard let self else { return }
+            for (item, attachment) in zip(unprepared, attachments) {
+                self.approvalItems[item.id] = AttachmentApprovalItem(attachment: attachment, canSave: false)
+            }
+            let editItems = items.compactMap { self.approvalItems[$0.id] }
             let approval = AttachmentApprovalViewController.wrappedInNavController(
-                attachments: attachments,
+                attachmentApprovalItems: editItems,
                 initialMessageBody: messageBody,
                 hasQuotedReplyDraft: self.hasQuotedReplyDraft,
                 attachmentLimits: self.attachmentLimits,
@@ -1078,7 +1086,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             if let index = items.firstIndex(where: { $0.id == itemId }) {
                 page?.tellomiShowItem(at: index)
             }
-            self.editingItems = zip(items, attachments).map { ($0.id, $1.rawValue) }
+            self.editingItems = zip(items, editItems).map { ($0.id, $1.attachment.rawValue) }
             self.present(approval, animated: true) {
                 if let tool {
                     page?.tellomiActivateTool(tool)
@@ -1088,7 +1096,16 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     }
 
     /// 一张一张地把选中的变成附件（视频要压缩，慢），期间显示「正在准备…」，可取消。
-    private func prepareAttachments(for items: [TellomiPhotoPickerItem], completion: @escaping ([PreviewableAttachment]) -> Void) {
+    /// 在预览 / 编辑页里改过的（`edits` 里有它的编辑项），按改过的样子出附件（E-6）。
+    private func prepareAttachments(
+        for items: [TellomiPhotoPickerItem],
+        applyingEditsFrom edits: [String: AttachmentApprovalItem],
+        completion: @escaping ([PreviewableAttachment]) -> Void,
+    ) {
+        guard !items.isEmpty else {
+            completion([])
+            return
+        }
         let library = self.library
         let attachmentLimits = self.attachmentLimits
         ModalActivityIndicatorViewController.present(
@@ -1100,7 +1117,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                     var attachments = [PreviewableAttachment]()
                     for item in items {
                         try Task.checkCancellation()
-                        attachments.append(try await library.attachment(for: item, attachmentLimits: attachmentLimits))
+                        if let editItem = edits[item.id] {
+                            attachments.append(try await AttachmentApprovalViewController.tellomiOutputAttachment(for: editItem, attachmentLimits: attachmentLimits))
+                        } else {
+                            attachments.append(try await library.attachment(for: item, attachmentLimits: attachmentLimits))
+                        }
                     }
                     return attachments
                 }
