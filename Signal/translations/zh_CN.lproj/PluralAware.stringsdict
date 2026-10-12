@@ -913,7 +913,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>群组动态 · %1$d 位访客</string>
+			<string>群组快拍 · %1$d 位访客</string>
 		</dict>
 	</dict>
 	<key>GROUP_WAS_MIGRATED_USERS_DROPPED_%d</key>
@@ -1151,7 +1151,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>所有 Tellomi 密友 · %1$d 位访客</string>
+			<string>所有好友 · %1$d 位访客</string>
 		</dict>
 	</dict>
 	<key>MY_STORY_VIEWERS_ALL_CONNECTIONS_EXCLUDING_%d</key>
@@ -1165,7 +1165,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>所有 Tellomi 密友 · 排除 %1$d</string>
+			<string>所有好友 · 排除 %1$d</string>
 		</dict>
 	</dict>
 	<key>MY_STORY_VIEWERS_ONLY_%d</key>
@@ -1333,7 +1333,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>自定义动态 · %1$d 位访客</string>
+			<string>自定义快拍 · %1$d 位访客</string>
 		</dict>
 	</dict>
 	<key>RAISED_HANDS_TOAST_MULTIPLE_HANDS_MESSAGE</key>
