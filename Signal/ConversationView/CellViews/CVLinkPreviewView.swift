@@ -974,7 +974,7 @@ private class CVLinkPreviewViewAdapterFirstParty: CVLinkPreviewViewAdapter {
 // MARK: -
 
 private extension UIColor {
-    /// 第一方卡底部按钮字和「官方」徽标的颜色（card-visual：文字对比度 ≥ 4.5:1）。
+    /// 第一方卡底部按钮字的颜色（card-visual：文字对比度 ≥ 4.5:1）。
     /// 浅色：强调蓝再深一成（原色落在浅灰卡上是 4.49:1）；深色：Signal 的强调蓝落在灰色卡片上只有 1.9:1，换成浅蓝。
     static var tellomiCardAccent: UIColor {
         UIColor { traits in
@@ -989,27 +989,64 @@ private extension UIColor {
             return UIColor(red: red * 0.9, green: green * 0.9, blue: blue * 0.9, alpha: alpha)
         }
     }
+
+    /// 「官方」徽标的底色（card-visual §5.2：防冒充的标记，必须读得清，字和底 ≥ 4.5:1）。
+    /// 底是**不透明**的，不透出下面的卡片：卡片底是半透明的（收到的消息是灰，自己发的是聊天色上盖一层白），
+    /// 透出来的颜色会让字和底的对比度跟着变（自己发的官网卡上，原来的半透明底实测浅色 2.53:1 / 深色 1.75:1）。
+    /// 取值 = 原来的效果落在收到的灰卡上的样子（浅 #D6DFF2 / 深 #626469），看起来和以前一样。
+    static var tellomiOfficialBadgeFill: UIColor {
+        UIColor.byRGBHex(light: 0xD6DFF2, dark: 0x626469)
+    }
+
+    /// 「官方」徽标的字色：浅色 #1B52C4（5.15:1；原来的 #1F5DDD 只有 4.28:1）、深色 #E3EEFF（5.06:1；原来的 #D6E6FF 是 4.69:1）；
+    /// 系统的「增大对比度」打开时再深 / 再亮一档。
+    static var tellomiOfficialBadgeText: UIColor {
+        UIColor.byRGBHex(light: 0x1B52C4, lightHighContrast: 0x143FA0, dark: 0xE3EEFF, darkHighContrast: 0xFFFFFF)
+    }
 }
 
-/// 「官方」小徽标：一个圆角小药丸，画成图放进标题文字里（这样标题换行、测量都还是一段文字）。
+/// 「官方」小徽标：一个圆角小药丸，当作一个文字附件放在标题文字的最后（这样标题换行、测量都还是一段文字）。
+///
+/// 药丸的图不在配置卡片时画好，而是文字每次要画的时候才画（`image(forBounds:textContainer:characterIndex:)`）：那一刻的
+/// `UITraitCollection.current` 是标签自己的外观（窗口的 `overrideUserInterfaceStyle`、增大对比度都算上），所以
+/// - App 主题和系统外观不一样时（设置 > 外观允许）不会取成系统的那一套颜色；
+/// - 卡片配好以后主题才切换，徽标跟着变，不用重新配置。
+/// 提前画成图塞进 `image` 的话，取色只看配置那一刻的 `UITraitCollection.current`：系统浅色 + App 主题深色时字和底只有 1.41:1，
+/// 系统深色 + App 主题浅色时 1.14:1，切主题后也不更新。把明暗两张图挂在 `UIImageAsset` 上也不行（文字附件不按外观挑变体，iOS 26.5 实测）。
 private enum TellomiOfficialBadge {
     static func attributedString(text: String, height: CGFloat) -> NSAttributedString {
-        let font = UIFont.dynamicTypeCaption2.semibold()
-        let padding: CGFloat = 6
-        let textSize = (text as NSString).size(withAttributes: [.font: font])
-        let size = CGSize(width: ceil(textSize.width) + padding * 2, height: ceil(font.lineHeight) + 2)
-        let image = UIGraphicsImageRenderer(size: size).image { context in
-            UIColor.tellomiCardAccent.withAlphaComponent(0.15).setFill()
-            UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: size.height / 2).fill()
-            (text as NSString).draw(
-                at: CGPoint(x: padding, y: (size.height - font.lineHeight) / 2),
-                withAttributes: [.font: font, .foregroundColor: UIColor.tellomiCardAccent],
-            )
+        NSAttributedString(attachment: Attachment(text: text))
+    }
+
+    private final class Attachment: NSTextAttachment {
+        private static let padding: CGFloat = 6
+
+        private let text: String
+        private let font = UIFont.dynamicTypeCaption2.semibold()
+
+        init(text: String) {
+            self.text = text
+            super.init(data: nil, ofType: nil)
+            let textSize = (text as NSString).size(withAttributes: [.font: font])
+            let size = CGSize(width: ceil(textSize.width) + Self.padding * 2, height: ceil(font.lineHeight) + 2)
+            bounds = CGRect(x: 0, y: (font.capHeight - size.height) / 2, width: size.width, height: size.height)
         }
-        let attachment = NSTextAttachment()
-        attachment.image = image
-        attachment.bounds = CGRect(x: 0, y: (font.capHeight - size.height) / 2, width: size.width, height: size.height)
-        return NSAttributedString(attachment: attachment)
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override func image(forBounds imageBounds: CGRect, textContainer: NSTextContainer?, characterIndex charIndex: Int) -> UIImage? {
+            let size = bounds.size
+            return UIGraphicsImageRenderer(size: size).image { _ in
+                UIColor.tellomiOfficialBadgeFill.setFill()
+                UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: size.height / 2).fill()
+                (text as NSString).draw(
+                    at: CGPoint(x: Self.padding, y: (size.height - font.lineHeight) / 2),
+                    withAttributes: [.font: font, .foregroundColor: UIColor.tellomiOfficialBadgeText],
+                )
+            }
+        }
     }
 }
 

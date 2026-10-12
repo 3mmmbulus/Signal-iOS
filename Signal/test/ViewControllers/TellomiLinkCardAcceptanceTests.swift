@@ -1052,8 +1052,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
 
     @MainActor
     private func host(message: TSMessage, thread: TSThread, dark: Bool) async throws -> Hosted {
-        // 画成图再塞进文字里的东西（「官方」徽标）按「当前」外观取色，排版和装配都在目标外观里做：
-        // 这就是系统外观和 App 主题一致时的样子（真机上的常态）；App 主题和系统外观不一样时另有一个问题，见 PR 描述。
+        // 排版和装配都在目标外观里做：这就是系统外观和 App 主题一致时的样子（真机上的常态）。
+        // 「官方」徽标不靠这一层：它在文字画的时候按标签自己的外观画，系统外观和 App 主题不一样、配好后切主题都对
+        // （见 TellomiOfficialBadgeContrastTests）。
         var made: Result<Hosted, Error>?
         UITraitCollection(userInterfaceStyle: dark ? .dark : .light).performAsCurrent {
             made = Result { try makeHosted(message: message, thread: thread, dark: dark) }

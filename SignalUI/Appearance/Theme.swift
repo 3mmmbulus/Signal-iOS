@@ -451,7 +451,8 @@ public final class Theme {
 #if TESTABLE_BUILD
     private var isDarkThemeEnabledForTests: Bool?
 
-    public class func setIsDarkThemeEnabledForTests(_ enabled: Bool) {
+    /// Pass `nil` to go back to the real behavior (follow the mode / the system).
+    public class func setIsDarkThemeEnabledForTests(_ enabled: Bool?) {
         shared.isDarkThemeEnabledForTests = enabled
     }
 #endif
