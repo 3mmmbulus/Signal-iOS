@@ -1010,6 +1010,15 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r3", "?"], "r3 没改，发原图；r0 改过，发重新画出来的那张")
     }
 
+    /// V-4（owner 2026-10-13 定 O3，照 Telegram）：裁出的片段最短 1 秒；视频本身短于 1.5 秒不给裁。
+    func testVideoTrimThresholdsFollowTelegram() {
+        XCTAssertEqual(VideoEditorModel.minimumDurationSeconds, 1)
+        XCTAssertFalse(VideoEditorModel.canTrim(untrimmedDurationSeconds: 1.0))
+        XCTAssertFalse(VideoEditorModel.canTrim(untrimmedDurationSeconds: 1.49))
+        XCTAssertTrue(VideoEditorModel.canTrim(untrimmedDurationSeconds: 1.5))
+        XCTAssertTrue(VideoEditorModel.canTrim(untrimmedDurationSeconds: 75))
+    }
+
     // MARK: - P-8 相机格
 
     /// 「最近」左上角是一格宽、两行高（含中间 1 的间距）的相机实时取景，其它格子绕开它排；换到别的相册就没有。

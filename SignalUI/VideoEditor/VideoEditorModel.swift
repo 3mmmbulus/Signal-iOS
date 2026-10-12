@@ -37,12 +37,20 @@ class VideoEditorModel: NSObject {
 
     static let minimumDurationSeconds: TimeInterval = 1
 
+    /// Tellomi (tellomi/tellomi#1518 V-4, owner 2026-10-13): as in Telegram, a video shorter than 1.5 s can't be trimmed
+    /// at all (`TGVideoEditMinimumTrimmableDuration`); a trimmed clip can still be as short as 1 s (`minimumDurationSeconds`).
+    static let minimumTrimmableDurationSeconds: TimeInterval = 1.5
+
     private var minimumDurationSeconds: TimeInterval {
         return VideoEditorModel.minimumDurationSeconds
     }
 
     var canBeTrimmed: Bool {
-        return untrimmedDurationSeconds > minimumDurationSeconds
+        return Self.canTrim(untrimmedDurationSeconds: untrimmedDurationSeconds)
+    }
+
+    static func canTrim(untrimmedDurationSeconds: TimeInterval) -> Bool {
+        return untrimmedDurationSeconds >= minimumTrimmableDurationSeconds
     }
 
     var isTrimmed: Bool {
