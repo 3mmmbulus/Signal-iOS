@@ -535,6 +535,8 @@ class CameraCaptureSession: NSObject {
             newPosition = .front
         }
         desiredPosition = newPosition
+        // Tellomi（tellomi/tellomi#1520，照 Telegram）：录着也能换摄像头，录像接着写进同一个文件；手电筒跟着镜头走。
+        let isRecordingVideo = videoRecordingState == .started
 
         return sessionQueue.async(.promise) { [weak self] in
             guard let self else { return }
@@ -542,6 +544,9 @@ class CameraCaptureSession: NSObject {
             self.avCaptureSession.beginConfiguration()
             defer { self.avCaptureSession.commitConfiguration() }
             try self.reconfigureVideoCaptureInput()
+            if isRecordingVideo {
+                self.setTorchMode(self.flashMode.toTorchMode)
+            }
         }
     }
 

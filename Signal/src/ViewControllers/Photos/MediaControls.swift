@@ -106,6 +106,10 @@ final class CameraCaptureControl: UIControl {
 
     weak var delegate: CameraCaptureControlDelegate?
 
+    /// Tellomi（tellomi/tellomi#1520，照 Telegram 两端的新相机）：按住录像时往右拖到切换摄像头键上，换一次摄像头，录像不停；离开再回来又换一次。
+    var onSwitchCamera: (() -> Void)?
+    private var isOverSwitchCamera = false
+
     /// Tellomi（tellomi/tellomi#1520 C-1，同 Tellomi 安卓）：录像模式里快门是红的，点一下开始录、再点一下停；按住照旧是按住录。
     var isVideoMode = false {
         didSet {
@@ -450,6 +454,7 @@ final class CameraCaptureControl: UIControl {
 
             recordingState = .maybeStartingRecording
             sliderTrackingProgress = 0
+            isOverSwitchCamera = false
             initialTouchLocation = currentLocation
             initialZoomPosition = nil
 
@@ -646,6 +651,7 @@ final class CameraCaptureControl: UIControl {
         let distanceToLock = abs(lockIconView.center.x - initialSlidingCircleViewCenter.x)
         sliderTrackingProgress = abs(effectiveOffset / distanceToLock).clamp(0, 1)
         updateLockStateAndPlayHapticFeedbackIfNecessary()
+        updateSwitchCameraTracking(xOffset: xOffset, distance: distanceToLock)
 
         Logger.debug("xOffset: \(xOffset), effectiveOffset: \(effectiveOffset),  distanceToLock: \(distanceToLock), progress: \(sliderTrackingProgress)")
     }
@@ -659,6 +665,20 @@ final class CameraCaptureControl: UIControl {
         updateLockStateAndPlayHapticFeedbackIfNecessary()
 
         Logger.debug("yOffset: \(yOffset), effectiveOffset: \(effectiveOffset),  distanceToLock: \(distanceToLock), progress: \(sliderTrackingProgress)")
+    }
+
+    /// Tellomi #1520：切换摄像头键和锁隔着快门对称，拖到同样远的另一边就是到了它上面（照 Telegram：到了就换一次，退回 30 pt 才算离开）。
+    private func updateSwitchCameraTracking(xOffset: CGFloat, distance: CGFloat) {
+        guard distance > 0 else { return }
+        let towardSwitch = CurrentAppContext().isRTL ? -xOffset : xOffset
+        if towardSwitch >= distance {
+            guard !isOverSwitchCamera else { return }
+            isOverSwitchCamera = true
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            onSwitchCamera?()
+        } else if towardSwitch < distance - 30 {
+            isOverSwitchCamera = false
+        }
     }
 
     private func updateLockStateAndPlayHapticFeedbackIfNecessary() {
@@ -1584,7 +1604,7 @@ final class CameraBottomBar: UIView {
     func setIsRecordingVideo(_ isRecording: Bool, animated: Bool) {
         _isRecordingVideo = isRecording
         photoLibraryButton.setIsHidden(isRecording, animated: animated)
-        switchCameraButton.setIsHidden(isRecording, animated: animated)
+        // Tellomi（tellomi/tellomi#1520，照 Telegram）：录像时切换摄像头键还在——点它、或按住录像时拖到它上面，都能换摄像头。
     }
 
     private var _isFrontCameraActive = false

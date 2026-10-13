@@ -59,6 +59,39 @@ final class TellomiCaptureLockTests: SignalBaseTest {
         XCTAssertTrue(hit === bar.photoLibraryButton || hit?.isDescendant(of: bar.photoLibraryButton) == true, "\(String(describing: hit))")
     }
 
+    /// tellomi/tellomi#1520（照 Telegram 两端的新相机）：按住录像时往右拖到切换摄像头键上（和锁隔着快门对称），换一次摄像头；
+    /// 待在上面不再换，离开再回来又换一次；往左照旧是锁。
+    func testDraggingRightWhileHoldingSwitchesTheCameraOncePerArrival() {
+        let (window, bar) = hostBottomBar()
+        defer { window.isHidden = true }
+        let control = bar.captureControl
+        var switches = 0
+        control.onSwitchCamera = { switches += 1 }
+        control.setRecordingState(.recording, isRecordingWithLongPress: true)
+        bar.layoutIfNeeded()
+
+        XCTAssertEqual(control.slideHorizontallyForTesting(xOffset: 400), 0, "往右不去锁")
+        XCTAssertEqual(switches, 1)
+        _ = control.slideHorizontallyForTesting(xOffset: 420)
+        XCTAssertEqual(switches, 1, "到了只换一次")
+        _ = control.slideHorizontallyForTesting(xOffset: 0)
+        _ = control.slideHorizontallyForTesting(xOffset: 400)
+        XCTAssertEqual(switches, 2, "离开再回来又换一次")
+        XCTAssertEqual(control.slideHorizontallyForTesting(xOffset: -400), 1, "往左照旧是锁")
+        XCTAssertEqual(switches, 2)
+        control.setRecordingState(.notRecording)
+    }
+
+    /// 录像时相册键让给锁，切换摄像头键留着（点它也能换）。
+    func testTheSwitchCameraButtonStaysWhileRecording() {
+        let (window, bar) = hostBottomBar()
+        defer { window.isHidden = true }
+        bar.setIsRecordingVideo(true, animated: false)
+        XCTAssertTrue(bar.photoLibraryButton.isHidden)
+        XCTAssertFalse(bar.switchCameraButton.isHidden)
+        bar.setIsRecordingVideo(false, animated: false)
+    }
+
     func testHoldingStartsRecordingAfterAThirdOfASecond() {
         XCTAssertEqual(CameraCaptureControl.longPressDurationForTesting, 0.3, accuracy: 0.001)
     }

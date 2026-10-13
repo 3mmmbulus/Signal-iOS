@@ -1688,6 +1688,10 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
 
     private func setupPhotoCapture() {
         cameraBottomBar.captureControl.delegate = cameraCaptureSession
+        // Tellomi（tellomi/tellomi#1520）：按住录像时拖到切换摄像头键上，换摄像头（录像不停）。
+        cameraBottomBar.captureControl.onSwitchCamera = { [weak self] in
+            self?.switchCameraPosition()
+        }
         if let cameraSideBar {
             cameraSideBar.cameraCaptureControl.delegate = cameraCaptureSession
         }
