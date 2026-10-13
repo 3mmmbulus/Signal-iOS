@@ -1745,6 +1745,24 @@ private extension CVComponentState.Builder {
         if message.isPoll {
             return
         }
+        // Tellomi (ADR-0075 §4.4, as Telegram): with per-media captions the bubble shows one caption, or only the
+        // whole message's (or none); the body is then the text for other clients, and its ranges belong to it.
+        if let caption = TellomiCaptionAbove.bubbleCaption(message: message, tx: transaction), caption != message.body {
+            let displayableText = CVComponentState.displayableBodyText(
+                text: caption,
+                ranges: nil,
+                interaction: message,
+                transaction: transaction,
+            )
+            guard !displayableText.fullTextValue.isEmpty else {
+                bodyText = nil
+                return
+            }
+            let hasTapForMore = displayableText.isTextTruncated
+                && !viewStateSnapshot.textExpansion.isTextExpanded(interactionId: message.uniqueId)
+            bodyText = .bodyText(displayableText: displayableText, hasTapForMore: hasTapForMore)
+            return
+        }
         bodyText = try CVComponentBodyText.buildComponentState(
             message: message,
             skippedAttachmentIds: skippedDownloads?.attachmentIds ?? [],

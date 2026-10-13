@@ -49,6 +49,54 @@ public enum TellomiCaptionAbove {
         setMessageCaption(dataMessage.tellomi?.messageCaption, messageUniqueId: messageUniqueId, tx: tx)
     }
 
+    /// ADR-0075 §4.4（owner 2026-10-14 照 Telegram）：气泡里画哪段说明。一条消息里只有一个说明（整条的，或某一张的）就画它；
+    /// 两个及以上只画整条消息的说明，没有就不画（返回 ""）；逐张的在查看器里看（Telegram `GroupedMessages.calculate()`
+    /// 遇到第二个说明就把相册的说明清掉）。没有逐张说明、也没有整条说明的消息返回 nil：照旧画 body（兼容文本）。
+    public static func bubbleCaption(message: TSMessage, tx: DBReadTransaction) -> String? {
+        return bubbleCaption(
+            messageUniqueId: message.uniqueId,
+            messageRowId: message.sqliteRowId,
+            attachmentStore: DependenciesBridge.shared.attachmentStore,
+            tx: tx,
+        )
+    }
+
+    static func bubbleCaption(
+        messageUniqueId: String,
+        messageRowId: Int64?,
+        attachmentStore: AttachmentStore,
+        tx: DBReadTransaction,
+    ) -> String? {
+        var mediaCaptions = [String?]()
+        if let messageRowId {
+            mediaCaptions = attachmentStore
+                .fetchReferences(owner: .messageBodyAttachment(messageRowId: messageRowId), tx: tx)
+                .map(\.legacyMessageCaption)
+        }
+        return bubbleCaption(messageCaption: messageCaption(messageUniqueId: messageUniqueId, tx: tx), mediaCaptions: mediaCaptions)
+    }
+
+    public static func bubbleCaption(messageCaption: String?, mediaCaptions: [String?]) -> String? {
+        let messageCaption = messageCaption?.nilIfEmpty
+        let captions = [messageCaption].compacted() + mediaCaptions.compactMap { $0?.nilIfEmpty }
+        switch captions.count {
+        case 0:
+            return nil
+        case 1:
+            return captions[0]
+        default:
+            return messageCaption ?? ""
+        }
+    }
+
+    /// 查看器里没有自己说明的那一张显示什么：有逐张说明的消息只给整条消息的说明（没有就是 ""）；别的消息返回 nil，照旧用正文。
+    public static func viewerFallback(message: TSMessage, tx: DBReadTransaction) -> String? {
+        guard bubbleCaption(message: message, tx: tx) != nil else {
+            return nil
+        }
+        return messageCaption(messageUniqueId: message.uniqueId, tx: tx) ?? ""
+    }
+
     /// ADR-0075：附件自己的说明——Tellomi 的逐张说明优先，其次上游旧的 `caption`；空的不算。
     static func attachmentCaption(_ proto: SSKProtoAttachmentPointer) -> String? {
         if let caption = proto.tellomi?.caption?.nilIfEmpty {

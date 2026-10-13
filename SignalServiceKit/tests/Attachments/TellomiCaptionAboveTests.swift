@@ -118,6 +118,73 @@ class TellomiCaptionAboveTests: XCTestCase {
         XCTAssertNil(TellomiCaptionAbove.attachmentCaption(pointer(tellomiCaption: nil, legacy: nil)))
     }
 
+    // MARK: - ADR-0075 §4.4: which caption the bubble shows (owner 2026-10-14, as Telegram)
+
+    func testTheBubbleCaptionRule() {
+        XCTAssertNil(TellomiCaptionAbove.bubbleCaption(messageCaption: nil, mediaCaptions: [nil, ""]))
+        XCTAssertEqual(TellomiCaptionAbove.bubbleCaption(messageCaption: "Trip", mediaCaptions: [nil, nil]), "Trip")
+        XCTAssertEqual(TellomiCaptionAbove.bubbleCaption(messageCaption: nil, mediaCaptions: [nil, "Sunset"]), "Sunset")
+        XCTAssertEqual(TellomiCaptionAbove.bubbleCaption(messageCaption: "Trip", mediaCaptions: ["Sunset", nil]), "Trip")
+        XCTAssertEqual(TellomiCaptionAbove.bubbleCaption(messageCaption: nil, mediaCaptions: ["Sunset", "Beach"]), "")
+    }
+
+    func testTheBubbleCaptionReadsTheMessagesAttachments() throws {
+        let attachmentStore = AttachmentStore()
+        func caption(_ messageUniqueId: String, _ rowId: Int64) -> String? {
+            db.read { tx in
+                TellomiCaptionAbove.bubbleCaption(messageUniqueId: messageUniqueId, messageRowId: rowId, attachmentStore: attachmentStore, tx: tx)
+            }
+        }
+
+        let (thread, ordinary) = insertThreadAndInteraction()
+        try insertBodyAttachment(messageRowId: ordinary, threadRowId: thread, order: 0, caption: nil, attachmentStore: attachmentStore)
+        XCTAssertNil(caption("ordinary", ordinary), "an ordinary message keeps its body")
+
+        let (_, two) = insertThreadAndInteraction()
+        try insertBodyAttachment(messageRowId: two, threadRowId: thread, order: 0, caption: "Sunset", attachmentStore: attachmentStore)
+        try insertBodyAttachment(messageRowId: two, threadRowId: thread, order: 1, caption: "Beach", attachmentStore: attachmentStore)
+        XCTAssertEqual(caption("two", two), "", "two per-media captions: none in the bubble")
+        db.write { tx in TellomiCaptionAbove.setMessageCaption("Trip", messageUniqueId: "two", tx: tx) }
+        XCTAssertEqual(caption("two", two), "Trip", "only the caption for the whole message")
+        db.read { tx in
+            XCTAssertEqual(TellomiCaptionAbove.messageCaption(messageUniqueId: "two", tx: tx), "Trip")
+        }
+    }
+
+    private func insertBodyAttachment(messageRowId: Int64, threadRowId: Int64, order: UInt32, caption: String?, attachmentStore: AttachmentStore) throws {
+        let owner = AttachmentReference.OwnerBuilder.messageBodyAttachment(.init(
+            messageRowId: messageRowId,
+            receivedAtTimestamp: Date().ows_millisecondsSince1970,
+            threadRowId: threadRowId,
+            isViewOnce: false,
+            isPastEditRevision: false,
+            orderInMessage: order,
+        ))
+        try db.write { tx in
+            var record = Attachment.Record.mockStream()
+            _ = try attachmentStore.insert(
+                &record,
+                reference: AttachmentReference.ConstructionParams(
+                    owner: owner.build(knownIdInOwner: .none, renderingFlag: .default, contentType: record.contentType, mimeType: "image/jpeg", caption: caption),
+                    sourceFilename: "IMG_\(order).JPG",
+                    sourceUnencryptedByteCount: 100,
+                    sourceMediaSizePixels: nil,
+                ),
+                tx: tx,
+            )
+        }
+    }
+
+    private func insertThreadAndInteraction() -> (threadRowId: Int64, interactionRowId: Int64) {
+        return db.write { tx in
+            let thread = TSThread(uniqueId: UUID().uuidString)
+            try! thread.insert(tx.database)
+            let interaction = TSInteraction(timestamp: 0, receivedAtTimestamp: 0, thread: thread)
+            try! interaction.asRecord().insert(tx.database)
+            return (thread.sqliteRowId!, interaction.sqliteRowId!)
+        }
+    }
+
     private func dataMessage(captionAboveMedia: Bool?, messageCaption: String? = nil) throws -> SSKProtoDataMessage {
         let builder = SSKProtoDataMessage.builder()
         builder.setBody("caption")

@@ -98,6 +98,10 @@ struct MediaGalleryItem:
         self.tellomiLiveVideo = TellomiLivePhoto.video(referencedAttachment.reference, tx: transaction)
         if let captionText = referencedAttachment.reference.legacyMessageCaption?.filterForDisplay {
             self.captionForDisplay = .attachmentStreamCaption(captionText)
+        } else if let fallback = TellomiCaptionAbove.viewerFallback(message: message, tx: transaction) {
+            // Tellomi (ADR-0075): a message with per-media captions gives items without their own only the caption
+            // for the whole message, not the text for other clients
+            self.captionForDisplay = fallback.isEmpty ? nil : .attachmentStreamCaption(fallback)
         } else if let body = message.body {
             let hydratedMessageBody = MessageBody(
                 text: body,
