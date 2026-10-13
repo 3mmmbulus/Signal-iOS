@@ -366,6 +366,15 @@ public class EditManagerAttachmentsImpl: EditManagerAttachments {
                 newPastRevisionRowId: priorRevisionRowId,
                 tx: tx,
             )
+            // Tellomi (spec R-1): the past revision's copy stays covered (or uncovered) like the original.
+            if case .bodyAttachment(let metadata) = messageSource {
+                TellomiMediaSpoiler.copyForPastRevision(
+                    latestRevisionRowId: latestRevisionRowId,
+                    priorRevisionRowId: priorRevisionRowId,
+                    orderInMessage: metadata.orderInMessage,
+                    tx: tx,
+                )
+            }
 
             // Body attachments can't be edited, so the latest revision remains
             // an owner. Update the reference's timestamp to match the latest

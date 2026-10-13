@@ -894,6 +894,10 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
             imageView.contentMode = .scaleAspectFill
             imageView.backgroundColor = .Signal.backdrop
             imageView.image = attachment.getThumbnailImageSync(quality: .small)
+            // Tellomi (tellomi/tellomi#1263, spec R-1): a covered (spoiler) one shows blurred; opening it uncovers it.
+            if TellomiMediaSpoiler.isCovered(attachment.reference, tx: tx) {
+                imageView.image = TellomiSpoilerCoverView.coveredThumbnail(imageView.image)
+            }
 
             result.append(
                 key: attachment.reference.referenceId,

@@ -1354,7 +1354,11 @@ nonisolated struct SignalServiceProtos_DataMessage: @unchecked Sendable {
     case mentions = 6
     case payments = 7
     case polls = 8
-    static let current = polls
+
+    /// Tellomi (ADR-0068 §4.3): a message with a covered (spoiler) image / video needs at least this version.
+    /// If upstream adds its own 9, it moves past Tellomi's numbers (docs/signal/VERSIONS.md).
+    case tellomiMediaSpoiler = 9
+    static let current = tellomiMediaSpoiler
 
     init() {
       self = .initial
@@ -6342,7 +6346,7 @@ nonisolated extension SignalServiceProtos_DataMessage.Flags: SwiftProtobuf._Prot
 }
 
 nonisolated extension SignalServiceProtos_DataMessage.ProtocolVersion: SwiftProtobuf._ProtoNameProviding {
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INITIAL\0\u{1}MESSAGE_TIMERS\0\u{1}VIEW_ONCE\0\u{1}VIEW_ONCE_VIDEO\0\u{1}REACTIONS\0\u{1}CDN_SELECTOR_ATTACHMENTS\0\u{1}MENTIONS\0\u{1}PAYMENTS\0\u{9}POLLS\0\u{1}CURRENT\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INITIAL\0\u{1}MESSAGE_TIMERS\0\u{1}VIEW_ONCE\0\u{1}VIEW_ONCE_VIDEO\0\u{1}REACTIONS\0\u{1}CDN_SELECTOR_ATTACHMENTS\0\u{1}MENTIONS\0\u{1}PAYMENTS\0\u{1}POLLS\0\u{9}TELLOMI_MEDIA_SPOILER\0\u{1}CURRENT\0")
 }
 
 nonisolated extension SignalServiceProtos_DataMessage.Quote: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

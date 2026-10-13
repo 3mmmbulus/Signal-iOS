@@ -500,8 +500,15 @@ private class QuotedMessageSnippetView: UIView {
         var thumbnailView: UIView?
 
         switch content {
-        case let .attachment(_, _, attachment, thumbnailImage):
-            thumbnailView = createAttachmentView(attachment, thumbnailImage: thumbnailImage)
+        case let .attachment(_, attachmentRef, attachment, thumbnailImage):
+            // Tellomi (tellomi/tellomi#1263, spec R-1): replying to a covered image / video never shows it here either.
+            let isSpoiler = SSKEnvironment.shared.databaseStorageRef.read { tx in
+                TellomiMediaSpoiler.isSpoiler(attachmentRef, tx: tx)
+            }
+            thumbnailView = createAttachmentView(
+                attachment,
+                thumbnailImage: isSpoiler ? TellomiSpoilerCoverView.coveredThumbnail(thumbnailImage) : thumbnailImage,
+            )
 
         case .attachmentStub(_, let stub):
             switch stub.renderingFlag {

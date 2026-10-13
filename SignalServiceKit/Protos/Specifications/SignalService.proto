@@ -412,7 +412,10 @@ message DataMessage {
     MENTIONS = 6;
     PAYMENTS = 7;
     POLLS = 8;
-    CURRENT = 8;
+    // Tellomi (ADR-0068 §4.3): a message with a covered (spoiler) image / video needs at least this version.
+    // If upstream adds its own 9, it moves past Tellomi's numbers (docs/signal/VERSIONS.md).
+    TELLOMI_MEDIA_SPOILER = 9;
+    CURRENT = 9;
   }
 
   message GiftBadge {

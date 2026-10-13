@@ -47,6 +47,12 @@ class MediaPageViewController: UIPageViewController {
         }
         Logger.info("ensureLoadedForDetailView done")
 
+        // Tellomi (tellomi/tellomi#1263, spec R-1): opening a covered image / video (a tile in All Media, the row in
+        // conversation settings) uncovers it; in the chat it's uncovered by the tap before this.
+        if initialItem.isTellomiSpoilerCovered {
+            TellomiMediaSpoiler.reveal(initialItem.referencedAttachment.reference)
+        }
+
         self.initialGalleryItem = initialItem
 
         super.init(
@@ -1261,7 +1267,7 @@ extension MediaGalleryItem: GalleryRailItem {
 
 extension MediaGalleryAlbum: GalleryRailItemProvider {
     var railItems: [GalleryRailItem] {
-        return self.items
+        return self.stripItems
     }
 }
 

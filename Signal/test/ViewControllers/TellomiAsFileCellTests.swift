@@ -17,6 +17,7 @@ import XCTest
 ///
 /// 收到的那条从 **proto** 建（`createAttachmentPointer`）：`AttachmentPointer.tellomi.asFile` → 存成 `.tellomiAsFile` → 文件行，
 /// 一路都是真代码。截图只在 `TELLOMI_SHOTS=1` 时存（xcodebuild 用 `TEST_RUNNER_TELLOMI_SHOTS=1`），写到 `TELLOMI_SHOTS_DIR/<屏宽>/`。
+/// 同一套也验收到的被罩住（spoiler，spec R-1）的图片：`AttachmentPointer.tellomi.spoiler` → 会话里罩着 → 点一下揭示、记住。
 final class TellomiAsFileCellTests: XCTestCase {
 
     private var oldContext: (any AppContext)!
@@ -58,6 +59,7 @@ final class TellomiAsFileCellTests: XCTestCase {
                 tx: tx,
             )
         }
+        TellomiMediaSpoiler.resetRevealedInMemoryForTesting()
     }
 
     @MainActor
@@ -229,6 +231,119 @@ final class TellomiAsFileCellTests: XCTestCase {
         }
     }
 
+    // MARK: - 被罩住的图片 / 视频（spec R-1）
+
+    /// 收到的指针带 spoiler：从 proto 一路落库，会话里罩着（模糊 + 粒子），下载钮照常在上面。
+    @MainActor
+    func testACoveredPointerIsCoveredInTheChat() async throws {
+        let thread = makeThread()
+        let message = try await insertPointer(asFile: false, spoiler: true, thread: thread)
+
+        let hosted = try await host(message: message, thread: thread, width: 402)
+        defer { hosted.tearDown() }
+        let item = try XCTUnwrap(hosted.componentState.bodyMedia?.items.first)
+        XCTAssertTrue(item.isTellomiSpoilerCovered)
+        let cover = try XCTUnwrap(Self.find(TellomiSpoilerCoverView.self, in: hosted.cellView))
+        XCTAssertTrue(cover.isCovering)
+        XCTAssertFalse(cover.isHidden)
+    }
+
+    /// spoiler 和 asFile 一起：按文件，文件行，不罩（ADR-0068 §4.1）。
+    @MainActor
+    func testSpoilerOnSomethingSentAsAFileIsIgnored() async throws {
+        let thread = makeThread()
+        let message = try await insertPointer(asFile: true, spoiler: true, thread: thread)
+
+        let hosted = try await host(message: message, thread: thread, width: 402)
+        defer { hosted.tearDown() }
+        XCTAssertNotNil(hosted.componentState.genericAttachment)
+        XCTAssertNil(hosted.componentState.bodyMedia)
+        let reference = try XCTUnwrap(bodyAttachments(of: message).first)
+        read { tx in XCTAssertFalse(TellomiMediaSpoiler.isSpoiler(reference.reference, tx: tx)) }
+    }
+
+    /// 到了的图：点一下从点的位置揭示，揭示中再点不算；揭示记在这台设备上，重画后不再罩。
+    @MainActor
+    func testTappingUncoversFromTheTapAndIsRemembered() async throws {
+        let thread = makeThread()
+        let message = try await insertStream(renderingFlag: .default, fileName: "IMG_0009.PNG", thread: thread, spoiler: true)
+        let reference = try XCTUnwrap(bodyAttachments(of: message).first).reference
+
+        let hosted = try await host(message: message, thread: thread, width: 402)
+        let cover = try XCTUnwrap(Self.find(TellomiSpoilerCoverView.self, in: hosted.cellView))
+        let mediaView = try XCTUnwrap(Self.find(CVMediaView.self, in: hosted.cellView))
+        XCTAssertTrue(mediaView.isTellomiSpoilerCovering)
+
+        let tap = FixedPointTap(pointInWindow: mediaView.convert(CGPoint(x: 40, y: 30), to: nil))
+        XCTAssertTrue(hosted.cellView.handleTap(sender: tap, componentDelegate: hosted.delegate))
+        XCTAssertTrue(cover.isRevealing)
+        XCTAssertTrue(hosted.cellView.handleTap(sender: tap, componentDelegate: hosted.delegate))
+        XCTAssertTrue(cover.isRevealing)
+
+        try await Task.sleep(nanoseconds: UInt64((TellomiSpoilerCoverView.revealDuration + 0.4) * 1_000_000_000))
+        XCTAssertFalse(cover.isCovering)
+        XCTAssertTrue(cover.isHidden)
+        XCTAssertFalse(mediaView.isTellomiSpoilerCovering)
+
+        // Written to the database in the background.
+        var isCovered = true
+        for _ in 0..<20 where isCovered {
+            try await Task.sleep(nanoseconds: 100_000_000)
+            isCovered = read { tx in TellomiMediaSpoiler.isCovered(reference, tx: tx) }
+        }
+        XCTAssertFalse(isCovered)
+        hosted.tearDown()
+
+        TellomiMediaSpoiler.resetRevealedInMemoryForTesting()
+        let again = try await host(message: message, thread: thread, width: 402)
+        defer { again.tearDown() }
+        XCTAssertEqual(again.componentState.bodyMedia?.items.first?.isTellomiSpoilerCovered, false)
+        XCTAssertNil(Self.find(TellomiSpoilerCoverView.self, in: again.cellView))
+    }
+
+    /// 给人看的截图：罩着（到了）和揭示以后，浅色和深色各一张。没下载的不截：这个整窗截图里没下载的图（罩不罩都一样）画成黑的。
+    @MainActor
+    func testSpoilerShots() async throws {
+        guard ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1" else {
+            throw XCTSkip("只在 TELLOMI_SHOTS=1 时截图")
+        }
+        for dark in [false, true] {
+            let thread = makeThread()
+            let uncovered = try await insertStream(renderingFlag: .default, fileName: "IMG_0011.PNG", thread: thread, spoiler: true)
+            write { tx in
+                for reference in DependenciesBridge.shared.attachmentStore.fetchReferences(owner: .messageBodyAttachment(messageRowId: uncovered.sqliteRowId!), tx: tx) {
+                    TellomiMediaSpoiler.markRevealed(reference, tx: tx)
+                }
+            }
+            let messages = [
+                try await insertStream(renderingFlag: .default, fileName: "IMG_0010.PNG", thread: thread, spoiler: true),
+                uncovered,
+            ]
+            var images = [UIImage]()
+            for message in messages {
+                let hosted = try await host(message: message, thread: thread, width: 402, dark: dark)
+                images.append(render(hosted))
+                hosted.tearDown()
+            }
+            try save(stack(images, width: 402, dark: dark), name: "spoiler-\(dark ? "dark" : "light").png")
+        }
+    }
+
+    /// 一个固定在某一点的点按（`location(in:)` 是这一点换到那个视图里）。
+    private final class FixedPointTap: UITapGestureRecognizer {
+        private let pointInWindow: CGPoint
+
+        init(pointInWindow: CGPoint) {
+            self.pointInWindow = pointInWindow
+            super.init(target: nil, action: nil)
+        }
+
+        override func location(in view: UIView?) -> CGPoint {
+            guard let view else { return pointInWindow }
+            return view.convert(pointInWindow, from: nil)
+        }
+    }
+
     // MARK: - Building messages
 
     private func makeThread() -> TSContactThread {
@@ -272,7 +387,7 @@ final class TellomiAsFileCellTests: XCTestCase {
 
     /// Received and not downloaded yet: built from the proto, as MessageReceiver does.
     @MainActor
-    private func insertPointer(asFile: Bool, thread: TSContactThread) async throws -> TSMessage {
+    private func insertPointer(asFile: Bool, spoiler: Bool = false, thread: TSContactThread) async throws -> TSMessage {
         let message = try insertMessage(thread: thread)
         let proto = SSKProtoAttachmentPointer.builder()
         proto.setCdnKey("cdn-key-\(UUID().uuidString)")
@@ -285,9 +400,14 @@ final class TellomiAsFileCellTests: XCTestCase {
         proto.setBlurHash(Self.blurHash)
         proto.setWidth(4032)
         proto.setHeight(3024)
-        if asFile {
+        if asFile || spoiler {
             let tellomi = SSKProtoTellomiAttachment.builder()
-            tellomi.setAsFile(true)
+            if asFile {
+                tellomi.setAsFile(true)
+            }
+            if spoiler {
+                tellomi.setSpoiler(true)
+            }
             proto.setTellomi(tellomi.buildInfallibly())
         }
         try write { tx in
@@ -301,7 +421,13 @@ final class TellomiAsFileCellTests: XCTestCase {
 
     /// Already here (downloaded, or sent from this device).
     @MainActor
-    private func insertStream(renderingFlag: AttachmentReference.RenderingFlag, fileName: String, thread: TSContactThread, body: String? = nil) async throws -> TSMessage {
+    private func insertStream(
+        renderingFlag: AttachmentReference.RenderingFlag,
+        fileName: String,
+        thread: TSContactThread,
+        body: String? = nil,
+        spoiler: Bool = false,
+    ) async throws -> TSMessage {
         let message = try insertMessage(thread: thread, body: body)
         let pending = try await DependenciesBridge.shared.attachmentContentValidator.validateDataContents(
             gradientPng(size: CGSize(width: 1200, height: 900)),
@@ -314,6 +440,14 @@ final class TellomiAsFileCellTests: XCTestCase {
                 from: OwnedAttachmentDataSource(dataSource: .pendingAttachment(pending), owner: bodyOwner(message, thread: thread)),
                 tx: tx,
             )
+            if spoiler {
+                // As if it had come in covered and then downloaded: the mark the incoming pointer leaves.
+                let tellomi = SSKProtoTellomiAttachment.builder()
+                tellomi.setSpoiler(true)
+                let pointer = SSKProtoAttachmentPointer.builder()
+                pointer.setTellomi(tellomi.buildInfallibly())
+                TellomiMediaSpoiler.markReceived(pointer.buildInfallibly(), mimeType: "image/png", owner: bodyOwner(message, thread: thread), tx: tx)
+            }
         }
         return message
     }

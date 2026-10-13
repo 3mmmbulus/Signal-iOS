@@ -278,6 +278,10 @@ public extension ConversationViewController {
         }
         imageView.contentMode = .scaleAspectFill
         imageView.image = attachmentStream.attachmentStream.thumbnailImageSync(quality: .small)
+        // Tellomi (tellomi/tellomi#1263, spec R-1): like a quote, the pinned bar never shows a covered image / video.
+        if TellomiMediaSpoiler.isSpoiler(attachment.reference, tx: tx) {
+            imageView.image = TellomiSpoilerCoverView.coveredThumbnail(imageView.image)
+        }
         imageView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             imageView.widthAnchor.constraint(equalToConstant: 30),

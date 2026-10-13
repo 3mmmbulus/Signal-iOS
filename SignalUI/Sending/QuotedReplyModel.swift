@@ -445,7 +445,7 @@ public class QuotedReplyModel {
         case .stub(let stub):
             return buildQuotedReplyModel(originalContent: .attachmentStub(originalMessageBody, stub))
         case .thumbnail(let thumbnailReferencedAttachment):
-            let image: UIImage? = {
+            var image: UIImage? = {
                 if
                     let image = thumbnailReferencedAttachment.attachment
                         .asStream()?
@@ -487,6 +487,13 @@ public class QuotedReplyModel {
                     tx: transaction,
                 )
             {
+                // Tellomi (tellomi/tellomi#1263, spec R-1): quoting a covered image / video never shows it, uncovered here or not.
+                if
+                    TellomiMediaSpoiler.isSpoiler(originalAttachmentReference, tx: transaction)
+                    || TellomiMediaSpoiler.isSpoiler(thumbnailReferencedAttachment.reference, tx: transaction)
+                {
+                    image = TellomiSpoilerCoverView.coveredThumbnail(image)
+                }
                 return buildQuotedReplyModel(originalContent: .attachment(
                     originalMessageBody,
                     attachment: .init(
@@ -496,6 +503,10 @@ public class QuotedReplyModel {
                     thumbnailImage: image,
                 ))
             } else {
+                // Tellomi (spec R-1): the sender's thumbnail of a covered image / video.
+                if TellomiMediaSpoiler.isSpoiler(thumbnailReferencedAttachment.reference, tx: transaction) {
+                    image = TellomiSpoilerCoverView.coveredThumbnail(image)
+                }
                 return buildQuotedReplyModel(originalContent: .attachment(
                     originalMessageBody,
                     attachment: thumbnailReferencedAttachment,

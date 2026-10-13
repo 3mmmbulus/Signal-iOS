@@ -427,6 +427,22 @@ class CVComponentBodyMedia: CVComponentBase, CVComponent {
             return true
         }
 
+        // Tellomi (tellomi/tellomi#1263, spec R-1): a covered image / video that's on this device uncovers first, from where it
+        // was tapped; only the next tap opens it (Telegram: `MediaDustNode.tap(at:)` before the media opens). Not yet
+        // downloaded ones keep the usual tap (download / cancel) and stay covered.
+        if mediaView.isTellomiSpoilerCovering {
+            switch mediaView.attachment {
+            case .stream, .backupThumbnail:
+                let reference = mediaView.attachment.attachment.reference
+                mediaView.tellomiRevealSpoiler(from: sender.location(in: mediaView)) {
+                    TellomiMediaSpoiler.reveal(reference)
+                }
+                return true
+            case .pointer, .undownloadable:
+                break
+            }
+        }
+
         switch mediaView.attachment {
         case .pointer(let pointer, let downloadState):
             switch downloadState {

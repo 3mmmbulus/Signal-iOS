@@ -137,7 +137,14 @@ class MediaGalleryCellItemPhotoVideo: PhotoGridItem {
     }
 
     func asyncThumbnail(completion: @escaping (UIImage?) -> Void) {
-        galleryItem.thumbnailImage(completion: completion)
+        // Tellomi (tellomi/tellomi#1263, spec R-1): a covered (spoiler) one shows blurred here; opening it uncovers it.
+        guard galleryItem.isTellomiSpoilerCovered else {
+            galleryItem.thumbnailImage(completion: completion)
+            return
+        }
+        galleryItem.thumbnailImage { image in
+            completion(TellomiSpoilerCoverView.coveredThumbnail(image))
+        }
     }
 
     var mediaMetadata: MediaMetadata? {

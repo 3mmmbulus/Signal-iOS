@@ -21,6 +21,8 @@ class CVMediaView: ManualLayoutViewWithLayer {
     private let isBroken: Bool
     private var reusableMediaView: ReusableMediaView?
     private var progressView: CVAttachmentProgressView?
+    /// Tellomi (tellomi/tellomi#1263, spec R-1): over a covered (spoiler) image / video until it's uncovered.
+    private var tellomiSpoilerCover: TellomiSpoilerCoverView?
 
     // Circular Play / Pause / Download progress etc
     private static let centerButtonSize: CGFloat = 44
@@ -35,6 +37,7 @@ class CVMediaView: ManualLayoutViewWithLayer {
         isBorderless: Bool,
         isLoopingVideo: Bool,
         isBroken: Bool,
+        isTellomiSpoilerCovered: Bool = false,
         thumbnailQuality: AttachmentThumbnailQuality,
         conversationStyle: ConversationStyle,
     ) {
@@ -54,6 +57,30 @@ class CVMediaView: ManualLayoutViewWithLayer {
         clipsToBounds = true
 
         createContents()
+
+        if isTellomiSpoilerCovered {
+            let cover = TellomiSpoilerCoverView()
+            addSubviewToFillSuperviewEdges(cover)
+            cover.cover(attachment.attachment)
+            tellomiSpoilerCover = cover
+            // Download / upload progress stays on top (the play button doesn't: it shows once uncovered).
+            if let progressView {
+                bringSubviewToFront(progressView)
+            }
+        }
+    }
+
+    // MARK: - Tellomi spoiler
+
+    /// Still covered (or being uncovered): a tap uncovers instead of opening the viewer.
+    var isTellomiSpoilerCovering: Bool {
+        tellomiSpoilerCover?.isCovering == true
+    }
+
+    /// Uncovers from [location] (in this view); [completion] runs once the reveal has finished.
+    func tellomiRevealSpoiler(from location: CGPoint, completion: @escaping () -> Void) {
+        guard let tellomiSpoilerCover else { return }
+        tellomiSpoilerCover.reveal(from: convert(location, to: tellomiSpoilerCover), completion: completion)
     }
 
     func loadMedia() {

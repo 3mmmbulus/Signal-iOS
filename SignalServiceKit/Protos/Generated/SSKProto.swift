@@ -9510,6 +9510,7 @@ public enum SSKProtoDataMessageProtocolVersion: Int32 {
     case mentions = 6
     case payments = 7
     case polls = 8
+    case tellomiMediaSpoiler = 9
 }
 
 private func SSKProtoDataMessageProtocolVersionWrap(_ value: SignalServiceProtos_DataMessage.ProtocolVersion) -> SSKProtoDataMessageProtocolVersion {
@@ -9523,6 +9524,7 @@ private func SSKProtoDataMessageProtocolVersionWrap(_ value: SignalServiceProtos
     case .mentions: return .mentions
     case .payments: return .payments
     case .polls: return .polls
+    case .tellomiMediaSpoiler: return .tellomiMediaSpoiler
     }
 }
 
@@ -9537,6 +9539,7 @@ private func SSKProtoDataMessageProtocolVersionUnwrap(_ value: SSKProtoDataMessa
     case .mentions: return .mentions
     case .payments: return .payments
     case .polls: return .polls
+    case .tellomiMediaSpoiler: return .tellomiMediaSpoiler
     }
 }
 

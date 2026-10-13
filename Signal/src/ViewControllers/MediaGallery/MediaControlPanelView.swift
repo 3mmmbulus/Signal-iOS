@@ -131,7 +131,7 @@ class MediaControlPanelView: UIView {
     }()
 
     private func didSelectAlbumItem(at index: Int) {
-        guard let items = currentMediaAlbum?.items, items.indices.contains(index) else {
+        guard let items = currentMediaAlbum?.stripItems, items.indices.contains(index) else {
             return
         }
         delegate?.mediaControlPanel(self, didSelectAlbumItem: items[index])
@@ -612,7 +612,7 @@ class MediaControlPanelView: UIView {
     private var showThumbnailStrip: Bool {
         if #unavailable(iOS 26), isVerticallyCompactLayout { return false }
         guard let currentMediaAlbum else { return false }
-        return currentMediaAlbum.items.count > 1
+        return currentMediaAlbum.stripItems.count > 1
     }
 
     // MARK: Video Playback Controls
@@ -758,8 +758,8 @@ class MediaControlPanelView: UIView {
         // Don't update thumbnail strip if we're going to hide it - for better visual experience.
         if showThumbnailStrip, let album = currentMediaAlbum {
             thumbnailStrip.setItems(
-                album.items,
-                selected: album.items.firstIndex(of: item) ?? 0,
+                album.stripItems,
+                selected: album.stripItems.firstIndex(of: item) ?? 0,
                 animated: animated && thumbnailStrip.isHidden == false,
             )
         }

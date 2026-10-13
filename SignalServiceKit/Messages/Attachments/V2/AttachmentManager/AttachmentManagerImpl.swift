@@ -237,6 +237,10 @@ public class AttachmentManagerImpl: AttachmentManager {
             tx: tx,
         )
 
+        // Tellomi (ADR-0068 §4.1, spec R-1): every incoming pointer (received, synced from a linked device, edited in)
+        // comes through here; a covered image / video is remembered by its place in the message.
+        TellomiMediaSpoiler.markReceived(proto, mimeType: mimeType, owner: owner, tx: tx)
+
         switch referenceParams.owner {
         case .message(.sticker(let stickerInfo)):
             // Only for stickers, schedule a high priority "download"
@@ -1056,6 +1060,16 @@ public class AttachmentManagerImpl: AttachmentManager {
                 reference: referenceParams,
                 tx: tx,
             )
+
+            // Tellomi (spec R-1): the sender's thumbnail of a covered image / video keeps the quote covered.
+            if let thumbnailProtoFromSender = originalAttachmentSource.thumbnailPointerFromSender {
+                TellomiMediaSpoiler.markReceived(
+                    thumbnailProtoFromSender,
+                    mimeType: thumbnailProtoFromSender.contentType ?? "",
+                    owner: referenceOwner,
+                    tx: tx,
+                )
+            }
 
             // If we know we have a stream, enqueue the download at high priority
             // so that copy happens ASAP.

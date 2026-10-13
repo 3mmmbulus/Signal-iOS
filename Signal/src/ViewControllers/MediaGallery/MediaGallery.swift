@@ -24,6 +24,11 @@ class MediaGalleryAlbum {
         return originalItems.filter { !mediaGallery.deletedGalleryItems.contains($0) }
     }
 
+    /// Tellomi (tellomi/tellomi#1263, spec R-1): the thumbnail strip leaves out covered (spoiler) ones still covered here.
+    var stripItems: [MediaGalleryItem] {
+        items.filter { !$0.isTellomiSpoilerCovered }
+    }
+
     weak var mediaGallery: MediaGallery?
 
     fileprivate init(items: [MediaGalleryItem], mediaGallery: MediaGallery) {
@@ -57,6 +62,14 @@ struct MediaGalleryItem:
     let numItemsInAlbum: Int
     let orderingKey: MediaGalleryItemOrderingKey
 
+    /// Tellomi (tellomi/tellomi#1263, spec R-1): covered (spoiler) and not uncovered on this device when it was loaded.
+    private let isTellomiSpoilerCoveredAtLoad: Bool
+
+    /// Still covered: swiping in the viewer skips it, the thumbnail strip leaves it out, tiles show it blurred.
+    var isTellomiSpoilerCovered: Bool {
+        isTellomiSpoilerCoveredAtLoad && !TellomiMediaSpoiler.isRevealedSinceLoad(referencedAttachment.reference)
+    }
+
     var receivedAtTimestamp: UInt64 { message.receivedAtTimestamp }
 
     init(
@@ -78,6 +91,7 @@ struct MediaGalleryItem:
         self.numItemsInAlbum = numItemsInAlbum
         self.orderingKey = MediaGalleryItemOrderingKey(messageSortKey: message.sortId, attachmentSortKey: albumIndex)
         self.threadRowId = threadRowId
+        self.isTellomiSpoilerCoveredAtLoad = TellomiMediaSpoiler.isCovered(referencedAttachment.reference, tx: transaction)
         if let captionText = referencedAttachment.reference.legacyMessageCaption?.filterForDisplay {
             self.captionForDisplay = .attachmentStreamCaption(captionText)
         } else if let body = message.body {
@@ -1057,10 +1071,20 @@ class MediaGallery {
         // Repeatedly calling indexPath(before:) or indexPath(after:) isn't super efficient,
         // but we don't expect it to be more than a few steps.
         let laterItemPaths = sequence(first: currentPath, next: advance).dropFirst()
+        var skippedCoveredItem = false
         for nextPath in laterItemPaths {
             guard let loadedNextItem = galleryItem(at: nextPath) else {
-                owsFailDebug("should have loaded the next item already")
+                // Tellomi: skipping covered items can run past what's loaded; stop there.
+                if !skippedCoveredItem {
+                    owsFailDebug("should have loaded the next item already")
+                }
                 return nil
+            }
+
+            // Tellomi (tellomi/tellomi#1263, spec R-1): swiping never lands on a covered (spoiler) item.
+            if loadedNextItem.isTellomiSpoilerCovered {
+                skippedCoveredItem = true
+                continue
             }
 
             if !deletedGalleryItems.contains(loadedNextItem) {
