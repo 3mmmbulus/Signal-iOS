@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ImageIO
 import Photos
 import SignalServiceKit
 import SignalUI
+import UniformTypeIdentifiers
 
 /// Tellomi（tellomi/tellomi#1261）：选图网格里的一项。正式来自系统相册（`asset` 非空）；测试里是内存里的假图（`asset` 为空）。
 struct TellomiPhotoPickerItem: Hashable {
@@ -45,12 +47,29 @@ protocol TellomiPhotoPickerLibrary: AnyObject {
 
     func attachment(for item: TellomiPhotoPickerItem, attachmentLimits: OutgoingAttachmentLimits) async throws -> PreviewableAttachment
 
+    /// Tellomi（tellomi/tellomi#1263 P-5「以文件发送」）：是不是 HEIC（已选里有就先问要不要转成 JPEG）。
+    func isHeic(_ item: TellomiPhotoPickerItem) -> Bool
+
+    /// Tellomi（#1263）：相册里的原文件名（IMG_1234.HEIC）。编辑过的照片按文件发时沿用它。
+    func originalFileName(for item: TellomiPhotoPickerItem) -> String?
+
+    /// Tellomi（#1263）：按文件发的那个文件——相册里的当前版本本身（不压缩、不转码），带原文件名；`convertHeicToJpeg` 时 HEIC 先转成 JPEG。
+    /// 超过上限的不出附件，交回文件名，由调用方统一提示。
+    func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile
+
     /// 相册内容变了（比如「选择更多照片…」之后），网格要重读。
     var onChange: (() -> Void)? { get set }
 }
 
 protocol TellomiPhotoPickerRequest {
     func cancel()
+}
+
+/// Tellomi（#1263）：一项按文件发的结果。
+enum TellomiPhotoPickerFile {
+    case attachment(PreviewableAttachment)
+    /// 超过单个文件的上限，没发。
+    case tooLarge(fileName: String)
 }
 
 /// 系统相册：「最近」是全部照片与视频按拍摄时间倒序；其余相册是收藏、视频、截屏与用户自己的相册（空的不列）。
@@ -184,6 +203,71 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
         return try await contents.outgoingAttachment(for: asset, attachmentLimits: attachmentLimits)
     }
 
+    // MARK: - 按文件发送（#1263）
+
+    /// 相册里的当前版本：在「照片」里编辑过的是 fullSize*（用户在网格里看到的就是它），否则是原件。实况照片只取静态图（spec F-3）。
+    private static func currentResource(in resources: [PHAssetResource], isVideo: Bool) -> PHAssetResource? {
+        let types: [PHAssetResourceType] = isVideo ? [.fullSizeVideo, .video] : [.fullSizePhoto, .photo]
+        return types.lazy.compactMap { type in resources.first { $0.type == type } }.first
+    }
+
+    private static func originalResource(in resources: [PHAssetResource], isVideo: Bool) -> PHAssetResource? {
+        resources.first { $0.type == (isVideo ? .video : .photo) }
+    }
+
+    func isHeic(_ item: TellomiPhotoPickerItem) -> Bool {
+        guard let asset = item.asset, !item.isVideo else { return false }
+        let resource = Self.currentResource(in: PHAssetResource.assetResources(for: asset), isVideo: false)
+        return resource.map { TellomiHeicConversion.isHeic(uti: $0.uniformTypeIdentifier) } ?? false
+    }
+
+    func originalFileName(for item: TellomiPhotoPickerItem) -> String? {
+        guard let asset = item.asset else { return nil }
+        let resources = PHAssetResource.assetResources(for: asset)
+        return (Self.originalResource(in: resources, isVideo: item.isVideo) ?? Self.currentResource(in: resources, isVideo: item.isVideo))?.originalFilename
+    }
+
+    func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile {
+        guard let asset = item.asset else {
+            throw OWSAssertionError("Missing asset")
+        }
+        let resources = PHAssetResource.assetResources(for: asset)
+        guard let resource = Self.currentResource(in: resources, isVideo: item.isVideo) else {
+            throw OWSAssertionError("Missing asset resource")
+        }
+        var dataUTI = resource.uniformTypeIdentifier
+        // 文件名用原件的（IMG_1234.HEIC），后缀跟着当前版本的格式走（在「照片」里编辑过的可能是 JPEG）。
+        var fileName = TellomiHeicConversion.fileName(
+            Self.originalResource(in: resources, isVideo: item.isVideo)?.originalFilename ?? resource.originalFilename,
+            matching: dataUTI,
+        )
+
+        var fileUrl = OWSFileSystem.temporaryFileUrl(fileExtension: (fileName as NSString).pathExtension, isAvailableWhileDeviceLocked: false)
+        let options = PHAssetResourceRequestOptions()
+        // iCloud 里没下到本机的，先下载（同上游取原图）。
+        options.isNetworkAccessAllowed = true
+        try await PHAssetResourceManager.default().writeData(for: resource, toFile: fileUrl, options: options)
+
+        if convertHeicToJpeg, TellomiHeicConversion.isHeic(uti: dataUTI) {
+            if let jpeg = TellomiHeicConversion.convertToJpeg(at: fileUrl) {
+                try? OWSFileSystem.deleteFileIfExists(url: fileUrl)
+                fileUrl = jpeg
+                dataUTI = UTType.jpeg.identifier
+                fileName = TellomiHeicConversion.fileName(fileName, matching: dataUTI)
+            } else {
+                Logger.warn("Couldn't convert a HEIC to JPEG, sending it as it is")
+            }
+        }
+
+        let dataSource = DataSourcePath(fileUrl: fileUrl, ownership: .owned)
+        dataSource.sourceFilename = fileName
+        do {
+            return .attachment(try PreviewableAttachment.tellomiAsFileAttachment(dataSource: dataSource, dataUTI: dataUTI, attachmentLimits: attachmentLimits))
+        } catch SignalAttachmentError.fileSizeTooLarge {
+            return .tooLarge(fileName: fileName)
+        }
+    }
+
     // MARK: - PHPhotoLibraryChangeObserver
 
     func photoLibraryDidChange(_ changeInstance: PHChange) {
@@ -191,5 +275,43 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
             self.fetchResults.removeAll()
             self.onChange?()
         }
+    }
+}
+
+/// Tellomi（tellomi/tellomi#1263 P-5）：按文件发送时的 HEIC 与文件名。电脑端不认 HEIC，用户选了「转成 JPEG」就转；
+/// 照 Telegram iOS（`TGMediaAssetModernImageSignals`：写成 JPEG，`.heic` 改成 `.JPG`）的机制，代码是自己写的。
+enum TellomiHeicConversion {
+
+    static func isHeic(uti: String) -> Bool {
+        guard let type = UTType(uti) else { return false }
+        return type.conforms(to: .heic) || type.conforms(to: .heif)
+    }
+
+    /// 后缀跟着内容的格式走：IMG_1234.HEIC + JPEG → IMG_1234.JPG（原来是大写就大写）；已经对得上的不动，没有后缀的加上。
+    static func fileName(_ fileName: String, matching uti: String) -> String {
+        guard let type = UTType(uti), let preferred = type.preferredFilenameExtension else { return fileName }
+        let currentExtension = (fileName as NSString).pathExtension
+        if !currentExtension.isEmpty, let current = UTType(filenameExtension: currentExtension), current.conforms(to: type) {
+            return fileName
+        }
+        var newExtension = type.conforms(to: .jpeg) ? "jpg" : preferred
+        if !currentExtension.isEmpty, currentExtension == currentExtension.uppercased() {
+            newExtension = newExtension.uppercased()
+        }
+        let base = currentExtension.isEmpty ? fileName : (fileName as NSString).deletingPathExtension
+        return "\(base).\(newExtension)"
+    }
+
+    /// 整张转成 JPEG（质量 0.9），方向、EXIF 等元数据照原图带过去。转不了返回 nil（调用方原样发）。
+    static func convertToJpeg(at url: URL) -> URL? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let output = OWSFileSystem.temporaryFileUrl(fileExtension: "jpg", isAvailableWhileDeviceLocked: false)
+        guard let destination = CGImageDestinationCreateWithURL(output as CFURL, UTType.jpeg.identifier as CFString, 1, nil) else { return nil }
+        CGImageDestinationAddImageFromSource(destination, source, 0, [kCGImageDestinationLossyCompressionQuality: 0.9] as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else {
+            try? OWSFileSystem.deleteFileIfExists(url: output)
+            return nil
+        }
+        return output
     }
 }

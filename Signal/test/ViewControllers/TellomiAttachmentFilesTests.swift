@@ -713,6 +713,14 @@ private final class EmptyPhotoLibrary: TellomiPhotoPickerLibrary {
     func attachment(for item: TellomiPhotoPickerItem, attachmentLimits: OutgoingAttachmentLimits) async throws -> PreviewableAttachment {
         fatalError("no items")
     }
+
+    func isHeic(_ item: TellomiPhotoPickerItem) -> Bool { false }
+
+    func originalFileName(for item: TellomiPhotoPickerItem) -> String? { nil }
+
+    func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile {
+        fatalError("no items")
+    }
 }
 
 private final class FilesTestApprovalDataSource: AttachmentApprovalViewControllerDataSource {

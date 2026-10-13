@@ -94,6 +94,8 @@ extension ConversationViewController {
             initialMessageBody: inputToolbar.messageBodyForSending,
             defaultImageQuality: SSKEnvironment.shared.databaseStorageRef.read(block: ImageQuality.fetchValue(tx:)),
             canSendSeparately: true,
+            // #1263：「···」→ 以文件发送（会话里一个一条地发）。
+            canSendAsFile: true,
             hasQuotedReplyDraft: inputToolbar.quotedReplyDraft != nil,
             attachmentLimits: .currentLimits(),
             approvalDataSource: self,

@@ -24,6 +24,12 @@ extension AttachmentApprovalViewController {
         try await prepareAttachment(attachmentApprovalItem: item, attachmentLimits: attachmentLimits)
     }
 
+    /// tellomi/tellomi#1263：这张照片在预览 / 编辑页里改过（裁剪、涂鸦、模糊……）。按文件发送时改过的发编辑后的图，没改过的发原文件。
+    @MainActor
+    public static func tellomiHasImageEdits(_ item: AttachmentApprovalItem) -> Bool {
+        item.imageEditorModel?.isDirty == true
+    }
+
     public func tellomiActivateTool(_ tool: TellomiApprovalEditTool) {
         switch tool {
         case .pen:

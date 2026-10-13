@@ -73,6 +73,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     /// P-5 的「···」里有哪几项。
     enum MoreMenuItem: Equatable {
+        /// #1263：以文件发送（多张时「以文件发送（N 个）」）。
+        case sendAsFile
         case sendHighQuality
         case sendStandardQuality
         case sendSeparately
@@ -86,6 +88,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private let library: TellomiPhotoPickerLibrary
     private let defaultImageQuality: ImageQuality
     private let canSendSeparately: Bool
+    /// #1263：「以文件发送」只给会话（同「单独发送」，一个一条地发）。
+    private let canSendAsFile: Bool
     private let hasQuotedReplyDraft: Bool
     private let maxSelection: Int
     let attachmentLimits: OutgoingAttachmentLimits
@@ -131,6 +135,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         initialMessageBody: MessageBody?,
         defaultImageQuality: ImageQuality,
         canSendSeparately: Bool,
+        canSendAsFile: Bool = false,
         hasQuotedReplyDraft: Bool,
         attachmentLimits: OutgoingAttachmentLimits,
         approvalDataSource: AttachmentApprovalViewControllerDataSource,
@@ -145,6 +150,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         self.initialMessageBody = initialMessageBody
         self.defaultImageQuality = defaultImageQuality
         self.canSendSeparately = canSendSeparately
+        self.canSendAsFile = canSendAsFile
         self.hasQuotedReplyDraft = hasQuotedReplyDraft
         self.attachmentLimits = attachmentLimits
         self.approvalDataSource = approvalDataSource
@@ -986,9 +992,13 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     // MARK: - More menu (P-5)
 
-    /// 已选里有照片时「以高清质量发送」（默认已是高时换成「以标准质量发送」）；已选 ≥ 2 且是单个会话时「单独发送」。
+    /// 按这个顺序：「以文件发送」（#1263，会话里、有选中）；已选里有照片时「以高清质量发送」（默认已是高时换成「以标准质量发送」）；
+    /// 已选 ≥ 2 且是单个会话时「单独发送」。网格里没有一次性查看（那在预览页），遮罩那一刀再加「开了遮罩就没有以文件发送」。
     private func moreMenuItems() -> [MoreMenuItem] {
         var items = [MoreMenuItem]()
+        if canSendAsFile, !selectedIds.isEmpty {
+            items.append(.sendAsFile)
+        }
         if selectedItems.values.contains(where: { !$0.isVideo }) {
             items.append(defaultImageQuality == .high ? .sendStandardQuality : .sendHighQuality)
         }
@@ -1000,14 +1010,21 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     private func moreMenuActions() -> [UIMenuElement] {
         moreMenuItems().map { item in
-            UIAction(title: Self.title(for: item), image: Self.image(for: item)) { [weak self] _ in
+            UIAction(title: Self.title(for: item, selectedCount: selectedIds.count), image: Self.image(for: item)) { [weak self] _ in
                 self?.perform(item)
             }
         }
     }
 
-    private static func title(for item: MoreMenuItem) -> String {
+    private static func title(for item: MoreMenuItem, selectedCount: Int) -> String {
         switch item {
+        case .sendAsFile where selectedCount > 1:
+            String.nonPluralLocalizedStringWithFormat(
+                OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_AS_FILES_FORMAT", comment: "Photo picker more-menu item when several items are selected: send them right away as files (original quality, original file names). Embeds {{number of selected items}}."),
+                OWSFormat.formatInt(selectedCount),
+            )
+        case .sendAsFile:
+            OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_AS_FILE", comment: "Photo picker more-menu item when one item is selected: send it right away as a file (original quality, original file name).")
         case .sendHighQuality:
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY", comment: "Photo picker more-menu item: send the selection right away in high quality (this time only).")
         case .sendStandardQuality:
@@ -1019,6 +1036,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     private static func image(for item: MoreMenuItem) -> UIImage? {
         switch item {
+        case .sendAsFile: UIImage(named: "file-28")
         case .sendHighQuality: UIImage(named: "hd")
         case .sendStandardQuality: UIImage(named: "hd-slash")
         case .sendSeparately: Theme.iconImage(.buttonPhotoLibrary)
@@ -1027,6 +1045,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     private func perform(_ item: MoreMenuItem) {
         switch item {
+        case .sendAsFile:
+            sendAsFiles()
         case .sendHighQuality:
             send(quality: .high, separately: false)
         case .sendStandardQuality:
@@ -1034,6 +1054,146 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case .sendSeparately:
             send(quality: defaultImageQuality, separately: true)
         }
+    }
+
+    // MARK: - 以文件发送（#1263）
+
+    /// 「是否把照片转成 JPEG？」等着用户选（测试里直接选）。
+    private var heicChoice: ((Bool) -> Void)?
+    /// 「文件太大」提示点了「好」之后发剩下的（测试里直接点）。
+    private var sendAfterTooLarge: (() -> Void)?
+
+    /// P-5「以文件发送」：原图按文件发（不压缩、原文件名），一个一条、说明挂最后一条。已选里有没编辑过的 HEIC 先问要不要转成 JPEG
+    /// （电脑端不认 HEIC）：保留 HEIC / 转成 JPEG / 取消。
+    private func sendAsFiles() {
+        let items = selectedIds.compactMap { selectedItems[$0] }
+        guard !items.isEmpty else { return }
+        let hasHeic = items.contains { !hasImageEdits($0) && library.isHeic($0) }
+        guard hasHeic else {
+            sendAsFiles(items, convertHeicToJpeg: false)
+            return
+        }
+        let choose: (Bool) -> Void = { [weak self] convert in
+            self?.heicChoice = nil
+            self?.sendAsFiles(items, convertHeicToJpeg: convert)
+        }
+        heicChoice = choose
+        let actionSheet = ActionSheetController(message: OWSLocalizedString(
+            "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION",
+            comment: "Asked before sending photos as files when some of them are HEIC: whether to convert them to JPEG first.",
+        ))
+        actionSheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString("IMAGE_PICKER_TELLOMI_KEEP_HEIC", comment: "Option when sending photos as files: send the HEIC photos as they are."),
+            handler: { _ in choose(false) },
+        ))
+        actionSheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString("IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG", comment: "Option when sending photos as files: convert the HEIC photos to JPEG first."),
+            handler: { _ in choose(true) },
+        ))
+        actionSheet.addAction(ActionSheetAction(title: CommonStrings.cancelButton, style: .cancel, handler: { [weak self] _ in
+            self?.heicChoice = nil
+        }))
+        presentActionSheet(actionSheet)
+    }
+
+    /// 在预览 / 编辑页里改过这张照片（裁剪、涂鸦、模糊……）。改过的按编辑后的图发，不然打码的地方会原样发出去（同 Telegram 安卓）。
+    private func hasImageEdits(_ item: TellomiPhotoPickerItem) -> Bool {
+        approvalItems[item.id].map(AttachmentApprovalViewController.tellomiHasImageEdits) ?? false
+    }
+
+    private func sendAsFiles(_ items: [TellomiPhotoPickerItem], convertHeicToJpeg: Bool) {
+        let messageBody = messageBodyForSending
+        let library = self.library
+        let attachmentLimits = self.attachmentLimits
+        let editedItems = Dictionary(uniqueKeysWithValues: items.compactMap { item in
+            hasImageEdits(item) ? approvalItems[item.id].map { (item.id, $0) } : nil
+        })
+        ModalActivityIndicatorViewController.present(
+            fromViewController: self,
+            title: CommonStrings.preparingModal,
+            canCancel: true,
+            asyncBlock: { [weak self] modal in
+                let result = await Result<[TellomiPhotoPickerFile], Error> {
+                    var files = [TellomiPhotoPickerFile]()
+                    for item in items {
+                        try Task.checkCancellation()
+                        if let editItem = editedItems[item.id] {
+                            files.append(try await Self.editedFile(for: item, editItem: editItem, library: library, attachmentLimits: attachmentLimits))
+                        } else {
+                            // 视频的剪辑不带：按文件发的是原文件（同 Telegram 安卓 forceDocument 丢掉 videoEditedInfo）。
+                            files.append(try await library.fileAttachment(for: item, convertHeicToJpeg: convertHeicToJpeg, attachmentLimits: attachmentLimits))
+                        }
+                    }
+                    return files
+                }
+                modal.dismissIfNotCanceled(completionIfNotCanceled: {
+                    switch result {
+                    case .success(let files):
+                        self?.finishSendingAsFiles(files, messageBody: messageBody)
+                    case .failure(let error):
+                        Logger.warn("failed to prepare files. error: \(error)")
+                        OWSActionSheets.showActionSheet(title: OWSLocalizedString("IMAGE_PICKER_FAILED_TO_PROCESS_ATTACHMENTS", comment: "alert title"))
+                    }
+                })
+            },
+        )
+    }
+
+    /// 编辑过的照片：编辑后的图按文件发，文件名沿用原图（后缀跟着格式改，IMG_1234.HEIC → IMG_1234.JPG）。
+    private static func editedFile(
+        for item: TellomiPhotoPickerItem,
+        editItem: AttachmentApprovalItem,
+        library: TellomiPhotoPickerLibrary,
+        attachmentLimits: OutgoingAttachmentLimits,
+    ) async throws -> TellomiPhotoPickerFile {
+        let output = try await AttachmentApprovalViewController.tellomiOutputAttachment(for: editItem, attachmentLimits: attachmentLimits)
+        let dataSource = output.dataSource
+        let fileName = TellomiHeicConversion.fileName(
+            library.originalFileName(for: item) ?? dataSource.sourceFilename ?? "IMG",
+            matching: output.dataUTI,
+        )
+        dataSource.sourceFilename = fileName
+        do {
+            return .attachment(try PreviewableAttachment.tellomiAsFileAttachment(dataSource: dataSource, dataUTI: output.dataUTI, attachmentLimits: attachmentLimits))
+        } catch SignalAttachmentError.fileSizeTooLarge {
+            return .tooLarge(fileName: fileName)
+        }
+    }
+
+    /// 超过上限的不发：先提示「文件太大」并写明上限，点了「好」再发剩下的（一个都不剩就不发）。
+    private func finishSendingAsFiles(_ files: [TellomiPhotoPickerFile], messageBody: MessageBody?) {
+        var attachments = [PreviewableAttachment]()
+        var tooLarge = [String]()
+        for file in files {
+            switch file {
+            case .attachment(let attachment): attachments.append(attachment)
+            case .tooLarge(let fileName): tooLarge.append(fileName)
+            }
+        }
+        let send = { [weak self] in
+            guard let self else { return }
+            self.sendAfterTooLarge = nil
+            guard !attachments.isEmpty else { return }
+            self.delegate?.photoPicker(
+                self,
+                send: ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: self.defaultImageQuality),
+                messageBody: messageBody,
+                separately: true,
+            )
+        }
+        guard let name = tooLarge.first else {
+            send()
+            return
+        }
+        let limitText = ByteCountFormatter.string(fromByteCount: Int64(clamping: attachmentLimits.maxPlaintextBytes), countStyle: .file)
+        let actionSheet = ActionSheetController(title: String.nonPluralLocalizedStringWithFormat(
+            OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_TOO_LARGE_FORMAT", comment: "Alert when a picked file is over the size limit. Embeds {{file name}} and {{maximum size of one file}}."),
+            name,
+            limitText,
+        ))
+        actionSheet.addAction(ActionSheetAction(title: CommonStrings.okButton, handler: { _ in send() }))
+        sendAfterTooLarge = send
+        presentActionSheet(actionSheet)
     }
 
     // MARK: - Sending / editing
@@ -1623,7 +1783,31 @@ extension TellomiPhotoPickerViewController {
     var captionTextForTesting: String { captionTextView.messageBodyForSending.text }
     var albumTitlesForTesting: [String] { albums.map(\.title) }
     var moreMenuItemsForTesting: [MoreMenuItem] { moreMenuItems() }
-    var moreMenuTitlesForTesting: [String] { moreMenuItems().map { Self.title(for: $0) } }
+    var moreMenuTitlesForTesting: [String] { moreMenuItems().map { Self.title(for: $0, selectedCount: selectedIds.count) } }
+    /// #1263：「是否把照片转成 JPEG？」正在问。
+    var isAskingAboutHeicForTesting: Bool { heicChoice != nil }
+
+    /// 同真的选项：提问收起之后再选（这时才能接着弹「正在准备…」）。
+    func chooseHeicForTesting(convert: Bool) {
+        guard let choice = heicChoice else { return }
+        guard let presented = presentedViewController else {
+            choice(convert)
+            return
+        }
+        presented.dismiss(animated: false) { choice(convert) }
+    }
+
+    /// #1263：「文件太大」提示正在显示。
+    var isShowingTooLargeForTesting: Bool { sendAfterTooLarge != nil }
+
+    func acknowledgeTooLargeForTesting() {
+        guard let send = sendAfterTooLarge else { return }
+        guard let presented = presentedViewController else {
+            send()
+            return
+        }
+        presented.dismiss(animated: false) { send() }
+    }
     var collectionViewForTesting: UICollectionView { collectionView }
     var swipeSelectGestureForTesting: TellomiSwipeSelectGestureRecognizer { swipeSelectGesture }
 

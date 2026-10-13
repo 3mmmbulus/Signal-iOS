@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import ImageIO
 import LibSignalClient
 import UIKit
 import UniformTypeIdentifiers
@@ -270,6 +271,143 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         high.picker.performMoreMenuItemForTesting(.sendStandardQuality)
         let standard = try await nextSend(high, count: 1)
         XCTAssertEqual(standard.approved.imageQuality, .standard)
+    }
+
+    // MARK: - P-5「以文件发送」（#1263）
+
+    /// 会话里「···」第一项是「以文件发送」，多张时「以文件发送（N 个）」；只有视频也有（视频也能按文件发）。不是会话的没有。
+    @MainActor
+    func testSendAsFileMenuItem() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, ["Send as File", "Send in High Quality"])
+
+        picker.tapCheckForTesting(itemIndex: 3)
+        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality, .sendSeparately])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, ["Send as 2 Files", "Send in High Quality", "Send Separately"])
+
+        let videos = host(canSendAsFile: true)
+        defer { videos.tearDown() }
+        videos.picker.tapCheckForTesting(itemIndex: 1)
+        XCTAssertEqual(videos.picker.moreMenuItemsForTesting, [.sendAsFile])
+        XCTAssertTrue(videos.picker.isMoreButtonShownForTesting)
+
+        let notConversation = host()
+        defer { notConversation.tearDown() }
+        notConversation.picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertFalse(notConversation.picker.moreMenuItemsForTesting.contains(.sendAsFile))
+    }
+
+    /// 以文件发送：按勾的顺序、一个一条（说明挂最后一条由会话页做），每个都是按文件发、带原文件名；没有 HEIC 不问。
+    @MainActor
+    func testSendAsFilesSendsOriginalFilesSeparately() async throws {
+        let hosted = host(canSendAsFile: true, initialText: "原图")
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 3)
+        picker.tapCheckForTesting(itemIndex: 0)
+
+        picker.performMoreMenuItemForTesting(.sendAsFile)
+        XCTAssertFalse(picker.isAskingAboutHeicForTesting)
+        let sent = try await nextSend(hosted, count: 1)
+
+        XCTAssertTrue(sent.separately)
+        XCTAssertEqual(sent.body?.text, "原图")
+        XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r3", "r0"])
+        XCTAssertEqual(sent.approved.attachments.map(\.renderingFlag), [.tellomiAsFile, .tellomiAsFile])
+        XCTAssertEqual(sent.approved.attachments.map(\.dataSource.sourceFilename), ["IMG_r3.JPG", "IMG_r0.JPG"])
+        XCTAssertEqual(hosted.library.fileRequests.map { $0.convertHeicToJpeg }, [false, false])
+    }
+
+    /// 已选里有 HEIC 先问「是否把照片转成 JPEG？」：选「转成 JPEG」就转、文件名改 .JPG；选「保留 HEIC」原样发。
+    @MainActor
+    func testSendAsFilesAsksAboutHeic() async throws {
+        let library = FakePhotoLibrary()
+        library.heicIds = ["r3"]
+        let hosted = host(library: library, canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 3)
+
+        picker.performMoreMenuItemForTesting(.sendAsFile)
+        XCTAssertTrue(picker.isAskingAboutHeicForTesting)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "选之前不发")
+
+        picker.chooseHeicForTesting(convert: true)
+        let converted = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(converted.approved.attachments.map(\.dataSource.sourceFilename), ["IMG_r0.JPG", "IMG_r3.JPG"])
+        XCTAssertEqual(library.fileRequests.map { $0.convertHeicToJpeg }, [true, true])
+
+        picker.performMoreMenuItemForTesting(.sendAsFile)
+        picker.chooseHeicForTesting(convert: false)
+        let kept = try await nextSend(hosted, count: 2)
+        XCTAssertEqual(kept.approved.attachments.map(\.dataSource.sourceFilename), ["IMG_r0.JPG", "IMG_r3.HEIC"])
+    }
+
+    /// 超过上限的不发：先提示「文件太大」，点了「好」再发剩下的。
+    @MainActor
+    func testSendAsFilesSkipsFilesOverTheLimit() async throws {
+        let library = FakePhotoLibrary()
+        library.tooLargeIds = ["r3"]
+        let hosted = host(library: library, canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 3)
+
+        picker.performMoreMenuItemForTesting(.sendAsFile)
+        let shown = await waitUntil { picker.isShowingTooLargeForTesting }
+        XCTAssertTrue(shown)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty)
+
+        picker.acknowledgeTooLargeForTesting()
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r0"])
+    }
+
+    /// 文件名的后缀跟着内容走（IMG_1234.HEIC 转成 JPEG → IMG_1234.JPG），对得上的不动。
+    func testFileNameMatchesContent() {
+        XCTAssertEqual(TellomiHeicConversion.fileName("IMG_1234.HEIC", matching: UTType.jpeg.identifier), "IMG_1234.JPG")
+        XCTAssertEqual(TellomiHeicConversion.fileName("img_1234.heic", matching: UTType.jpeg.identifier), "img_1234.jpg")
+        XCTAssertEqual(TellomiHeicConversion.fileName("IMG_1234.JPG", matching: UTType.jpeg.identifier), "IMG_1234.JPG")
+        XCTAssertEqual(TellomiHeicConversion.fileName("IMG_1234.HEIC", matching: UTType.heic.identifier), "IMG_1234.HEIC")
+        XCTAssertEqual(TellomiHeicConversion.fileName("photo", matching: UTType.png.identifier), "photo.png")
+        XCTAssertTrue(TellomiHeicConversion.isHeic(uti: UTType.heic.identifier))
+        XCTAssertTrue(TellomiHeicConversion.isHeic(uti: UTType.heif.identifier))
+        XCTAssertFalse(TellomiHeicConversion.isHeic(uti: UTType.jpeg.identifier))
+    }
+
+    /// 转 JPEG：像素大小不变、方向照原图带过去。
+    func testConvertHeicToJpegKeepsSizeAndOrientation() throws {
+        let heic = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".heic")
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 40, height: 30), format: {
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = 1
+            return format
+        }()).image { context in
+            UIColor.systemTeal.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 40, height: 30))
+        }
+        guard let destination = CGImageDestinationCreateWithURL(heic as CFURL, UTType.heic.identifier as CFString, 1, nil) else {
+            throw XCTSkip("This simulator can't write HEIC")
+        }
+        CGImageDestinationAddImage(destination, try XCTUnwrap(image.cgImage), [kCGImagePropertyOrientation: 6] as CFDictionary)
+        guard CGImageDestinationFinalize(destination) else {
+            throw XCTSkip("This simulator can't write HEIC")
+        }
+
+        let jpeg = try XCTUnwrap(TellomiHeicConversion.convertToJpeg(at: heic))
+        let source = try XCTUnwrap(CGImageSourceCreateWithURL(jpeg as CFURL, nil))
+        XCTAssertEqual(CGImageSourceGetType(source) as String?, UTType.jpeg.identifier)
+        let properties = try XCTUnwrap(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
+        XCTAssertEqual(properties[kCGImagePropertyPixelWidth] as? Int, 40)
+        XCTAssertEqual(properties[kCGImagePropertyPixelHeight] as? Int, 30)
+        XCTAssertEqual(properties[kCGImagePropertyOrientation] as? Int, 6)
     }
 
     // MARK: - P-9 / P-10 在网格里直接发
@@ -1428,6 +1566,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         library: FakePhotoLibrary = FakePhotoLibrary(),
         defaultImageQuality: ImageQuality = .standard,
         canSendSeparately: Bool = true,
+        canSendAsFile: Bool = false,
         maxSelection: Int = 32,
         initialText: String? = nil,
         chatBackground: UIView? = nil,
@@ -1443,6 +1582,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             initialMessageBody: initialText.map { MessageBody(text: $0, ranges: .empty) },
             defaultImageQuality: defaultImageQuality,
             canSendSeparately: canSendSeparately,
+            canSendAsFile: canSendAsFile,
             hasQuotedReplyDraft: false,
             attachmentLimits: .currentLimits(),
             approvalDataSource: dataSource,
@@ -1730,6 +1870,34 @@ private final class FakePhotoLibrary: TellomiPhotoPickerLibrary {
         )
         attachmentsById[item.id] = attachment
         return attachment
+    }
+
+    /// #1263：哪几项是 HEIC；按文件发时交出去的（含 HEIC 选择），文件名 IMG_<id>.JPG / .HEIC。
+    var heicIds = Set<String>()
+    private(set) var fileRequests = [(id: String, convertHeicToJpeg: Bool)]()
+    var tooLargeIds = Set<String>()
+
+    func isHeic(_ item: TellomiPhotoPickerItem) -> Bool { heicIds.contains(item.id) }
+
+    func originalFileName(for item: TellomiPhotoPickerItem) -> String? {
+        "IMG_\(item.id).\(heicIds.contains(item.id) ? "HEIC" : "JPG")"
+    }
+
+    func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile {
+        fileRequests.append((item.id, convertHeicToJpeg))
+        let converted = heicIds.contains(item.id) && convertHeicToJpeg
+        let fileName = converted ? "IMG_\(item.id).JPG" : (originalFileName(for: item) ?? "")
+        if tooLargeIds.contains(item.id) {
+            return .tooLarge(fileName: fileName)
+        }
+        let data = try XCTUnwrap(image(for: item, size: CGSize(width: 64, height: 48)).jpegData(compressionQuality: 0.8))
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".jpg")
+        try data.write(to: url)
+        let dataSource = DataSourcePath(fileUrl: url, ownership: .owned)
+        dataSource.sourceFilename = fileName
+        let attachment = try PreviewableAttachment.tellomiAsFileAttachment(dataSource: dataSource, dataUTI: UTType.jpeg.identifier, attachmentLimits: attachmentLimits)
+        attachmentsById[item.id] = attachment
+        return .attachment(attachment)
     }
 
     func ids(of approved: ApprovedAttachments) -> [String] {
