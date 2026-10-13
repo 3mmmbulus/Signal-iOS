@@ -461,14 +461,118 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
         XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
 
+        // 预览 / 编辑页的发送键挂同一个长按：弹出来的菜单跟着「···」里那项变（#1519 M-5 起是预览 + 菜单）。
         let editor = try await openEditor(picker, onCard: "r0")
-        XCTAssertEqual(editor.tellomiSendMenuForTesting?.children.map(\.title), ["Move Caption Down"])
+        XCTAssertTrue(editor.tellomiSendLongPressEnabledForTesting)
+        editor.tellomiLongPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        XCTAssertTrue(preview.presentingViewController === editor.navigationController, "盖在预览 / 编辑页上面")
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down"])
         picker.performMoreMenuItemForTesting(.moveCaptionDown)
-        XCTAssertEqual(editor.tellomiSendMenuForTesting?.children.map(\.title), ["Move Caption Up"])
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up"])
+        preview.tapBackgroundForTesting()
+        let previewClosed = await waitUntil { picker.sendPreviewForTesting == nil }
+        XCTAssertTrue(previewClosed)
         await closeEditor(picker)
 
         picker.typeCaptionForTesting("")
         XCTAssertNil(picker.sendMenuTitlesForTesting)
+    }
+
+    /// #1519 M-5（照 Telegram iOS `ChatSendMessageContextScreen`）：长按发送键 = 发送键左边一个「发出去是什么样」的气泡、下面是菜单，
+    /// 发送键留在原处；菜单里切说明位置，菜单不收、气泡当场重排；点空白处收起，不发。
+    @MainActor
+    func testLongPressSendPreviewsTheMessageAboveTheMenu() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        for index in 0..<3 {
+            picker.tapCheckForTesting(itemIndex: index)
+        }
+        picker.typeCaptionForTesting("Trip")
+
+        picker.longPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up"])
+        XCTAssertEqual(preview.captionTextForTesting, "Trip")
+        XCTAssertEqual(preview.captionIsAboveMediaForTesting, false)
+
+        let layout = preview.layoutForTesting
+        let sendButton = picker.sendButtonFrameForTesting
+        XCTAssertEqual(layout.tiles.count, 3)
+        XCTAssertEqual(layout.sendButton.size, sendButton.size)
+        XCTAssertEqual(layout.sendButton.minX, sendButton.minX, "发送键横向不动")
+        XCTAssertLessThanOrEqual(layout.message.maxX, layout.sendButton.minX, "气泡在发送键左边")
+        XCTAssertEqual(layout.message.maxY, layout.sendButton.maxY - 6, accuracy: 0.5, "底边比发送键高 6 pt（同 Telegram）")
+        XCTAssertEqual(layout.menu.maxX, layout.message.maxX, accuracy: 0.5, "菜单和气泡右边对齐")
+        XCTAssertGreaterThan(layout.menu.minY, layout.message.maxY, "菜单在气泡下面")
+        // 同 Telegram：菜单放不下就三样一起往上挪，菜单底边停在安全区里。
+        let safeBottom = hosted.window.bounds.inset(by: hosted.window.safeAreaInsets).maxY
+        XCTAssertEqual(layout.menu.maxY, safeBottom - 8, accuracy: 0.5)
+        XCTAssertLessThan(layout.sendButton.maxY, sendButton.maxY)
+
+        preview.performActionForTesting(at: 0)
+        XCTAssertTrue(picker.sendPreviewForTesting === preview, "点了不收")
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down"])
+        XCTAssertEqual(preview.captionIsAboveMediaForTesting, true)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
+
+        preview.tapBackgroundForTesting()
+        let closed = await waitUntil { picker.presentedViewController == nil }
+        XCTAssertTrue(closed)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "收起不发")
+    }
+
+    /// 预览里的发送键：点了就发（说明位置是预览里刚切的），预览收起。
+    @MainActor
+    func testTheSendButtonInThePreviewSends() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.typeCaptionForTesting("Trip")
+        picker.longPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        preview.performActionForTesting(at: 0)
+
+        preview.tapSendForTesting()
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertTrue(sent.captionAboveMedia)
+        XCTAssertNil(picker.sendPreviewForTesting)
+    }
+
+    /// 气泡里的相册排法同会话：5 张以上只排 5 格，多的写在第 5 格上。
+    @MainActor
+    func testThePreviewLaysTheAlbumOutAsTheConversationDoes() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        for index in 0..<6 {
+            picker.tapCheckForTesting(itemIndex: index)
+        }
+        picker.typeCaptionForTesting("Trip")
+        picker.longPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        XCTAssertEqual(preview.layoutForTesting.tiles.count, 5)
+        XCTAssertEqual(preview.moreTextForTesting, "+1")
+        preview.tapBackgroundForTesting()
+        _ = await waitUntil { picker.presentedViewController == nil }
+
+        let width: CGFloat = 260
+        let one = TellomiSendPreviewViewController.mosaicFrames(count: 1, width: width, firstAspectRatio: 3)
+        let cappedHeight: CGFloat = (width / 1.8).rounded()
+        XCTAssertEqual(one.map(\.size), [CGSize(width: width, height: cappedHeight)], "很宽的图按 1.8 封顶")
+        let three = TellomiSendPreviewViewController.mosaicFrames(count: 3, width: width, firstAspectRatio: 1)
+        XCTAssertEqual(three[0].size.height, three[2].maxY, "左大右二")
+        XCTAssertEqual(three[1].minX, three[2].minX)
+        let four = TellomiSendPreviewViewController.mosaicFrames(count: 4, width: width, firstAspectRatio: 1)
+        XCTAssertEqual(Set(four.map(\.minY)).count, 2, "2 × 2")
+        let five = TellomiSendPreviewViewController.mosaicFrames(count: 7, width: width, firstAspectRatio: 1)
+        XCTAssertEqual(five.count, 5)
+        XCTAssertEqual(five.filter { $0.minY == 0 }.count, 2, "上 2 下 3")
+        for frames in [one, three, four, five] {
+            XCTAssertEqual(frames.map(\.maxX).max() ?? 0, width, accuracy: 0.5, "铺满气泡宽")
+        }
     }
 
     @MainActor
@@ -1628,6 +1732,33 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         }
     }
 
+    /// 截图（TELLOMI_SHOTS=1）：长按发送的预览（#1519 M-5）——三张 + 说明在下、切到上面之后。窗口接在真实屏幕上（要安全区）。
+    @MainActor
+    func testSendPreviewScreenshots() async throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
+        let screenSize = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.screen.bounds.size }.first)
+        for width in shotWidths where width == screenSize.width {
+            // 会话的气泡颜色（这里用绿色，和发送键的强调色分得开）
+            let hosted = host(width: width, height: screenSize.height, canSendAsFile: true, bubbleColor: .solidColor(color: UIColor(red: 0.23, green: 0.47, blue: 0.27, alpha: 1)), dockItems: TellomiAttachmentDockItem.attachmentSheetItems, asAttachmentSheet: true)
+            for index in [0, 2, 3] {
+                hosted.picker.tapCheckForTesting(itemIndex: index)
+            }
+            hosted.picker.typeCaptionForTesting("Trip to the coast")
+            try await settle()
+            hosted.picker.longPressSendForTesting()
+            let preview = try await presentedPreview(hosted.picker)
+            try await settle()
+            XCTAssertTrue(preview.bubbleColorFillsTheBubbleForTesting)
+            try save(render(hosted.window), name: "send-preview-caption-below.png", width: width)
+            preview.performActionForTesting(at: 0)
+            try await settle()
+            try save(render(hosted.window), name: "send-preview-caption-above.png", width: width)
+            preview.tapBackgroundForTesting()
+            _ = await waitUntil { hosted.picker.sendPreviewForTesting == nil }
+            hosted.window.isHidden = true
+        }
+    }
+
     @MainActor
     private func host(
         width: CGFloat = 402,
@@ -1639,6 +1770,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         maxSelection: Int = 32,
         initialText: String? = nil,
         chatBackground: UIView? = nil,
+        bubbleColor: ColorOrGradientValue? = nil,
         camera: TellomiPhotoPickerCamera? = nil,
         presentedFromRoot: Bool = false,
         dockItems: [TellomiAttachmentDockItem] = [],
@@ -1657,6 +1789,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             approvalDataSource: dataSource,
             stickerSheetDelegate: nil,
             chatBackground: chatBackground,
+            bubbleColor: bubbleColor,
             camera: camera,
             maxSelection: maxSelection,
             dockItems: dockItems,
@@ -1744,6 +1877,15 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let opened = await waitUntil { self.approvalViewController(over: picker) != nil }
         XCTAssertTrue(opened)
         return try XCTUnwrap(approvalViewController(over: picker))
+    }
+
+    @MainActor
+    private func presentedPreview(_ picker: TellomiPhotoPickerViewController) async throws -> TellomiSendPreviewViewController {
+        let shown = await waitUntil { picker.sendPreviewForTesting?.viewIfLoaded?.window != nil }
+        XCTAssertTrue(shown, "长按发送弹出预览")
+        let preview = try XCTUnwrap(picker.sendPreviewForTesting)
+        preview.view.layoutIfNeeded()
+        return preview
     }
 
     @MainActor

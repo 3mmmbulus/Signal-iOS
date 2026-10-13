@@ -30,18 +30,23 @@ extension AttachmentApprovalViewController {
         item.imageEditorModel?.isDirty == true
     }
 
-    /// tellomi/tellomi#1263（ADR-0068 §4.7 P3）：发送键长按的菜单，由打开这一页的选图页给（「说明文字上移 / 下移」）；nil = 长按不弹。
-    /// 菜单正开着时就地换成新的（iOS 16+：点了菜单不收、字跟着变，同 Telegram）。
-    public func tellomiSetSendMenu(_ menu: UIMenu?) {
+    /// tellomi/tellomi#1263（ADR-0068 §4.7 P3）、#1519 M-5：发送键长按交给打开这一页的选图页（它弹「发出去是什么样」的预览和菜单）；
+    /// nil = 长按不弹。
+    public func tellomiSetSendLongPress(_ handler: ((UIButton) -> Void)?) {
         loadViewIfNeeded()
-        let button = mediaCaptionToolbar.proceedButton
-        button.menu = menu
-        if #available(iOS 16, *), let menu {
-            button.contextMenuInteraction?.updateVisibleMenu { _ in menu }
-        }
+        TellomiSendLongPressGestureRecognizer.install(on: mediaCaptionToolbar.proceedButton, handler: handler)
     }
 
-    var tellomiSendMenuForTesting: UIMenu? { mediaCaptionToolbar.proceedButton.menu }
+    var tellomiSendLongPressEnabledForTesting: Bool {
+        TellomiSendLongPressGestureRecognizer.installed(on: mediaCaptionToolbar.proceedButton)?.isEnabled == true
+    }
+
+    #if TESTABLE_BUILD
+    /// 同手指按住这一页的发送键。
+    func tellomiLongPressSendForTesting() {
+        TellomiSendLongPressGestureRecognizer.installed(on: mediaCaptionToolbar.proceedButton)?.fireForTesting()
+    }
+    #endif
 
     public func tellomiActivateTool(_ tool: TellomiApprovalEditTool) {
         switch tool {
@@ -56,4 +61,40 @@ extension AttachmentApprovalViewController {
 public enum TellomiApprovalEditTool {
     case pen
     case crop
+}
+
+/// tellomi/tellomi#1519 M-5：发送键的长按（照 Telegram：长按发送键弹预览和菜单，松手不发）。一个按钮上只挂一个，换处理就地换。
+public final class TellomiSendLongPressGestureRecognizer: UILongPressGestureRecognizer {
+
+    private var handler: ((UIButton) -> Void)?
+
+    /// 挂到 `button` 上（已有就换处理）；`handler` 为 nil 时停用，长按照常是按下没松开。
+    public static func install(on button: UIButton, handler: ((UIButton) -> Void)?) {
+        let recognizer = installed(on: button) ?? {
+            let recognizer = TellomiSendLongPressGestureRecognizer()
+            recognizer.addTarget(recognizer, action: #selector(didRecognize))
+            button.addGestureRecognizer(recognizer)
+            return recognizer
+        }()
+        recognizer.handler = handler
+        recognizer.isEnabled = handler != nil
+    }
+
+    public static func installed(on button: UIButton) -> TellomiSendLongPressGestureRecognizer? {
+        button.gestureRecognizers?.lazy.compactMap { $0 as? TellomiSendLongPressGestureRecognizer }.first
+    }
+
+    @objc
+    private func didRecognize() {
+        guard state == .began, let button = view as? UIButton else { return }
+        handler?(button)
+    }
+
+    #if TESTABLE_BUILD
+    /// 测试里代替手指按住。
+    public func fireForTesting() {
+        guard isEnabled, let button = view as? UIButton else { return }
+        handler?(button)
+    }
+    #endif
 }

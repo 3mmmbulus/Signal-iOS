@@ -1033,36 +1033,81 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         canSendAsFile && !selectedIds.isEmpty && messageBodyForSending != nil
     }
 
-    // MARK: - Long-press send (#1263 P3)
+    // MARK: - Long-press send (#1263 P3, #1519 M-5)
 
-    /// 发送键长按菜单（ADR-0068 §4.7 P3）：照 Telegram iOS `ChatSendMessageContextScreen` 的第一项「说明文字上移 / 下移」（captionPosition），
-    /// 条件同「···」里那项。Tellomi iOS 的长按菜单现在只有这一项（定时发送是 M-4，还没做），没有可给的就不挂菜单、长按不弹。
-    /// 网格的发送键和上游预览 / 编辑页的发送键挂同一个；点了切换、菜单不收（iOS 16+），字跟着变（同 Telegram）。
-    private func sendMenu() -> UIMenu? {
-        guard canMoveCaption else { return nil }
-        let item: MoreMenuItem = isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp
-        var attributes: UIMenuElement.Attributes = []
-        if #available(iOS 16, *) {
-            attributes.insert(.keepsMenuPresented)
+    /// 发送键长按菜单里的项（ADR-0068 §4.7 P3）：照 Telegram iOS `ChatSendMessageContextScreen` 的第一项「说明文字上移 / 下移」（captionPosition），
+    /// 条件同「···」里那项。Tellomi iOS 的长按菜单现在只有这一项（定时发送是 M-4，还没做），没有可给的就不挂长按。
+    private func sendMenuItems() -> [MoreMenuItem] {
+        guard canMoveCaption else { return [] }
+        return [isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp]
+    }
+
+    private func sendPreviewActions() -> [TellomiSendPreviewViewController.Action] {
+        sendMenuItems().map { item in
+            TellomiSendPreviewViewController.Action(
+                title: Self.title(for: item, selectedCount: selectedIds.count),
+                image: Self.image(for: item),
+                keepsPresented: true,
+            ) { [weak self] in
+                self?.toggleCaptionFromSendMenu()
+            }
         }
-        let action = UIAction(title: Self.title(for: item, selectedCount: selectedIds.count), image: Self.image(for: item), attributes: attributes) { [weak self] _ in
-            self?.toggleCaptionFromSendMenu()
-        }
-        return UIMenu(children: [action])
     }
 
     private func toggleCaptionFromSendMenu() {
         isCaptionAboveMedia.toggle()
     }
 
+    /// #1519 M-5：网格的发送键和上游预览 / 编辑页的发送键挂同一个长按：弹「发出去是什么样」的预览和菜单（照 Telegram）。
+    /// 预览开着时就地跟着变（说明换位置、菜单换字）。
     private func updateSendMenus() {
         guard isViewLoaded else { return }
-        let menu = sendMenu()
-        sendButton.menu = menu
-        if #available(iOS 16, *), let menu {
-            sendButton.contextMenuInteraction?.updateVisibleMenu { _ in menu }
+        let handler: ((UIButton) -> Void)? = sendMenuItems().isEmpty ? nil : { [weak self] button in
+            self?.presentSendPreview(from: button)
         }
-        editingApproval?.tellomiSetSendMenu(menu)
+        TellomiSendLongPressGestureRecognizer.install(on: sendButton, handler: handler)
+        editingApproval?.tellomiSetSendLongPress(handler)
+        presentedSendPreview?.update(captionAboveMedia: isCaptionAboveMedia, actions: sendPreviewActions())
+    }
+
+    private weak var sendPreview: TellomiSendPreviewViewController?
+
+    /// 正开着的预览（收起了就是 nil）。
+    private var presentedSendPreview: TellomiSendPreviewViewController? {
+        sendPreview?.presentingViewController == nil ? nil : sendPreview
+    }
+
+    private func presentSendPreview(from button: UIButton) {
+        let items = selectedIds.compactMap { selectedItems[$0] }
+        guard presentedSendPreview == nil, !items.isEmpty, !sendMenuItems().isEmpty else { return }
+        let library = self.library
+        let tiles: [TellomiSendPreviewViewController.Tile] = items.map { item in
+            let aspectRatio: CGFloat = item.pixelSize.height > 0 ? item.pixelSize.width / item.pixelSize.height : 1
+            let loadImage: (CGSize, @escaping (UIImage?) -> Void) -> TellomiPhotoPickerRequest? = { size, completion in
+                library.requestThumbnail(for: item, targetSize: size, completion: completion)
+            }
+            return TellomiSendPreviewViewController.Tile(aspectRatio: aspectRatio, loadImage: loadImage)
+        }
+        // 说明照输入框里看到的样子（@ 的是名字），有没有说明按要发的那份算。
+        let caption: String? = messageBodyForSending == nil ? nil : captionTextView.textStorage.string.ows_stripped()
+        let onSend: () -> Void = { [weak button] in
+            button?.sendActions(for: .primaryActionTriggered)
+        }
+        let preview = TellomiSendPreviewViewController(
+            tiles: tiles,
+            caption: caption,
+            captionAboveMedia: isCaptionAboveMedia,
+            bubbleColor: bubbleColor,
+            actions: sendPreviewActions(),
+            sourceButton: button,
+            onSend: onSend,
+        )
+        var presenter: UIViewController = self
+        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
+            presenter = presented
+        }
+        presenter.present(preview, animated: false)
+        sendPreview = preview
     }
 
     private func moreMenuActions() -> [UIMenuElement] {
@@ -1321,7 +1366,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 page?.tellomiShowItem(at: index)
             }
             self.editingApproval = page
-            page?.tellomiSetSendMenu(self.sendMenu())
+            page?.tellomiSetSendLongPress(self.sendMenuItems().isEmpty ? nil : { [weak self] button in
+                self?.presentSendPreview(from: button)
+            })
             self.editingItems = zip(items, editItems).map { ($0.id, $1.attachment.rawValue) }
             self.present(approval, animated: true) {
                 if let tool {
@@ -1862,7 +1909,21 @@ extension TellomiPhotoPickerViewController {
     var albumTitlesForTesting: [String] { albums.map(\.title) }
     var moreMenuItemsForTesting: [MoreMenuItem] { moreMenuItems() }
     /// #1263 P3：发送键长按菜单里的项（nil = 长按不弹）。
-    var sendMenuTitlesForTesting: [String]? { sendButton.menu?.children.map(\.title) }
+    /// 发送键长按弹出的菜单里有哪几项；长按不弹时 nil。
+    var sendMenuTitlesForTesting: [String]? {
+        guard TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.isEnabled == true else { return nil }
+        return sendMenuItems().map { Self.title(for: $0, selectedCount: selectedIds.count) }
+    }
+
+    /// 同手指按住网格的发送键。
+    func longPressSendForTesting() {
+        TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.fireForTesting()
+    }
+
+    var sendPreviewForTesting: TellomiSendPreviewViewController? { presentedSendPreview }
+
+    /// 网格发送键在窗口里的位置。
+    var sendButtonFrameForTesting: CGRect { sendButton.convert(sendButton.bounds, to: nil) }
 
     func performSendMenuCaptionItemForTesting() {
         toggleCaptionFromSendMenu()
