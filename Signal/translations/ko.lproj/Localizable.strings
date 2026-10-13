@@ -1,12 +1,6 @@
 /* Button text to dismiss missing contacts permission alert */
 "AB_PERMISSION_MISSING_ACTION_NOT_NOW" = "나중에";
 
-/* Footer for the 'about' help section. For non-English languages, exclude the word '501c3'. */
-"ABOUT_SECTION_FOOTER" = "Signal Messenger 저작권\nAGPLv3 라이선스로 공개\nSignal은 비영리 단체입니다";
-
-/* Title for the 'about' help section */
-"ABOUT_SECTION_TITLE" = "Tellomi 소개";
-
 /* Label for forward button in media control panel */
 "ACCESSIBILITY_FORWARD_BUTTON_LABEL" = "전달";
 
@@ -213,9 +207,6 @@
 
 /* notification body */
 "APN_Message" = "새 메시지가 있을 수 있어요";
-
-/* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. The embedded value is 'Update now' (translated via APP_EXPIRED_BOTTOM_UPDATE), and it will be formatted as a tappable link. */
-"APP_EXPIRED_BOTTOM" = "이 Tellomi 버전은 만료되었습니다. 메시지를 주고받으려면 %1$@하세요.";
 
 /* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. This value is a tappable link embedded in a larger sentence. */
 "APP_EXPIRED_BOTTOM_UPDATE" = "지금 업데이트";
@@ -3943,9 +3934,6 @@
 /* Button to exit re-registration, shown in context menu. */
 "EXIT_REREGISTRATION" = "등록 종료";
 
-/* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "이 Tellomi 버전은 만료되었습니다. 메시지를 주고받으려면 업데이트하세요.";
-
 /* If the user's app is too old, they'll be shown a warning asking them to upgrade. This is the text on the warning, and tapping it will open the App Store page for Signal. */
 "EXPIRATION_WARNING_ACTION_TITLE" = "지금 업데이트하세요.";
 
@@ -3987,9 +3975,6 @@
 
 /* Users can choose to learn more about how to find account info, which will open a sheet with additional information. This is the title of that sheet. */
 "FIND_ACCOUNT_INFO_SHEET_TITLE" = "계좌 정보를 찾으세요";
-
-/* A footer below the username text field describing what should be entered */
-"FIND_BY_USERNAME_FOOTER" = "사용자 이름 뒤에 마침표와 일련번호를 입력하세요.";
 
 /* A placeholder value for the text field for finding an account by their username */
 "FIND_BY_USERNAME_PLACEHOLDER" = "사용자 이름";
@@ -6637,12 +6622,6 @@
 /* Title for the 'have my old device' choice of the 'Restore or Transfer' prompt */
 "ONBOARDING_SPLASH_HAVE_OLD_DEVICE_TITLE" = "이전 휴대폰을 가지고 있음";
 
-/* Text indicating Signal is a nonprofit on the 'onboarding splash' view. For non-English languages, exclude the word '501c3'. */
-"ONBOARDING_SPLASH_NONPROFIT" = "Signal은 비영리단체입니다";
-
-/* Button for restoring or transferring account in the 'onboarding splash' view. */
-"ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE" = "계정 복원 또는 이전";
-
 /* Link to the 'terms and privacy policy' in the 'onboarding splash' view. */
 "ONBOARDING_SPLASH_TERM_AND_PRIVACY_POLICY" = "이용약관 및 개인정보 처리방침";
 
@@ -7702,9 +7681,6 @@
 /* Title for an action sheet button allowing users to fix their username when their current one is corrupted. */
 "PROFILE_SETTINGS_USERNAME_CORRUPTED_RESOLUTION_FIX_ACTION_TITLE" = "지금 해결";
 
-/* A message asking the user if they are sure they want to remove their username and explaining what will happen. Embeds {{ the user's current username }}. */
-"PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_FORMAT" = "사용자 이름이 삭제되고 QR 코드와 링크가 비활성화됩니다. '%1$@' 이름은 다른 사용자가 사용할 수 있게 됩니다. 계속할까요?";
-
 /* The title of an action sheet button that will delete a user's username. */
 "PROFILE_SETTINGS_USERNAME_DELETION_USERNAME_ACTION_TITLE" = "사용자 이름 삭제";
 
@@ -8098,14 +8074,8 @@
 /* During re-registration, users may be asked to re-enter their PIN code. This is the title on the screen where this happens. */
 "REGISTRATION_PIN_ENTER_EXISTING_TITLE" = "PIN 입력";
 
-/* During registration, users set up their profile. Users input a family name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_FAMILY_NAME_FIELD_PLACEHOLDER" = "성";
-
 /* During registration, users can choose who can see their phone number. */
 "REGISTRATION_PROFILE_SETUP_FIND_MY_NUMBER_TITLE" = "전화번호로 나를 찾을 수 있는 사람";
-
-/* During registration, users set up their profile. Users input a given name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_GIVEN_NAME_FIELD_PLACEHOLDER" = "이름";
 
 /* During registration, users set up their profile. They can learn more about the privacy of their profile by clicking a \"learn more\" button. This is the message on a sheet that appears when they do that. */
 "REGISTRATION_PROFILE_SETUP_MORE_INFO_DETAILS" = "대화를 새로 시작하거나 수락하면 상대방이 내 이름과 사진, 업데이트 사항을 볼 수 있습니다.";
@@ -8983,14 +8953,8 @@
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "자동 키 인증";
 
-/* No comment provided by engineer. */
-"SETTINGS_LEGAL_TERMS_CELL" = "이용약관 및 개인정보 처리방침";
-
 /* Setting for enabling & disabling link previews. */
 "SETTINGS_LINK_PREVIEWS" = "링크 미리보기 생성";
-
-/* Footer for setting for enabling & disabling link previews. */
-"SETTINGS_LINK_PREVIEWS_FOOTER" = "보내는 메시지에 포함된 링크의 미리보기를 해당 웹사이트에서 직접 가져옵니다.";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "계정 설정을 관리하려면 기본 사용 기기에서 Tellomi을 열어 주세요.";
@@ -9808,9 +9772,6 @@
 /* table section footer */
 "SETTINGS_UNIDENTIFIED_DELIVERY_UNRESTRICTED_ACCESS_FOOTER" = "연락처에 없거나 프로필을 공유하지 않은 상대가 보내는 메시지에 발신자 암호화 기능을 적용합니다.";
 
-/* No comment provided by engineer. */
-"SETTINGS_VERSION" = "버전";
-
 /* Title for the settings page controlling which notifications are still shown for muted chats. Also used as the label for the rows that link to this page. */
 "SETTINGS_WHILE_MUTED" = "알림 끄기 설정 시";
 
@@ -10128,9 +10089,6 @@
 
 /* One of two possible sources when composing a new story. Displayed at the bottom in in-app camera. */
 "STORY_COMPOSER_CAMERA" = "카메라";
-
-/* Displayed when failed to fetch link preview in Text Story composer. */
-"STORY_COMPOSER_LINK_PREVIEW_ERROR" = "링크를 로드하지 못했습니다. 연결을 확인하고 다시 시도하세요.";
 
 /* Displayed in text story composer when user is about to attach a link with preview */
 "STORY_COMPOSER_LINK_PREVIEW_PLACEHOLDER" = "내 스토리를 볼 수 있는 사람과 링크 공유";
@@ -10732,9 +10690,6 @@
 /* A message indicating that username lookup failed. */
 "USERNAME_LOOKUP_ERROR_MESSAGE" = "사용자 이름 검색 중 오류가 발생했습니다. 나중에 다시 시도하세요.";
 
-/* A message indicating that a user-entered username value is not a valid username. Embeds {{ a username }}. */
-"USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT" = "해당 이름(%1$@)은 올바른 사용자 이름이 아닙니다. 전체 사용자 이름과 일련번호를 차례로 입력했는지 확인하세요.";
-
 /* Title for an action sheet indicating that a user-entered username value is not a valid username. */
 "USERNAME_LOOKUP_INVALID_USERNAME_TITLE" = "잘못된 사용자 이름";
 
@@ -10755,12 +10710,6 @@
 
 /* An error message shown when the user has typed a username that starts with a digit, which is invalid. */
 "USERNAME_SELECTION_CANNOT_START_WITH_DIGIT_ERROR_MESSAGE" = "사용자 이름은 숫자로 시작할 수 없습니다.";
-
-/* A message explaining the side effects of changing your username. */
-"USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE" = "사용자 이름을 변경하면 기존 QR 코드와 링크가 초기화됩니다. 계속할까요?";
-
-/* Footer text below a text field in which users type their desired username, which explains how usernames work. Embeds a {{ \"learn more\" link. }}. */
-"USERNAME_SELECTION_EXPLANATION_FOOTER_FORMAT" = "모든 사용자 이름에는 고유 번호가 부여됩니다. %1$@";
 
 /* When the user has entered text into a text field for setting their username, a header displays the username text. This string is shown in the header when the text field is empty. */
 "USERNAME_SELECTION_HEADER_TEXT_FOR_PLACEHOLDER" = "사용자 이름을 선택하세요";

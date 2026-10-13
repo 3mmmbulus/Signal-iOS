@@ -60,9 +60,10 @@ class AllMediaViewController: OWSViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchResultsUpdater = self
-        searchController.searchBar.placeholder = TellomiSavedCategory.localized(
+        searchController.searchBar.placeholder = OWSLocalizedString(
             "ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER",
-            english: "Search file names, captions and links",
+            value: "Search file names, captions and links",
+            comment: "Tellomi (#1174): placeholder of the search bar in Saved Messages' All Media; filters the current file type",
         )
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -199,7 +200,11 @@ final class TellomiSavedLinksViewController: OWSTableViewController2 {
         }.filter { TellomiSavedLinks.matches($0, query: tellomiQuery) }
         let section = OWSTableSection()
         if items.isEmpty {
-            section.add(.label(withText: TellomiSavedCategory.localized("ALL_MEDIA_TELLOMI_LINKS_EMPTY", english: "No links yet"), accessoryType: .none))
+            section.add(.label(withText: OWSLocalizedString(
+                "ALL_MEDIA_TELLOMI_LINKS_EMPTY",
+                value: "No links yet",
+                comment: "Tellomi (#1174): shown on the All Media links page when the chat has no messages with link previews",
+            ), accessoryType: .none))
         }
         for item in items {
             let date = Date(millisecondsSince1970: item.timestamp)

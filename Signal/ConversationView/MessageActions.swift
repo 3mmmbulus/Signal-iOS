@@ -557,22 +557,30 @@ class MessageActions {
 
 // MARK: - Tellomi（tellomi/tellomi#1174）
 
-/// 「收藏」相关文案。只翻了 en / zh_CN / zh_HK / zh_TW；其它语言的表里没有这个键时回落英文（iOS 默认会直接显示键名）。
+/// 「收藏」相关文案（47 种语言都有，照常走 `OWSLocalizedString`，`auto-genstrings` 才认得这些键）。
 enum TellomiSavedMessagesStrings {
-    private static func localized(_ key: String, english: String) -> String {
-        return Bundle.main.localizedString(forKey: key, value: english, table: nil)
-    }
-
     static var save: String {
-        localized("CONTEXT_MENU_FORWARD_MESSAGE_TELLOMI_SAVE", english: "Save")
+        OWSLocalizedString(
+            "CONTEXT_MENU_FORWARD_MESSAGE_TELLOMI_SAVE",
+            value: "Save",
+            comment: "Tellomi (#1174): context menu button that saves a message into Saved Messages",
+        )
     }
 
     static var saveAccessibilityLabel: String {
-        localized("MESSAGE_ACTION_FORWARD_MESSAGE_TELLOMI_SAVE", english: "Save to Saved Messages")
+        OWSLocalizedString(
+            "MESSAGE_ACTION_FORWARD_MESSAGE_TELLOMI_SAVE",
+            value: "Save to Saved Messages",
+            comment: "Tellomi (#1174): accessibility label for saving a message into Saved Messages",
+        )
     }
 
     static var savedToast: String {
-        localized("FORWARD_MESSAGE_TELLOMI_SAVED_TOAST", english: "Saved to Saved Messages. Tap to view.")
+        OWSLocalizedString(
+            "FORWARD_MESSAGE_TELLOMI_SAVED_TOAST",
+            value: "Saved to Saved Messages. Tap to view.",
+            comment: "Tellomi (#1174): toast after saving a message into Saved Messages; tapping it opens Saved Messages",
+        )
     }
 
     /// 删除确认：只删「我的收藏」时说清楚删的是什么、已关联设备上的会不会一起删（需求 §3.2「删除」）。
@@ -581,15 +589,21 @@ enum TellomiSavedMessagesStrings {
         guard threads.count == 1, threads[0].isNoteToSelf else {
             return nil
         }
-        let title = localized("CONVERSATION_DELETE_CONFIRMATION_ALERT_TITLE_TELLOMI_SAVED_MESSAGES", english: "Delete Saved Messages?")
+        let title = OWSLocalizedString(
+            "CONVERSATION_DELETE_CONFIRMATION_ALERT_TITLE_TELLOMI_SAVED_MESSAGES",
+            value: "Delete Saved Messages?",
+            comment: "Tellomi (#1174): title of the confirmation shown before deleting Saved Messages (the chat with yourself)",
+        )
         let message = hasLinkedDevices
-            ? localized(
+            ? OWSLocalizedString(
                 "CONVERSATION_DELETE_CONFIRMATION_ALERT_MESSAGE_TELLOMI_SAVED_MESSAGES_LINKED_DEVICES",
-                english: "Everything in Saved Messages will be deleted from this device and your linked devices. This can't be undone.",
+                value: "Everything in Saved Messages will be deleted from this device and your linked devices. This can't be undone.",
+                comment: "Tellomi (#1174): message of the confirmation shown before deleting Saved Messages, when the account has linked devices",
             )
-            : localized(
+            : OWSLocalizedString(
                 "CONVERSATION_DELETE_CONFIRMATION_ALERT_MESSAGE_TELLOMI_SAVED_MESSAGES",
-                english: "Everything in Saved Messages will be deleted from this device. This can't be undone.",
+                value: "Everything in Saved Messages will be deleted from this device. This can't be undone.",
+                comment: "Tellomi (#1174): message of the confirmation shown before deleting Saved Messages, when there are no linked devices",
             )
         return (title, message)
     }

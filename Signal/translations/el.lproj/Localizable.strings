@@ -1,12 +1,6 @@
 /* Button text to dismiss missing contacts permission alert */
 "AB_PERMISSION_MISSING_ACTION_NOT_NOW" = "Όχι τώρα";
 
-/* Footer for the 'about' help section. For non-English languages, exclude the word '501c3'. */
-"ABOUT_SECTION_FOOTER" = "Πνευματική ιδιοκτησία Signal Messenger\nΥπό την άδεια AGPLv3\nΤο Signal είναι ένας μη κερδοσκοπικός οργανισμός.";
-
-/* Title for the 'about' help section */
-"ABOUT_SECTION_TITLE" = "Σχετικά με το Tellomi";
-
 /* Label for forward button in media control panel */
 "ACCESSIBILITY_FORWARD_BUTTON_LABEL" = "Προώθηση";
 
@@ -213,9 +207,6 @@
 
 /* notification body */
 "APN_Message" = "Ίσως έχεις νέα μηνύματα";
-
-/* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. The embedded value is 'Update now' (translated via APP_EXPIRED_BOTTOM_UPDATE), and it will be formatted as a tappable link. */
-"APP_EXPIRED_BOTTOM" = "Αυτή η έκδοση Tellomi έχει λήξει. %1$@ για να στείλεις και να λάβεις μηνύματα.";
 
 /* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. This value is a tappable link embedded in a larger sentence. */
 "APP_EXPIRED_BOTTOM_UPDATE" = "Αναβάθμιση τώρα";
@@ -3943,9 +3934,6 @@
 /* Button to exit re-registration, shown in context menu. */
 "EXIT_REREGISTRATION" = "Έξοδος από την εγγραφή";
 
-/* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "Αυτή η έκδοση Tellomi έχει λήξει. Αναβάθμισε για να στείλεις και να λάβεις μηνύματα.";
-
 /* If the user's app is too old, they'll be shown a warning asking them to upgrade. This is the text on the warning, and tapping it will open the App Store page for Signal. */
 "EXPIRATION_WARNING_ACTION_TITLE" = "Αναβάθμιση τώρα";
 
@@ -3987,9 +3975,6 @@
 
 /* Users can choose to learn more about how to find account info, which will open a sheet with additional information. This is the title of that sheet. */
 "FIND_ACCOUNT_INFO_SHEET_TITLE" = "Βρες τα στοιχεία του λογαριασμού σου";
-
-/* A footer below the username text field describing what should be entered */
-"FIND_BY_USERNAME_FOOTER" = "Γράψε ένα όνομα χρήστη, ακολουθούμενο από μια τελεία και το σύνολο αριθμών του.";
 
 /* A placeholder value for the text field for finding an account by their username */
 "FIND_BY_USERNAME_PLACEHOLDER" = "Όνομα χρήστη";
@@ -6637,12 +6622,6 @@
 /* Title for the 'have my old device' choice of the 'Restore or Transfer' prompt */
 "ONBOARDING_SPLASH_HAVE_OLD_DEVICE_TITLE" = "Έχω το παλιό μου τηλέφωνο";
 
-/* Text indicating Signal is a nonprofit on the 'onboarding splash' view. For non-English languages, exclude the word '501c3'. */
-"ONBOARDING_SPLASH_NONPROFIT" = "Το Signal είναι ένας μη κερδοσκοπικός οργανισμός";
-
-/* Button for restoring or transferring account in the 'onboarding splash' view. */
-"ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE" = "Επαναφορά ή μεταφορά λογαριασμού";
-
 /* Link to the 'terms and privacy policy' in the 'onboarding splash' view. */
 "ONBOARDING_SPLASH_TERM_AND_PRIVACY_POLICY" = "Όροι & Πολιτική Απορρήτου";
 
@@ -7702,9 +7681,6 @@
 /* Title for an action sheet button allowing users to fix their username when their current one is corrupted. */
 "PROFILE_SETTINGS_USERNAME_CORRUPTED_RESOLUTION_FIX_ACTION_TITLE" = "Διόρθωση τώρα";
 
-/* A message asking the user if they are sure they want to remove their username and explaining what will happen. Embeds {{ the user's current username }}. */
-"PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_FORMAT" = "Αυτό θα καταργήσει το όνομα χρήστη σου και θα απενεργοποιήσει τον κωδικό QR και τον σύνδεσμό σου. Το όνομα χρήστη \"%1$@\" θα είναι διαθέσιμο σε άλλους χρήστες. Είσαι σίγουρος/η;";
-
 /* The title of an action sheet button that will delete a user's username. */
 "PROFILE_SETTINGS_USERNAME_DELETION_USERNAME_ACTION_TITLE" = "Διαγραφή ονόματος χρήστη";
 
@@ -8098,14 +8074,8 @@
 /* During re-registration, users may be asked to re-enter their PIN code. This is the title on the screen where this happens. */
 "REGISTRATION_PIN_ENTER_EXISTING_TITLE" = "Γράψε το PIN σου";
 
-/* During registration, users set up their profile. Users input a family name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_FAMILY_NAME_FIELD_PLACEHOLDER" = "Επίθετο";
-
 /* During registration, users can choose who can see their phone number. */
 "REGISTRATION_PROFILE_SETUP_FIND_MY_NUMBER_TITLE" = "Ποιοι χρήστες μπορούν να με βρουν με τον αριθμό μου;";
-
-/* During registration, users set up their profile. Users input a given name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_GIVEN_NAME_FIELD_PLACEHOLDER" = "Όνομα";
 
 /* During registration, users set up their profile. They can learn more about the privacy of their profile by clicking a \"learn more\" button. This is the message on a sheet that appears when they do that. */
 "REGISTRATION_PROFILE_SETUP_MORE_INFO_DETAILS" = "Το όνομα, η φωτογραφία και οι αλλαγές στο προφίλ σου θα είναι ορατά στις επαφές σου και όταν ξεκινάς ή αποδέχεσαι νέες συνομιλίες.";
@@ -8983,14 +8953,8 @@
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "Αυτόματη επαλήθευση κλειδιού";
 
-/* No comment provided by engineer. */
-"SETTINGS_LEGAL_TERMS_CELL" = "Όροι & Πολιτική απορρήτου";
-
 /* Setting for enabling & disabling link previews. */
 "SETTINGS_LINK_PREVIEWS" = "Δημιουργία προεπισκοπήσεων συνδέσμων";
-
-/* Footer for setting for enabling & disabling link previews. */
-"SETTINGS_LINK_PREVIEWS_FOOTER" = "Λάβε προεπισκόπεις συνδέσμων απ' ευθείας από σελίδες για τα μηνύματα που στέλνεις.";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "Για να διαχειριστείς τις ρυθμίσεις του λογαριασμού σου, άνοιξε την εφαρμογή Tellomi στην κύρια συσκευή σου.";
@@ -9808,9 +9772,6 @@
 /* table section footer */
 "SETTINGS_UNIDENTIFIED_DELIVERY_UNRESTRICTED_ACCESS_FOOTER" = "Ενεργοποίησε τον σφραγισμένο αποστολέα για εισερχόμενα μηνύματα από άτομα που δεν βρίσκονται στις επαφές σου και άτομα με τα οποία δεν έχεις μοιραστεί το προφίλ σου.";
 
-/* No comment provided by engineer. */
-"SETTINGS_VERSION" = "Έκδοση";
-
 /* Title for the settings page controlling which notifications are still shown for muted chats. Also used as the label for the rows that link to this page. */
 "SETTINGS_WHILE_MUTED" = "Σε σίγαση";
 
@@ -10128,9 +10089,6 @@
 
 /* One of two possible sources when composing a new story. Displayed at the bottom in in-app camera. */
 "STORY_COMPOSER_CAMERA" = "Κάμερα";
-
-/* Displayed when failed to fetch link preview in Text Story composer. */
-"STORY_COMPOSER_LINK_PREVIEW_ERROR" = "Αδυναμία φόρτωσης συνδέσμου. Έλεγξε τη σύνδεσή σου και δοκίμασε ξανά.";
 
 /* Displayed in text story composer when user is about to attach a link with preview */
 "STORY_COMPOSER_LINK_PREVIEW_PLACEHOLDER" = "Μοιράσου έναν σύνδεσμο με τους θεατές της ιστορίας σου";
@@ -10732,9 +10690,6 @@
 /* A message indicating that username lookup failed. */
 "USERNAME_LOOKUP_ERROR_MESSAGE" = "Σφάλμα με την αναζήτηση του ονόματος χρήστη. Δοκίμασε πάλι αργότερα.";
 
-/* A message indicating that a user-entered username value is not a valid username. Embeds {{ a username }}. */
-"USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT" = "Το όνομα χρήστη %1$@ δεν είναι έγκυρο. Επιβεβαίωσε ότι έγραψες ολόκληρο το όνομα χρήστη, μαζί με το σύνολο ψηφίων.";
-
 /* Title for an action sheet indicating that a user-entered username value is not a valid username. */
 "USERNAME_LOOKUP_INVALID_USERNAME_TITLE" = "Μη έγκυρο όνομα χρήστη";
 
@@ -10755,12 +10710,6 @@
 
 /* An error message shown when the user has typed a username that starts with a digit, which is invalid. */
 "USERNAME_SELECTION_CANNOT_START_WITH_DIGIT_ERROR_MESSAGE" = "Τα όνομα χρήστη δεν μπορεί να αρχίζει με αριθμό";
-
-/* A message explaining the side effects of changing your username. */
-"USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE" = "Η αλλαγή του ονόματος χρήστη σου θα επαναφέρει τον υπάρχοντα κωδικό QR και τον σύνδεσμό σου. Είσαι σίγουρος/η;";
-
-/* Footer text below a text field in which users type their desired username, which explains how usernames work. Embeds a {{ \"learn more\" link. }}. */
-"USERNAME_SELECTION_EXPLANATION_FOOTER_FORMAT" = "Τα ονόματα χρήστη συνδυάζονται πάντα με ένα σύνολο αριθμών. %1$@";
 
 /* When the user has entered text into a text field for setting their username, a header displays the username text. This string is shown in the header when the text field is empty. */
 "USERNAME_SELECTION_HEADER_TEXT_FOR_PLACEHOLDER" = "Διάλεξε όνομα χρήστη";

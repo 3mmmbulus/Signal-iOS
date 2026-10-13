@@ -1,12 +1,6 @@
 /* Button text to dismiss missing contacts permission alert */
 "AB_PERMISSION_MISSING_ACTION_NOT_NOW" = "Ná bac leis anois";
 
-/* Footer for the 'about' help section. For non-English languages, exclude the word '501c3'. */
-"ABOUT_SECTION_FOOTER" = "Cóipcheart Signal Messenger\nCeadúnaithe faoin AGPLv3\nEagraíocht neamhbhrabúis is ea é Signal";
-
-/* Title for the 'about' help section */
-"ABOUT_SECTION_TITLE" = "Maidir le Tellomi";
-
 /* Label for forward button in media control panel */
 "ACCESSIBILITY_FORWARD_BUTTON_LABEL" = "Cuir ar aghaidh";
 
@@ -213,9 +207,6 @@
 
 /* notification body */
 "APN_Message" = "B'fhéidir go bhfuil teachtaireachtaí nua agat";
-
-/* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. The embedded value is 'Update now' (translated via APP_EXPIRED_BOTTOM_UPDATE), and it will be formatted as a tappable link. */
-"APP_EXPIRED_BOTTOM" = "Tá an leagan Tellomi seo imithe as feidhm. %1$@ le teachtaireachtaí a sheoladh agus a fháil.";
 
 /* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. This value is a tappable link embedded in a larger sentence. */
 "APP_EXPIRED_BOTTOM_UPDATE" = "Nuashonraigh anois é";
@@ -3943,9 +3934,6 @@
 /* Button to exit re-registration, shown in context menu. */
 "EXIT_REREGISTRATION" = "Scoir Clárú";
 
-/* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "Tá an leagan seo de Tellomi imithe as feidhm. Nuashonraigh chun teachtaireachtaí a sheoladh agus a fháil.";
-
 /* If the user's app is too old, they'll be shown a warning asking them to upgrade. This is the text on the warning, and tapping it will open the App Store page for Signal. */
 "EXPIRATION_WARNING_ACTION_TITLE" = "Nuashonraigh Anois";
 
@@ -3987,9 +3975,6 @@
 
 /* Users can choose to learn more about how to find account info, which will open a sheet with additional information. This is the title of that sheet. */
 "FIND_ACCOUNT_INFO_SHEET_TITLE" = "Faisnéis faoi do Chuntas a Aimsiú";
-
-/* A footer below the username text field describing what should be entered */
-"FIND_BY_USERNAME_FOOTER" = "Cuir isteach ainm úsáideora agus ponc, agus an tacar uimhreacha ina dhiaidh sin.";
 
 /* A placeholder value for the text field for finding an account by their username */
 "FIND_BY_USERNAME_PLACEHOLDER" = "Ainm úsáideora";
@@ -6637,12 +6622,6 @@
 /* Title for the 'have my old device' choice of the 'Restore or Transfer' prompt */
 "ONBOARDING_SPLASH_HAVE_OLD_DEVICE_TITLE" = "Tá mo sheanghuthán agam";
 
-/* Text indicating Signal is a nonprofit on the 'onboarding splash' view. For non-English languages, exclude the word '501c3'. */
-"ONBOARDING_SPLASH_NONPROFIT" = "Eagraíocht neamhbhrabúis is ea é Signal";
-
-/* Button for restoring or transferring account in the 'onboarding splash' view. */
-"ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE" = "Aischuir nó Aistrigh Cuntas";
-
 /* Link to the 'terms and privacy policy' in the 'onboarding splash' view. */
 "ONBOARDING_SPLASH_TERM_AND_PRIVACY_POLICY" = "Téarmaí Úsáide ⁊ Polasaí Príobháideachais";
 
@@ -7702,9 +7681,6 @@
 /* Title for an action sheet button allowing users to fix their username when their current one is corrupted. */
 "PROFILE_SETTINGS_USERNAME_CORRUPTED_RESOLUTION_FIX_ACTION_TITLE" = "Deisigh anois";
 
-/* A message asking the user if they are sure they want to remove their username and explaining what will happen. Embeds {{ the user's current username }}. */
-"PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_FORMAT" = "Bainfear d'ainm úsáideora agus díchumasófar do chód QR agus nasc leis sin. Beidh \"%1$@\" ar fáil ag daoine eile le héileamh. An bhfuil tú cinnte?";
-
 /* The title of an action sheet button that will delete a user's username. */
 "PROFILE_SETTINGS_USERNAME_DELETION_USERNAME_ACTION_TITLE" = "Scrios Ainm Úsáideora";
 
@@ -8098,14 +8074,8 @@
 /* During re-registration, users may be asked to re-enter their PIN code. This is the title on the screen where this happens. */
 "REGISTRATION_PIN_ENTER_EXISTING_TITLE" = "Cuir isteach d'UAP";
 
-/* During registration, users set up their profile. Users input a family name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_FAMILY_NAME_FIELD_PLACEHOLDER" = "Sloinne";
-
 /* During registration, users can choose who can see their phone number. */
 "REGISTRATION_PROFILE_SETUP_FIND_MY_NUMBER_TITLE" = "Cé hiad na daoine ar féidir leo mé a aimsiú le m'uimhir?";
-
-/* During registration, users set up their profile. Users input a given name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_GIVEN_NAME_FIELD_PLACEHOLDER" = "Céadainm";
 
 /* During registration, users set up their profile. They can learn more about the privacy of their profile by clicking a \"learn more\" button. This is the message on a sheet that appears when they do that. */
 "REGISTRATION_PROFILE_SETUP_MORE_INFO_DETAILS" = "Beidh d'ainm, do ghrianghraf agus aon athruithe orthu infheicthe ag do theagmhálaithe agus nuair a thosaíonn tú ar chomhráite nua nó nuair a ghlacann tú leo.";
@@ -8983,14 +8953,8 @@
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "Uathfhíorú Eochrach";
 
-/* No comment provided by engineer. */
-"SETTINGS_LEGAL_TERMS_CELL" = "Téarmaí Úsáide ⁊ Polasaí Príobháideachais";
-
 /* Setting for enabling & disabling link previews. */
 "SETTINGS_LINK_PREVIEWS" = "Gin Réamhamharcanna ar Naisc";
-
-/* Footer for setting for enabling & disabling link previews. */
-"SETTINGS_LINK_PREVIEWS_FOOTER" = "Aisghabh réamhamharcanna ar naisc díreach ó láithreáin gréasáin do na teachtaireachtaí a sheolann tú.";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "Le socruithe do chuntais a bhainistiú, oscail Tellomi ar do phríomhghléas.";
@@ -9808,9 +9772,6 @@
 /* table section footer */
 "SETTINGS_UNIDENTIFIED_DELIVERY_UNRESTRICTED_ACCESS_FOOTER" = "Tabhair cead do dhaoine nach teagmhálaithe iad agus do dhaoine nár chomhroinn tú do phróifíl leo teachtaireachtaí le seoltóirí séalaithe a chur chugat.";
 
-/* No comment provided by engineer. */
-"SETTINGS_VERSION" = "Leagan";
-
 /* Title for the settings page controlling which notifications are still shown for muted chats. Also used as the label for the rows that link to this page. */
 "SETTINGS_WHILE_MUTED" = "Agus é balbhaithe";
 
@@ -10128,9 +10089,6 @@
 
 /* One of two possible sources when composing a new story. Displayed at the bottom in in-app camera. */
 "STORY_COMPOSER_CAMERA" = "Ceamara";
-
-/* Displayed when failed to fetch link preview in Text Story composer. */
-"STORY_COMPOSER_LINK_PREVIEW_ERROR" = "Níorbh fhéidir an nasc a lódáil. Seiceáil do nasc agus triail arís.";
 
 /* Displayed in text story composer when user is about to attach a link with preview */
 "STORY_COMPOSER_LINK_PREVIEW_PLACEHOLDER" = "Comhroinn nasc le daoine a d'fhéach ar do scéal";
@@ -10732,9 +10690,6 @@
 /* A message indicating that username lookup failed. */
 "USERNAME_LOOKUP_ERROR_MESSAGE" = "Tharla earráid agus an t-ainm úsáideora á lorg. Triail arís ar ball.";
 
-/* A message indicating that a user-entered username value is not a valid username. Embeds {{ a username }}. */
-"USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT" = "Ní ainm úsáideora bailí é %1$@. Cinntigh gur chuir tú isteach an t-ainm úsáideora iomlán agus a thacar digití ina dhiaidh sin.";
-
 /* Title for an action sheet indicating that a user-entered username value is not a valid username. */
 "USERNAME_LOOKUP_INVALID_USERNAME_TITLE" = "Ainm úsáideora neamhbhailí";
 
@@ -10755,12 +10710,6 @@
 
 /* An error message shown when the user has typed a username that starts with a digit, which is invalid. */
 "USERNAME_SELECTION_CANNOT_START_WITH_DIGIT_ERROR_MESSAGE" = "Ní ceadmhach ainm úsáideora a thosú le huimhir";
-
-/* A message explaining the side effects of changing your username. */
-"USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE" = "Athshocrófar an cód QR agus an nasc atá agat cheana féin má athraíonn tú d'ainm úsáideora. An bhfuil tú cinnte?";
-
-/* Footer text below a text field in which users type their desired username, which explains how usernames work. Embeds a {{ \"learn more\" link. }}. */
-"USERNAME_SELECTION_EXPLANATION_FOOTER_FORMAT" = "Déantar ainmneacha úsáideora a phéireáil le tacar uimhreacha i gcónaí. %1$@";
 
 /* When the user has entered text into a text field for setting their username, a header displays the username text. This string is shown in the header when the text field is empty. */
 "USERNAME_SELECTION_HEADER_TEXT_FOR_PLACEHOLDER" = "Roghnaigh d'ainm úsáideora";

@@ -1,12 +1,6 @@
 /* Button text to dismiss missing contacts permission alert */
 "AB_PERMISSION_MISSING_ACTION_NOT_NOW" = "અત્યારે નહીં";
 
-/* Footer for the 'about' help section. For non-English languages, exclude the word '501c3'. */
-"ABOUT_SECTION_FOOTER" = "કૉપિરાઇટ Signal Messenger\n AGPLv3 હેઠળ લાઇસન્સ પ્રાપ્ત\n Signal એક બિનનફાકારક સંસ્થા છે";
-
-/* Title for the 'about' help section */
-"ABOUT_SECTION_TITLE" = "Tellomi વિશે";
-
 /* Label for forward button in media control panel */
 "ACCESSIBILITY_FORWARD_BUTTON_LABEL" = "ફોરવર્ડ";
 
@@ -213,9 +207,6 @@
 
 /* notification body */
 "APN_Message" = "તમારી માટે કદાચ નવા મેસેજ હોઈ શકે છે";
-
-/* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. The embedded value is 'Update now' (translated via APP_EXPIRED_BOTTOM_UPDATE), and it will be formatted as a tappable link. */
-"APP_EXPIRED_BOTTOM" = "Tellomiનું આ વર્ઝન સમાપ્ત થઈ ગયું છે. મેસેજ મોકલવા અને પ્રાપ્ત કરવા માટે %1$@.";
 
 /* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. This value is a tappable link embedded in a larger sentence. */
 "APP_EXPIRED_BOTTOM_UPDATE" = "અત્યારે અપડેટ કરો";
@@ -3943,9 +3934,6 @@
 /* Button to exit re-registration, shown in context menu. */
 "EXIT_REREGISTRATION" = "રજિસ્ટ્રેશનમાંથી બહાર નીકળો";
 
-/* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "Tellomiનું આ વર્ઝન સમાપ્ત થઈ ગયું છે. મેસેજ મોકલવા અને પ્રાપ્ત કરવા માટે અપડેટ કરો.";
-
 /* If the user's app is too old, they'll be shown a warning asking them to upgrade. This is the text on the warning, and tapping it will open the App Store page for Signal. */
 "EXPIRATION_WARNING_ACTION_TITLE" = "અત્યારે અપડેટ કરો";
 
@@ -3987,9 +3975,6 @@
 
 /* Users can choose to learn more about how to find account info, which will open a sheet with additional information. This is the title of that sheet. */
 "FIND_ACCOUNT_INFO_SHEET_TITLE" = "તમારી એકાઉન્ટની માહિતી શોધો";
-
-/* A footer below the username text field describing what should be entered */
-"FIND_BY_USERNAME_FOOTER" = "એવું યુઝરનેમ દાખલ કરો જેમાં એક ડોટ અને નંબરોનો સમૂહ હોય.";
 
 /* A placeholder value for the text field for finding an account by their username */
 "FIND_BY_USERNAME_PLACEHOLDER" = "યુઝરનેમ";
@@ -6637,12 +6622,6 @@
 /* Title for the 'have my old device' choice of the 'Restore or Transfer' prompt */
 "ONBOARDING_SPLASH_HAVE_OLD_DEVICE_TITLE" = "મારી પાસે મારો જૂનો ફોન છે";
 
-/* Text indicating Signal is a nonprofit on the 'onboarding splash' view. For non-English languages, exclude the word '501c3'. */
-"ONBOARDING_SPLASH_NONPROFIT" = "Signal બિનનફાકારક સંસ્થા છે";
-
-/* Button for restoring or transferring account in the 'onboarding splash' view. */
-"ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE" = "એકાઉન્ટ રિસ્ટોર અથવા ટ્રાન્સફર કરો";
-
 /* Link to the 'terms and privacy policy' in the 'onboarding splash' view. */
 "ONBOARDING_SPLASH_TERM_AND_PRIVACY_POLICY" = "શરતો અને ગોપનીયતા નીતિ";
 
@@ -7702,9 +7681,6 @@
 /* Title for an action sheet button allowing users to fix their username when their current one is corrupted. */
 "PROFILE_SETTINGS_USERNAME_CORRUPTED_RESOLUTION_FIX_ACTION_TITLE" = "અત્યારે ઠીક કરો";
 
-/* A message asking the user if they are sure they want to remove their username and explaining what will happen. Embeds {{ the user's current username }}. */
-"PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_FORMAT" = "આનાથી તમારું યુઝરનેમ દૂર થઈ જશે અને તમારો QR કોડ અને લિંક અક્ષમ થઈ જશે. \"%1$@\" અન્ય લોકો દ્વારા દાવો કરવા માટે ઉપલબ્ધ હશે. તમને ખાતરી છે?";
-
 /* The title of an action sheet button that will delete a user's username. */
 "PROFILE_SETTINGS_USERNAME_DELETION_USERNAME_ACTION_TITLE" = "યુઝરનેમ ડિલીટ કરો";
 
@@ -8098,14 +8074,8 @@
 /* During re-registration, users may be asked to re-enter their PIN code. This is the title on the screen where this happens. */
 "REGISTRATION_PIN_ENTER_EXISTING_TITLE" = "તમારો પિન દાખલ કરો";
 
-/* During registration, users set up their profile. Users input a family name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_FAMILY_NAME_FIELD_PLACEHOLDER" = "અટક";
-
 /* During registration, users can choose who can see their phone number. */
 "REGISTRATION_PROFILE_SETUP_FIND_MY_NUMBER_TITLE" = "મને નંબરથી કોણ શોધી શકે?";
-
-/* During registration, users set up their profile. Users input a given name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_GIVEN_NAME_FIELD_PLACEHOLDER" = "નામ";
 
 /* During registration, users set up their profile. They can learn more about the privacy of their profile by clicking a \"learn more\" button. This is the message on a sheet that appears when they do that. */
 "REGISTRATION_PROFILE_SETUP_MORE_INFO_DETAILS" = "તમારું નામ, ફોટો અને તેમાંના ફેરફારો તમારા સંપર્કોને અને જ્યારે તમે નવી ચેટ શરૂ કરશો અથવા સ્વીકારશો ત્યારે દેખાશે.";
@@ -8983,14 +8953,8 @@
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "ઓટોમેટિક કી વેરિફિકેશન";
 
-/* No comment provided by engineer. */
-"SETTINGS_LEGAL_TERMS_CELL" = "શરતો અને ગોપનીયતા નીતિ";
-
 /* Setting for enabling & disabling link previews. */
 "SETTINGS_LINK_PREVIEWS" = "લિંક પ્રિવ્યૂ જનરેટ કરો";
-
-/* Footer for setting for enabling & disabling link previews. */
-"SETTINGS_LINK_PREVIEWS_FOOTER" = "તમે મોકલેલા મેસેજ માટે વેબસાઇટમાંથી સીધા લિંક પ્રિવ્યૂ પ્રાપ્ત કરો.";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "તમારા એકાઉન્ટ સેટિંગ્સને મેનેજ કરવા માટે, તમારા પ્રાથમિક ડિવાઇસ પર Tellomi ખોલો.";
@@ -9808,9 +9772,6 @@
 /* table section footer */
 "SETTINGS_UNIDENTIFIED_DELIVERY_UNRESTRICTED_ACCESS_FOOTER" = "બિન-સંપર્કો અને જેની સાથે તમે તમારી પ્રોફાઇલ શેર કરી નથી તેવા લોકો તરફથી આવતા મેસેજ માટે સીલ કરેલા મોકલનાર સક્ષમ કરો.";
 
-/* No comment provided by engineer. */
-"SETTINGS_VERSION" = "વર્ઝન";
-
 /* Title for the settings page controlling which notifications are still shown for muted chats. Also used as the label for the rows that link to this page. */
 "SETTINGS_WHILE_MUTED" = "જ્યારે મ્યૂટ હોય";
 
@@ -10128,9 +10089,6 @@
 
 /* One of two possible sources when composing a new story. Displayed at the bottom in in-app camera. */
 "STORY_COMPOSER_CAMERA" = "કૅમેરા";
-
-/* Displayed when failed to fetch link preview in Text Story composer. */
-"STORY_COMPOSER_LINK_PREVIEW_ERROR" = "લિંક લોડ કરી શકાઈ નથી. તમારું કનેક્શન તપાસો અને ફરી પ્રયાસ કરો.";
 
 /* Displayed in text story composer when user is about to attach a link with preview */
 "STORY_COMPOSER_LINK_PREVIEW_PLACEHOLDER" = "તમારી સ્ટોરીના દર્શકો સાથે લિંક શેર કરો";
@@ -10732,9 +10690,6 @@
 /* A message indicating that username lookup failed. */
 "USERNAME_LOOKUP_ERROR_MESSAGE" = "વપરાશકર્તા નામ શોધતી વખતે ભૂલ આવી. પછીથી ફરી પ્રયત્ન કરો.";
 
-/* A message indicating that a user-entered username value is not a valid username. Embeds {{ a username }}. */
-"USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT" = "%1$@ એ માન્ય યુઝરનેમ નથી. ખાતરી કરો કે તમે આખું યુઝરનેમ દાખલ કર્યું છે જેની પાછળ તેના અંકોનો સમૂહ પણ હોય.";
-
 /* Title for an action sheet indicating that a user-entered username value is not a valid username. */
 "USERNAME_LOOKUP_INVALID_USERNAME_TITLE" = "અમાન્ય યુઝરનેમ";
 
@@ -10755,12 +10710,6 @@
 
 /* An error message shown when the user has typed a username that starts with a digit, which is invalid. */
 "USERNAME_SELECTION_CANNOT_START_WITH_DIGIT_ERROR_MESSAGE" = "યુઝરનેમની શરૂઆત સંખ્યા સાથે ન થઈ શકે";
-
-/* A message explaining the side effects of changing your username. */
-"USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE" = "તમારું યુઝરનેમ નામ બદલવાથી તમારો હાલનો QR કોડ અને લિંક ફરીથી સેટ થશે. તમને ખાતરી છે?";
-
-/* Footer text below a text field in which users type their desired username, which explains how usernames work. Embeds a {{ \"learn more\" link. }}. */
-"USERNAME_SELECTION_EXPLANATION_FOOTER_FORMAT" = "યુઝરનેમમાં હંમેશા બે સંખ્યાઓની જોડી હોય છે. %1$@";
 
 /* When the user has entered text into a text field for setting their username, a header displays the username text. This string is shown in the header when the text field is empty. */
 "USERNAME_SELECTION_HEADER_TEXT_FOR_PLACEHOLDER" = "તમારું યુઝરનેમ પસંદ કરો";

@@ -67,7 +67,8 @@ final class TellomiLinkPreviewSettingsTest: SignalBaseTest {
         XCTAssertTrue(labels.contains(OWSLocalizedString("TELLOMI_SETTINGS_LINK_PREVIEWS_FOOTER", comment: "")), "\(labels)")
         XCTAssertTrue(labels.contains(OWSLocalizedString("TELLOMI_SETTINGS_EXPAND_SHORT_LINKS", comment: "")), "\(labels)")
         XCTAssertTrue(labels.contains(OWSLocalizedString("TELLOMI_SETTINGS_EXPAND_SHORT_LINKS_FOOTER", comment: "")), "\(labels)")
-        XCTAssertFalse(labels.contains(OWSLocalizedString("SETTINGS_LINK_PREVIEWS_FOOTER", comment: "")), "上游的说明换掉了")
+        // 上游的说明（键已从语言表里删掉，这里钉英文原文）
+        XCTAssertFalse(labels.contains("Retrieve link previews directly from websites for messages you send."), "上游的说明换掉了")
 
         // 默认开
         let shortLinkSwitch = try shortLinkSwitch(in: window)

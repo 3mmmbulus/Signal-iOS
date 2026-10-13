@@ -1,13 +1,8 @@
 /* Button text to dismiss missing contacts permission alert */
 "AB_PERMISSION_MISSING_ACTION_NOT_NOW" = "現在不要";
 
-/* Footer for the 'about' help section. For non-English languages, exclude the word '501c3'. */
-"ABOUT_SECTION_FOOTER" = "Signal Messenger 版權所有\n根據 AGPLv3 授權\nSignal 是一個非營利組織";
 /* Tellomi: copyright + license only; upstream also claimed 501c3 nonprofit status, which is not true of Tellomi. */
 "ABOUT_SECTION_FOOTER_TELLOMI" = "Signal Messenger 版權所有\n重庆半格智能科技有限公司 擁有修改部分版權\n依據 GNU AGPLv3 的條款授權";
-
-/* Title for the 'about' help section */
-"ABOUT_SECTION_TITLE" = "有關 Tellomi";
 
 /* Label for forward button in media control panel */
 "ACCESSIBILITY_FORWARD_BUTTON_LABEL" = "轉寄";
@@ -225,9 +220,6 @@
 
 /* notification body */
 "APN_Message" = "你有新訊息";
-
-/* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. The embedded value is 'Update now' (translated via APP_EXPIRED_BOTTOM_UPDATE), and it will be formatted as a tappable link. */
-"APP_EXPIRED_BOTTOM" = "此版本的 Tellomi 已過期。%1$@以傳送和接收訊息。";
 
 /* Tellomi: Shown in place of the text input box in a conversation when this version can no longer send or receive (the server rejects it, or the build expired). The embedded value is 'Update now' (APP_EXPIRED_BOTTOM_UPDATE), formatted as a tappable link. */
 "APP_EXPIRED_BOTTOM_TELLOMI" = "此版本需要更新才能收發訊息。%1$@";
@@ -4064,9 +4056,6 @@
 /* Button to exit re-registration, shown in context menu. */
 "EXIT_REREGISTRATION" = "離開註冊";
 
-/* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "此版本的 Tellomi 已過期。立即更新以傳送和接收訊息。";
-
 /* Tellomi: Conversation list banner when this version can no longer send or receive (the server rejects it, or the build expired). Says an update is needed rather than 'expired', since a server-side block is not an expiry. */
 "EXPIRATION_ERROR_TELLOMI" = "需要更新才能繼續收發訊息。";
 
@@ -4111,9 +4100,6 @@
 
 /* Users can choose to learn more about how to find account info, which will open a sheet with additional information. This is the title of that sheet. */
 "FIND_ACCOUNT_INFO_SHEET_TITLE" = "搜尋你的帳戶資料";
-
-/* A footer below the username text field describing what should be entered */
-"FIND_BY_USERNAME_FOOTER" = "輸入用戶名稱，後面跟著一個點及其配對數字。";
 
 /* Tellomi: footer below the find-by-username text field. Usernames have no visible numeric suffix, so this does not ask for one. */
 "FIND_BY_USERNAME_FOOTER_TELLOMI" = "輸入對方的用戶名稱。";
@@ -6925,12 +6911,6 @@
 /* Tellomi: One-line text link under the 'Continue' button in the 'onboarding splash' view, for people moving to a new phone. */
 "ONBOARDING_SPLASH_NEW_PHONE_LINK_TITLE" = "換了新手機？";
 
-/* Text indicating Signal is a nonprofit on the 'onboarding splash' view. For non-English languages, exclude the word '501c3'. */
-"ONBOARDING_SPLASH_NONPROFIT" = "Signal 是一個非營利組織";
-
-/* Button for restoring or transferring account in the 'onboarding splash' view. */
-"ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE" = "還原或轉移帳戶";
-
 /* Tellomi: Explanation of the 'my old iPhone is here' choice: scan a QR code with the old iPhone to transfer the account and messages directly. */
 "ONBOARDING_SPLASH_TELLOMI_HAVE_OLD_IPHONE_BODY" = "用舊 iPhone 掃描一個二維碼，把帳戶和訊息直接傳過來";
 
@@ -8029,9 +8009,6 @@
 /* Title for an action sheet button allowing users to fix their username when their current one is corrupted. */
 "PROFILE_SETTINGS_USERNAME_CORRUPTED_RESOLUTION_FIX_ACTION_TITLE" = "立即修復";
 
-/* A message asking the user if they are sure they want to remove their username and explaining what will happen. Embeds {{ the user's current username }}. */
-"PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_FORMAT" = "這將刪除你的用戶名稱及停用你的二維碼和連結。「%1$@」將會供其他人使用。你確定嗎？";
-
 /* The title of an action sheet button that will delete a user's username. */
 "PROFILE_SETTINGS_USERNAME_DELETION_USERNAME_ACTION_TITLE" = "刪除使用者名稱";
 
@@ -8431,14 +8408,8 @@
 /* During re-registration, users may be asked to re-enter their PIN code. This is the title on the screen where this happens. */
 "REGISTRATION_PIN_ENTER_EXISTING_TITLE" = "輸入你的 PIN 碼";
 
-/* During registration, users set up their profile. Users input a family name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_FAMILY_NAME_FIELD_PLACEHOLDER" = "姓";
-
 /* During registration, users can choose who can see their phone number. */
 "REGISTRATION_PROFILE_SETUP_FIND_MY_NUMBER_TITLE" = "誰能用手機號碼找到我？";
-
-/* During registration, users set up their profile. Users input a given name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_GIVEN_NAME_FIELD_PLACEHOLDER" = "名字";
 
 /* During registration, users set up their profile. They can learn more about the privacy of their profile by clicking a \"learn more\" button. This is the message on a sheet that appears when they do that. */
 "REGISTRATION_PROFILE_SETUP_MORE_INFO_DETAILS" = "你的聯絡人以及當你開始或接受新聊天時，對方將會看見你的姓名、相片和其變更。";
@@ -9433,14 +9404,8 @@
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "自動金鑰驗證";
 
-/* No comment provided by engineer. */
-"SETTINGS_LEGAL_TERMS_CELL" = "條款和隱私政策";
-
 /* Setting for enabling & disabling link previews. */
 "SETTINGS_LINK_PREVIEWS" = "建立連結預覽";
-
-/* Footer for setting for enabling & disabling link previews. */
-"SETTINGS_LINK_PREVIEWS_FOOTER" = "直接從網站上檢索你傳送的訊息的連結預覽。";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "若要管理你的帳戶設定，請在主要裝置上開啟 Tellomi。";
@@ -10258,9 +10223,6 @@
 /* table section footer */
 "SETTINGS_UNIDENTIFIED_DELIVERY_UNRESTRICTED_ACCESS_FOOTER" = "啟用密封發件人，才能接收來自不在通訊錄內的聯絡人，還有您未分享個人資訊的人的訊息";
 
-/* No comment provided by engineer. */
-"SETTINGS_VERSION" = "版本";
-
 /* Title for the settings page controlling which notifications are still shown for muted chats. Also used as the label for the rows that link to this page. */
 "SETTINGS_WHILE_MUTED" = "靜音時";
 
@@ -10578,9 +10540,6 @@
 
 /* One of two possible sources when composing a new story. Displayed at the bottom in in-app camera. */
 "STORY_COMPOSER_CAMERA" = "相機";
-
-/* Displayed when failed to fetch link preview in Text Story composer. */
-"STORY_COMPOSER_LINK_PREVIEW_ERROR" = "無法載入連結。請檢查你的網絡連線，然後再試一次。";
 
 /* Displayed in text story composer when user is about to attach a link with preview */
 "STORY_COMPOSER_LINK_PREVIEW_PLACEHOLDER" = "與你快拍的瀏覽者分享連結";
@@ -11522,9 +11481,6 @@
 /* A message indicating that username lookup failed. */
 "USERNAME_LOOKUP_ERROR_MESSAGE" = "搜尋使用者名稱時發生錯誤。請稍後再試。";
 
-/* A message indicating that a user-entered username value is not a valid username. Embeds {{ a username }}. */
-"USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT" = "%1$@ 不是有效的用戶名稱。請確保你已輸入完整的用戶名稱，以及隨後的一組數字。";
-
 /* Tellomi: message shown when a user-entered value cannot be a username. Usernames have no visible numeric suffix, so this does not ask for one. Embeds {{ a username }}. */
 "USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT_TELLOMI" = "%1$@ 不是有效的用戶名稱。";
 
@@ -11554,12 +11510,6 @@
 
 /* An error message shown when the user has typed a username that starts with an underscore. Tellomi usernames must start with a letter. */
 "USERNAME_SELECTION_CANNOT_START_WITH_UNDERSCORE_ERROR_MESSAGE_TELLOMI" = "用戶名稱必須以字母開頭";
-
-/* A message explaining the side effects of changing your username. */
-"USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE" = "更改用戶名稱將重設你現有的二維碼和連結。你確定嗎？";
-
-/* Footer text below a text field in which users type their desired username, which explains how usernames work. Embeds a {{ \"learn more\" link. }}. */
-"USERNAME_SELECTION_EXPLANATION_FOOTER_FORMAT" = "用戶名稱都會與一組數字配對。 %1$@";
 
 /* Tellomi: footer text below the username text field. Usernames have no visible numeric suffix, so this explains what a username is for instead. */
 "USERNAME_SELECTION_EXPLANATION_FOOTER_TELLOMI" = "別人可以透過用戶名稱找到你、傳訊息給你，不需要知道你的電話號碼。";

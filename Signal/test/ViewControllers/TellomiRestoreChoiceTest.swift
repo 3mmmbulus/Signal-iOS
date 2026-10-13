@@ -105,7 +105,8 @@ final class TellomiRestoreChoiceTest: SignalBaseTest {
         let shown = texts(in: vc.view)
 
         XCTAssertTrue(shown.contains(OWSLocalizedString("ONBOARDING_SPLASH_NEW_PHONE_LINK_TITLE", comment: "")), "\(shown)")
-        XCTAssertFalse(shown.contains(OWSLocalizedString("ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE", comment: "")), "\(shown)")
+        // 上游的「Restore or Transfer Account」按钮（键已从语言表里删掉，这里钉英文原文）
+        XCTAssertFalse(shown.contains("Restore or Transfer Account"), "\(shown)")
     }
 
     func testIPhonePathsOfferTransferAndRegisterDirectlyOnly() throws {

@@ -1280,21 +1280,36 @@ enum TellomiSavedCategory: CaseIterable {
     var title: String {
         switch self {
         case .all:
-            return Self.localized("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_ALL", english: "All")
+            return OWSLocalizedString(
+                "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_ALL",
+                value: "All",
+                comment: "Tellomi (#1174): categories under the Saved Messages title; All is the chat itself",
+            )
         case .media:
-            return Self.localized("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_MEDIA", english: "Photos & Videos")
+            return OWSLocalizedString(
+                "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_MEDIA",
+                value: "Photos & Videos",
+                comment: "Tellomi (#1174): Saved Messages category that opens All Media on photos and videos",
+            )
         case .files:
-            return Self.localized("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_FILES", english: "Files")
+            return OWSLocalizedString(
+                "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_FILES",
+                value: "Files",
+                comment: "Tellomi (#1174): Saved Messages category that opens All Media on files",
+            )
         case .voice:
-            return Self.localized("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_VOICE", english: "Voice")
+            return OWSLocalizedString(
+                "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_VOICE",
+                value: "Voice",
+                comment: "Tellomi (#1174): Saved Messages category that opens All Media on audio",
+            )
         case .links:
-            return Self.localized("CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_LINKS", english: "Links")
+            return OWSLocalizedString(
+                "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_LINKS",
+                value: "Links",
+                comment: "Tellomi (#1174): Saved Messages category that opens All Media on links",
+            )
         }
-    }
-
-    /// 只翻了 en / zh_CN / zh_HK / zh_TW；其它语言的表里没有这些键时回落英文（iOS 默认会直接显示键名）。
-    static func localized(_ key: String, english: String) -> String {
-        return Bundle.main.localizedString(forKey: key, value: english, table: nil)
     }
 
     /// 要显示的几项：有内容的按固定顺序排，前面加「全部」；一类都没有就什么都不显示。

@@ -1,13 +1,8 @@
 /* Button text to dismiss missing contacts permission alert */
 "AB_PERMISSION_MISSING_ACTION_NOT_NOW" = "Not Now";
 
-/* Footer for the 'about' help section. For non-English languages, exclude the word '501c3'. */
-"ABOUT_SECTION_FOOTER" = "Copyright Signal Messenger\nLicensed under the AGPLv3\nSignal is a 501c3 nonprofit";
-/* Tellomi: copyright + license only; upstream also claimed 501c3 nonprofit status, which is not true of Tellomi. */
+/* Footer for the 'about' help section: copyright and license only. */
 "ABOUT_SECTION_FOOTER_TELLOMI" = "Copyright Signal Messenger\nModifications Copyright 重庆半格智能科技有限公司\nLicensed under the GNU AGPLv3";
-
-/* Title for the 'about' help section */
-"ABOUT_SECTION_TITLE" = "About Tellomi";
 
 /* Label for forward button in media control panel */
 "ACCESSIBILITY_FORWARD_BUTTON_LABEL" = "Forward";
@@ -26,6 +21,8 @@
 
 /* Accessibility label for media. */
 "ACCESSIBILITY_LABEL_MEDIA" = "Media";
+
+/* Accessibility value for the current item of a horizontally scrolling album in a chat. Embeds {{ %1$@ the position of the item, %2$@ the number of items }}. */
 "ACCESSIBILITY_LABEL_MEDIA_TELLOMI_ALBUM_ITEM_FORMAT" = "Item %1$@ of %2$@";
 
 /* Accessibility label for stickers. */
@@ -178,7 +175,8 @@
 /* Audio file type in All Meda file type picker. */
 "ALL_MEDIA_FILE_TYPE_AUDIO" = "Audio";
 
-/* Generic All Media file type for non-audiovisual files used in file type picker */
+/* Generic All Media file type for non-audiovisual files used in file type picker
+   Title of the files page in the attachment sheet. */
 "ALL_MEDIA_FILE_TYPE_FILES" = "Files";
 
 /* Media (i.e., graphical) file type in All Meda file type picker. */
@@ -186,12 +184,6 @@
 
 /* Tellomi (#1174): links file type in the All Media file type picker (iOS had no links page) */
 "ALL_MEDIA_FILE_TYPE_TELLOMI_LINKS" = "Links";
-
-/* Tellomi (#1174): shown on the All Media links page when the chat has no messages with link previews */
-"ALL_MEDIA_TELLOMI_LINKS_EMPTY" = "No links yet";
-
-/* Tellomi (#1174): placeholder of the search bar in Saved Messages' All Media; filters the current file type */
-"ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Search file names, captions and links";
 
 /* Menu option to limit All Media view to displaying only GIFs */
 "ALL_MEDIA_FILTER_GIFS" = "GIFs";
@@ -211,6 +203,12 @@
 /* Menu option to show All Media items in a single-column list */
 "ALL_MEDIA_LIST_MODE" = "List";
 
+/* Tellomi (#1174): shown on the All Media links page when the chat has no messages with link previews */
+"ALL_MEDIA_TELLOMI_LINKS_EMPTY" = "No links yet";
+
+/* Tellomi (#1174): placeholder of the search bar in Saved Messages' All Media; filters the current file type */
+"ALL_MEDIA_TELLOMI_SEARCH_PLACEHOLDER" = "Search file names, captions and links";
+
 /* Label shown over thumbnails of GIFs in the All Media view */
 "ALL_MEDIA_THUMBNAIL_LABEL_GIF" = "GIF";
 
@@ -225,9 +223,6 @@
 
 /* notification body */
 "APN_Message" = "You may have new messages";
-
-/* Shown in place of the text input box in a conversation when the app has expired and the user is no longer allowed to send messages. The embedded value is 'Update now' (translated via APP_EXPIRED_BOTTOM_UPDATE), and it will be formatted as a tappable link. */
-"APP_EXPIRED_BOTTOM" = "This version of Tellomi has expired. %1$@ to send and receive messages.";
 
 /* Tellomi: Shown in place of the text input box in a conversation when this version can no longer send or receive (the server rejects it, or the build expired). The embedded value is 'Update now' (APP_EXPIRED_BOTTOM_UPDATE), formatted as a tappable link. */
 "APP_EXPIRED_BOTTOM_TELLOMI" = "This version needs an update to send and receive messages. %1$@";
@@ -466,46 +461,47 @@
 /* Attachment error message for attachments without any data */
 "ATTACHMENT_ERROR_MISSING_DATA" = "Attachment is empty.";
 
-/* Tellomi (tellomi/tellomi#1121): Shown for an attachment option that isn't available yet. */
+/* Toast shown when tapping an attachment option that isn't available yet. */
 "ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Coming soon";
 
-/* Tellomi (tellomi/tellomi#1121): Shown on the files page of the attachment sheet when you haven't sent any files. Embeds {{maximum size of one file}}. */
+/* Shown on the files page when you haven't sent any files. Embeds {{maximum size of one file}}. */
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Send and receive files of any type, up to %@ each.";
 
-/* Tellomi (tellomi/tellomi#1121): Subtitle of a recently sent file whose local copy was deleted, so it can't be sent again. */
+/* Subtitle of a recently sent file whose local copy was deleted, so it can't be sent again. */
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "No longer on this device";
 
-/* Tellomi (tellomi/tellomi#1121): Toast shown when tapping a recently sent file whose local copy was deleted. */
+/* Toast shown when tapping a recently sent file whose local copy was deleted. */
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "This file is no longer on this device, so it can't be sent again.";
 
-/* Tellomi (tellomi/tellomi#1121): Header above the list of files you recently sent, on the files page of the attachment sheet. */
+/* Header above the list of files you recently sent, on the files page of the attachment sheet. */
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Recently Sent Files";
 
-/* Tellomi (tellomi/tellomi#1121): Row on the files page that scans paper documents into one PDF. */
+/* Row on the files page that scans paper documents into one PDF. */
 "ATTACHMENT_FILES_TELLOMI_SCAN_DOCUMENT" = "Scan Document";
 
-/* Tellomi (tellomi/tellomi#1121): File name (without .pdf) of a scanned document that has no title. */
+/* File name (without .pdf) of a scanned document that has no title. */
 "ATTACHMENT_FILES_TELLOMI_SCAN_FILENAME" = "Scan";
 
-/* Tellomi (tellomi/tellomi#1121): Header above file search results; only files you sent on this device are searched. */
+/* Header above file search results; only files you sent on this device are searched. */
 "ATTACHMENT_FILES_TELLOMI_SEARCH_HEADER" = "Files You Sent";
 
-/* Tellomi (tellomi/tellomi#1121): Row on the files page that opens the system file picker. */
+/* Row on the files page that opens the system file picker. */
 "ATTACHMENT_FILES_TELLOMI_SELECT_FROM_FILES" = "Select from Files";
 
-/* Tellomi (tellomi/tellomi#1121): Row on the files page: send photos or videos from the gallery as files, without compression. */
+/* Row on the files page: send photos or videos from the gallery as files, without compression. */
 "ATTACHMENT_FILES_TELLOMI_SELECT_FROM_GALLERY" = "Select from Gallery";
 
-/* Tellomi (tellomi/tellomi#1121): Row at the end of shortened file search results that shows all of them. */
+/* Row at the end of shortened file search results that shows all of them. */
 "ATTACHMENT_FILES_TELLOMI_SHOW_MORE" = "Show More";
 
-/* Tellomi (tellomi/tellomi#1121): Alert when a picked file is over the size limit. Embeds {{file name}} and {{maximum size of one file}}. */
+/* Alert when a picked file is over the size limit. Embeds {{file name}} and {{maximum size of one file}}. */
 "ATTACHMENT_FILES_TELLOMI_TOO_LARGE_FORMAT" = "“%1$@” is too large. Each file can be up to %2$@.";
 
 /* Accessibility hint describing what you can do with the attachment button */
 "ATTACHMENT_HINT" = "Choose Media to Send";
 
-/* Button in chat attachment panel that allows to select photos/videos Signal has access to. */
+/* Button in chat attachment panel that allows to select photos Signal is allowed to access.
+   Button in chat attachment panel that allows to select photos/videos Signal has access to. */
 "ATTACHMENT_KEYBOARD_BUTTON_MANAGE" = "Manage";
 
 /* A button to select a contact from the Attachment Keyboard */
@@ -535,7 +531,8 @@
 /* First block of text in chat attachment panel when there's no recent photos to show. */
 "ATTACHMENT_KEYBOARD_NO_MEDIA_TITLE" = "No Photos or Videos";
 
-/* Text in chat attachment panel explaining that user needs to give Signal permission to access photos. */
+/* Text in chat attachment panel explaining that user needs to give Signal permission to access photos.
+   Text in the attachment keyboard when the user has not granted access to photos. */
 "ATTACHMENT_KEYBOARD_NO_PHOTO_ACCESS" = "Tellomi does not have access to your photos or videos. To enable access open Settings and tap Photos";
 
 /* Button in chat attachment panel to let user open Settings app and give Signal persmission to access photos. */
@@ -2371,6 +2368,12 @@
 /* Table section header for username search when composing a new message */
 "COMPOSE_MESSAGE_USERNAME_SEARCH_SECTION_TITLE" = "Find by Username";
 
+/* Tellomi: button that asks the system for contacts access, after the purpose has been explained. */
+"COMPOSE_SCREEN_CONTACTS_PERMISSION_ALLOW_TELLOMI" = "Allow Access";
+
+/* Tellomi: shown at the top of the compose / member picker before the user has been asked for contacts access. Explains what contacts are used for. */
+"COMPOSE_SCREEN_CONTACTS_PERMISSION_PURPOSE_TELLOMI" = "Allow access to your contacts to show the names you’ve saved for them in Tellomi. Your contacts are not uploaded.";
+
 /* Menu action to display limited contact picker. */
 "COMPOSE_SCREEN_LIMITED_CONTACTS_ACTION_MANAGE" = "Select More Contacts";
 
@@ -2388,12 +2391,6 @@
 
 /* Multi-line label explaining why compose-screen contact picker is empty. */
 "COMPOSE_SCREEN_MISSING_CONTACTS_PERMISSION" = "You can enable contacts access in the iOS Settings app to show the names you’ve saved for your contacts in Tellomi.";
-
-/* Tellomi: shown at the top of the compose / member picker before the user has been asked for contacts access. Explains what contacts are used for. */
-"COMPOSE_SCREEN_CONTACTS_PERMISSION_PURPOSE_TELLOMI" = "Allow access to your contacts to show the names you’ve saved for them in Tellomi. Your contacts are not uploaded.";
-
-/* Tellomi: button that asks the system for contacts access, after the purpose has been explained. */
-"COMPOSE_SCREEN_CONTACTS_PERMISSION_ALLOW_TELLOMI" = "Allow Access";
 
 /* Configure reactions title text */
 "CONFIGURE_REACTIONS" = "Configure Reactions";
@@ -2956,17 +2953,17 @@
 /* Tellomi (#1174): categories under the Saved Messages title; All is the chat itself */
 "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_ALL" = "All";
 
-/* Tellomi (#1174): Saved Messages category that opens All Media on photos and videos */
-"CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_MEDIA" = "Photos & Videos";
-
 /* Tellomi (#1174): Saved Messages category that opens All Media on files */
 "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_FILES" = "Files";
 
-/* Tellomi (#1174): Saved Messages category that opens All Media on audio */
-"CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_VOICE" = "Voice";
-
 /* Tellomi (#1174): Saved Messages category that opens All Media on links */
 "CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_LINKS" = "Links";
+
+/* Tellomi (#1174): Saved Messages category that opens All Media on photos and videos */
+"CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_MEDIA" = "Photos & Videos";
+
+/* Tellomi (#1174): Saved Messages category that opens All Media on audio */
+"CONVERSATION_VIEW_TELLOMI_SAVED_CATEGORY_VOICE" = "Voice";
 
 /* Indicator that a value has been copied to the clipboard. */
 "COPIED_TO_CLIPBOARD" = "Copied to Clipboard";
@@ -4072,9 +4069,6 @@
 /* Button to exit re-registration, shown in context menu. */
 "EXIT_REREGISTRATION" = "Exit Registration";
 
-/* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "This version of Tellomi has expired. Update to send and receive messages.";
-
 /* Tellomi: Conversation list banner when this version can no longer send or receive (the server rejects it, or the build expired). Says an update is needed rather than 'expired', since a server-side block is not an expiry. */
 "EXPIRATION_ERROR_TELLOMI" = "Update Tellomi to keep sending and receiving messages.";
 
@@ -4119,9 +4113,6 @@
 
 /* Users can choose to learn more about how to find account info, which will open a sheet with additional information. This is the title of that sheet. */
 "FIND_ACCOUNT_INFO_SHEET_TITLE" = "Find Your Account Information";
-
-/* A footer below the username text field describing what should be entered */
-"FIND_BY_USERNAME_FOOTER" = "Enter a username followed by a dot and its set of numbers.";
 
 /* Tellomi: footer below the find-by-username text field. Usernames have no visible numeric suffix, so this does not ask for one. */
 "FIND_BY_USERNAME_FOOTER_TELLOMI" = "Enter the person’s username.";
@@ -5224,7 +5215,8 @@
 /* Accessibility label of the button in the photo picker caption field that switches to the emoji keyboard. */
 "IMAGE_PICKER_TELLOMI_CAPTION_EMOJI_BUTTON" = "Emoji";
 
-/* Placeholder of the caption field at the bottom of the photo picker. */
+/* Placeholder of the caption field at the bottom of the photo picker.
+   Placeholder of the caption field in the photo picker's send bar. */
 "IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER" = "Add a caption…";
 
 /* Undo bar in the photo picker after unselecting photos in the selected-only view. Embeds {{ number unselected }}. */
@@ -5928,19 +5920,47 @@
 
 /* Context menu item in media viewer. Refers to saving currently displayed photo/video to the Photos app. */
 "MEDIA_VIEWER_SAVE_MEDIA_ACTION" = "Save";
+
+/* Media viewer: action on all photos and videos of the message. Embeds {{ the number of items }}. */
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "All %@ Items";
+
+/* Media viewer: action on all photos of the message. Embeds {{ the number of photos }}. */
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "All %@ Photos";
+
+/* Media viewer: action on all videos of the message. Embeds {{ the number of videos }}. */
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "All %@ Videos";
+
+/* Accessibility label for the pause button in the center of the video viewer. */
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "Pause";
+
+/* Accessibility label for the play button in the center of the video viewer. */
 "MEDIA_VIEWER_TELLOMI_PLAY" = "Play";
+
+/* Accessibility label for the playback speed (gear) button in the video viewer. */
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "Playback Speed";
+
+/* Context menu item in media viewer. Replies to the message that contains the currently displayed photo/video. */
 "MEDIA_VIEWER_TELLOMI_REPLY_ACTION" = "Reply";
+
+/* Context menu item in media viewer: share the photo or video on screen to other apps. */
 "MEDIA_VIEWER_TELLOMI_SHARE_ACTION" = "Share";
+
+/* Accessibility label for the button in the center of the video viewer that jumps back 15 seconds. */
 "MEDIA_VIEWER_TELLOMI_SKIP_BACK" = "Back 15 Seconds";
+
+/* Accessibility label for the button in the center of the video viewer that jumps forward 15 seconds. */
 "MEDIA_VIEWER_TELLOMI_SKIP_FORWARD" = "Forward 15 Seconds";
+
+/* Title of the playback speed slider in the video viewer. */
 "MEDIA_VIEWER_TELLOMI_SPEED" = "Speed";
+
+/* Playback speed option in the video viewer: normal speed (1x). */
 "MEDIA_VIEWER_TELLOMI_SPEED_NORMAL" = "Normal";
+
+/* Media viewer: action on only the photo on screen, when the message has several photos or videos. */
 "MEDIA_VIEWER_TELLOMI_THIS_PHOTO" = "This Photo";
+
+/* Media viewer: action on only the video on screen, when the message has several photos or videos. */
 "MEDIA_VIEWER_TELLOMI_THIS_VIDEO" = "This Video";
 
 /* button title to snooze a megaphone */
@@ -6066,7 +6086,8 @@
 /* Label for button to open a group invite. */
 "MESSAGE_ACTION_LINK_OPEN_GROUP_INVITE" = "Open Group Invite";
 
-/* Label for button to open a link. */
+/* Action sheet button title
+   Label for button to open a link. */
 "MESSAGE_ACTION_LINK_OPEN_LINK" = "Open Link";
 
 /* Label for button to open a signal proxy. */
@@ -6932,12 +6953,6 @@
 
 /* Tellomi: One-line text link under the 'Continue' button in the 'onboarding splash' view, for people moving to a new phone. */
 "ONBOARDING_SPLASH_NEW_PHONE_LINK_TITLE" = "New phone?";
-
-/* Text indicating Signal is a nonprofit on the 'onboarding splash' view. For non-English languages, exclude the word '501c3'. */
-"ONBOARDING_SPLASH_NONPROFIT" = "Signal is a 501c3 nonprofit";
-
-/* Button for restoring or transferring account in the 'onboarding splash' view. */
-"ONBOARDING_SPLASH_RESTORE_OR_TRANSFER_BUTTON_TITLE" = "Restore or Transfer Account";
 
 /* Tellomi: Explanation of the 'my old iPhone is here' choice: scan a QR code with the old iPhone to transfer the account and messages directly. */
 "ONBOARDING_SPLASH_TELLOMI_HAVE_OLD_IPHONE_BODY" = "Scan a QR code with your old iPhone to move your account and messages over directly";
@@ -8037,9 +8052,6 @@
 /* Title for an action sheet button allowing users to fix their username when their current one is corrupted. */
 "PROFILE_SETTINGS_USERNAME_CORRUPTED_RESOLUTION_FIX_ACTION_TITLE" = "Fix Now";
 
-/* A message asking the user if they are sure they want to remove their username and explaining what will happen. Embeds {{ the user's current username }}. */
-"PROFILE_SETTINGS_USERNAME_DELETION_CONFIRMATION_ALERT_MESSAGE_FORMAT" = "This will remove your username and disable your QR code and link. \"%1$@\" will be avaliable for others to claim. Are you sure?";
-
 /* The title of an action sheet button that will delete a user's username. */
 "PROFILE_SETTINGS_USERNAME_DELETION_USERNAME_ACTION_TITLE" = "Delete Username";
 
@@ -8439,14 +8451,8 @@
 /* During re-registration, users may be asked to re-enter their PIN code. This is the title on the screen where this happens. */
 "REGISTRATION_PIN_ENTER_EXISTING_TITLE" = "Enter your PIN";
 
-/* During registration, users set up their profile. Users input a family name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_FAMILY_NAME_FIELD_PLACEHOLDER" = "Last Name";
-
 /* During registration, users can choose who can see their phone number. */
 "REGISTRATION_PROFILE_SETUP_FIND_MY_NUMBER_TITLE" = "Who can find me by number?";
-
-/* During registration, users set up their profile. Users input a given name. This is the placeholder for that field. */
-"REGISTRATION_PROFILE_SETUP_GIVEN_NAME_FIELD_PLACEHOLDER" = "First Name";
 
 /* During registration, users set up their profile. They can learn more about the privacy of their profile by clicking a \"learn more\" button. This is the message on a sheet that appears when they do that. */
 "REGISTRATION_PROFILE_SETUP_MORE_INFO_DETAILS" = "Your name, photo and changes to it will be visible to your contacts and when you start or accept new chats.";
@@ -8466,11 +8472,11 @@
 /* During registration, users set up their profile. This is the title on the screen where this is done. */
 "REGISTRATION_PROFILE_SETUP_TITLE" = "Set up your profile";
 
-/* Tellomi: registration username is being checked with the server. */
-"REGISTRATION_PROFILE_USERNAME_CHECKING_TELLOMI" = "Checking…";
-
 /* Tellomi: registration username could not be checked because of a network or server error. */
 "REGISTRATION_PROFILE_USERNAME_CHECK_FAILED_TELLOMI" = "Couldn't check this username. Try again in a moment.";
+
+/* Tellomi: registration username is being checked with the server. */
+"REGISTRATION_PROFILE_USERNAME_CHECKING_TELLOMI" = "Checking…";
 
 /* Tellomi: registration username contains characters other than letters, numbers and underscores. */
 "REGISTRATION_PROFILE_USERNAME_INVALID_CHARACTERS_TELLOMI" = "Use only letters, numbers and underscores";
@@ -9441,14 +9447,8 @@
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "Automatic Key Verification";
 
-/* No comment provided by engineer. */
-"SETTINGS_LEGAL_TERMS_CELL" = "Terms & Privacy Policy";
-
 /* Setting for enabling & disabling link previews. */
 "SETTINGS_LINK_PREVIEWS" = "Generate Link Previews";
-
-/* Footer for setting for enabling & disabling link previews. */
-"SETTINGS_LINK_PREVIEWS_FOOTER" = "Retrieve link previews directly from websites for messages you send.";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "To manage your account settings, open Tellomi on your primary device.";
@@ -10266,9 +10266,6 @@
 /* table section footer */
 "SETTINGS_UNIDENTIFIED_DELIVERY_UNRESTRICTED_ACCESS_FOOTER" = "Enable sealed sender for incoming messages from non-contacts and people with whom you have not shared your profile.";
 
-/* No comment provided by engineer. */
-"SETTINGS_VERSION" = "Version";
-
 /* Title for the settings page controlling which notifications are still shown for muted chats. Also used as the label for the rows that link to this page. */
 "SETTINGS_WHILE_MUTED" = "While Muted";
 
@@ -10587,9 +10584,6 @@
 /* One of two possible sources when composing a new story. Displayed at the bottom in in-app camera. */
 "STORY_COMPOSER_CAMERA" = "Camera";
 
-/* Displayed when failed to fetch link preview in Text Story composer. */
-"STORY_COMPOSER_LINK_PREVIEW_ERROR" = "Couldn't load link. Check your connection and try again.";
-
 /* Displayed in text story composer when user is about to attach a link with preview */
 "STORY_COMPOSER_LINK_PREVIEW_PLACEHOLDER" = "Share a link with viewers of your story";
 
@@ -10857,8 +10851,134 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "Tap to replace an emoji";
 
-/* Tellomi (ADR-0063 §5.5): toast after the link was copied because nothing could open it */
-"TELLOMI_LINKS_LINK_COPIED" = "Link copied";
+/* Button in the registration consent dialog: agree to the Terms of Service and Privacy Policy and continue. */
+"TELLOMI_CONSENT_AGREE_AND_CONTINUE" = "Agree and Continue";
+
+/* Accessibility label for the consent checkbox during registration. */
+"TELLOMI_CONSENT_CHECKBOX_ACCESSIBILITY_LABEL" = "Agree to the Terms of Service and Privacy Policy";
+
+/* Body of the consent dialog during registration. Embeds {{Terms of Service}} and {{Privacy Policy}} as links. */
+"TELLOMI_CONSENT_DIALOG_BODY_FORMAT" = "Please read and agree to the %1$@ and %2$@.";
+
+/* Title of the dialog asking the user to agree to the Terms of Service and Privacy Policy before continuing registration. */
+"TELLOMI_CONSENT_DIALOG_TITLE" = "Terms and Privacy Policy";
+
+/* Button in consent dialogs: do not agree. */
+"TELLOMI_CONSENT_DISAGREE" = "Disagree";
+
+/* Name of the Privacy Policy document, shown as a tappable link inside consent sentences. */
+"TELLOMI_CONSENT_PRIVACY_LINK" = "Privacy Policy";
+
+/* Consent sentence next to the checkbox during registration. Embeds {{Terms of Service}} and {{Privacy Policy}} as links. */
+"TELLOMI_CONSENT_ROW_FORMAT" = "I'm 18 or older and have read and agree to the %1$@ and %2$@";
+
+/* Name of the Terms of Service document, shown as a tappable link inside consent sentences. */
+"TELLOMI_CONSENT_TERMS_LINK" = "Terms of Service";
+
+/* Body of the short cross-border consent dialog: where the data goes, and asking for separate consent. */
+"TELLOMI_CROSS_BORDER_DIALOG_BODY" = "Some of your personal information will be transferred outside mainland China for processing. Do you agree?";
+
+/* Link in the cross-border consent dialog that opens the full Cross-Border Transfer Notice (the 9 items). */
+"TELLOMI_CROSS_BORDER_DIALOG_FULL_NOTICE_LINK" = "Read the Cross-Border Transfer Notice";
+
+/* Shown at the top of the cross-border consent dialog that already-registered devices see after upgrading: the Privacy Policy has been updated to 2.0.0. */
+"TELLOMI_CROSS_BORDER_DIALOG_POLICY_UPDATED" = "Our Privacy Policy has been updated to version 2.0.0.";
+
+/* Title of the short cross-border consent dialog. */
+"TELLOMI_CROSS_BORDER_DIALOG_TITLE" = "Cross-border transfer of personal information";
+
+/* Shown on the cross-border notice after the user taps 'Disagree'. */
+"TELLOMI_CROSS_BORDER_DISAGREE_HINT" = "If you don’t agree, the app won’t connect to any server or send any of your information, and you won’t be able to use Tellomi until our mainland China service launches. You can close the app, or agree later.";
+
+/* Button at the bottom of the full Cross-Border Transfer Notice: go back to the consent dialog. */
+"TELLOMI_CROSS_BORDER_FULL_NOTICE_CLOSE" = "Back";
+
+/* Title of the full Cross-Border Transfer Notice page (the 9 items), opened from the consent dialog. */
+"TELLOMI_CROSS_BORDER_FULL_NOTICE_TITLE" = "Cross-Border Transfer Notice";
+
+/* Cross-border notice item 9 body: this page is the separate consent and can be withdrawn. */
+"TELLOMI_CROSS_BORDER_ITEM_CONSENT_BODY" = "Tapping “Agree and Continue” means you separately consent to the transfer described above; agreeing to the Privacy Policy is not the same as consenting to this transfer. You can withdraw at any time by emailing privacy@tellomi.app (or in the app once that option is available). Because Tellomi can currently only be provided through servers outside mainland China, after withdrawing you won’t be able to keep using Tellomi until our mainland China service launches; you can also delete your account. Withdrawing doesn’t affect processing carried out before it.";
+
+/* Cross-border notice item 9 title: separate consent. */
+"TELLOMI_CROSS_BORDER_ITEM_CONSENT_TITLE" = "Separate consent and withdrawal";
+
+/* Cross-border notice item 3 body: how to contact the personal information protection team. */
+"TELLOMI_CROSS_BORDER_ITEM_CONTACT_BODY" = "Personal information handler: Chongqing Bange Intelligent Technology Co., Ltd. For questions about personal information protection or this transfer, email privacy@tellomi.app.";
+
+/* Cross-border notice item 3 title: contact. */
+"TELLOMI_CROSS_BORDER_ITEM_CONTACT_TITLE" = "Contact";
+
+/* Cross-border notice item 6 body: kinds of personal information transferred. */
+"TELLOMI_CROSS_BORDER_ITEM_KINDS_BODY" = "Phone number; account and device identifiers; public keys; push tokens (plus the Firebase installation ID on Android); IP address when connecting; hash of your username; browser and device information during human verification; encrypted messages, attachments, profile photos, profiles, group information and database backups (ciphertext); debug logs you choose to submit; search terms when you use GIF search.";
+
+/* Cross-border notice item 6 title: kinds of personal information. */
+"TELLOMI_CROSS_BORDER_ITEM_KINDS_TITLE" = "Personal information involved";
+
+/* Cross-border notice item 5 body: end-to-end encryption and what is processed in plaintext. */
+"TELLOMI_CROSS_BORDER_ITEM_METHOD_BODY" = "Message content, profiles, group information and attachments are end-to-end encrypted. The servers and storage outside mainland China only hold ciphertext that neither Tellomi nor the recipients above can read. Only a few items are processed in plaintext, such as your phone number, account and device identifiers, push tokens and your IP address when connecting.\nRetention: account data is kept while your account exists and deleted when you delete your account; messages waiting for delivery are deleted as soon as they’re delivered; attachments are deleted 50 days after upload; server request logs are kept for 186 days. See section 22 of the Privacy Policy.";
+
+/* Cross-border notice item 5 title: how the data is processed. */
+"TELLOMI_CROSS_BORDER_ITEM_METHOD_TITLE" = "How it’s processed and how long it’s kept";
+
+/* Cross-border notice item 8 body: legal procedure for the transfer. */
+"TELLOMI_CROSS_BORDER_ITEM_PROCEDURE_BODY" = "Under Article 5(4) of the Provisions on Promoting and Regulating Cross-Border Data Flows, a personal information handler other than a critical information infrastructure operator that has provided the personal information of fewer than 100,000 people (excluding sensitive personal information) outside mainland China since January 1 of the current year is exempt from the data export security assessment, the standard contract and personal information protection certification. Tellomi currently falls into this category; as the number approaches this threshold, we’ll complete the required procedure. The exemption doesn’t change our duties to inform you, obtain your separate consent and carry out a personal information protection impact assessment.";
+
+/* Cross-border notice item 8 title: legal procedure for the transfer. */
+"TELLOMI_CROSS_BORDER_ITEM_PROCEDURE_TITLE" = "Legal procedure for the transfer";
+
+/* Cross-border notice item 4 body: purposes of processing. */
+"TELLOMI_CROSS_BORDER_ITEM_PURPOSE_BODY" = "Signing up and signing in (including human verification); delivering and temporarily storing messages; storing attachments, profile photos and database backups; connecting voice and video calls (including call relay); push notifications; DNS; GIF search; keeping debug logs you choose to submit.";
+
+/* Cross-border notice item 4 title: purposes of processing. */
+"TELLOMI_CROSS_BORDER_ITEM_PURPOSE_TITLE" = "Purposes";
+
+/* Cross-border notice item 2 body: who receives the data outside mainland China. */
+"TELLOMI_CROSS_BORDER_ITEM_RECIPIENTS_BODY" = "· Tellomi’s servers in Hong Kong, operated by Chongqing Bange Intelligent Technology Co., Ltd. (Hong Kong, China)\n· Alibaba Cloud Computing Co., Ltd.: cloud servers for the above (Hong Kong data center)\n· Cloudflare, Inc. (United States): storage of attachments, profile photos, database backups and debug logs; call relay; human verification at sign-up; DNS\n· Apple Inc. (United States): push notifications (APNs)\n· GIPHY, Inc. (United States): only when you use GIF search; receives your search terms through our Hong Kong proxy and can’t see your IP address";
+
+/* Cross-border notice item 2 title: overseas recipients. */
+"TELLOMI_CROSS_BORDER_ITEM_RECIPIENTS_TITLE" = "Recipients outside mainland China";
+
+/* Cross-border notice item 7 body: how to exercise personal information rights. */
+"TELLOMI_CROSS_BORDER_ITEM_RIGHTS_BODY" = "You can access, copy, correct or delete your personal information, delete your account, or withdraw this consent as described in sections 26 and 27 of the Privacy Policy. For personal information processed by the recipients outside mainland China, you can also email privacy@tellomi.app, and we’ll handle it and coordinate with the recipient.";
+
+/* Cross-border notice item 7 title: your rights. */
+"TELLOMI_CROSS_BORDER_ITEM_RIGHTS_TITLE" = "Your rights";
+
+/* Cross-border notice item 1 body: where servers and storage are located. */
+"TELLOMI_CROSS_BORDER_ITEM_WHERE_BODY" = "Yes. Tellomi’s servers run in Alibaba Cloud’s data center in Hong Kong, China. Attachments, profile photos and server database backups are stored in Cloudflare R2 (storage region: western North America). Your chat history stays on your own devices, not on our servers.";
+
+/* Cross-border notice item 1 title: whether data leaves mainland China. */
+"TELLOMI_CROSS_BORDER_ITEM_WHERE_TITLE" = "Does my information leave mainland China?";
+
+/* Only button on the read-only cross-border notice shown when linking this device: acknowledge the notice. */
+"TELLOMI_CROSS_BORDER_LINKED_ACK" = "Got It";
+
+/* Body of the read-only cross-border dialog shown when linking this device: consent is given on the phone. */
+"TELLOMI_CROSS_BORDER_LINKED_DIALOG_BODY" = "Separate consent to the cross-border transfer is given on your phone, so this device won’t ask for it again. After linking, information on this device is handled as described in the Cross-Border Transfer Notice.";
+
+/* Cross-border notice item 9 body on the read-only version shown when linking this device: consent is given on the phone. */
+"TELLOMI_CROSS_BORDER_LINKED_ITEM_CONSENT_BODY" = "Separate consent to the transfer above is given on your phone; this device doesn’t collect it again. You can withdraw at any time by emailing privacy@tellomi.app; after withdrawing, you won’t be able to keep using Tellomi until our mainland China service launches.";
+
+/* Link under the 'Privacy Policy updated' sentence on the cross-border notice for already-registered devices; opens the Privacy Policy. */
+"TELLOMI_CROSS_BORDER_POLICY_UPDATED_LINK" = "Read Privacy Policy 2.0.0";
+
+/* Link at the bottom of the cross-border notice that opens the Privacy Policy sections about storage location and cross-border transfer. */
+"TELLOMI_CROSS_BORDER_PRIVACY_LINK" = "Read sections 20 and 21 of the Privacy Policy";
+
+/* Link at the bottom of the cross-border notice that opens the Third-Party Sharing and SDK List. */
+"TELLOMI_CROSS_BORDER_THIRD_PARTY_LINK" = "Read the Third-Party Sharing and SDK List";
+
+/* Button in the first-launch privacy notice: agree. */
+"TELLOMI_FIRST_LAUNCH_AGREE" = "Agree";
+
+/* Body of the privacy notice shown the first time the app is opened. Embeds {{Privacy Policy}} as a link. */
+"TELLOMI_FIRST_LAUNCH_BODY_FORMAT" = "We handle your personal information according to our %1$@. Signing up only needs your phone number, and your messages, profile and attachments are end-to-end encrypted — we can't read them.";
+
+/* Shown in the first-launch privacy notice after the user taps 'Disagree'. */
+"TELLOMI_FIRST_LAUNCH_DISAGREE_HINT" = "You need to agree before using Tellomi. If you don't, we won't collect any information.";
+
+/* Title of the privacy notice shown the first time the app is opened. */
+"TELLOMI_FIRST_LAUNCH_TITLE" = "Welcome to Tellomi";
 
 /* Tellomi (card-visual §3.6): what a screen reader says for the action button at the bottom of a Tellomi card; %@ is the button's text */
 "TELLOMI_LINK_CARD_A11Y_BUTTON_FORMAT" = "button: %@";
@@ -10971,6 +11091,9 @@
 /* Tellomi (ADR-0063 §5.1): shown in the message composer's link preview area when the pasted group invite link is definitely not active */
 "TELLOMI_LINK_PREVIEW_GROUP_LINK_NOT_ACTIVE" = "This group link is not active";
 
+/* Tellomi (ADR-0063 §5.5): toast after the link was copied because nothing could open it */
+"TELLOMI_LINKS_LINK_COPIED" = "Link copied";
+
 /* Tellomi: Body of the log out confirmation: chats stay on this phone and come back after logging in with the same number; messages sent meanwhile wait on the server for up to 30 days. */
 "TELLOMI_LOGOUT_CONFIRM_BODY" = "Your chats stay on this phone and come back when you log in again with the same phone number. Messages people send you in the meantime wait on the server for up to 30 days.";
 
@@ -11001,15 +11124,6 @@
 /* Tellomi: Confirmation shown on the phone number screen when this phone is logged out of one account and the user enters a different number. Deleting local data is required first. Embeds {{masked phone number of the logged-out account, e.g. +86 138****5678}}. */
 "TELLOMI_LOGOUT_NEW_NUMBER_CONFIRM_BODY_FORMAT" = "Logging in with a new number will delete the chats of %@ on this phone. Continue?";
 
-/* Tellomi: Red button at the bottom of the log out page. */
-"TELLOMI_LOGOUT_OPTIONS_BUTTON" = "Log Out";
-
-/* Tellomi: Heading above the alternatives on the log out page, suggesting the user check whether one of them helps before logging out. */
-"TELLOMI_LOGOUT_OPTIONS_INTRO" = "Before you log out, see if one of these helps:";
-
-/* Tellomi: Title of the page shown before logging out, listing alternatives (screen lock, storage, change number). */
-"TELLOMI_LOGOUT_OPTIONS_TITLE" = "Log Out";
-
 /* Tellomi: Log out alternatives: explanation under 'Change Phone Number' — got a new number? Chats and contacts are kept. */
 "TELLOMI_LOGOUT_OPTION_CHANGE_NUMBER_BODY" = "Got a new number? Your chats and contacts are kept.";
 
@@ -11028,17 +11142,20 @@
 /* Tellomi: Log out alternatives: title of the row that opens storage management. */
 "TELLOMI_LOGOUT_OPTION_STORAGE_TITLE" = "Manage Storage";
 
+/* Tellomi: Red button at the bottom of the log out page. */
+"TELLOMI_LOGOUT_OPTIONS_BUTTON" = "Log Out";
+
+/* Tellomi: Heading above the alternatives on the log out page, suggesting the user check whether one of them helps before logging out. */
+"TELLOMI_LOGOUT_OPTIONS_INTRO" = "Before you log out, see if one of these helps:";
+
+/* Tellomi: Title of the page shown before logging out, listing alternatives (screen lock, storage, change number). */
+"TELLOMI_LOGOUT_OPTIONS_TITLE" = "Log Out";
+
 /* Tellomi: Red row at the bottom of Settings > Account (above 'Delete Account') that opens the log out page. Logging out keeps the account; it is not account deletion. */
 "TELLOMI_LOGOUT_SETTINGS_ROW" = "Log Out";
 
 /* Tellomi: Switch on the log out page (off by default, shown only when there are linked devices): also log out the linked devices such as computers. */
 "TELLOMI_LOGOUT_UNLINK_DEVICES_SWITCH" = "Also log out linked devices";
-
-/* Chat list banner shown while system notifications for Tellomi are turned off. */
-"TELLOMI_NOTIFICATIONS_DISABLED_REMINDER" = "Notifications are off. You won't be alerted to new messages or calls while Tellomi isn't open.";
-
-/* Button on the chat list banner that opens the system notification settings for Tellomi. */
-"TELLOMI_NOTIFICATIONS_DISABLED_REMINDER_ACTION" = "Go to Settings";
 
 /* Body of the one-time notification permission explanation sheet. Explains the purpose and that the system will ask next. */
 "TELLOMI_NOTIFICATION_PRIMER_BODY" = "When Tellomi isn't open, notifications tell you about new messages and calls. After you tap Continue, iOS will ask once. You can change this anytime in Settings.";
@@ -11049,14 +11166,32 @@
 /* Title of the one-time sheet shown on the chat list after registration, explaining why Tellomi asks for notification permission. */
 "TELLOMI_NOTIFICATION_PRIMER_TITLE" = "Know when messages arrive";
 
-/* Tellomi: Setting in Chats settings for expanding short links (such as b23.tv) before generating a link preview. On by default, kept on this device only. */
+/* Chat list banner shown while system notifications for Tellomi are turned off. */
+"TELLOMI_NOTIFICATIONS_DISABLED_REMINDER" = "Notifications are off. You won't be alerted to new messages or calls while Tellomi isn't open.";
+
+/* Button on the chat list banner that opens the system notification settings for Tellomi. */
+"TELLOMI_NOTIFICATIONS_DISABLED_REMINDER_ACTION" = "Go to Settings";
+
+/* Setting for enabling & disabling expanding short links (such as b23.tv) before generating a link preview. */
 "TELLOMI_SETTINGS_EXPAND_SHORT_LINKS" = "Expand Short Links";
 
-/* Tellomi: Footer for the 'Expand Short Links' setting: before making a preview, the device asks the short-link service for the original address; the service sees one visit; the setting is kept on this device only. */
+/* Footer for the 'Expand Short Links' setting: before making a preview, the device asks the short-link service for the original address; the service sees one visit; the setting is kept on this device only. */
 "TELLOMI_SETTINGS_EXPAND_SHORT_LINKS_FOOTER" = "Before creating a preview, your device opens a short link once to find the full address. The short link service can see this.";
 
-/* Tellomi: Footer for the Generate Link Previews setting. Says plainly that, when on, the device visits the website when the user sends a link. */
+/* Footer for the setting that enables link previews. Says plainly that, when on, the device visits the website when the user sends a link. */
 "TELLOMI_SETTINGS_LINK_PREVIEWS_FOOTER" = "When on, your device visits the website when you send a link.";
+
+/* Tellomi: accessibility label of the small red dot on the settings entry when a newer version is available. */
+"TELLOMI_UPDATE_AVAILABLE_DOT" = "New version available";
+
+/* Tellomi: secondary button on the card shown when a newer version is available. Closes the card. */
+"TELLOMI_UPDATE_AVAILABLE_LATER" = "Later";
+
+/* Tellomi: action on the chat list reminder about a newer version. Hides the reminder for three days. */
+"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "Remind me in 3 days";
+
+/* Tellomi: title of the card shown once on the chat list, the chat list reminder and the About row when a newer version is available. Embeds {{ version number, e.g. 0.1.5 }}. */
+"TELLOMI_UPDATE_AVAILABLE_TITLE" = "Tellomi %@ is available";
 
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Bold";
@@ -11370,11 +11505,11 @@
 /* Text presented in a toast notifying the user that their username link was copied to the system clipboard. */
 "USERNAME_LINK_QR_CODE_VIEW_USERNAME_LINK_COPIED" = "Link copied";
 
-/* Text providing instructions on how to use the username link QR code scanning. */
-"USERNAME_LINK_SCAN_QR_CODE_INSTRUCTIONS_LABEL" = "Scan the QR Code on your contact’s device.";
-
 /* Tellomi: shown when a device-linking QR code is scanned on a device that is not the primary phone. */
 "USERNAME_LINK_SCAN_DEVICE_LINK_NOT_PRIMARY_TELLOMI" = "This code is for linking a new device. Scan it from Settings > Linked Devices on your primary phone.";
+
+/* Text providing instructions on how to use the username link QR code scanning. */
+"USERNAME_LINK_SCAN_QR_CODE_INSTRUCTIONS_LABEL" = "Scan the QR Code on your contact’s device.";
 
 /* Tellomi: title of the sheet showing the content of a scanned QR code that is not a Tellomi code. */
 "USERNAME_LINK_SCAN_RESULT_TITLE_TELLOMI" = "Scanned Content";
@@ -11396,9 +11531,6 @@
 
 /* A message indicating that username lookup failed. */
 "USERNAME_LOOKUP_ERROR_MESSAGE" = "An error occurred while looking up the username. Please try again later.";
-
-/* A message indicating that a user-entered username value is not a valid username. Embeds {{ a username }}. */
-"USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT" = "%1$@ is not a valid username. Make sure you’ve entered the complete username followed by its set of digits.";
 
 /* Tellomi: message shown when a user-entered value cannot be a username. Usernames have no visible numeric suffix, so this does not ask for one. Embeds {{ a username }}. */
 "USERNAME_LOOKUP_INVALID_USERNAME_MESSAGE_FORMAT_TELLOMI" = "%1$@ is not a valid username.";
@@ -11429,12 +11561,6 @@
 
 /* An error message shown when the user has typed a username that starts with an underscore. Tellomi usernames must start with a letter. */
 "USERNAME_SELECTION_CANNOT_START_WITH_UNDERSCORE_ERROR_MESSAGE_TELLOMI" = "Username must begin with a letter";
-
-/* A message explaining the side effects of changing your username. */
-"USERNAME_SELECTION_CHANGE_USERNAME_CONFIRMATION_MESSAGE" = "Changing your username will reset your existing QR code and link. Are you sure?";
-
-/* Footer text below a text field in which users type their desired username, which explains how usernames work. Embeds a {{ \"learn more\" link. }}. */
-"USERNAME_SELECTION_EXPLANATION_FOOTER_FORMAT" = "Usernames are always paired with a set of numbers. %1$@";
 
 /* Tellomi: footer text below the username text field. Usernames have no visible numeric suffix, so this explains what a username is for instead. */
 "USERNAME_SELECTION_EXPLANATION_FOOTER_TELLOMI" = "People can find and message you by your username, without knowing your phone number.";
@@ -11639,144 +11765,3 @@
 
 /* Info Message when you update disappearing messages duration. Embeds a {{time amount}} before messages disappear. see the *_TIME_AMOUNT strings for context. */
 "YOU_UPDATED_DISAPPEARING_MESSAGES_CONFIGURATION" = "You set disappearing message time to %@.";
-
-/* Button in the registration consent dialog: agree to the Terms of Service and Privacy Policy and continue. */
-"TELLOMI_CONSENT_AGREE_AND_CONTINUE" = "Agree and Continue";
-
-/* Accessibility label for the consent checkbox during registration. */
-"TELLOMI_CONSENT_CHECKBOX_ACCESSIBILITY_LABEL" = "Agree to the Terms of Service and Privacy Policy";
-
-/* Body of the consent dialog during registration. Embeds {{Terms of Service}} and {{Privacy Policy}} as links. */
-"TELLOMI_CONSENT_DIALOG_BODY_FORMAT" = "Please read and agree to the %1$@ and %2$@.";
-
-/* Title of the dialog asking the user to agree to the Terms of Service and Privacy Policy before continuing registration. */
-"TELLOMI_CONSENT_DIALOG_TITLE" = "Terms and Privacy Policy";
-
-/* Button in consent dialogs: do not agree. */
-"TELLOMI_CONSENT_DISAGREE" = "Disagree";
-
-/* Name of the Privacy Policy document, shown as a tappable link inside consent sentences. */
-"TELLOMI_CONSENT_PRIVACY_LINK" = "Privacy Policy";
-
-/* Consent sentence next to the checkbox during registration. Embeds {{Terms of Service}} and {{Privacy Policy}} as links. */
-"TELLOMI_CONSENT_ROW_FORMAT" = "I'm 18 or older and have read and agree to the %1$@ and %2$@";
-
-/* Name of the Terms of Service document, shown as a tappable link inside consent sentences. */
-"TELLOMI_CONSENT_TERMS_LINK" = "Terms of Service";
-
-/* Body of the short cross-border consent dialog: where the data goes, and asking for separate consent. */
-"TELLOMI_CROSS_BORDER_DIALOG_BODY" = "Some of your personal information will be transferred outside mainland China for processing. Do you agree?";
-
-/* Link in the cross-border consent dialog that opens the full Cross-Border Transfer Notice (the 9 items). */
-"TELLOMI_CROSS_BORDER_DIALOG_FULL_NOTICE_LINK" = "Read the Cross-Border Transfer Notice";
-
-/* Shown at the top of the cross-border consent dialog that already-registered devices see after upgrading: the Privacy Policy has been updated to 2.0.0. */
-"TELLOMI_CROSS_BORDER_DIALOG_POLICY_UPDATED" = "Our Privacy Policy has been updated to version 2.0.0.";
-
-/* Title of the short cross-border consent dialog. */
-"TELLOMI_CROSS_BORDER_DIALOG_TITLE" = "Cross-border transfer of personal information";
-
-/* Shown on the cross-border notice after the user taps 'Disagree'. */
-"TELLOMI_CROSS_BORDER_DISAGREE_HINT" = "If you don’t agree, the app won’t connect to any server or send any of your information, and you won’t be able to use Tellomi until our mainland China service launches. You can close the app, or agree later.";
-
-/* Button at the bottom of the full Cross-Border Transfer Notice: go back to the consent dialog. */
-"TELLOMI_CROSS_BORDER_FULL_NOTICE_CLOSE" = "Back";
-
-/* Title of the full Cross-Border Transfer Notice page (the 9 items), opened from the consent dialog. */
-"TELLOMI_CROSS_BORDER_FULL_NOTICE_TITLE" = "Cross-Border Transfer Notice";
-
-/* Cross-border notice item 9 body: this page is the separate consent and can be withdrawn. */
-"TELLOMI_CROSS_BORDER_ITEM_CONSENT_BODY" = "Tapping “Agree and Continue” means you separately consent to the transfer described above; agreeing to the Privacy Policy is not the same as consenting to this transfer. You can withdraw at any time by emailing privacy@tellomi.app (or in the app once that option is available). Because Tellomi can currently only be provided through servers outside mainland China, after withdrawing you won’t be able to keep using Tellomi until our mainland China service launches; you can also delete your account. Withdrawing doesn’t affect processing carried out before it.";
-
-/* Cross-border notice item 9 title: separate consent. */
-"TELLOMI_CROSS_BORDER_ITEM_CONSENT_TITLE" = "Separate consent and withdrawal";
-
-/* Cross-border notice item 3 body: how to contact the personal information protection team. */
-"TELLOMI_CROSS_BORDER_ITEM_CONTACT_BODY" = "Personal information handler: Chongqing Bange Intelligent Technology Co., Ltd. For questions about personal information protection or this transfer, email privacy@tellomi.app.";
-
-/* Cross-border notice item 3 title: contact. */
-"TELLOMI_CROSS_BORDER_ITEM_CONTACT_TITLE" = "Contact";
-
-/* Cross-border notice item 6 body: kinds of personal information transferred. */
-"TELLOMI_CROSS_BORDER_ITEM_KINDS_BODY" = "Phone number; account and device identifiers; public keys; push tokens (plus the Firebase installation ID on Android); IP address when connecting; hash of your username; browser and device information during human verification; encrypted messages, attachments, profile photos, profiles, group information and database backups (ciphertext); debug logs you choose to submit; search terms when you use GIF search.";
-
-/* Cross-border notice item 6 title: kinds of personal information. */
-"TELLOMI_CROSS_BORDER_ITEM_KINDS_TITLE" = "Personal information involved";
-
-/* Cross-border notice item 5 body: end-to-end encryption and what is processed in plaintext. */
-"TELLOMI_CROSS_BORDER_ITEM_METHOD_BODY" = "Message content, profiles, group information and attachments are end-to-end encrypted. The servers and storage outside mainland China only hold ciphertext that neither Tellomi nor the recipients above can read. Only a few items are processed in plaintext, such as your phone number, account and device identifiers, push tokens and your IP address when connecting.\nRetention: account data is kept while your account exists and deleted when you delete your account; messages waiting for delivery are deleted as soon as they’re delivered; attachments are deleted 50 days after upload; server request logs are kept for 186 days. See section 22 of the Privacy Policy.";
-
-/* Cross-border notice item 5 title: how the data is processed. */
-"TELLOMI_CROSS_BORDER_ITEM_METHOD_TITLE" = "How it’s processed and how long it’s kept";
-
-/* Cross-border notice item 8 body: legal procedure for the transfer. */
-"TELLOMI_CROSS_BORDER_ITEM_PROCEDURE_BODY" = "Under Article 5(4) of the Provisions on Promoting and Regulating Cross-Border Data Flows, a personal information handler other than a critical information infrastructure operator that has provided the personal information of fewer than 100,000 people (excluding sensitive personal information) outside mainland China since January 1 of the current year is exempt from the data export security assessment, the standard contract and personal information protection certification. Tellomi currently falls into this category; as the number approaches this threshold, we’ll complete the required procedure. The exemption doesn’t change our duties to inform you, obtain your separate consent and carry out a personal information protection impact assessment.";
-
-/* Cross-border notice item 8 title: legal procedure for the transfer. */
-"TELLOMI_CROSS_BORDER_ITEM_PROCEDURE_TITLE" = "Legal procedure for the transfer";
-
-/* Cross-border notice item 4 body: purposes of processing. */
-"TELLOMI_CROSS_BORDER_ITEM_PURPOSE_BODY" = "Signing up and signing in (including human verification); delivering and temporarily storing messages; storing attachments, profile photos and database backups; connecting voice and video calls (including call relay); push notifications; DNS; GIF search; keeping debug logs you choose to submit.";
-
-/* Cross-border notice item 4 title: purposes of processing. */
-"TELLOMI_CROSS_BORDER_ITEM_PURPOSE_TITLE" = "Purposes";
-
-/* Cross-border notice item 2 body: who receives the data outside mainland China. */
-"TELLOMI_CROSS_BORDER_ITEM_RECIPIENTS_BODY" = "· Tellomi’s servers in Hong Kong, operated by Chongqing Bange Intelligent Technology Co., Ltd. (Hong Kong, China)\n· Alibaba Cloud Computing Co., Ltd.: cloud servers for the above (Hong Kong data center)\n· Cloudflare, Inc. (United States): storage of attachments, profile photos, database backups and debug logs; call relay; human verification at sign-up; DNS\n· Apple Inc. (United States): push notifications (APNs)\n· GIPHY, Inc. (United States): only when you use GIF search; receives your search terms through our Hong Kong proxy and can’t see your IP address";
-
-/* Cross-border notice item 2 title: overseas recipients. */
-"TELLOMI_CROSS_BORDER_ITEM_RECIPIENTS_TITLE" = "Recipients outside mainland China";
-
-/* Cross-border notice item 7 body: how to exercise personal information rights. */
-"TELLOMI_CROSS_BORDER_ITEM_RIGHTS_BODY" = "You can access, copy, correct or delete your personal information, delete your account, or withdraw this consent as described in sections 26 and 27 of the Privacy Policy. For personal information processed by the recipients outside mainland China, you can also email privacy@tellomi.app, and we’ll handle it and coordinate with the recipient.";
-
-/* Cross-border notice item 7 title: your rights. */
-"TELLOMI_CROSS_BORDER_ITEM_RIGHTS_TITLE" = "Your rights";
-
-/* Cross-border notice item 1 body: where servers and storage are located. */
-"TELLOMI_CROSS_BORDER_ITEM_WHERE_BODY" = "Yes. Tellomi’s servers run in Alibaba Cloud’s data center in Hong Kong, China. Attachments, profile photos and server database backups are stored in Cloudflare R2 (storage region: western North America). Your chat history stays on your own devices, not on our servers.";
-
-/* Cross-border notice item 1 title: whether data leaves mainland China. */
-"TELLOMI_CROSS_BORDER_ITEM_WHERE_TITLE" = "Does my information leave mainland China?";
-
-/* Only button on the read-only cross-border notice shown when linking this device: acknowledge the notice. */
-"TELLOMI_CROSS_BORDER_LINKED_ACK" = "Got It";
-
-/* Body of the read-only cross-border dialog shown when linking this device: consent is given on the phone. */
-"TELLOMI_CROSS_BORDER_LINKED_DIALOG_BODY" = "Separate consent to the cross-border transfer is given on your phone, so this device won’t ask for it again. After linking, information on this device is handled as described in the Cross-Border Transfer Notice.";
-
-/* Cross-border notice item 9 body on the read-only version shown when linking this device: consent is given on the phone. */
-"TELLOMI_CROSS_BORDER_LINKED_ITEM_CONSENT_BODY" = "Separate consent to the transfer above is given on your phone; this device doesn’t collect it again. You can withdraw at any time by emailing privacy@tellomi.app; after withdrawing, you won’t be able to keep using Tellomi until our mainland China service launches.";
-
-/* Link under the 'Privacy Policy updated' sentence on the cross-border notice for already-registered devices; opens the Privacy Policy. */
-"TELLOMI_CROSS_BORDER_POLICY_UPDATED_LINK" = "Read Privacy Policy 2.0.0";
-
-/* Link at the bottom of the cross-border notice that opens the Privacy Policy sections about storage location and cross-border transfer. */
-"TELLOMI_CROSS_BORDER_PRIVACY_LINK" = "Read sections 20 and 21 of the Privacy Policy";
-
-/* Link at the bottom of the cross-border notice that opens the Third-Party Sharing and SDK List. */
-"TELLOMI_CROSS_BORDER_THIRD_PARTY_LINK" = "Read the Third-Party Sharing and SDK List";
-
-/* Button in the first-launch privacy notice: agree. */
-"TELLOMI_FIRST_LAUNCH_AGREE" = "Agree";
-
-/* Body of the privacy notice shown the first time the app is opened. Embeds {{Privacy Policy}} as a link. */
-"TELLOMI_FIRST_LAUNCH_BODY_FORMAT" = "We handle your personal information according to our %1$@. Signing up only needs your phone number, and your messages, profile and attachments are end-to-end encrypted — we can't read them.";
-
-/* Shown in the first-launch privacy notice after the user taps 'Disagree'. */
-"TELLOMI_FIRST_LAUNCH_DISAGREE_HINT" = "You need to agree before using Tellomi. If you don't, we won't collect any information.";
-
-/* Title of the privacy notice shown the first time the app is opened. */
-"TELLOMI_FIRST_LAUNCH_TITLE" = "Welcome to Tellomi";
-
-/* Tellomi: accessibility label of the small red dot on the settings entry when a newer version is available. */
-"TELLOMI_UPDATE_AVAILABLE_DOT" = "New version available";
-
-/* Tellomi: secondary button on the card shown when a newer version is available. Closes the card. */
-"TELLOMI_UPDATE_AVAILABLE_LATER" = "Later";
-
-/* Tellomi: action on the chat list reminder about a newer version. Hides the reminder for three days. */
-"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "Remind me in 3 days";
-
-/* Tellomi: title of the card shown once on the chat list, the chat list reminder and the About row when a newer version is available. Embeds {{ version number, e.g. 0.1.5 }}. */
-"TELLOMI_UPDATE_AVAILABLE_TITLE" = "Tellomi %@ is available";

@@ -80,7 +80,11 @@ class MediaGalleryAccessoriesHelper {
             AllMediaCategory.otherFiles,
         ].map { $0.titleString } + [
             // Tellomi：iOS 原来没有「链接」，补在最后（#1174）
-            TellomiSavedCategory.localized("ALL_MEDIA_FILE_TYPE_TELLOMI_LINKS", english: "Links"),
+            OWSLocalizedString(
+                "ALL_MEDIA_FILE_TYPE_TELLOMI_LINKS",
+                value: "Links",
+                comment: "Tellomi (#1174): links file type in the All Media file type picker (iOS had no links page)",
+            ),
         ]
         let segmentedControl = UISegmentedControl(items: items)
         segmentedControl.backgroundColor = .clear
