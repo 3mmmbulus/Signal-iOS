@@ -27,11 +27,15 @@ protocol PhotoCaptureViewControllerDelegate: AnyObject {
         completion: @escaping (Bool) -> Void,
     )
     func photoCaptureViewControllerCanShowTextEditor(_ photoCaptureViewController: PhotoCaptureViewController) -> Bool
+    /// Tellomi（tellomi/tellomi#1520 C-7）：点了快门上方胶片条里拍下的一张：到预览页里看它。
+    func photoCaptureViewController(_ photoCaptureViewController: PhotoCaptureViewController, didTapCapturedItem item: AttachmentApprovalItem)
 }
 
 protocol PhotoCaptureViewControllerDataSource: AnyObject {
     var numberOfMediaItems: Int { get }
     func addMedia(attachment: PreviewableAttachment)
+    /// Tellomi（tellomi/tellomi#1520 C-7）：这次在相机里拍下的，按拍的先后（快门上方的胶片条显示这些）。
+    var cameraCaptureItems: [AttachmentApprovalItem] { get }
 }
 
 class PhotoCaptureViewController: OWSViewController, OWSNavigationChildController, SheetDismissalDelegate,
@@ -461,6 +465,35 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         }
         cameraModeProceedButton.badgeNumber = badgeNumber
         cameraModeProceedButton.setIsHidden(isProceedButtonHidden, animated: animated)
+        updateCaptureFilmstrip(animated: animated)
+    }
+
+    /// Tellomi（tellomi/tellomi#1520 C-7）：拍下的留在相机时，快门上方一条胶片条（照 Telegram 聊天相机）。录像时让开，文字快拍没有。
+    private lazy var captureFilmstrip: TellomiCaptureFilmstrip = {
+        let filmstrip = TellomiCaptureFilmstrip()
+        filmstrip.onTapItem = { [weak self] item in
+            guard let self else { return }
+            self.delegate?.photoCaptureViewController(self, didTapCapturedItem: item)
+        }
+        return filmstrip
+    }()
+
+    private func updateCaptureFilmstrip(animated: Bool) {
+        guard captureFilmstrip.superview != nil else { return }
+        let captures = dataSource?.cameraCaptureItems ?? []
+        let isHidden = composerMode != .camera || isRecordingVideo || captures.isEmpty
+        if !isHidden {
+            captureFilmstrip.update(captures: captures, animated: animated)
+        }
+        captureFilmstrip.setIsHidden(isHidden, animated: animated)
+    }
+
+    /// Tellomi（C-7）：胶片条在变焦条上面（变焦条在侧边的宽布局，就在快门那一排上面）。
+    private func captureFilmstripBottomConstraint() -> NSLayoutConstraint {
+        if let cameraZoomControlsView, !layout.showsSideBar {
+            return captureFilmstrip.bottomAnchor.constraint(equalTo: cameraZoomControlsView.topAnchor, constant: -12)
+        }
+        return captureFilmstrip.bottomAnchor.constraint(equalTo: cameraBottomBar.topAnchor, constant: -16)
     }
 
     // MARK: - Camera Controls
@@ -557,11 +590,12 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         if let layoutSpecificConstraints {
             NSLayoutConstraint.deactivate(layoutSpecificConstraints)
         }
-        let layoutSpecificConstraints: [NSLayoutConstraint] = switch layout {
+        var layoutSpecificConstraints: [NSLayoutConstraint] = switch layout {
         case .pad, .padNarrow: constraintsForPadLayout(isWideLayout: layout.showsSideBar)
         case .phone: constraintsForPhoneLayout()
         case .legacyPhone: constraintsForLegacyPhoneLayout()
         }
+        layoutSpecificConstraints.append(captureFilmstripBottomConstraint()) // Tellomi（C-7）
         NSLayoutConstraint.activate(layoutSpecificConstraints)
         self.layoutSpecificConstraints = layoutSpecificConstraints
 
@@ -1063,6 +1097,15 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
 
             // No constraints added here because position is device-dependent.
         }
+
+        // Tellomi（tellomi/tellomi#1520 C-7）：拍下的胶片条，横向铺满取景区（两边留 16），竖向位置跟布局走（captureFilmstripBottomConstraint）。
+        captureFilmstrip.isHidden = true
+        captureFilmstrip.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(captureFilmstrip)
+        NSLayoutConstraint.activate([
+            captureFilmstrip.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            captureFilmstrip.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+        ])
 
         // > Proceed Button
         cameraModeProceedButton.isHidden = true

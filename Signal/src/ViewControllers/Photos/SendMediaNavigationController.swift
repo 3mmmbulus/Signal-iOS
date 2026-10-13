@@ -201,7 +201,8 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
         (topViewController as? AttachmentApprovalViewController)?.currentPageViewController?.canSaveMedia ?? false
     }
 
-    private func showApprovalViewController() {
+    /// - Parameter initialItem: Tellomi（tellomi/tellomi#1520 C-7）：先停在哪一张（相机胶片条里点的那张）；nil = 第一张。
+    private func showApprovalViewController(initialItem: AttachmentApprovalItem? = nil) {
         guard let sendMediaNavDataSource else {
             owsFailDebug("sendMediaNavDataSource was unexpectedly nil")
             return
@@ -232,6 +233,9 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
         approvalViewController.stickerSheetDelegate = self
         let messageBody = sendMediaNavDataSource.sendMediaNavInitialMessageBody(self)
         approvalViewController.setMessageBody(messageBody, txProvider: DependenciesBridge.shared.db.readTxProvider)
+        if let initialItem, let index = pendingAttachments.firstIndex(where: { $0.approvalItem.isIdenticalTo(initialItem) }) {
+            approvalViewController.tellomiShowItem(at: index)
+        }
 
         self.view.layer.opacity = 1
 
@@ -376,10 +380,25 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
         return canSendToStories
     }
 
+    /// Tellomi（tellomi/tellomi#1520 C-7）：胶片条里点一张，到预览页里看它（照 Telegram 相机点结果缩略图）。
+    func photoCaptureViewController(_ photoCaptureViewController: PhotoCaptureViewController, didTapCapturedItem item: AttachmentApprovalItem) {
+        guard numberOfMediaItems > 0 else { return }
+        showApprovalViewController(initialItem: item)
+    }
+
     // MARK: - PhotoCaptureViewControllerDataSource
 
     var numberOfMediaItems: Int {
         return self.pendingAttachments.count
+    }
+
+    var cameraCaptureItems: [AttachmentApprovalItem] {
+        return self.pendingAttachments.compactMap { pendingAttachment in
+            switch pendingAttachment.source {
+            case .camera: pendingAttachment.approvalItem
+            case .systemLibrary: nil
+            }
+        }
     }
 
     func addMedia(attachment: PreviewableAttachment) {

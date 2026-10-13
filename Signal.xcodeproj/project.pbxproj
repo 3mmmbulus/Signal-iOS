@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */; };
+		621842E786A21E560B88BC13 /* TellomiCaptureFilmstrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FA32AB6F79CA89781DB616 /* TellomiCaptureFilmstrip.swift */; };
 		F82E582811570D59B8DB6D76 /* TellomiUpdateRecommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3BF67DC104899D92531288 /* TellomiUpdateRecommended.swift */; };
 		5D24AF865D30E1687821D5EA /* TellomiUpdateManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */; };
 		A7E949506E56B5E62D2F9FA4 /* TellomiUpdateManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */; };
@@ -4393,6 +4395,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptureFilmstripTests.swift; sourceTree = "<group>"; };
+		F5FA32AB6F79CA89781DB616 /* TellomiCaptureFilmstrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptureFilmstrip.swift; sourceTree = "<group>"; };
 		FD3BF67DC104899D92531288 /* TellomiUpdateRecommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateRecommended.swift; sourceTree = "<group>"; };
 		A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateManifests.swift; sourceTree = "<group>"; };
 		9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateManifest.swift; sourceTree = "<group>"; };
@@ -9453,6 +9457,7 @@
 				7107933336E3B66B41937B57 /* TellomiPhotoPickerSelectedView.swift */,
 				45E84BADEC424F2148B287A6 /* TellomiPhotoPickerGridLayout.swift */,
 				7AA940CD8AD849697C5D7DCD /* TellomiPhotoPickerCamera.swift */,
+				F5FA32AB6F79CA89781DB616 /* TellomiCaptureFilmstrip.swift */,
 				540EABFA023E1C1A878DA9F2 /* TellomiCaptionEmojiKeyboard.swift */,
 				0532E3135A6D469CEC78A953 /* TellomiPhotoPickerLibrary.swift */,
 				4C4AE69F224AF21900D4AF6F /* SendMediaNavigationController.swift */,
@@ -9958,6 +9963,7 @@
 				5DB3B510E4008B5839D18B7C /* TellomiLinkCardAcceptanceTests.swift */,
 				57FAA2A48068A96186BF4F12 /* TellomiLinkOpenLauncherTest.swift */,
 				7395A91DCF7C0E057F379F3B /* TellomiPhotoPickerTests.swift */,
+				5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */,
 				27DEA00574736BBE816D6CAC /* TellomiAttachmentFilesTests.swift */,
 				1700E33A28B5684C0073D949 /* MediaGallerySectionsTest.swift */,
 				83B89B98C3A325AA313B7BCB /* TellomiLinkPreviewImageLevelTest.swift */,
@@ -19488,6 +19494,7 @@
 				DA66C4ABA2043F4C710F78AE /* TellomiPhotoPickerSelectedView.swift in Sources */,
 				4FD6D8A602E2AC192EF6B209 /* TellomiPhotoPickerGridLayout.swift in Sources */,
 				2E174D0E19C84099DB6A1FF9 /* TellomiPhotoPickerCamera.swift in Sources */,
+				621842E786A21E560B88BC13 /* TellomiCaptureFilmstrip.swift in Sources */,
 				8A656AB02AE3A44B4DEE01DC /* TellomiCaptionEmojiKeyboard.swift in Sources */,
 				40B3651A6590416B1FB5DBF0 /* TellomiPhotoPickerLibrary.swift in Sources */,
 				887889A52476E999001B5FCF /* PinConfirmationViewController.swift in Sources */,
@@ -19781,6 +19788,7 @@
 				35D325E771F5E4028ED56D1E /* TellomiLinkCardAcceptanceTests.swift in Sources */,
 				DA819E1E08EE3A282CE9BE67 /* TellomiLinkOpenLauncherTest.swift in Sources */,
 				3127CA830877399B6F32FAA9 /* TellomiPhotoPickerTests.swift in Sources */,
+				D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */,
 				F3518B1F897D0F10D352F91C /* TellomiAttachmentFilesTests.swift in Sources */,
 				1700E33B28B5684C0073D949 /* MediaGallerySectionsTest.swift in Sources */,
 				50D8796A2A16D2C20031345D /* MessageLoaderBatchTest.swift in Sources */,
