@@ -2478,11 +2478,23 @@ nonisolated struct SignalServiceProtos_TellomiDataMessage: Sendable {
   /// Clears the value of `captionAboveMedia`. Subsequent reads from it will return its default value.
   mutating func clearCaptionAboveMedia() {self._captionAboveMedia = nil}
 
+  /// ADR-0075: the caption written in the input box, for the whole message (per-media captions are in
+  /// TellomiAttachment.caption). body still carries all captions for clients that don't know these.
+  var messageCaption: String {
+    get {_messageCaption ?? String()}
+    set {_messageCaption = newValue}
+  }
+  /// Returns true if `messageCaption` has been explicitly set.
+  var hasMessageCaption: Bool {self._messageCaption != nil}
+  /// Clears the value of `messageCaption`. Subsequent reads from it will return its default value.
+  mutating func clearMessageCaption() {self._messageCaption = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _captionAboveMedia: Bool? = nil
+  fileprivate var _messageCaption: String? = nil
 }
 
 nonisolated struct SignalServiceProtos_NullMessage: Sendable {
@@ -4466,6 +4478,16 @@ nonisolated struct SignalServiceProtos_TellomiAttachment: @unchecked Sendable {
   var hasLivePhotoVideo: Bool {_storage._livePhotoVideo != nil}
   /// Clears the value of `livePhotoVideo`. Subsequent reads from it will return its default value.
   mutating func clearLivePhotoVideo() {_uniqueStorage()._livePhotoVideo = nil}
+
+  /// ADR-0075: this photo / video's own caption (written in the viewer). DataMessage.body still carries it.
+  var caption: String {
+    get {_storage._caption ?? String()}
+    set {_uniqueStorage()._caption = newValue}
+  }
+  /// Returns true if `caption` has been explicitly set.
+  var hasCaption: Bool {_storage._caption != nil}
+  /// Clears the value of `caption`. Subsequent reads from it will return its default value.
+  mutating func clearCaption() {_uniqueStorage()._caption = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -7515,7 +7537,7 @@ nonisolated extension SignalServiceProtos_DataMessage.AdminDelete: SwiftProtobuf
 
 nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".TellomiDataMessage"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0\u{1}messageCaption\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7524,6 +7546,7 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self._captionAboveMedia) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._messageCaption) }()
       default: break
       }
     }
@@ -7537,11 +7560,15 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
     try { if let v = self._captionAboveMedia {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
     } }()
+    try { if let v = self._messageCaption {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: SignalServiceProtos_TellomiDataMessage, rhs: SignalServiceProtos_TellomiDataMessage) -> Bool {
     if lhs._captionAboveMedia != rhs._captionAboveMedia {return false}
+    if lhs._messageCaption != rhs._messageCaption {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -9598,12 +9625,13 @@ nonisolated extension SignalServiceProtos_AttachmentPointer.Flags: SwiftProtobuf
 
 nonisolated extension SignalServiceProtos_TellomiAttachment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".TellomiAttachment"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}asFile\0\u{1}spoiler\0\u{1}livePhotoVideo\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}asFile\0\u{1}spoiler\0\u{1}livePhotoVideo\0\u{1}caption\0")
 
   fileprivate class _StorageClass {
     var _asFile: Bool? = nil
     var _spoiler: Bool? = nil
     var _livePhotoVideo: SignalServiceProtos_AttachmentPointer? = nil
+    var _caption: String? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -9617,6 +9645,7 @@ nonisolated extension SignalServiceProtos_TellomiAttachment: SwiftProtobuf.Messa
       _asFile = source._asFile
       _spoiler = source._spoiler
       _livePhotoVideo = source._livePhotoVideo
+      _caption = source._caption
     }
   }
 
@@ -9638,6 +9667,7 @@ nonisolated extension SignalServiceProtos_TellomiAttachment: SwiftProtobuf.Messa
         case 1: try { try decoder.decodeSingularBoolField(value: &_storage._asFile) }()
         case 2: try { try decoder.decodeSingularBoolField(value: &_storage._spoiler) }()
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._livePhotoVideo) }()
+        case 4: try { try decoder.decodeSingularStringField(value: &_storage._caption) }()
         default: break
         }
       }
@@ -9659,6 +9689,9 @@ nonisolated extension SignalServiceProtos_TellomiAttachment: SwiftProtobuf.Messa
       try { if let v = _storage._livePhotoVideo {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
       } }()
+      try { if let v = _storage._caption {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -9671,6 +9704,7 @@ nonisolated extension SignalServiceProtos_TellomiAttachment: SwiftProtobuf.Messa
         if _storage._asFile != rhs_storage._asFile {return false}
         if _storage._spoiler != rhs_storage._spoiler {return false}
         if _storage._livePhotoVideo != rhs_storage._livePhotoVideo {return false}
+        if _storage._caption != rhs_storage._caption {return false}
         return true
       }
       if !storagesAreEqual {return false}

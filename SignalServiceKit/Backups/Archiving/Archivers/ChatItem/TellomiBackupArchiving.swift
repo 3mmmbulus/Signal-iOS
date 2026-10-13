@@ -36,11 +36,17 @@ enum TellomiBackupArchiving {
     }
 
     static func standardMessage(_ message: TSMessage, tx: DBReadTransaction) -> BackupProto_TellomiStandardMessage? {
-        guard TellomiCaptionAbove.isCaptionAboveMedia(messageUniqueId: message.uniqueId, tx: tx) else {
+        let captionAboveMedia = TellomiCaptionAbove.isCaptionAboveMedia(messageUniqueId: message.uniqueId, tx: tx)
+        // ADR-0075: per-media captions go in FilePointer.caption (upstream already backs them up)
+        let messageCaption = TellomiCaptionAbove.messageCaption(messageUniqueId: message.uniqueId, tx: tx)
+        guard captionAboveMedia || messageCaption != nil else {
             return nil
         }
         var proto = BackupProto_TellomiStandardMessage()
-        proto.captionAboveMedia = true
+        proto.captionAboveMedia = captionAboveMedia
+        if let messageCaption {
+            proto.messageCaption = messageCaption
+        }
         return proto
     }
 

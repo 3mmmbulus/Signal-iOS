@@ -224,7 +224,8 @@ public class AttachmentManagerImpl: AttachmentManager {
                 mimeType: mimeType,
                 // This should be unset for newly-incoming attachments, but it's
                 // still technically in the proto definition.
-                caption: proto.hasCaption ? proto.caption : nil,
+                // Tellomi (ADR-0075): the per-media caption is kept here, ahead of the legacy one.
+                caption: TellomiCaptionAbove.attachmentCaption(proto),
             ),
             sourceFilename: sourceFilename,
             sourceUnencryptedByteCount: proto.size,

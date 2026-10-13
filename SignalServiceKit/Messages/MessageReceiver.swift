@@ -1607,6 +1607,10 @@ public final class MessageReceiver {
         if dataMessage.tellomi?.captionAboveMedia == true {
             TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: message.uniqueId, tx: tx)
         }
+        // ADR-0075：整条消息的说明，只在有时写。
+        if let messageCaption = dataMessage.tellomi?.messageCaption?.nilIfEmpty {
+            TellomiCaptionAbove.setMessageCaption(messageCaption, messageUniqueId: message.uniqueId, tx: tx)
+        }
 
         // Inserting the message may have modified the thread on disk, so reload
         // it. For example, we may have marked the thread as visible.

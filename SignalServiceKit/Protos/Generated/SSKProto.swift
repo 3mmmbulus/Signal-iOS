@@ -10321,6 +10321,18 @@ public class SSKProtoTellomiDataMessage: NSObject, Codable, NSSecureCoding {
         return proto.hasCaptionAboveMedia
     }
 
+    @objc
+    public var messageCaption: String? {
+        guard hasMessageCaption else {
+            return nil
+        }
+        return proto.messageCaption
+    }
+    @objc
+    public var hasMessageCaption: Bool {
+        return proto.hasMessageCaption
+    }
+
     public var hasUnknownFields: Bool {
         return !proto.unknownFields.data.isEmpty
     }
@@ -10397,6 +10409,9 @@ extension SSKProtoTellomiDataMessage {
         if hasCaptionAboveMedia {
             builder.setCaptionAboveMedia(captionAboveMedia)
         }
+        if let _value = messageCaption {
+            builder.setMessageCaption(_value)
+        }
         if let _value = unknownFields {
             builder.setUnknownFields(_value)
         }
@@ -10415,6 +10430,17 @@ public class SSKProtoTellomiDataMessageBuilder: NSObject {
     @objc
     public func setCaptionAboveMedia(_ valueParam: Bool) {
         proto.captionAboveMedia = valueParam
+    }
+
+    @objc
+    @available(swift, obsoleted: 1.0)
+    public func setMessageCaption(_ valueParam: String?) {
+        guard let valueParam = valueParam else { return }
+        proto.messageCaption = valueParam
+    }
+
+    public func setMessageCaption(_ valueParam: String) {
+        proto.messageCaption = valueParam
     }
 
     public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {
@@ -19000,6 +19026,18 @@ public class SSKProtoTellomiAttachment: NSObject, Codable, NSSecureCoding {
         return proto.hasSpoiler
     }
 
+    @objc
+    public var caption: String? {
+        guard hasCaption else {
+            return nil
+        }
+        return proto.caption
+    }
+    @objc
+    public var hasCaption: Bool {
+        return proto.hasCaption
+    }
+
     public var hasUnknownFields: Bool {
         return !proto.unknownFields.data.isEmpty
     }
@@ -19090,6 +19128,9 @@ extension SSKProtoTellomiAttachment {
         if let _value = livePhotoVideo {
             builder.setLivePhotoVideo(_value)
         }
+        if let _value = caption {
+            builder.setCaption(_value)
+        }
         if let _value = unknownFields {
             builder.setUnknownFields(_value)
         }
@@ -19124,6 +19165,17 @@ public class SSKProtoTellomiAttachmentBuilder: NSObject {
 
     public func setLivePhotoVideo(_ valueParam: SSKProtoAttachmentPointer) {
         proto.livePhotoVideo = valueParam.proto
+    }
+
+    @objc
+    @available(swift, obsoleted: 1.0)
+    public func setCaption(_ valueParam: String?) {
+        guard let valueParam = valueParam else { return }
+        proto.caption = valueParam
+    }
+
+    public func setCaption(_ valueParam: String) {
+        proto.caption = valueParam
     }
 
     public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {

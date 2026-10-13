@@ -220,6 +220,10 @@ public class SentMessageTranscriptReceiverImpl: SentMessageTranscriptReceiver {
             if messageParams.tellomiCaptionAboveMedia {
                 TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: outgoingMessage.uniqueId, tx: tx)
             }
+            // ADR-0075：整条消息的说明也记下。
+            if let messageCaption = messageParams.tellomiMessageCaption {
+                TellomiCaptionAbove.setMessageCaption(messageCaption, messageUniqueId: outgoingMessage.uniqueId, tx: tx)
+            }
 
             if let validatedPollCreate = messageParams.validatedPollCreate {
                 do {

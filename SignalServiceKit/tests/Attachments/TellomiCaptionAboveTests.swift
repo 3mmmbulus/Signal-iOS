@@ -61,12 +61,74 @@ class TellomiCaptionAboveTests: XCTestCase {
         }
     }
 
-    private func dataMessage(captionAboveMedia: Bool?) throws -> SSKProtoDataMessage {
+    // MARK: - ADR-0075 per-media captions
+
+    func testPerMediaCaptionGoldenBytesSharedByTheThreeClients() throws {
+        // TellomiAttachment{caption = "a"} = 22 01 61
+        let tellomi = SSKProtoTellomiAttachment.builder()
+        tellomi.setCaption("a")
+        let pointer = SSKProtoAttachmentPointer.builder()
+        pointer.setTellomi(tellomi.buildInfallibly())
+        XCTAssertEqual(try pointer.buildInfallibly().serializedData().hexadecimalString, "ca3e03220161")
+
+        // TellomiDataMessage{messageCaption = "a"} = 12 01 61
+        let message = SSKProtoTellomiDataMessage.builder()
+        message.setMessageCaption("a")
+        let dataMessage = SSKProtoDataMessage.builder()
+        dataMessage.setTellomi(message.buildInfallibly())
+        XCTAssertEqual(try dataMessage.build().serializedData().hexadecimalString, "c23e03120161")
+    }
+
+    func testTheCaptionForTheWholeMessageIsKept_andAnEditReplacesIt() throws {
+        db.write { tx in
+            TellomiCaptionAbove.apply(from: try! dataMessage(captionAboveMedia: nil, messageCaption: "Trip"), messageUniqueId: "message", tx: tx)
+        }
+        db.read { tx in
+            XCTAssertEqual(TellomiCaptionAbove.messageCaption(messageUniqueId: "message", tx: tx), "Trip")
+            XCTAssertFalse(TellomiCaptionAbove.isCaptionAboveMedia(messageUniqueId: "message", tx: tx))
+            XCTAssertNil(TellomiCaptionAbove.messageCaption(messageUniqueId: "ordinary", tx: tx))
+        }
+
+        // An edit carries the whole new DataMessage
+        db.write { tx in
+            TellomiCaptionAbove.apply(from: try! dataMessage(captionAboveMedia: true, messageCaption: ""), messageUniqueId: "message", tx: tx)
+        }
+        db.read { tx in
+            XCTAssertNil(TellomiCaptionAbove.messageCaption(messageUniqueId: "message", tx: tx), "an empty one is none")
+            XCTAssertTrue(TellomiCaptionAbove.isCaptionAboveMedia(messageUniqueId: "message", tx: tx))
+        }
+    }
+
+    func testAnAttachmentsOwnCaptionComesAheadOfTheLegacyOne() throws {
+        func pointer(tellomiCaption: String?, legacy: String?) -> SSKProtoAttachmentPointer {
+            let builder = SSKProtoAttachmentPointer.builder()
+            if let tellomiCaption {
+                let tellomi = SSKProtoTellomiAttachment.builder()
+                tellomi.setCaption(tellomiCaption)
+                builder.setTellomi(tellomi.buildInfallibly())
+            }
+            if let legacy {
+                builder.setCaption(legacy)
+            }
+            return builder.buildInfallibly()
+        }
+        XCTAssertEqual(TellomiCaptionAbove.attachmentCaption(pointer(tellomiCaption: "Sunset", legacy: nil)), "Sunset")
+        XCTAssertEqual(TellomiCaptionAbove.attachmentCaption(pointer(tellomiCaption: "Sunset", legacy: "legacy")), "Sunset")
+        XCTAssertEqual(TellomiCaptionAbove.attachmentCaption(pointer(tellomiCaption: "", legacy: "legacy")), "legacy")
+        XCTAssertNil(TellomiCaptionAbove.attachmentCaption(pointer(tellomiCaption: nil, legacy: nil)))
+    }
+
+    private func dataMessage(captionAboveMedia: Bool?, messageCaption: String? = nil) throws -> SSKProtoDataMessage {
         let builder = SSKProtoDataMessage.builder()
         builder.setBody("caption")
-        if let captionAboveMedia {
+        if captionAboveMedia != nil || messageCaption != nil {
             let tellomi = SSKProtoTellomiDataMessage.builder()
-            tellomi.setCaptionAboveMedia(captionAboveMedia)
+            if let captionAboveMedia {
+                tellomi.setCaptionAboveMedia(captionAboveMedia)
+            }
+            if let messageCaption {
+                tellomi.setMessageCaption(messageCaption)
+            }
             builder.setTellomi(tellomi.buildInfallibly())
         }
         return try builder.build()

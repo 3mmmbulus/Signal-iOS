@@ -498,6 +498,9 @@ message TellomiDataMessage {
   // Draw the body above the media (default below). Only meaningful with a body and at least one
   // image / video shown as media; ignored otherwise.
   optional bool captionAboveMedia = 1;
+  // ADR-0075: the caption written in the input box, for the whole message (per-media captions are in
+  // TellomiAttachment.caption). body still carries all captions for clients that don't know these.
+  optional string messageCaption = 2;
 }
 
 message NullMessage {
@@ -926,6 +929,8 @@ message TellomiAttachment {
   optional bool spoiler = 2;
   // The moving half (video/mp4) of a live photo whose still is this attachment. One level only.
   optional AttachmentPointer livePhotoVideo = 3;
+  // ADR-0075: this photo / video's own caption (written in the viewer). DataMessage.body still carries it.
+  optional string caption = 4;
 }
 
 message GroupContextV2 {

@@ -65,6 +65,8 @@ extension BackupArchive {
             fileprivate let linkPreviewImage: BackupProto_FilePointer?
             /// Tellomi (ADR-0068 §4.7): set on the message once it is restored.
             fileprivate let tellomiCaptionAboveMedia: Bool
+            /// Tellomi (ADR-0075): the caption for the whole message, set once it is restored.
+            fileprivate let tellomiMessageCaption: String?
         }
 
         /// Note: not a "Contact" in the Signal sense (not a Recipient or SignalAccount), just a message
@@ -1177,6 +1179,9 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
             if text.tellomiCaptionAboveMedia {
                 TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: message.uniqueId, tx: context.tx)
             }
+            if let messageCaption = text.tellomiMessageCaption {
+                TellomiCaptionAbove.setMessageCaption(messageCaption, messageUniqueId: message.uniqueId, tx: context.tx)
+            }
         case .contactShare(let contactShare):
             downstreamObjectResults.append(reactionArchiver.restoreReactions(
                 contactShare.reactions,
@@ -1512,6 +1517,7 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
                 quotedMessageThumbnail: quotedMessageThumbnail,
                 linkPreviewImage: linkPreviewAttachment,
                 tellomiCaptionAboveMedia: standardMessage.hasTellomi && standardMessage.tellomi.captionAboveMedia,
+                tellomiMessageCaption: standardMessage.hasTellomi ? standardMessage.tellomi.messageCaption.nilIfEmpty : nil,
             ))
             if partialErrors.isEmpty {
                 return .success(contents)
@@ -1530,6 +1536,7 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
                     quotedMessageThumbnail: quotedMessageThumbnail,
                     linkPreviewImage: linkPreviewAttachment,
                     tellomiCaptionAboveMedia: standardMessage.hasTellomi && standardMessage.tellomi.captionAboveMedia,
+                    tellomiMessageCaption: standardMessage.hasTellomi ? standardMessage.tellomi.messageCaption.nilIfEmpty : nil,
                 )),
                 partialErrors + messageBodyErrors,
             )

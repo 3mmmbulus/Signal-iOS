@@ -2754,6 +2754,10 @@ public nonisolated struct BackupProto_TellomiStandardMessage: Sendable {
   /// a body and at least one image / video shown as media; ignored otherwise.
   public var captionAboveMedia: Bool = false
 
+  /// ADR-0075: the caption for the whole message (input box). Per-media captions travel in
+  /// FilePointer.caption, which every client already backs up.
+  public var messageCaption: String = String()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -10012,7 +10016,7 @@ nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftP
 
 nonisolated extension BackupProto_TellomiStandardMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TellomiStandardMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0\u{1}messageCaption\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -10021,6 +10025,7 @@ nonisolated extension BackupProto_TellomiStandardMessage: SwiftProtobuf.Message,
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.captionAboveMedia) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.messageCaption) }()
       default: break
       }
     }
@@ -10030,11 +10035,15 @@ nonisolated extension BackupProto_TellomiStandardMessage: SwiftProtobuf.Message,
     if self.captionAboveMedia != false {
       try visitor.visitSingularBoolField(value: self.captionAboveMedia, fieldNumber: 1)
     }
+    if !self.messageCaption.isEmpty {
+      try visitor.visitSingularStringField(value: self.messageCaption, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: BackupProto_TellomiStandardMessage, rhs: BackupProto_TellomiStandardMessage) -> Bool {
     if lhs.captionAboveMedia != rhs.captionAboveMedia {return false}
+    if lhs.messageCaption != rhs.messageCaption {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

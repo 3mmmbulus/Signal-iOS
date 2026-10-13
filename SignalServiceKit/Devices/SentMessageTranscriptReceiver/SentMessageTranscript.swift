@@ -47,6 +47,8 @@ public enum SentMessageTranscriptType {
 
         /// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：`DataMessage.tellomi.captionAboveMedia`。
         public var tellomiCaptionAboveMedia: Bool = false
+        /// ADR-0075：`DataMessage.tellomi.messageCaption`（整条消息的说明）。
+        public var tellomiMessageCaption: String? = nil
     }
 
     public struct PaymentNotification {
