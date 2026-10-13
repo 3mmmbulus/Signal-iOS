@@ -1353,7 +1353,9 @@ private extension CVComponentState.Builder {
                     tx: transaction,
                 )
             } ?? []
-            let mediaAlbumItems = buildMediaAlbumItems(for: bodyAttachments, message: message)
+            // Tellomi (ADR-0068 §4.1): an attachment sent as a file is a file row, never part of a media album.
+            let tellomiAsFileAttachment = bodyAttachments.first(where: { $0.reference.renderingFlag == .tellomiAsFile })
+            let mediaAlbumItems = tellomiAsFileAttachment != nil ? [] : buildMediaAlbumItems(for: bodyAttachments, message: message)
             if mediaAlbumItems.count > 0 {
                 var mediaAlbumHasFailedAttachment = false
                 var mediaAlbumHasSkippedAttachment = false
@@ -1410,8 +1412,8 @@ private extension CVComponentState.Builder {
             }
 
             // Only media galleries should have more than one attachment.
-            owsAssertDebug(bodyAttachments.count <= 1)
-            if let bodyAttachment = bodyAttachments.first {
+            owsAssertDebug(bodyAttachments.count <= 1 || tellomiAsFileAttachment != nil)
+            if let bodyAttachment = tellomiAsFileAttachment ?? bodyAttachments.first {
                 buildNonMediaAttachment(
                     referencedAttachment: bodyAttachment,
                     message: message,
@@ -1885,6 +1887,8 @@ private extension CVComponentState.Builder {
         message: TSMessage,
     ) {
         guard
+            // Tellomi (ADR-0068 §4.1): sent as a file is a file row whatever the content type, audio included.
+            referencedAttachment.reference.renderingFlag != .tellomiAsFile,
             // Use the validated content type and only fall back to the mime type.
             referencedAttachment.attachment.asStream()?.contentType.isAudio
             ?? MimeTypeUtil.isSupportedAudioMimeType(referencedAttachment.attachment.mimeType)

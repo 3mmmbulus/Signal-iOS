@@ -484,6 +484,17 @@ message DataMessage {
   optional UnpinMessage unpinMessage = 28;
   optional AdminDelete adminDelete = 29;
   // NEXT ID: 30
+
+  // Tellomi (ADR-0068 §4.7): field numbers >= 1000 are Tellomi's reserved range (see Preview.rich).
+  optional TellomiDataMessage tellomi = 1000;
+}
+
+// Tellomi (ADR-0068 §4.7). Message-level presentation; clients that don't know it fall back to
+// upstream behaviour without losing content, so it never raises requiredProtocolVersion.
+message TellomiDataMessage {
+  // Draw the body above the media (default below). Only meaningful with a body and at least one
+  // image / video shown as media; ignored otherwise.
+  optional bool captionAboveMedia = 1;
 }
 
 message NullMessage {
@@ -896,6 +907,22 @@ message AttachmentPointer {
   optional uint64 uploadTimestamp = 13;
   optional uint32 cdnNumber = 14;
   // Next ID: 21
+
+  // Tellomi (ADR-0068 §4.1): 1001, not 21, so upstream's next fields never collide. `flags` stays
+  // untouched: iOS parses its whole value as one enum, so a new bit would break GIF / voice too.
+  optional TellomiAttachment tellomi = 1001;
+}
+
+// Tellomi (ADR-0068 §4.1). Receivers: asFile wins and ignores the other two; an invalid combination
+// (spoiler on a non-visual file, livePhotoVideo on a non-image, nesting) ignores that field only.
+message TellomiAttachment {
+  // Draw as a file row whatever the contentType: original bytes, original file name.
+  optional bool asFile = 1;
+  // Cover until tapped. Images / videos only; exclusive with asFile and DataMessage.isViewOnce.
+  // A message carrying it in any pointer sets requiredProtocolVersion >= 9 (ADR-0068 §4.2).
+  optional bool spoiler = 2;
+  // The moving half (video/mp4) of a live photo whose still is this attachment. One level only.
+  optional AttachmentPointer livePhotoVideo = 3;
 }
 
 message GroupContextV2 {

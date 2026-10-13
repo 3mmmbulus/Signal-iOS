@@ -39,6 +39,10 @@ public enum AutoDownloadPolicy {
         case .avatar:
             return .always
         case .body:
+            if renderingFlag == .tellomiAsFile {
+                // Tellomi (ADR-0068): sent as a file → the original, often large; follows the "documents" setting.
+                return .preference(mediaType: .document)
+            }
             if MimeTypeUtil.isSupportedImageMimeType(mimeType) {
                 return .preference(mediaType: .photo)
             }

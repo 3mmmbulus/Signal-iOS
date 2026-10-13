@@ -507,7 +507,7 @@ private class QuotedMessageSnippetView: UIView {
             switch stub.renderingFlag {
             case .voiceMessage:
                 break
-            case nil, .default, .borderless, .shouldLoop:
+            case nil, .default, .borderless, .shouldLoop, .tellomiAsFile:
                 thumbnailView = createStubAttachmentView()
             }
 

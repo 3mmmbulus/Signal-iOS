@@ -56,7 +56,9 @@ public class CVComponentGenericAttachment: CVComponentBase, CVComponent {
 
         var hSubviews = [UIView]()
 
-        if let downloadView = tryToBuildProgressView() {
+        if Self.showsTellomiThumbnail(genericAttachment: genericAttachment) {
+            hSubviews.append(configureTellomiThumbnail(componentView: componentView))
+        } else if let downloadView = tryToBuildProgressView() {
             hSubviews.append(downloadView)
         } else {
             let iconImageView = componentView.iconImageView
@@ -275,6 +277,59 @@ public class CVComponentGenericAttachment: CVComponentBase, CVComponent {
         )
     }
 
+    // MARK: - Tellomi: thumbnail
+
+    /// Tellomi (ADR-0068, R-3): an image / video sent as a file is a file row with its thumbnail where the
+    /// file icon goes: the picture once it is here, its blur hash before that, with the download progress on top.
+    private static func showsTellomiThumbnail(genericAttachment: CVComponentState.GenericAttachment) -> Bool {
+        let referencedAttachment = genericAttachment.attachment.attachment
+        return referencedAttachment.reference.renderingFlag == .tellomiAsFile
+            && MimeTypeUtil.isSupportedVisualMediaMimeType(referencedAttachment.attachment.mimeType)
+    }
+
+    /// The same height as the file icon, so the row doesn't grow.
+    private static let tellomiThumbnailSize = CGFloat(AvatarBuilder.standardAvatarSizePoints)
+
+    static let tellomiThumbnailIdentifier = "CVComponentGenericAttachment.tellomiThumbnail"
+
+    private func configureTellomiThumbnail(componentView: CVComponentViewGenericAttachment) -> UIView {
+        let thumbnailView = componentView.tellomiThumbnailView
+        thumbnailView.accessibilityIdentifier = Self.tellomiThumbnailIdentifier
+        thumbnailView.contentMode = .scaleAspectFill
+        thumbnailView.clipsToBounds = true
+        thumbnailView.layer.cornerRadius = 8
+        thumbnailView.backgroundColor = UIColor.black.withAlphaComponent(0.06)
+        thumbnailView.image = attachment.attachment.blurHash.flatMap(BlurHash.image(for:))
+
+        if let attachmentStream {
+            let attachmentId = self.attachmentId
+            componentView.tellomiThumbnailAttachmentId = attachmentId
+            Task { @MainActor [weak componentView] in
+                let image = await attachmentStream.thumbnailImage(quality: .small)
+                // The view may have been reused for another row by now.
+                guard let image, let componentView, componentView.tellomiThumbnailAttachmentId == attachmentId else {
+                    return
+                }
+                componentView.tellomiThumbnailView.image = image
+            }
+        }
+
+        if let progressView = tryToBuildProgressView() {
+            let dimmingView = componentView.tellomiThumbnailDimmingView
+            dimmingView.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+            thumbnailView.addSubview(dimmingView)
+            thumbnailView.addSubview(progressView)
+            componentView.hStackView.addLayoutBlock { _ in
+                dimmingView.frame = thumbnailView.bounds
+                progressView.frame = CGRect(
+                    origin: ((thumbnailView.bounds.size - .square(Self.progressSize)) * 0.5).asPoint,
+                    size: .square(Self.progressSize),
+                )
+            }
+        }
+        return thumbnailView
+    }
+
     private static func hasProgressView(
         genericAttachment: CVComponentState.GenericAttachment,
     ) -> Bool {
@@ -316,7 +371,9 @@ public class CVComponentGenericAttachment: CVComponentBase, CVComponent {
             genericAttachment: genericAttachment,
         )
         let leftViewSize: CGSize = (
-            hasProgressView
+            Self.showsTellomiThumbnail(genericAttachment: genericAttachment)
+                ? .square(tellomiThumbnailSize)
+                : hasProgressView
                 ? .square(progressSize)
                 : iconSize,
         )
@@ -466,6 +523,9 @@ public class CVComponentGenericAttachment: CVComponentBase, CVComponent {
         fileprivate let bottomLabel = CVLabel()
         fileprivate let fileTypeLabel = CVLabel()
         fileprivate let iconImageView = CVImageView()
+        fileprivate let tellomiThumbnailView = CVImageView()
+        fileprivate let tellomiThumbnailDimmingView = UIView()
+        fileprivate var tellomiThumbnailAttachmentId: Attachment.IDType?
 
         public var isDedicatedCellView = false
 
@@ -483,6 +543,9 @@ public class CVComponentGenericAttachment: CVComponentBase, CVComponent {
             bottomLabel.text = nil
             fileTypeLabel.text = nil
             iconImageView.image = nil
+            tellomiThumbnailView.image = nil
+            tellomiThumbnailView.subviews.forEach { $0.removeFromSuperview() }
+            tellomiThumbnailAttachmentId = nil
         }
 
     }

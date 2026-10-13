@@ -35,6 +35,9 @@ enum SignalAttachmentCloner {
         case .shouldLoop:
             result = try PreviewableAttachment.buildAttachment(dataSource: decryptedDataSource, dataUTI: dataUTI, attachmentLimits: attachmentLimits)
             result.rawValue.isLoopingVideo = true
+        case .tellomiAsFile:
+            // Tellomi (ADR-0068): sent again as the same original file, not re-normalized into a photo.
+            result = try PreviewableAttachment.tellomiAsFileAttachment(dataSource: decryptedDataSource, dataUTI: dataUTI, attachmentLimits: attachmentLimits)
         }
         return result
     }

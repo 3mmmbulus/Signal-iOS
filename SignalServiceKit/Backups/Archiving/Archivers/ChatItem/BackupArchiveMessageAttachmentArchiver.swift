@@ -393,6 +393,10 @@ extension AttachmentReference.RenderingFlag {
             return .borderless
         case .shouldLoop:
             return .gif
+        case .tellomiAsFile:
+            // Tellomi (ADR-0068 §4.5): backups don't carry asFile yet (needs MessageAttachment.tellomi in
+            // libsignal's backup.proto first); restored, it is an ordinary attachment again.
+            return .none
         }
     }
 }

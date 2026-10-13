@@ -392,7 +392,7 @@ public class AttachmentContentValidatorImpl: AttachmentContentValidator {
         case .borderless:
             // Preserve borderless flag from the original
             renderingFlagForThumbnail = .borderless
-        case .default, .voiceMessage, .shouldLoop:
+        case .default, .voiceMessage, .shouldLoop, .tellomiAsFile:
             // Other cases become default for the still image.
             renderingFlagForThumbnail = .default
         }

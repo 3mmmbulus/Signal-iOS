@@ -241,6 +241,26 @@ public struct PreviewableAttachment {
         )
     }
 
+    // MARK: Tellomi: Sent as a File
+
+    /// Tellomi (ADR-0068): the original bytes of a file — an image or video included — drawn as a file row on
+    /// both ends (`AttachmentPointer.tellomi.asFile`). `.other` sends them as they are: no normalizing, no
+    /// re-encoding, no HEIC conversion. Without it an image picked as a file is compressed and shown as a photo.
+    public static func tellomiAsFileAttachment(
+        dataSource: DataSourcePath,
+        dataUTI: String,
+        attachmentLimits: OutgoingAttachmentLimits,
+    ) throws(SignalAttachmentError) -> Self {
+        let attachment = try newAttachment(
+            dataSource: dataSource,
+            dataUTI: dataUTI,
+            validUTISet: nil,
+            maxFileSize: attachmentLimits.maxPlaintextBytes,
+        )
+        attachment.rawValue.isTellomiAsFile = true
+        return attachment
+    }
+
     // MARK: Voice Messages
 
     public static func voiceMessageAttachment(

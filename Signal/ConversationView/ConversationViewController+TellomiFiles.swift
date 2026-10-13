@@ -55,7 +55,8 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
     }
 
     /// F-4、F-5：系统文件选择器挑的（可多选）或扫描合成的 PDF：每个一条、立即发送，发完收起 Sheet。
-    /// 超过上限的不发，发完剩下的再提示「文件太大」并写明上限；视频照上游先转成 mp4（保证各端都能播）。
+    /// 超过上限的不发，发完剩下的再提示「文件太大」并写明上限。图片、视频按 ADR-0068 的 asFile 发原文件
+    /// （不压缩、不转码，对方画成文件行、用系统应用打开），tellomi/tellomi#1263 之前是压成照片 / 转成 mp4 发的。
     func filesPage(_ page: TellomiAttachmentFilesViewController, sendFilesAt urls: [URL]) {
         let limits = OutgoingAttachmentLimits.currentLimits()
         ModalActivityIndicatorViewController.present(
@@ -118,8 +119,8 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
         dataSource.sourceFilename = url.lastPathComponent.strippedOrNil
         let dataUTI = (values?.contentType ?? .data).identifier
         do {
-            if SignalAttachment.videoUTISet.contains(dataUTI) {
-                return try await PreviewableAttachment.compressVideoAsMp4(dataSource: dataSource, attachmentLimits: limits)
+            if SignalAttachment.inputImageUTISet.contains(dataUTI) || SignalAttachment.videoUTISet.contains(dataUTI) {
+                return try PreviewableAttachment.tellomiAsFileAttachment(dataSource: dataSource, dataUTI: dataUTI, attachmentLimits: limits)
             }
             return try PreviewableAttachment.buildAttachment(dataSource: dataSource, dataUTI: dataUTI, attachmentLimits: limits)
         } catch SignalAttachmentError.fileSizeTooLarge {

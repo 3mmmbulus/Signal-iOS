@@ -35,6 +35,13 @@ extension AttachmentReference {
         /// of a misnomer; it is orthogonal to whether the file type is gif.)
         case shouldLoop = 3
 
+        /// Tellomi (ADR-0068): sent as a file (`AttachmentPointer.tellomi.asFile`). Drawn as a file row
+        /// (thumbnail, original name and size) and opened like any other file, whatever the content type.
+        /// It is not one of the proto's `flags` (those stay upstream's); 1001 mirrors the proto field number
+        /// and keeps clear of upstream's next cases. A build from before this case can't read such a row
+        /// back (`init(rawValue:)` throws), which only a downgrade runs into.
+        case tellomiAsFile = 1001
+
         init(rawValue: UInt32) throws {
             guard
                 let rawValue = Int(exactly: rawValue),
@@ -50,6 +57,10 @@ extension AttachmentReference {
 extension AttachmentReference.RenderingFlag {
 
     public static func fromProto(_ proto: SSKProtoAttachmentPointer) -> Self {
+        // Tellomi (ADR-0068 §4.1): asFile wins over the upstream flags.
+        if proto.tellomi?.asFile == true {
+            return .tellomiAsFile
+        }
         guard
             proto.hasFlags,
             let rawValue = Int32(exactly: proto.flags)
@@ -83,6 +94,9 @@ extension AttachmentReference.RenderingFlag {
             return .borderless
         case .shouldLoop:
             return .gif
+        case .tellomiAsFile:
+            // Written as `AttachmentPointer.tellomi.asFile` instead (ReferencedAttachment.asProtoForSending).
+            return nil
         }
     }
 }

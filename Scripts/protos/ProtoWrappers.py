@@ -28,6 +28,8 @@ syntax_regex = re.compile(r'^syntax\s+=\s+"(.+)";')
 validation_start_regex = re.compile(r"// MARK: - Begin Validation Logic for ([^ ]+) -")
 
 proto_syntax = None
+# Tellomi (ADR-0068): message contexts whose can_init_throw() is being evaluated, to cut cycles.
+_can_init_throw_in_progress = set()
 
 
 def lower_camel_case(name):
@@ -534,12 +536,22 @@ class MessageContext(BaseContext):
         return self.enums + self.messages + self.oneofs
 
     def can_init_throw(self):
-        for field in self.fields():
-            if self.is_field_a_proto_whose_init_throws(field):
-                return True
-            if field.is_required and proto_syntax == "proto2":
-                return True
-        return False
+        # Tellomi (ADR-0068): AttachmentPointer → TellomiAttachment.livePhotoVideo → AttachmentPointer is a
+        # cycle through two messages, which is_field_a_proto_whose_init_throws doesn't catch (it only
+        # handles a message holding itself). A message already being evaluated answers "doesn't throw";
+        # any other field on the cycle that throws still makes the whole answer True.
+        if id(self) in _can_init_throw_in_progress:
+            return False
+        _can_init_throw_in_progress.add(id(self))
+        try:
+            for field in self.fields():
+                if self.is_field_a_proto_whose_init_throws(field):
+                    return True
+                if field.is_required and proto_syntax == "proto2":
+                    return True
+            return False
+        finally:
+            _can_init_throw_in_progress.discard(id(self))
 
     def prepare(self):
         self.swift_name = self.derive_swift_name()

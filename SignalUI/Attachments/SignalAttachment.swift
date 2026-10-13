@@ -150,7 +150,10 @@ public class SignalAttachment: CustomDebugStringConvertible {
     }
 
     public var renderingFlag: AttachmentReference.RenderingFlag {
-        if isVoiceMessage {
+        if isTellomiAsFile {
+            // Tellomi (ADR-0068): wins over the rest, as it does for the receiver.
+            return .tellomiAsFile
+        } else if isVoiceMessage {
             return .voiceMessage
         } else if isBorderless {
             return .borderless
@@ -202,6 +205,8 @@ public class SignalAttachment: CustomDebugStringConvertible {
 
     public var isBorderless = false
     public var isLoopingVideo = false
+    /// Tellomi (ADR-0068): sent as a file; see ``PreviewableAttachment/tellomiAsFileAttachment(dataSource:dataUTI:attachmentLimits:)``.
+    public var isTellomiAsFile = false
 
     // Returns the MIME type for this attachment or nil if no MIME type
     // can be identified.

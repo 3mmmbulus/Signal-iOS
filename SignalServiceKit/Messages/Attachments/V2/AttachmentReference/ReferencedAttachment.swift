@@ -155,7 +155,17 @@ extension ReferencedAttachment {
         let mimeType = attachment.mimeType
 
         let attachmentString: String
-        if MimeTypeUtil.isSupportedMaybeAnimatedMimeType(mimeType) || reference.renderingFlag == .shouldLoop {
+        if reference.renderingFlag == .tellomiAsFile {
+            // Tellomi (ADR-0068): sent as a file reads as a file, whatever the content type (same as Android).
+            if includeFileName, let filename = reference.sourceFilename {
+                attachmentString = filename.ows_stripped()
+            } else {
+                attachmentString = OWSLocalizedString(
+                    "ATTACHMENT_TYPE_FILE",
+                    comment: "Short text label for a file attachment, used for thread preview and on the lock screen",
+                )
+            }
+        } else if MimeTypeUtil.isSupportedMaybeAnimatedMimeType(mimeType) || reference.renderingFlag == .shouldLoop {
             let isGIF = mimeType.caseInsensitiveCompare(MimeType.imageGif.rawValue) == .orderedSame
             let isLoopingVideo = reference.renderingFlag == .shouldLoop
                 && MimeTypeUtil.isSupportedVideoMimeType(mimeType)
@@ -213,6 +223,10 @@ extension ReferencedAttachment {
 
     public func previewEmoji() -> String {
         let mimeType = attachment.mimeType
+        if reference.renderingFlag == .tellomiAsFile {
+            // Tellomi (ADR-0068): sent as a file.
+            return "📎"
+        }
         if MimeTypeUtil.isSupportedAudioMimeType(mimeType) {
             if reference.renderingFlag == .voiceMessage {
                 return "🎤"
@@ -266,6 +280,12 @@ extension ReferencedAttachment {
                 builder.setClientUuid(idInOwner.data)
             }
             flags = metadata.renderingFlag.toProto()
+            if metadata.renderingFlag == .tellomiAsFile {
+                // Tellomi (ADR-0068 §4.1): only written when true, so other pointers stay byte-identical to upstream.
+                let tellomi = SSKProtoTellomiAttachment.builder()
+                tellomi.setAsFile(true)
+                builder.setTellomi(tellomi.buildInfallibly())
+            }
         case .message(.quotedReply(let metadata)):
             flags = metadata.renderingFlag.toProto()
         case .storyMessage(.media(let metadata)):

@@ -9605,6 +9605,9 @@ public class SSKProtoDataMessage: NSObject, Codable, NSSecureCoding {
     public let adminDelete: SSKProtoDataMessageAdminDelete?
 
     @objc
+    public let tellomi: SSKProtoTellomiDataMessage?
+
+    @objc
     public var body: String? {
         guard hasBody else {
             return nil
@@ -9709,7 +9712,8 @@ public class SSKProtoDataMessage: NSObject, Codable, NSSecureCoding {
                  pollVote: SSKProtoDataMessagePollVote?,
                  pinMessage: SSKProtoDataMessagePinMessage?,
                  unpinMessage: SSKProtoDataMessageUnpinMessage?,
-                 adminDelete: SSKProtoDataMessageAdminDelete?) {
+                 adminDelete: SSKProtoDataMessageAdminDelete?,
+                 tellomi: SSKProtoTellomiDataMessage?) {
         self.proto = proto
         self.attachments = attachments
         self.groupV2 = groupV2
@@ -9730,6 +9734,7 @@ public class SSKProtoDataMessage: NSObject, Codable, NSSecureCoding {
         self.pinMessage = pinMessage
         self.unpinMessage = unpinMessage
         self.adminDelete = adminDelete
+        self.tellomi = tellomi
     }
 
     @objc
@@ -9831,6 +9836,11 @@ public class SSKProtoDataMessage: NSObject, Codable, NSSecureCoding {
             adminDelete = SSKProtoDataMessageAdminDelete(proto.adminDelete)
         }
 
+        var tellomi: SSKProtoTellomiDataMessage?
+        if proto.hasTellomi {
+            tellomi = SSKProtoTellomiDataMessage(proto.tellomi)
+        }
+
         self.init(proto: proto,
                   attachments: attachments,
                   groupV2: groupV2,
@@ -9850,7 +9860,8 @@ public class SSKProtoDataMessage: NSObject, Codable, NSSecureCoding {
                   pollVote: pollVote,
                   pinMessage: pinMessage,
                   unpinMessage: unpinMessage,
-                  adminDelete: adminDelete)
+                  adminDelete: adminDelete,
+                  tellomi: tellomi)
     }
 
     public required convenience init(from decoder: Swift.Decoder) throws {
@@ -9971,6 +9982,9 @@ extension SSKProtoDataMessage {
         }
         if let _value = adminDelete {
             builder.setAdminDelete(_value)
+        }
+        if let _value = tellomi {
+            builder.setTellomi(_value)
         }
         if let _value = unknownFields {
             builder.setUnknownFields(_value)
@@ -10244,6 +10258,17 @@ public class SSKProtoDataMessageBuilder: NSObject {
         proto.adminDelete = valueParam.proto
     }
 
+    @objc
+    @available(swift, obsoleted: 1.0)
+    public func setTellomi(_ valueParam: SSKProtoTellomiDataMessage?) {
+        guard let valueParam = valueParam else { return }
+        proto.tellomi = valueParam.proto
+    }
+
+    public func setTellomi(_ valueParam: SSKProtoTellomiDataMessage) {
+        proto.tellomi = valueParam.proto
+    }
+
     public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {
         proto.unknownFields = unknownFields
     }
@@ -10272,6 +10297,151 @@ extension SSKProtoDataMessageBuilder {
     @objc
     public func buildIgnoringErrors() -> SSKProtoDataMessage? {
         return try! self.build()
+    }
+}
+
+#endif
+
+// MARK: - SSKProtoTellomiDataMessage
+
+@objc
+public class SSKProtoTellomiDataMessage: NSObject, Codable, NSSecureCoding {
+
+    fileprivate let proto: SignalServiceProtos_TellomiDataMessage
+
+    @objc
+    public var captionAboveMedia: Bool {
+        return proto.captionAboveMedia
+    }
+    @objc
+    public var hasCaptionAboveMedia: Bool {
+        return proto.hasCaptionAboveMedia
+    }
+
+    public var hasUnknownFields: Bool {
+        return !proto.unknownFields.data.isEmpty
+    }
+    public var unknownFields: SwiftProtobuf.UnknownStorage? {
+        guard hasUnknownFields else { return nil }
+        return proto.unknownFields
+    }
+
+    private init(proto: SignalServiceProtos_TellomiDataMessage) {
+        self.proto = proto
+    }
+
+    @objc
+    public func serializedData() throws -> Data {
+        return try self.proto.serializedData()
+    }
+
+    @objc
+    public required convenience init(serializedData: Data) throws {
+        let proto = try SignalServiceProtos_TellomiDataMessage(serializedBytes: serializedData)
+        self.init(proto)
+    }
+
+    fileprivate convenience init(_ proto: SignalServiceProtos_TellomiDataMessage) {
+        self.init(proto: proto)
+    }
+
+    public required convenience init(from decoder: Swift.Decoder) throws {
+        let singleValueContainer = try decoder.singleValueContainer()
+        let serializedData = try singleValueContainer.decode(Data.self)
+        try self.init(serializedData: serializedData)
+    }
+    public func encode(to encoder: Swift.Encoder) throws {
+        var singleValueContainer = encoder.singleValueContainer()
+        try singleValueContainer.encode(try serializedData())
+    }
+
+    public static var supportsSecureCoding: Bool { true }
+
+    public required convenience init?(coder: NSCoder) {
+        guard let serializedData = coder.decodeData() else { return nil }
+        do {
+            try self.init(serializedData: serializedData)
+        } catch {
+            owsFailDebug("Failed to decode serialized data \(error)")
+            return nil
+        }
+    }
+
+    public func encode(with coder: NSCoder) {
+        do {
+            coder.encode(try serializedData())
+        } catch {
+            owsFailDebug("Failed to encode serialized data \(error)")
+        }
+    }
+
+    @objc
+    public override var debugDescription: String {
+        return "\(proto)"
+    }
+}
+
+extension SSKProtoTellomiDataMessage {
+    @objc
+    public static func builder() -> SSKProtoTellomiDataMessageBuilder {
+        return SSKProtoTellomiDataMessageBuilder()
+    }
+
+    // asBuilder() constructs a builder that reflects the proto's contents.
+    @objc
+    public func asBuilder() -> SSKProtoTellomiDataMessageBuilder {
+        let builder = SSKProtoTellomiDataMessageBuilder()
+        if hasCaptionAboveMedia {
+            builder.setCaptionAboveMedia(captionAboveMedia)
+        }
+        if let _value = unknownFields {
+            builder.setUnknownFields(_value)
+        }
+        return builder
+    }
+}
+
+@objc
+public class SSKProtoTellomiDataMessageBuilder: NSObject {
+
+    private var proto = SignalServiceProtos_TellomiDataMessage()
+
+    @objc
+    fileprivate override init() {}
+
+    @objc
+    public func setCaptionAboveMedia(_ valueParam: Bool) {
+        proto.captionAboveMedia = valueParam
+    }
+
+    public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {
+        proto.unknownFields = unknownFields
+    }
+
+    @objc
+    public func buildInfallibly() -> SSKProtoTellomiDataMessage {
+        return SSKProtoTellomiDataMessage(proto)
+    }
+
+    @objc
+    public func buildSerializedData() throws -> Data {
+        return try SSKProtoTellomiDataMessage(proto).serializedData()
+    }
+}
+
+#if TESTABLE_BUILD
+
+extension SSKProtoTellomiDataMessage {
+    @objc
+    public func serializedDataIgnoringErrors() -> Data? {
+        return try! self.serializedData()
+    }
+}
+
+extension SSKProtoTellomiDataMessageBuilder {
+    @objc
+    public func buildIgnoringErrors() -> SSKProtoTellomiDataMessage? {
+        return self.buildInfallibly()
     }
 }
 
@@ -18301,6 +18471,9 @@ public class SSKProtoAttachmentPointer: NSObject, Codable, NSSecureCoding {
     fileprivate let proto: SignalServiceProtos_AttachmentPointer
 
     @objc
+    public let tellomi: SSKProtoTellomiAttachment?
+
+    @objc
     public var cdnID: UInt64 {
         return proto.cdnID
     }
@@ -18479,8 +18652,10 @@ public class SSKProtoAttachmentPointer: NSObject, Codable, NSSecureCoding {
         return proto.unknownFields
     }
 
-    private init(proto: SignalServiceProtos_AttachmentPointer) {
+    private init(proto: SignalServiceProtos_AttachmentPointer,
+                 tellomi: SSKProtoTellomiAttachment?) {
         self.proto = proto
+        self.tellomi = tellomi
     }
 
     @objc
@@ -18495,7 +18670,13 @@ public class SSKProtoAttachmentPointer: NSObject, Codable, NSSecureCoding {
     }
 
     fileprivate convenience init(_ proto: SignalServiceProtos_AttachmentPointer) {
-        self.init(proto: proto)
+        var tellomi: SSKProtoTellomiAttachment?
+        if proto.hasTellomi {
+            tellomi = SSKProtoTellomiAttachment(proto.tellomi)
+        }
+
+        self.init(proto: proto,
+                  tellomi: tellomi)
     }
 
     public required convenience init(from decoder: Swift.Decoder) throws {
@@ -18591,6 +18772,9 @@ extension SSKProtoAttachmentPointer {
         }
         if hasCdnNumber {
             builder.setCdnNumber(cdnNumber)
+        }
+        if let _value = tellomi {
+            builder.setTellomi(_value)
         }
         if let _value = unknownFields {
             builder.setUnknownFields(_value)
@@ -18741,6 +18925,17 @@ public class SSKProtoAttachmentPointerBuilder: NSObject {
         proto.cdnNumber = valueParam
     }
 
+    @objc
+    @available(swift, obsoleted: 1.0)
+    public func setTellomi(_ valueParam: SSKProtoTellomiAttachment?) {
+        guard let valueParam = valueParam else { return }
+        proto.tellomi = valueParam.proto
+    }
+
+    public func setTellomi(_ valueParam: SSKProtoTellomiAttachment) {
+        proto.tellomi = valueParam.proto
+    }
+
     public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {
         proto.unknownFields = unknownFields
     }
@@ -18768,6 +18963,193 @@ extension SSKProtoAttachmentPointer {
 extension SSKProtoAttachmentPointerBuilder {
     @objc
     public func buildIgnoringErrors() -> SSKProtoAttachmentPointer? {
+        return self.buildInfallibly()
+    }
+}
+
+#endif
+
+// MARK: - SSKProtoTellomiAttachment
+
+@objc
+public class SSKProtoTellomiAttachment: NSObject, Codable, NSSecureCoding {
+
+    fileprivate let proto: SignalServiceProtos_TellomiAttachment
+
+    @objc
+    public let livePhotoVideo: SSKProtoAttachmentPointer?
+
+    @objc
+    public var asFile: Bool {
+        return proto.asFile
+    }
+    @objc
+    public var hasAsFile: Bool {
+        return proto.hasAsFile
+    }
+
+    @objc
+    public var spoiler: Bool {
+        return proto.spoiler
+    }
+    @objc
+    public var hasSpoiler: Bool {
+        return proto.hasSpoiler
+    }
+
+    public var hasUnknownFields: Bool {
+        return !proto.unknownFields.data.isEmpty
+    }
+    public var unknownFields: SwiftProtobuf.UnknownStorage? {
+        guard hasUnknownFields else { return nil }
+        return proto.unknownFields
+    }
+
+    private init(proto: SignalServiceProtos_TellomiAttachment,
+                 livePhotoVideo: SSKProtoAttachmentPointer?) {
+        self.proto = proto
+        self.livePhotoVideo = livePhotoVideo
+    }
+
+    @objc
+    public func serializedData() throws -> Data {
+        return try self.proto.serializedData()
+    }
+
+    @objc
+    public required convenience init(serializedData: Data) throws {
+        let proto = try SignalServiceProtos_TellomiAttachment(serializedBytes: serializedData)
+        self.init(proto)
+    }
+
+    fileprivate convenience init(_ proto: SignalServiceProtos_TellomiAttachment) {
+        var livePhotoVideo: SSKProtoAttachmentPointer?
+        if proto.hasLivePhotoVideo {
+            livePhotoVideo = SSKProtoAttachmentPointer(proto.livePhotoVideo)
+        }
+
+        self.init(proto: proto,
+                  livePhotoVideo: livePhotoVideo)
+    }
+
+    public required convenience init(from decoder: Swift.Decoder) throws {
+        let singleValueContainer = try decoder.singleValueContainer()
+        let serializedData = try singleValueContainer.decode(Data.self)
+        try self.init(serializedData: serializedData)
+    }
+    public func encode(to encoder: Swift.Encoder) throws {
+        var singleValueContainer = encoder.singleValueContainer()
+        try singleValueContainer.encode(try serializedData())
+    }
+
+    public static var supportsSecureCoding: Bool { true }
+
+    public required convenience init?(coder: NSCoder) {
+        guard let serializedData = coder.decodeData() else { return nil }
+        do {
+            try self.init(serializedData: serializedData)
+        } catch {
+            owsFailDebug("Failed to decode serialized data \(error)")
+            return nil
+        }
+    }
+
+    public func encode(with coder: NSCoder) {
+        do {
+            coder.encode(try serializedData())
+        } catch {
+            owsFailDebug("Failed to encode serialized data \(error)")
+        }
+    }
+
+    @objc
+    public override var debugDescription: String {
+        return "\(proto)"
+    }
+}
+
+extension SSKProtoTellomiAttachment {
+    @objc
+    public static func builder() -> SSKProtoTellomiAttachmentBuilder {
+        return SSKProtoTellomiAttachmentBuilder()
+    }
+
+    // asBuilder() constructs a builder that reflects the proto's contents.
+    @objc
+    public func asBuilder() -> SSKProtoTellomiAttachmentBuilder {
+        let builder = SSKProtoTellomiAttachmentBuilder()
+        if hasAsFile {
+            builder.setAsFile(asFile)
+        }
+        if hasSpoiler {
+            builder.setSpoiler(spoiler)
+        }
+        if let _value = livePhotoVideo {
+            builder.setLivePhotoVideo(_value)
+        }
+        if let _value = unknownFields {
+            builder.setUnknownFields(_value)
+        }
+        return builder
+    }
+}
+
+@objc
+public class SSKProtoTellomiAttachmentBuilder: NSObject {
+
+    private var proto = SignalServiceProtos_TellomiAttachment()
+
+    @objc
+    fileprivate override init() {}
+
+    @objc
+    public func setAsFile(_ valueParam: Bool) {
+        proto.asFile = valueParam
+    }
+
+    @objc
+    public func setSpoiler(_ valueParam: Bool) {
+        proto.spoiler = valueParam
+    }
+
+    @objc
+    @available(swift, obsoleted: 1.0)
+    public func setLivePhotoVideo(_ valueParam: SSKProtoAttachmentPointer?) {
+        guard let valueParam = valueParam else { return }
+        proto.livePhotoVideo = valueParam.proto
+    }
+
+    public func setLivePhotoVideo(_ valueParam: SSKProtoAttachmentPointer) {
+        proto.livePhotoVideo = valueParam.proto
+    }
+
+    public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {
+        proto.unknownFields = unknownFields
+    }
+
+    @objc
+    public func buildInfallibly() -> SSKProtoTellomiAttachment {
+        return SSKProtoTellomiAttachment(proto)
+    }
+
+    @objc
+    public func buildSerializedData() throws -> Data {
+        return try SSKProtoTellomiAttachment(proto).serializedData()
+    }
+}
+
+#if TESTABLE_BUILD
+
+extension SSKProtoTellomiAttachment {
+    @objc
+    public func serializedDataIgnoringErrors() -> Data? {
+        return try! self.serializedData()
+    }
+}
+
+extension SSKProtoTellomiAttachmentBuilder {
+    @objc
+    public func buildIgnoringErrors() -> SSKProtoTellomiAttachment? {
         return self.buildInfallibly()
     }
 }

@@ -70,7 +70,11 @@ extension AttachmentReference {
                     messageRowId: metadata.messageRowId,
                     receivedAtTimestamp: metadata.receivedAtTimestamp,
                     threadRowId: metadata.threadRowId,
-                    contentType: contentType,
+                    // Tellomi (ADR-0068, R-3): this copy of the content type only exists for the media gallery's
+                    // indexed categories, so a photo / video sent as a file is filed as a file here: the
+                    // Files tab and recent files list it, Media doesn't, all through upstream's partial indexes.
+                    // Nothing rewrites this column after the reference is created.
+                    contentType: renderingFlag == .tellomiAsFile ? .file : contentType,
                     mimeType: mimeType,
                     isPastEditRevision: metadata.isPastEditRevision,
                     // We ignore captions in modern instances.
