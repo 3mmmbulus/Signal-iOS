@@ -123,10 +123,11 @@ final class CameraCaptureControl: UIControl {
         ])
 
         // Per-axis constraints for the layout guide.
+        // Tellomi（tellomi/tellomi#1520 C-2，O2 照 Telegram 新相机）：横排时锁在快门前面（左边），快门放在这个控件的尾端。
         horizontalAxisConstraints = [
             shutterButtonLayoutGuide.centerXAnchor.constraint(
-                equalTo: leadingAnchor,
-                constant: 0.5 * LayoutMetrics.outerCircleDefaultSize,
+                equalTo: trailingAnchor,
+                constant: -0.5 * LayoutMetrics.outerCircleDefaultSize,
             ),
             shutterButtonLayoutGuide.topAnchor.constraint(
                 equalTo: topAnchor,
@@ -213,7 +214,7 @@ final class CameraCaptureControl: UIControl {
     private var sliderTrackingProgress: CGFloat = 0 {
         willSet {
             if newValue > 0 {
-                // Prepare "slide to lock" UI in case user swipes right too fast
+                // Prepare "slide to lock" UI in case user swipes toward the lock too fast
                 // and animation for setState(.recording) isn't finished yet.
                 prepareLongPressVideoRecordingControlsIfNecessary()
             }
@@ -324,10 +325,10 @@ final class CameraCaptureControl: UIControl {
             lockIconView.widthAnchor.constraint(equalToConstant: LayoutMetrics.recordingLockControlSize),
             lockIconView.heightAnchor.constraint(equalTo: lockIconView.widthAnchor),
         ])
-        // Centered vertically, pinned to trailing edge.
+        // Centered vertically, pinned to leading edge (Tellomi C-2: the lock is before the shutter, as Telegram).
         let horizontalConstraints = [
             lockIconView.centerYAnchor.constraint(equalTo: shutterButtonOuterCircle.centerYAnchor),
-            lockIconView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            lockIconView.leadingAnchor.constraint(equalTo: leadingAnchor),
         ]
         // Centered horizontally, pinned to bottom edge.
         let verticalConstraints = [
@@ -413,7 +414,8 @@ final class CameraCaptureControl: UIControl {
 
     private let animationDuration: TimeInterval = 0.2
     private var isRecordingWithLongPress = false
-    private static let longPressDurationThreshold = 0.5
+    /// Tellomi（C-2）：按住 0.3 秒开始录（照 Telegram 新相机 `CaptureControlsComponent`；上游 0.5）。
+    private static let longPressDurationThreshold = 0.3
     private var initialTouchLocation: CGPoint?
     private var initialZoomPosition: CGFloat?
     private var touchTimer: Timer?
@@ -604,8 +606,9 @@ final class CameraCaptureControl: UIControl {
     private static let minDistanceBeforeActivatingLockSlider: CGFloat = 30
 
     private func updateHorizontalTracking(xOffset: CGFloat) {
-        // RTL: Slider should be moved to the left and xOffset would be negative.
-        let effectiveOffset = CurrentAppContext().isRTL ? min(0, xOffset + Self.minDistanceBeforeActivatingLockSlider) : max(0, xOffset - Self.minDistanceBeforeActivatingLockSlider)
+        // Tellomi C-2: the lock is on the leading side, so the slider moves to the left and xOffset is negative.
+        // RTL: Slider should be moved to the right.
+        let effectiveOffset = CurrentAppContext().isRTL ? max(0, xOffset - Self.minDistanceBeforeActivatingLockSlider) : min(0, xOffset + Self.minDistanceBeforeActivatingLockSlider)
         slidingCircleView.center = initialSlidingCircleViewCenter.plusX(effectiveOffset)
 
         let distanceToLock = abs(lockIconView.center.x - initialSlidingCircleViewCenter.x)
@@ -1573,8 +1576,10 @@ final class CameraBottomBar: UIView {
 
         preservesSuperviewLayoutMargins = true
 
-        addSubview(photoLibraryButton)
+        // Tellomi C-2: the capture control now reaches back to the leading edge (the lock is there while recording), so it
+        // goes under the photo library button rather than over it.
         addSubview(captureControl)
+        addSubview(photoLibraryButton)
         addSubview(switchCameraButton)
 
         captureControl.translatesAutoresizingMaskIntoConstraints = false
@@ -1586,7 +1591,7 @@ final class CameraBottomBar: UIView {
             photoLibraryButton.centerYAnchor.constraint(equalTo: captureControl.centerYAnchor),
 
             captureControl.topAnchor.constraint(equalTo: topAnchor),
-            captureControl.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            captureControl.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             captureControl.shutterButtonLayoutGuide.centerXAnchor.constraint(equalTo: layoutMarginsGuide.centerXAnchor),
             captureControl.bottomAnchor.constraint(equalTo: bottomAnchor),
 
@@ -2187,3 +2192,22 @@ extension ComposerTypeSelectionControl {
         }
     }
 }
+
+#if TESTABLE_BUILD
+
+// Tellomi（tellomi/tellomi#1520 C-2）
+extension CameraCaptureControl {
+    var shutterFrameForTesting: CGRect { shutterButtonOuterCircle.frame }
+
+    var lockFrameForTesting: CGRect { lockIconView.frame }
+
+    /// 同手指按住快门横着拖了 `xOffset`：返回拖向锁的进度（0 … 1）。
+    func slideHorizontallyForTesting(xOffset: CGFloat) -> CGFloat {
+        updateHorizontalTracking(xOffset: xOffset)
+        return sliderTrackingProgress
+    }
+
+    static var longPressDurationForTesting: TimeInterval { longPressDurationThreshold }
+}
+
+#endif
