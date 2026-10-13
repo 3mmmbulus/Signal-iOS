@@ -440,6 +440,43 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         hosted.picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertFalse(hosted.picker.moreMenuItemsForTesting.contains(.moveCaptionUp))
+        XCTAssertNil(hosted.picker.sendMenuTitlesForTesting, "没有说明时发送键长按不弹")
+    }
+
+    /// #1263（ADR-0068 §4.7 P3）：发送键长按菜单的「说明文字上移 / 下移」——条件同「···」那项，和它是同一个开关；
+    /// 写了说明才有、删了说明就没有；预览 / 编辑页的发送键挂同一个菜单，跟着变。
+    @MainActor
+    func testLongPressSendMovesTheCaptionToo() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertNil(picker.sendMenuTitlesForTesting)
+
+        picker.typeCaptionForTesting("说明")
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Up"])
+
+        picker.performSendMenuCaptionItemForTesting()
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Down"])
+        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
+
+        let editor = try await openEditor(picker, onCard: "r0")
+        XCTAssertEqual(editor.tellomiSendMenuForTesting?.children.map(\.title), ["Move Caption Down"])
+        picker.performMoreMenuItemForTesting(.moveCaptionDown)
+        XCTAssertEqual(editor.tellomiSendMenuForTesting?.children.map(\.title), ["Move Caption Up"])
+        await closeEditor(picker)
+
+        picker.typeCaptionForTesting("")
+        XCTAssertNil(picker.sendMenuTitlesForTesting)
+    }
+
+    @MainActor
+    func testLongPressSendHasNoCaptionItemOutsideAConversation() async throws {
+        let hosted = host(canSendAsFile: false, initialText: "说明")
+        defer { hosted.tearDown() }
+        hosted.picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertNil(hosted.picker.sendMenuTitlesForTesting)
     }
 
     // MARK: - P-9 / P-10 在网格里直接发

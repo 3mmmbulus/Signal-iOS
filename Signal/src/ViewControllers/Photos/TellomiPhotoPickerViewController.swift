@@ -100,7 +100,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     /// #1263：「以文件发送」「说明文字上移 / 下移」只给会话（同「单独发送」，由会话页发）。
     private let canSendAsFile: Bool
     /// M-2（ADR-0068 §4.7）：这一次的说明在媒体上方。只管这一次打开的面板。
-    private var isCaptionAboveMedia = false
+    private var isCaptionAboveMedia = false {
+        didSet { updateSendMenus() }
+    }
     private let hasQuotedReplyDraft: Bool
     private let maxSelection: Int
     let attachmentLimits: OutgoingAttachmentLimits
@@ -119,6 +121,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     /// 进上游预览页时每张附件对应网格里的哪一项：在那里删掉一张，网格里也取消勾选。
     private var editingItems = [(itemId: String, attachment: SignalAttachment)]()
+    /// 正开着的上游预览 / 编辑页：它的发送键也挂长按菜单（#1263 P3）。
+    private weak var editingApproval: AttachmentApprovalViewController?
     /// E-6：每张照片在上游预览 / 编辑页里的编辑项（裁剪、涂鸦、视频剪辑都在里面）。回到网格再进来、从网格直接发送都用这一份；
     /// 取消选中也留着，再选上时编辑还在（同 Telegram 的编辑上下文）。关掉选图面板就没了。
     private var approvalItems = [String: AttachmentApprovalItem]()
@@ -871,6 +875,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         collectionView.verticalScrollIndicatorInsets.bottom = bottomInset
         selectedView.bottomInset = hasSelection ? sendBar.frame.height : view.safeAreaInsets.bottom
         layoutUndoBar()
+        updateSendMenus()
     }
 
     // MARK: - Selected only (P-3)
@@ -1017,10 +1022,47 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             items.append(.sendSeparately)
         }
         // M-2：写了说明才有（同 Telegram iOS `isCaptionAboveMediaAvailable = hasCaption`），放在分隔线下面。
-        if canSendAsFile, !selectedIds.isEmpty, messageBodyForSending != nil {
+        if canMoveCaption {
             items.append(isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp)
         }
         return items
+    }
+
+    /// 「说明文字上移 / 下移」现在给不给（「···」和长按发送里同一个条件）：会话里、有选中、写了说明。
+    private var canMoveCaption: Bool {
+        canSendAsFile && !selectedIds.isEmpty && messageBodyForSending != nil
+    }
+
+    // MARK: - Long-press send (#1263 P3)
+
+    /// 发送键长按菜单（ADR-0068 §4.7 P3）：照 Telegram iOS `ChatSendMessageContextScreen` 的第一项「说明文字上移 / 下移」（captionPosition），
+    /// 条件同「···」里那项。Tellomi iOS 的长按菜单现在只有这一项（定时发送是 M-4，还没做），没有可给的就不挂菜单、长按不弹。
+    /// 网格的发送键和上游预览 / 编辑页的发送键挂同一个；点了切换、菜单不收（iOS 16+），字跟着变（同 Telegram）。
+    private func sendMenu() -> UIMenu? {
+        guard canMoveCaption else { return nil }
+        let item: MoreMenuItem = isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp
+        var attributes: UIMenuElement.Attributes = []
+        if #available(iOS 16, *) {
+            attributes.insert(.keepsMenuPresented)
+        }
+        let action = UIAction(title: Self.title(for: item, selectedCount: selectedIds.count), image: Self.image(for: item), attributes: attributes) { [weak self] _ in
+            self?.toggleCaptionFromSendMenu()
+        }
+        return UIMenu(children: [action])
+    }
+
+    private func toggleCaptionFromSendMenu() {
+        isCaptionAboveMedia.toggle()
+    }
+
+    private func updateSendMenus() {
+        guard isViewLoaded else { return }
+        let menu = sendMenu()
+        sendButton.menu = menu
+        if #available(iOS 16, *), let menu {
+            sendButton.contextMenuInteraction?.updateVisibleMenu { _ in menu }
+        }
+        editingApproval?.tellomiSetSendMenu(menu)
     }
 
     private func moreMenuActions() -> [UIMenuElement] {
@@ -1080,7 +1122,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case .sendSeparately:
             send(quality: defaultImageQuality, separately: true)
         case .moveCaptionUp, .moveCaptionDown:
-            // 菜单自己收起，下次打开换成另一项（同 Telegram：点了先收起再切）。
+            // 菜单自己收起，下次打开换成另一项（同 Telegram：点了先收起再切）。长按发送里的那项跟着换（didSet）。
             isCaptionAboveMedia.toggle()
         }
     }
@@ -1278,6 +1320,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             if let index = items.firstIndex(where: { $0.id == itemId }) {
                 page?.tellomiShowItem(at: index)
             }
+            self.editingApproval = page
+            page?.tellomiSetSendMenu(self.sendMenu())
             self.editingItems = zip(items, editItems).map { ($0.id, $1.attachment.rawValue) }
             self.present(approval, animated: true) {
                 if let tool {
@@ -1490,6 +1534,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     func textViewDidChange(_ textView: UITextView) {
         updateCaptionPlaceholderAndHeight()
+        updateSendMenus()
         delegate?.photoPicker(self, didChangeMessageBody: captionTextView.messageBodyForSending)
         if displayMode == .selected {
             refreshSelectedView(animated: false)
@@ -1513,6 +1558,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     func attachmentApproval(_ attachmentApproval: AttachmentApprovalViewController, didChangeMessageBody newMessageBody: MessageBody?) {
         captionTextView.setMessageBody(newMessageBody, txProvider: DependenciesBridge.shared.db.readTxProvider)
         updateCaptionPlaceholderAndHeight()
+        updateSendMenus()
         delegate?.photoPicker(self, didChangeMessageBody: newMessageBody)
         if displayMode == .selected {
             refreshSelectedView(animated: false)
@@ -1815,6 +1861,12 @@ extension TellomiPhotoPickerViewController {
     var captionTextForTesting: String { captionTextView.messageBodyForSending.text }
     var albumTitlesForTesting: [String] { albums.map(\.title) }
     var moreMenuItemsForTesting: [MoreMenuItem] { moreMenuItems() }
+    /// #1263 P3：发送键长按菜单里的项（nil = 长按不弹）。
+    var sendMenuTitlesForTesting: [String]? { sendButton.menu?.children.map(\.title) }
+
+    func performSendMenuCaptionItemForTesting() {
+        toggleCaptionFromSendMenu()
+    }
     var moreMenuTitlesForTesting: [String] { moreMenuItems().map { Self.title(for: $0, selectedCount: selectedIds.count) } }
     /// #1263：「是否把照片转成 JPEG？」正在问。
     var isAskingAboutHeicForTesting: Bool { heicChoice != nil }

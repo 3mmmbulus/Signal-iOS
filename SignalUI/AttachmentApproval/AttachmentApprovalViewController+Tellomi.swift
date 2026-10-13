@@ -30,6 +30,19 @@ extension AttachmentApprovalViewController {
         item.imageEditorModel?.isDirty == true
     }
 
+    /// tellomi/tellomi#1263（ADR-0068 §4.7 P3）：发送键长按的菜单，由打开这一页的选图页给（「说明文字上移 / 下移」）；nil = 长按不弹。
+    /// 菜单正开着时就地换成新的（iOS 16+：点了菜单不收、字跟着变，同 Telegram）。
+    public func tellomiSetSendMenu(_ menu: UIMenu?) {
+        loadViewIfNeeded()
+        let button = mediaCaptionToolbar.proceedButton
+        button.menu = menu
+        if #available(iOS 16, *), let menu {
+            button.contextMenuInteraction?.updateVisibleMenu { _ in menu }
+        }
+    }
+
+    var tellomiSendMenuForTesting: UIMenu? { mediaCaptionToolbar.proceedButton.menu }
+
     public func tellomiActivateTool(_ tool: TellomiApprovalEditTool) {
         switch tool {
         case .pen:
