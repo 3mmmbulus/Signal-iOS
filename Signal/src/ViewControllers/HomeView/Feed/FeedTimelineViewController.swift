@@ -60,6 +60,8 @@ final class FeedTimelineViewController: OWSViewController {
         tableView.delegate = self
         tableView.register(FeedPostCell.self, forCellReuseIdentifier: FeedPostCell.reuseIdentifier)
         tableView.register(FeedHiddenCell.self, forCellReuseIdentifier: FeedHiddenCell.reuseIdentifier)
+        // 右下角的发布按钮不挡最后一条
+        tableView.contentInset.bottom = FeedViewController.composeButtonSize + 24
         view.addSubview(tableView)
         tableView.autoPinEdgesToSuperviewEdges()
 

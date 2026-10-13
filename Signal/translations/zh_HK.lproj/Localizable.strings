@@ -10960,6 +10960,93 @@
 "TELLOMI_FEED_COMMENTS" = "留言";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "加入圖片";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_ARTICLE_HINT" = "寫正文";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DISCARD" = "放棄";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DISCARD_BODY" = "寫的內容不會保留。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DISCARD_TITLE" = "放棄這條動態？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_KEEP_EDITING" = "繼續編輯";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_KIND_ARTICLE" = "長文";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_KIND_POST" = "動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_NEW_POST" = "發動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PENDING" = "已提交，審核通過後其他人才能看到";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_POST_HINT" = "說點甚麼…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PUBLISH" = "發佈";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PUBLISHED" = "已發佈";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PUBLISH_FAILED" = "發佈失敗，請再試";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_REMOVE_IMAGE" = "移除圖片";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_TITLE_HINT" = "標題";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_COMING_SOON" = "選人功能尚未推出";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_EXCLUDE" = "不給誰看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_EXCLUDE_DESCRIPTION" = "選中的人看不到";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_FRIENDS" = "僅好友";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_FRIENDS_DESCRIPTION" = "只有好友能看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_INCLUDE" = "部分可見";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_INCLUDE_DESCRIPTION" = "只給選中的人看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_MINOR_MODE" = "未成年人模式下只能發給好友或僅自己可見。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_ONLY_ME" = "僅自己";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_ONLY_ME_DESCRIPTION" = "只有你能看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_PUBLIC" = "公開";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_PUBLIC_DESCRIPTION" = "所有人可見";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "誰可以看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_EDITED" = "已編輯";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

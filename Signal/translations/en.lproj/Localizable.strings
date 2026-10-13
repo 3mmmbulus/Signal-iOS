@@ -11005,6 +11005,93 @@
 "TELLOMI_FEED_COMMENTS" = "Comments";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "Add photos";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_ARTICLE_HINT" = "Write your article";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DISCARD" = "Discard";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DISCARD_BODY" = "What you've written will be lost.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DISCARD_TITLE" = "Discard this post?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_KEEP_EDITING" = "Keep editing";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_KIND_ARTICLE" = "Article";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_KIND_POST" = "Post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_NEW_POST" = "New post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PENDING" = "Submitted. Others can see it once it's reviewed.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_POST_HINT" = "What's on your mind?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PUBLISH" = "Post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PUBLISHED" = "Posted";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PUBLISH_FAILED" = "Couldn't post. Try again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_REMOVE_IMAGE" = "Remove photo";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_TITLE_HINT" = "Title";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_COMING_SOON" = "Picking people isn't available yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_EXCLUDE" = "Hide from";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_EXCLUDE_DESCRIPTION" = "Everyone except the people you pick";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_FRIENDS" = "Friends";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_FRIENDS_DESCRIPTION" = "Only your friends";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_INCLUDE" = "Only some friends";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_INCLUDE_DESCRIPTION" = "Only the people you pick";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_MINOR_MODE" = "In minor mode, posts can only be seen by friends or yourself.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_ONLY_ME" = "Only me";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_ONLY_ME_DESCRIPTION" = "Only you can see it";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_PUBLIC" = "Public";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_PUBLIC_DESCRIPTION" = "Anyone on Feed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "Who can see this";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_EDITED" = "Edited";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

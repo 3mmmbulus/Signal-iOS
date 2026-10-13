@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import UIKit
 
 /// 本机样例：内部用户在内容引擎接上之前看界面用。人名、内容全是虚构的，守 `internal-beta-content-generator.md` 4.1
 /// （不涉政、不点名真人与品牌、不编造新闻）。只在内存里，点赞和不感兴趣重启 App 就没了。和 Android `SampleFeedSource` 同一组样例。
@@ -17,6 +18,7 @@ final class SampleFeedSource: FeedSource {
     private var hidden = Set<String>()
     /// 自己在样例里发的，放在两栏最上面。
     private var mine = [FeedCard]()
+    private var published = [String: FeedCreatePostResponse]()
 
     private let now: () -> Date
 
@@ -104,6 +106,38 @@ final class SampleFeedSource: FeedSource {
 
     func undoNotInterested(contentId: String) async throws {
         _ = locked { hidden.remove(contentId) }
+    }
+
+    /// 同一个 `clientNonce` 重复发只算一次（契约 7.2 的去重）。选的图只放在本机内存（`FeedLocalImages`），样例卡片能显示出来。
+    func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
+        return locked {
+            if let existing = published[clientNonce] {
+                return existing
+            }
+            let id = "mine-\(mine.count)"
+            let media = draft.attachedImages.map { image -> FeedMedia in
+                let key = FeedLocalImages.key(for: image.id)
+                FeedLocalImages.shared.set(image.image, for: key)
+                return FeedMedia(key: key, w: Int(image.image.size.width), h: Int(image.image.size.height))
+            }
+            let request = draft.request
+            var card = FeedCard(
+                id: id,
+                kind: draft.kind.apiName,
+                displayMode: draft.kind == .article ? FeedCard.displayArticleCard : (media.isEmpty ? FeedCard.displayText : FeedCard.displayTextImages),
+                publishedAt: FeedDates.format(now()),
+                author: Self.me,
+                title: request.title,
+                text: request.text,
+                media: media,
+                ipRegionLabel: Self.ipLabels[0],
+            )
+            card.viewer.isAuthor = true
+            mine.insert(card, at: 0)
+            let response = FeedCreatePostResponse(id: id, state: FeedCreatePostResponse.statePublished)
+            published[clientNonce] = response
+            return response
+        }
     }
 
     private func locked<T>(_ body: () -> T) -> T {

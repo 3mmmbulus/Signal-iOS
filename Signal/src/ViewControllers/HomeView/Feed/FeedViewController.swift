@@ -16,11 +16,17 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     private(set) var tabs: [FeedTab] = FeedTab.allCases
     private(set) var pages = [FeedTimelineViewController]()
     let store: FeedStore
+    private let source: FeedSource
+
+    /// 发布按钮只在右下角（第三节第 45 条），滑动时不动（第 46 条）。
+    let composeButton = UIButton(type: .custom)
+    static let composeButtonSize: CGFloat = 56
 
     private lazy var topBar = FeedTopBarView(tabs: tabs)
     private let pagingScrollView = UIScrollView()
 
     init(source: FeedSource = FeedSources.current()) {
+        self.source = source
         store = FeedStore(source: source)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
@@ -67,6 +73,21 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         }
         updateScrollsToTop()
 
+        composeButton.setImage(UIImage(named: "compose"), for: .normal)
+        composeButton.tintColor = .white
+        composeButton.backgroundColor = UIColor.Signal.accent
+        composeButton.layer.cornerRadius = Self.composeButtonSize / 2
+        composeButton.layer.shadowColor = UIColor.black.cgColor
+        composeButton.layer.shadowOpacity = 0.18
+        composeButton.layer.shadowRadius = 6
+        composeButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        composeButton.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_COMPOSE_NEW_POST", comment: "Feed: accessibility label of the button that opens the publish page.")
+        composeButton.addAction(UIAction { [weak self] _ in self?.showCompose() }, for: .touchUpInside)
+        view.addSubview(composeButton)
+        composeButton.autoSetDimensions(to: CGSize(square: Self.composeButtonSize))
+        composeButton.autoPinEdge(toSuperviewSafeArea: .trailing, withInset: 16)
+        composeButton.autoPinEdge(toSuperviewSafeArea: .bottom, withInset: 16)
+
         Task { await store.loadConfig() }
     }
 
@@ -86,6 +107,21 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     var selectedTab: FeedTab {
         return tabs[safe: topBar.selectedIndex] ?? .recommend
+    }
+
+    /// 打开发布页（全屏）。发出去之后提示「已发布」或「审核中」（R-2.2），两栏刷新。
+    func showCompose() {
+        let compose = FeedComposeViewController(source: source) { [weak self] state in
+            guard let self else { return }
+            let text = state == FeedCreatePostResponse.statePending
+                ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_PENDING", comment: "Feed: toast after publishing when the post waits for review before others can see it.")
+                : OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISHED", comment: "Feed: toast after the post was published.")
+            self.presentToast(text: text)
+            self.store.onPublished()
+        }
+        let navigationController = OWSNavigationController(rootViewController: compose)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
 
     /// 底栏再点一次「动态」：当前这一栏回到顶部（和聊天列表一样）。

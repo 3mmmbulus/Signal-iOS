@@ -108,6 +108,12 @@ final class FeedAPI {
         try await sendNoContent(request(path: ["v1", "feed", "not-interested", contentId], method: "DELETE"))
     }
 
+    /// 发帖。大陆区返回 `pending`（先审后发，R-2.2）；没建过主页返回 409 `profile_required`（契约 1.1）。
+    func createPost(_ request: FeedCreatePostRequest) async throws -> FeedCreatePostResponse {
+        let body = try Self.encoder.encode(request)
+        return try await send(FeedCreatePostResponse.self, self.request(path: ["v1", "feed", "posts"], method: "POST", body: body))
+    }
+
     // MARK: -
 
     static let encoder: JSONEncoder = {

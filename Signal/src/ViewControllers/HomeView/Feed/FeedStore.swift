@@ -171,6 +171,13 @@ final class FeedStore {
         }
     }
 
+    /// 发布页带回服务端给的 `state` 之后：两栏都刷新，自己刚发的出现在最上面（待审的只有自己看得到，R-2.2）。
+    func onPublished() {
+        for tab in tabs {
+            refresh(tab)
+        }
+    }
+
     // MARK: -
 
     private func update(_ tab: FeedTab, _ transform: (inout FeedTabState) -> Void) {

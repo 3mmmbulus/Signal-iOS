@@ -335,13 +335,20 @@ final class FeedAvatarView: UIView {
     }
 }
 
-/// 图片占位：圆角灰块，按原图比例。
+/// 图片占位：圆角灰块，按原图比例。内容引擎的图片地址（`config.media_base_url`）接上之前，
+/// 只有本机样例里自己刚发的图（`FeedLocalImages`）能显示出来。
 final class FeedMediaPlaceholderView: UIView {
     init(media: FeedMedia) {
         super.init(frame: .zero)
         backgroundColor = UIColor.Signal.secondaryFill
         layer.cornerRadius = 10
         clipsToBounds = true
+        if let image = FeedLocalImages.shared.image(for: media.key) {
+            let imageView = UIImageView(image: image)
+            imageView.contentMode = .scaleAspectFill
+            addSubview(imageView)
+            imageView.autoPinEdgesToSuperviewEdges()
+        }
         isAccessibilityElement = true
         accessibilityTraits = .image
         accessibilityLabel = media.alt.nilIfEmpty ?? OWSLocalizedString("TELLOMI_FEED_IMAGE", comment: "Feed: accessibility label for an image in a post that has no description.")
@@ -350,6 +357,26 @@ final class FeedMediaPlaceholderView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+}
+
+/// 本机样例里自己发的图：只在内存，重启就没了。内容引擎给的 key 不会是 `local:` 开头。
+final class FeedLocalImages {
+    static let shared = FeedLocalImages()
+
+    private let cache = NSCache<NSString, UIImage>()
+
+    static func key(for id: String) -> String {
+        return "local:\(id)"
+    }
+
+    func set(_ image: UIImage, for key: String) {
+        cache.setObject(image, forKey: key as NSString)
+    }
+
+    func image(for key: String) -> UIImage? {
+        guard key.hasPrefix("local:") else { return nil }
+        return cache.object(forKey: key as NSString)
     }
 }
 

@@ -545,6 +545,10 @@ private final class ScriptedSource: FeedSource {
         actionCount += 1
     }
 
+    func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
+        return FeedCreatePostResponse(id: "new", state: FeedCreatePostResponse.statePublished)
+    }
+
     func waitForActions(_ count: Int) async {
         for _ in 0..<200 where actionCount < count {
             try? await Task.sleep(nanoseconds: 5_000_000)

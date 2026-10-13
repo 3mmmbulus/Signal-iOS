@@ -12,6 +12,15 @@ protocol FeedSource: AnyObject {
     func setLiked(contentId: String, liked: Bool) async throws
     func notInterested(contentId: String) async throws
     func undoNotInterested(contentId: String) async throws
+
+    /// 发一条。`clientNonce` 每条草稿一个，重试时不变（引擎补上 `client_nonce` 去重后会带上，契约 7.2）。
+    func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse
+}
+
+/// 发不出去：引擎的发帖接口还不收图片（`media_keys` 和媒体上传待引擎补，契约 7.1），或者没有可用的内容引擎。
+enum FeedPublishError: Error {
+    case mediaUploadNotAvailable
+    case feedNotAvailable
 }
 
 /// 内容引擎。列表只给 id，这里再用 Card API 换成卡片（一次最多 `FeedAPI.maxCardIds` 个），
@@ -58,6 +67,14 @@ final class RemoteFeedSource: FeedSource {
         try await api.undoNotInterested(contentId: contentId)
     }
 
+    func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
+        // 引擎发帖接口还不收图片和 client_nonce（契约 7.2「待引擎补」）；在那之前带图的帖子不发
+        guard draft.attachedImages.isEmpty else {
+            throw FeedPublishError.mediaUploadNotAvailable
+        }
+        return try await api.createPost(draft.request)
+    }
+
     private func hydrate(_ items: [FeedItemRef]) async throws -> [FeedCard] {
         var ids = [String]()
         for item in items where !ids.contains(item.id) {
@@ -89,6 +106,9 @@ final class EmptyFeedSource: FeedSource {
     func setLiked(contentId: String, liked: Bool) async throws {}
     func notInterested(contentId: String) async throws {}
     func undoNotInterested(contentId: String) async throws {}
+    func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
+        throw FeedPublishError.feedNotAvailable
+    }
 }
 
 enum FeedSources {
