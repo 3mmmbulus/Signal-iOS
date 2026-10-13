@@ -65,6 +65,9 @@ struct MediaGalleryItem:
     /// Tellomi (tellomi/tellomi#1263, spec R-1): covered (spoiler) and not uncovered on this device when it was loaded.
     private let isTellomiSpoilerCoveredAtLoad: Bool
 
+    /// Tellomi (tellomi/tellomi#1263, spec R-2): a live photo's moving half.
+    let tellomiLiveVideo: TellomiLivePhoto.Video?
+
     /// Still covered: swiping in the viewer skips it, the thumbnail strip leaves it out, tiles show it blurred.
     var isTellomiSpoilerCovered: Bool {
         isTellomiSpoilerCoveredAtLoad && !TellomiMediaSpoiler.isRevealedSinceLoad(referencedAttachment.reference)
@@ -92,6 +95,7 @@ struct MediaGalleryItem:
         self.orderingKey = MediaGalleryItemOrderingKey(messageSortKey: message.sortId, attachmentSortKey: albumIndex)
         self.threadRowId = threadRowId
         self.isTellomiSpoilerCoveredAtLoad = TellomiMediaSpoiler.isCovered(referencedAttachment.reference, tx: transaction)
+        self.tellomiLiveVideo = TellomiLivePhoto.video(referencedAttachment.reference, tx: transaction)
         if let captionText = referencedAttachment.reference.legacyMessageCaption?.filterForDisplay {
             self.captionForDisplay = .attachmentStreamCaption(captionText)
         } else if let body = message.body {

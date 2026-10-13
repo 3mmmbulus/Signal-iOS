@@ -1890,6 +1890,8 @@ private extension CVComponentState.Builder {
         // Tellomi (tellomi/tellomi#1263, spec R-1): covered (spoiler) images / videos. One album item per attachment, in order.
         for (index, referencedAttachment) in mediaAttachments.enumerated() where index < mediaAlbumItems.count {
             mediaAlbumItems[index].isTellomiSpoilerCovered = TellomiMediaSpoiler.isCovered(referencedAttachment.reference, tx: transaction)
+            // spec R-2: live photos
+            mediaAlbumItems[index].tellomiLiveVideo = TellomiLivePhoto.video(referencedAttachment.reference, tx: transaction)
         }
         return mediaAlbumItems
     }

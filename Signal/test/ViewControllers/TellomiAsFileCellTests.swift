@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import AVFoundation
 import LibSignalClient
 import UIKit
 import XCTest
@@ -60,6 +61,7 @@ final class TellomiAsFileCellTests: XCTestCase {
             )
         }
         TellomiMediaSpoiler.resetRevealedInMemoryForTesting()
+        TellomiLivePhoto.resetForTesting()
     }
 
     @MainActor
@@ -301,6 +303,208 @@ final class TellomiAsFileCellTests: XCTestCase {
         XCTAssertNil(Self.find(TellomiSpoilerCoverView.self, in: again.cellView))
     }
 
+    // MARK: - 实况照片（spec R-2）
+
+    /// 收到的实况：气泡左上角有实况角标，会话列表 / 通知写「实况照片」；普通图片都没有。
+    @MainActor
+    func testALivePhotoHasItsBadgeAndReadsAsALivePhoto() async throws {
+        let thread = makeThread()
+        let live = try await insertStream(renderingFlag: .default, fileName: "IMG_0012.PNG", thread: thread, livePhoto: true)
+        let plain = try await insertStream(renderingFlag: .default, fileName: "IMG_0013.PNG", thread: thread)
+        // Showing it plays the moving half once; there is nothing to download from here.
+        try cacheLiveVideo(of: live)
+
+        let hostedLive = try await host(message: live, thread: thread, width: 402)
+        XCTAssertNotNil(hostedLive.componentState.bodyMedia?.items.first?.tellomiLiveVideo)
+        let liveView = try XCTUnwrap(Self.find(TellomiLivePhotoView.self, in: hostedLive.cellView))
+        XCTAssertTrue(Self.hasLiveBadge(in: hostedLive.cellView))
+        // Playing, it covers the whole picture, not the video's own size (64 × 96)
+        liveView.play(try Self.makeTestVideo(), loopWithSound: true)
+        hostedLive.cellView.layoutIfNeeded()
+        let player = try XCTUnwrap(Self.find(VideoPlayerView.self, in: liveView))
+        XCTAssertEqual(liveView.frame.size, try XCTUnwrap(liveView.superview).bounds.size)
+        XCTAssertEqual(player.frame.size, liveView.bounds.size)
+        XCTAssertGreaterThan(player.frame.size.width, 200)
+        liveView.stop(animated: false)
+        hostedLive.tearDown()
+
+        let hostedPlain = try await host(message: plain, thread: thread, width: 402)
+        XCTAssertNil(hostedPlain.componentState.bodyMedia?.items.first?.tellomiLiveVideo)
+        XCTAssertNil(Self.find(TellomiLivePhotoView.self, in: hostedPlain.cellView))
+        XCTAssertFalse(Self.hasLiveBadge(in: hostedPlain.cellView))
+        hostedPlain.tearDown()
+
+        read { tx in
+            XCTAssertTrue(live.notificationPreviewText(tx).contains("Live Photo"))
+            XCTAssertFalse(plain.notificationPreviewText(tx).contains("Live Photo"))
+        }
+    }
+
+    /// 动态部分：会话里静音放一遍，放完自己停（淡回静态图）；查看器里带声循环，不会自己停。
+    @MainActor
+    func testTheLiveViewPlaysOnceMutedOrLoopsWithSound() async throws {
+        let url = try Self.makeTestVideo()
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 300))
+        window.isHidden = false
+        defer { window.isHidden = true }
+        let liveView = TellomiLivePhotoView(fill: true)
+        liveView.frame = window.bounds
+        window.addSubview(liveView)
+        var stopped = 0
+        liveView.onStopped = { stopped += 1 }
+
+        liveView.play(url, loopWithSound: false)
+        XCTAssertTrue(liveView.isPlaying)
+        XCTAssertFalse(liveView.isHidden)
+        for _ in 0..<50 where stopped == 0 {
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+        XCTAssertEqual(stopped, 1)
+        XCTAssertFalse(liveView.isPlaying)
+        XCTAssertTrue(liveView.isHidden)
+
+        liveView.play(url, loopWithSound: true)
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+        XCTAssertTrue(liveView.isPlaying, "loops until stopped")
+        liveView.stop(animated: false)
+        XCTAssertFalse(liveView.isPlaying)
+        XCTAssertEqual(stopped, 2)
+    }
+
+    /// 查看器：实况那一页左上角有「实况」按钮（跟着顶栏出现），点一下带声循环、再点停；打开时先静音放一遍。
+    @MainActor
+    func testTheViewerHasTheLiveButton() async throws {
+        let thread = makeThread()
+        let live = try await insertStream(renderingFlag: .default, fileName: "IMG_0014.PNG", thread: thread, livePhoto: true)
+        try cacheLiveVideo(of: live)
+        let (window, viewer, page) = try await hostViewer(live, thread: thread)
+        defer { window.isHidden = true }
+
+        // Opening plays it once, muted
+        XCTAssertNotNil(Self.find(TellomiLivePhotoView.self, in: page.view))
+        XCTAssertTrue(try XCTUnwrap(Self.find(TellomiLivePhotoView.self, in: page.view)).isPlaying)
+
+        viewer.mediaItemViewControllerDidTapMedia(page)
+        try await Task.sleep(nanoseconds: 500_000_000)
+        let button = viewer.tellomiLiveButtonForTesting
+        XCTAssertFalse(button.isHidden)
+        XCTAssertFalse(button.isSelected)
+
+        page.toggleTellomiLive()
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertTrue(page.isTellomiLiveActive)
+        XCTAssertTrue(button.isSelected)
+
+        page.toggleTellomiLive()
+        XCTAssertFalse(page.isTellomiLiveActive)
+        XCTAssertFalse(button.isSelected)
+    }
+
+    /// 给人看的截图：会话里的实况（角标、放到一半）、查看器的「实况」按钮。
+    @MainActor
+    func testLivePhotoShots() async throws {
+        guard ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1" else {
+            throw XCTSkip("只在 TELLOMI_SHOTS=1 时截图")
+        }
+        let thread = makeThread()
+        let live = try await insertStream(renderingFlag: .default, fileName: "IMG_0015.PNG", thread: thread, livePhoto: true)
+        try cacheLiveVideo(of: live)
+
+        let hosted = try await host(message: live, thread: thread, width: 402)
+        try save(render(hosted), name: "live-bubble-playing.png")
+        try await Task.sleep(nanoseconds: 1_600_000_000)
+        try save(render(hosted), name: "live-bubble-still.png")
+        hosted.tearDown()
+
+        let (window, viewer, page) = try await hostViewer(live, thread: thread)
+        viewer.mediaItemViewControllerDidTapMedia(page)
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+        page.toggleTellomiLive()
+        try await Task.sleep(nanoseconds: 500_000_000)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 3
+        let shot = UIGraphicsImageRenderer(bounds: window.bounds, format: format).image { _ in
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+        }
+        try save(shot, name: "live-viewer.png")
+        page.toggleTellomiLive()
+        window.isHidden = true
+    }
+
+    private func cacheLiveVideo(of message: TSMessage) throws {
+        let reference = try XCTUnwrap(bodyAttachments(of: message).first).reference
+        let video = try XCTUnwrap(read { tx in TellomiLivePhoto.video(reference, tx: tx) })
+        TellomiLivePhoto.cacheVideoForTesting(video, url: try Self.makeTestVideo())
+    }
+
+    @MainActor
+    private func hostViewer(_ message: TSMessage, thread: TSThread) async throws -> (UIWindow, MediaPageViewController, MediaItemViewController) {
+        let attachment = try XCTUnwrap(bodyAttachments(of: message).first)
+        let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: attachment, thread: thread, spoilerState: SpoilerRenderState()))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        window.rootViewController = viewer
+        window.isHidden = false
+        window.layoutIfNeeded()
+        try await Task.sleep(nanoseconds: 600_000_000)
+        let page = try XCTUnwrap(viewer.viewControllers?.first as? MediaItemViewController)
+        return (window, viewer, page)
+    }
+
+    private static func hasLiveBadge(in view: UIView) -> Bool {
+        if let imageView = view as? UIImageView, imageView.accessibilityLabel == "Live Photo" {
+            return true
+        }
+        return view.subviews.contains { hasLiveBadge(in: $0) }
+    }
+
+    /// 两秒的小视频（AVAssetWriter 现做，不进仓库）。
+    private static func makeTestVideo() throws -> URL {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("tellomi-live-\(UUID().uuidString).mp4")
+        let size = CGSize(width: 64, height: 96)
+        let writer = try AVAssetWriter(outputURL: url, fileType: .mp4)
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: size.width, AVVideoHeightKey: size.height,
+        ])
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB,
+            kCVPixelBufferWidthKey as String: size.width,
+            kCVPixelBufferHeightKey as String: size.height,
+        ])
+        writer.add(input)
+        writer.startWriting()
+        writer.startSession(atSourceTime: .zero)
+        let frameCount = 60
+        for frame in 0..<frameCount {
+            while !input.isReadyForMoreMediaData {
+                usleep(1000)
+            }
+            var buffer: CVPixelBuffer?
+            CVPixelBufferPoolCreatePixelBuffer(nil, try XCTUnwrap(adaptor.pixelBufferPool), &buffer)
+            let pixels = try XCTUnwrap(buffer)
+            // 紫底 + 一个往右下走的白方块，截图里一眼看得出是视频在放
+            CVPixelBufferLockBaseAddress(pixels, [])
+            let base = try XCTUnwrap(CVPixelBufferGetBaseAddress(pixels)).assumingMemoryBound(to: UInt8.self)
+            let bytesPerRow = CVPixelBufferGetBytesPerRow(pixels)
+            for y in 0..<Int(size.height) {
+                for x in 0..<Int(size.width) {
+                    let isDot = abs(x - 8 - frame * 48 / frameCount) < 6 && abs(y - 12 - frame * 72 / frameCount) < 6
+                    let argb: [UInt8] = isDot ? [255, 255, 255, 255] : [255, 120, 60, 200]
+                    for channel in 0..<4 {
+                        base[y * bytesPerRow + x * 4 + channel] = argb[channel]
+                    }
+                }
+            }
+            CVPixelBufferUnlockBaseAddress(pixels, [])
+            adaptor.append(pixels, withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: 30))
+        }
+        input.markAsFinished()
+        let done = DispatchSemaphore(value: 0)
+        writer.finishWriting { done.signal() }
+        done.wait()
+        XCTAssertEqual(writer.status, .completed)
+        return url
+    }
+
     /// 给人看的截图：罩着（到了）和揭示以后，浅色和深色各一张。没下载的不截：这个整窗截图里没下载的图（罩不罩都一样）画成黑的。
     @MainActor
     func testSpoilerShots() async throws {
@@ -427,6 +631,7 @@ final class TellomiAsFileCellTests: XCTestCase {
         thread: TSContactThread,
         body: String? = nil,
         spoiler: Bool = false,
+        livePhoto: Bool = false,
     ) async throws -> TSMessage {
         let message = try insertMessage(thread: thread, body: body)
         let pending = try await DependenciesBridge.shared.attachmentContentValidator.validateDataContents(
@@ -447,6 +652,22 @@ final class TellomiAsFileCellTests: XCTestCase {
                 let pointer = SSKProtoAttachmentPointer.builder()
                 pointer.setTellomi(tellomi.buildInfallibly())
                 TellomiMediaSpoiler.markReceived(pointer.buildInfallibly(), mimeType: "image/png", owner: bodyOwner(message, thread: thread), tx: tx)
+            }
+            if livePhoto {
+                // As if it had come in as a live photo: the still's pointer carries the moving half.
+                let video = SSKProtoAttachmentPointer.builder()
+                video.setCdnNumber(3)
+                video.setCdnKey("cdn-key-live-\(UUID().uuidString)")
+                video.setContentType("video/mp4")
+                video.setKey(Randomness.generateRandomBytes(64))
+                video.setDigest(Randomness.generateRandomBytes(32))
+                video.setSize(456_789)
+                let tellomi = SSKProtoTellomiAttachment.builder()
+                tellomi.setLivePhotoVideo(video.buildInfallibly())
+                let still = SSKProtoAttachmentPointer.builder()
+                still.setContentType("image/png")
+                still.setTellomi(tellomi.buildInfallibly())
+                TellomiLivePhoto.markReceived(still.buildInfallibly(), mimeType: "image/png", owner: bodyOwner(message, thread: thread), tx: tx)
             }
         }
         return message

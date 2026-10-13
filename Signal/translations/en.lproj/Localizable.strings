@@ -613,6 +613,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "Photo";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "Live Photo";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "Video";
 
@@ -5950,6 +5953,9 @@
 
 /* Media viewer: action on all videos of the message. Embeds {{ the number of videos }}. */
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "All %@ Videos";
+
+/* Media viewer: the button that plays a live photo's few seconds of video, with sound, looping (Telegram: LIVE). */
+"MEDIA_VIEWER_TELLOMI_LIVE" = "Live";
 
 /* Accessibility label for the pause button in the center of the video viewer. */
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "Pause";

@@ -520,6 +520,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "写真";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "Live Photo";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "動画";
 
@@ -11003,6 +11006,7 @@
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "全%@件";
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "全%@枚の写真";
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "全%@本の動画";
+"MEDIA_VIEWER_TELLOMI_LIVE" = "ライブ";
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "一時停止";
 "MEDIA_VIEWER_TELLOMI_PLAY" = "再生";
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "再生速度";

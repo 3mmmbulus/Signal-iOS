@@ -23,6 +23,9 @@ class CVMediaView: ManualLayoutViewWithLayer {
     private var progressView: CVAttachmentProgressView?
     /// Tellomi (tellomi/tellomi#1263, spec R-1): over a covered (spoiler) image / video until it's uncovered.
     private var tellomiSpoilerCover: TellomiSpoilerCoverView?
+    /// Tellomi (tellomi/tellomi#1263, spec R-2): a live photo's moving half, its player and its badge.
+    private var tellomiLiveVideo: TellomiLivePhoto.Video?
+    private var tellomiLiveView: TellomiLivePhotoView?
 
     // Circular Play / Pause / Download progress etc
     private static let centerButtonSize: CGFloat = 44
@@ -38,6 +41,7 @@ class CVMediaView: ManualLayoutViewWithLayer {
         isLoopingVideo: Bool,
         isBroken: Bool,
         isTellomiSpoilerCovered: Bool = false,
+        tellomiLiveVideo: TellomiLivePhoto.Video? = nil,
         thumbnailQuality: AttachmentThumbnailQuality,
         conversationStyle: ConversationStyle,
     ) {
@@ -57,6 +61,26 @@ class CVMediaView: ManualLayoutViewWithLayer {
         clipsToBounds = true
 
         createContents()
+
+        if let tellomiLiveVideo {
+            self.tellomiLiveVideo = tellomiLiveVideo
+            let liveView = TellomiLivePhotoView(fill: true)
+            addSubviewToFillSuperviewEdges(liveView)
+            tellomiLiveView = liveView
+
+            // Top-left, 8 from the corner (Telegram: `livePhotoIconNode` at (8, 8))
+            let badge = CVImageView(image: TellomiLivePhotoView.badgeImage(diameter: Self.tellomiLiveBadgeSize))
+            badge.accessibilityLabel = OWSLocalizedString(
+                "ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO",
+                comment: "Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge",
+            )
+            addSubview(badge)
+            addLayoutBlock { view in
+                let inset: CGFloat = 8
+                let x = CurrentAppContext().isRTL ? view.width - (Self.tellomiLiveBadgeSize + inset) : inset
+                badge.frame = CGRect(x: x, y: inset, width: Self.tellomiLiveBadgeSize, height: Self.tellomiLiveBadgeSize)
+            }
+        }
 
         if isTellomiSpoilerCovered {
             let cover = TellomiSpoilerCoverView()
@@ -80,11 +104,39 @@ class CVMediaView: ManualLayoutViewWithLayer {
     /// Uncovers from [location] (in this view); [completion] runs once the reveal has finished.
     func tellomiRevealSpoiler(from location: CGPoint, completion: @escaping () -> Void) {
         guard let tellomiSpoilerCover else { return }
-        tellomiSpoilerCover.reveal(from: convert(location, to: tellomiSpoilerCover), completion: completion)
+        tellomiSpoilerCover.reveal(from: convert(location, to: tellomiSpoilerCover), completion: { [weak self] in
+            completion()
+            self?.tellomiAutoplayLivePhotoIfNeeded()
+        })
+    }
+
+    // MARK: - Tellomi live photo
+
+    private static let tellomiLiveBadgeSize: CGFloat = 22
+
+    /// A live photo plays its moving half once, muted, the first time it shows in this run (spec R-2; Telegram:
+    /// `ChatMessageInteractiveMediaNode` autoplays without sound when the bubble appears, then fades back to the still).
+    /// Not while it is covered, and not before the still is here. A tap still opens the viewer.
+    private func tellomiAutoplayLivePhotoIfNeeded() {
+        guard
+            let video = tellomiLiveVideo,
+            let liveView = tellomiLiveView,
+            !isTellomiSpoilerCovering,
+            case .stream = attachment,
+            TellomiLivePhoto.claimAutoplay(video)
+        else {
+            return
+        }
+        Task { [weak self, weak liveView] in
+            guard let url = try? await TellomiLivePhoto.fetchVideo(video) else { return }
+            guard let self, let liveView, self.window != nil, !self.isTellomiSpoilerCovering else { return }
+            liveView.play(url, loopWithSound: false)
+        }
     }
 
     func loadMedia() {
         AssertIsOnMainThread()
+        defer { tellomiAutoplayLivePhotoIfNeeded() }
 
         guard let reusableMediaView else {
             return
@@ -103,6 +155,7 @@ class CVMediaView: ManualLayoutViewWithLayer {
 
     func unloadMedia() {
         AssertIsOnMainThread()
+        tellomiLiveView?.stop(animated: false)
 
         guard let reusableMediaView else {
             return

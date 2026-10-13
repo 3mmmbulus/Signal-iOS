@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4CD26720DD03C3F4EF27FD73 /* TellomiLivePhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD14C4543413216B57721E4 /* TellomiLivePhotoView.swift */; };
+		354DB2048B36902C0D5CC925 /* TellomiLivePhotoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E312428E838335DEAF14C31 /* TellomiLivePhotoTests.swift */; };
+		F7CD99FCD111A4BC584A91CB /* TellomiLivePhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE2420AD03CC6CA7C790D2F /* TellomiLivePhoto.swift */; };
 		A9208A3812BF8E91B4B4A628 /* TellomiMediaSpoiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42E40F7CB4E4F0E3ECAF067 /* TellomiMediaSpoiler.swift */; };
 		AE0A6EA47B224EF871F07A21 /* TellomiMediaSpoilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F34913214FBC6C5549048CB /* TellomiMediaSpoilerTests.swift */; };
 		FEDD34CFE29F28ED61EB894C /* TellomiSpoilerCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80870CC131FCEAE3BB0242C /* TellomiSpoilerCoverView.swift */; };
@@ -4403,6 +4406,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4FD14C4543413216B57721E4 /* TellomiLivePhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLivePhotoView.swift; sourceTree = "<group>"; };
+		0E312428E838335DEAF14C31 /* TellomiLivePhotoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLivePhotoTests.swift; sourceTree = "<group>"; };
+		5AE2420AD03CC6CA7C790D2F /* TellomiLivePhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLivePhoto.swift; sourceTree = "<group>"; };
 		E42E40F7CB4E4F0E3ECAF067 /* TellomiMediaSpoiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiMediaSpoiler.swift; sourceTree = "<group>"; };
 		0F34913214FBC6C5549048CB /* TellomiMediaSpoilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiMediaSpoilerTests.swift; sourceTree = "<group>"; };
 		B80870CC131FCEAE3BB0242C /* TellomiSpoilerCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiSpoilerCoverView.swift; sourceTree = "<group>"; };
@@ -9671,6 +9677,7 @@
 				83B9573827C9A1FA00A678FD /* CaptchaView.swift */,
 				34A9553F271B510400B05242 /* CircleView.swift */,
 				764D8C232F72029100DA82B8 /* CircularProgressView.swift */,
+				4FD14C4543413216B57721E4 /* TellomiLivePhotoView.swift */,
 				B80870CC131FCEAE3BB0242C /* TellomiSpoilerCoverView.swift */,
 				76A2EB1128B57AEE00A29C24 /* ColorPickerBar.swift */,
 				B9754F532C73AD49000000E4 /* ConversationAvatarView+SwiftUI.swift */,
@@ -10612,6 +10619,7 @@
 			children = (
 				5088330B2FE0B1E500CE51AC /* AutoDownloadPolicyTest.swift */,
 				28522E56753D6E18A8566F09 /* TellomiAsFileTests.swift */,
+				0E312428E838335DEAF14C31 /* TellomiLivePhotoTests.swift */,
 				0F34913214FBC6C5549048CB /* TellomiMediaSpoilerTests.swift */,
 				7D4DD504FB532E1065756074 /* TellomiCaptionAboveTests.swift */,
 				50ED28012F0EDB0B00E57C54 /* ImageQualityTest.swift */,
@@ -15829,6 +15837,7 @@
 			children = (
 				66C102F02B61E36E00B47EC2 /* V2 */,
 				F9C5C987289453B100548EEE /* BlurHash.swift */,
+				5AE2420AD03CC6CA7C790D2F /* TellomiLivePhoto.swift */,
 				E42E40F7CB4E4F0E3ECAF067 /* TellomiMediaSpoiler.swift */,
 				F9C5C988289453B100548EEE /* OWSMediaUtils.swift */,
 			);
@@ -18599,6 +18608,7 @@
 				83B9573927C9A1FA00A678FD /* CaptchaView.swift in Sources */,
 				3402AA9D271D9E180084CBAE /* CircleView.swift in Sources */,
 				76BC91EC2F883C0000BE569B /* CircularProgressView.swift in Sources */,
+				4CD26720DD03C3F4EF27FD73 /* TellomiLivePhotoView.swift in Sources */,
 				FEDD34CFE29F28ED61EB894C /* TellomiSpoilerCoverView.swift in Sources */,
 				D9B22691301BF9F10078C200 /* ClockSkewAppBlockingViewController.swift in Sources */,
 				D1139A000000000000000002 /* TellomiUpdateRequiredAppBlockingViewController.swift in Sources */,
@@ -20094,6 +20104,7 @@
 				044EA2272FC87611005B5A3E /* BlockedReleaseNotesStore.swift in Sources */,
 				F9C5CC31289453B300548EEE /* BlockingManager.swift in Sources */,
 				F9C5CC74289453B300548EEE /* BlurHash.swift in Sources */,
+				F7CD99FCD111A4BC584A91CB /* TellomiLivePhoto.swift in Sources */,
 				A9208A3812BF8E91B4B4A628 /* TellomiMediaSpoiler.swift in Sources */,
 				505F76332BC45C0700B1B51C /* BuildFlags+Generated.swift in Sources */,
 				F9C5CE2B289453B400548EEE /* BuildFlags.swift in Sources */,
@@ -21164,6 +21175,7 @@
 				50B6BCB62AEC68940010FB3B /* AuthorMergeHelperTest.swift in Sources */,
 				5088330C2FE0B1E500CE51AC /* AutoDownloadPolicyTest.swift in Sources */,
 				CFEB11CEA579AEABAAA59B70 /* TellomiAsFileTests.swift in Sources */,
+				354DB2048B36902C0D5CC925 /* TellomiLivePhotoTests.swift in Sources */,
 				AE0A6EA47B224EF871F07A21 /* TellomiMediaSpoilerTests.swift in Sources */,
 				01F3B152FAEC6FFCB2CBEEE8 /* TellomiCaptionAboveTests.swift in Sources */,
 				D93F4D5D2D801D750042926C /* AvatarDefaultColorManagerTest.swift in Sources */,

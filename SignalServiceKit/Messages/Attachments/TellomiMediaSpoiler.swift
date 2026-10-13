@@ -115,7 +115,8 @@ public enum TellomiMediaSpoiler {
 
     // MARK: - Keys
 
-    private static func bodyKey(messageRowId: Int64, orderInMessage: UInt32) -> String {
+    /// 正文附件在消息里的位置（实况 `TellomiLivePhoto` 用同一套键）。
+    static func bodyKey(messageRowId: Int64, orderInMessage: UInt32) -> String {
         "b\(messageRowId).\(orderInMessage)"
     }
 
@@ -123,7 +124,7 @@ public enum TellomiMediaSpoiler {
         "q\(messageRowId)"
     }
 
-    private static func key(for owner: AttachmentReference.Owner) -> String? {
+    static func key(for owner: AttachmentReference.Owner) -> String? {
         switch owner {
         case .message(.bodyAttachment(let metadata)):
             return bodyKey(messageRowId: metadata.messageRowId, orderInMessage: metadata.orderInMessage)
@@ -134,7 +135,7 @@ public enum TellomiMediaSpoiler {
         }
     }
 
-    private static func key(for owner: AttachmentReference.OwnerBuilder) -> String? {
+    static func key(for owner: AttachmentReference.OwnerBuilder) -> String? {
         switch owner {
         case .messageBodyAttachment(let builder):
             return bodyKey(messageRowId: builder.messageRowId, orderInMessage: builder.orderInMessage)

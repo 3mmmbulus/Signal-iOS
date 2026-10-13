@@ -520,6 +520,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "ফটো";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "Live Photo";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "ভিডিও";
 
@@ -11003,6 +11006,7 @@
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "সব %@টি আইটেম";
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "সব %@টি ছবি";
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "সব %@টি ভিডিও";
+"MEDIA_VIEWER_TELLOMI_LIVE" = "Live";
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "বিরতি";
 "MEDIA_VIEWER_TELLOMI_PLAY" = "চালান";
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "প্লেব্যাকের গতি";

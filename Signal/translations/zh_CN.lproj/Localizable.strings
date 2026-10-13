@@ -600,6 +600,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "图片";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "实况照片";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "视频";
 
@@ -5930,6 +5933,7 @@
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "全部 %@ 项";
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "全部 %@ 张图片";
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "全部 %@ 个视频";
+"MEDIA_VIEWER_TELLOMI_LIVE" = "实况";
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "暂停";
 "MEDIA_VIEWER_TELLOMI_PLAY" = "播放";
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "播放速度";

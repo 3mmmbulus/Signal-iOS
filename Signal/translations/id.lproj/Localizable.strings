@@ -520,6 +520,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "Foto";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "Live Photo";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "Video";
 
@@ -11003,6 +11006,7 @@
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "Semua %@ Item";
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "Semua %@ Foto";
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "Semua %@ Video";
+"MEDIA_VIEWER_TELLOMI_LIVE" = "Live";
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "Jeda";
 "MEDIA_VIEWER_TELLOMI_PLAY" = "Putar";
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "Kecepatan Pemutaran";

@@ -715,7 +715,9 @@ public extension TSMessage {
             mediaAttachment = nil
         }
         let attachmentEmoji = mediaAttachment?.previewEmoji()
-        let attachmentDescription = mediaAttachment?.previewText()
+        let attachmentDescription = mediaAttachment?.previewText(
+            isTellomiLivePhoto: mediaAttachment.map { TellomiLivePhoto.isLivePhoto($0.reference, tx: tx) } ?? false,
+        )
 
         if isViewOnceMessage {
             if self is TSOutgoingMessage || mediaAttachment == nil {

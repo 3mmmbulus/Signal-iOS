@@ -520,6 +520,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "תמונה";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "Live Photo";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "סרטון";
 
@@ -11003,6 +11006,7 @@
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "כל %@ הפריטים";
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "כל %@ התמונות";
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "כל %@ הסרטונים";
+"MEDIA_VIEWER_TELLOMI_LIVE" = "Live";
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "השהיה";
 "MEDIA_VIEWER_TELLOMI_PLAY" = "ניגון";
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "מהירות ניגון";

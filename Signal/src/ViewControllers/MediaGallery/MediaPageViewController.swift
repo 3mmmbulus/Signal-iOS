@@ -252,6 +252,14 @@ class MediaPageViewController: UIPageViewController {
             videoCenterControls.centerYAnchor.constraint(equalTo: view.centerYAnchor),
         ])
 
+        // Tellomi（#1263，spec R-2）：实况照片的「实况」按钮在顶栏下面、靠左，跟着顶栏一起出现 / 收起。
+        tellomiLiveButton.translatesAutoresizingMaskIntoConstraints = false
+        view.insertSubview(tellomiLiveButton, belowSubview: topPanel)
+        NSLayoutConstraint.activate([
+            tellomiLiveButton.topAnchor.constraint(equalTo: topPanel.bottomAnchor, constant: 10),
+            tellomiLiveButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+        ])
+
         // Load initial page and update all UI to reflect it.
         setCurrentItem(initialGalleryItem, direction: .forward, shouldAutoPlayVideo: true, animated: false)
 
@@ -393,6 +401,49 @@ class MediaPageViewController: UIPageViewController {
 
         // Tellomi（#1257）：翻到视频就播（手指横滑、缩略条跳转一样），见 tellomiDidBecomeCurrentPage。
         currentViewController.tellomiDidBecomeCurrentPage()
+        tellomiLiveButton.isSelected = currentViewController.isTellomiLiveActive
+        updateTellomiLiveButtonVisibility(animated: animated)
+    }
+
+    // MARK: - Tellomi（#1263，spec R-2）：实况按钮
+
+    /// 照 Telegram iOS 查看器的 LIVE（`UniversalVideoGalleryItem` 的 `LivePhotoButton`：深色胶囊、图标 + 「LIVE」，点一下带声循环、
+    /// 再点停）；放着的时候填成白色。按住画面同样带声放，松手停（在每一页上）。
+    private lazy var tellomiLiveButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.image = TellomiLivePhotoView.iconImage(size: 18).withRenderingMode(.alwaysTemplate)
+        config.imagePadding = 4
+        config.title = OWSLocalizedString(
+            "MEDIA_VIEWER_TELLOMI_LIVE",
+            comment: "Media viewer: the button that plays a live photo's few seconds of video, with sound, looping (Telegram: LIVE).",
+        ).localizedUppercase
+        config.cornerStyle = .capsule
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 10)
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var attributes = attributes
+            attributes.font = .systemFont(ofSize: 12)
+            return attributes
+        }
+        let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in
+            self?.currentViewController?.toggleTellomiLive()
+        })
+        button.configurationUpdateHandler = { button in
+            var config = button.configuration
+            config?.baseBackgroundColor = button.isSelected ? UIColor(white: 1, alpha: 0.9) : UIColor(white: 0, alpha: 0.45)
+            config?.baseForegroundColor = button.isSelected ? .black : .white
+            button.configuration = config
+        }
+        button.isHidden = true
+        return button
+    }()
+
+#if TESTABLE_BUILD
+    var tellomiLiveButtonForTesting: UIButton { tellomiLiveButton }
+#endif
+
+    private func updateTellomiLiveButtonVisibility(animated: Bool) {
+        let isLivePhoto = currentViewController?.isTellomiLivePhoto == true
+        tellomiLiveButton.setIsHidden(shouldHideToolbars || !isLivePhoto, animated: animated)
     }
 
     // MARK: Show / hide toolbars
@@ -413,6 +464,7 @@ class MediaPageViewController: UIPageViewController {
 
     private func showOrHideTopAndBottomPanelsAsNecessary(animated: Bool) {
         topPanel.setIsHidden(shouldHideToolbars, animated: animated)
+        updateTellomiLiveButtonVisibility(animated: animated)
         bottomMediaPanel.setIsHidden(shouldHideToolbars || bottomMediaPanel.shouldBeHidden, animated: animated)
         updateVideoCenterControlsVisibility(animated: animated)
         if #available(iOS 26, *) {
@@ -1246,6 +1298,11 @@ extension MediaPageViewController: MediaItemViewControllerDelegate {
 
     func mediaItemViewControllerFullyZoomedOut(_ viewController: MediaItemViewController) {
         setShouldHideToolbars(false, animated: true)
+    }
+
+    func mediaItemViewController(_ viewController: MediaItemViewController, tellomiLiveActiveDidChange isActive: Bool) {
+        guard viewController === viewControllers?.first else { return }
+        tellomiLiveButton.isSelected = isActive
     }
 
     // Tellomi（#1257，照 Telegram）：不循环的视频放完了，把控件叫出来（正中是播放键）。

@@ -374,6 +374,12 @@ public class EditManagerAttachmentsImpl: EditManagerAttachments {
                     orderInMessage: metadata.orderInMessage,
                     tx: tx,
                 )
+                TellomiLivePhoto.copyForPastRevision(
+                    latestRevisionRowId: latestRevisionRowId,
+                    priorRevisionRowId: priorRevisionRowId,
+                    orderInMessage: metadata.orderInMessage,
+                    tx: tx,
+                )
             }
 
             // Body attachments can't be edited, so the latest revision remains

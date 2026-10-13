@@ -240,6 +240,8 @@ public class AttachmentManagerImpl: AttachmentManager {
         // Tellomi (ADR-0068 §4.1, spec R-1): every incoming pointer (received, synced from a linked device, edited in)
         // comes through here; a covered image / video is remembered by its place in the message.
         TellomiMediaSpoiler.markReceived(proto, mimeType: mimeType, owner: owner, tx: tx)
+        // Tellomi (ADR-0068 §4.1, spec R-2): a live photo's moving half, kept with the still (not its own attachment).
+        TellomiLivePhoto.markReceived(proto, mimeType: mimeType, owner: owner, tx: tx)
 
         switch referenceParams.owner {
         case .message(.sticker(let stickerInfo)):

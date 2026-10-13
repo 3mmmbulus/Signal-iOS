@@ -67,6 +67,7 @@ class CVMediaAlbumView: ManualStackViewWithLayer {
                 // Tellomi (spec R-1): uncovered on this device since the cell was built → no cover again before it redraws
                 isTellomiSpoilerCovered: item.isTellomiSpoilerCovered
                     && !TellomiMediaSpoiler.isRevealedSinceLoad(item.attachment.attachment.reference),
+                tellomiLiveVideo: item.tellomiLiveVideo,
                 thumbnailQuality: thumbnailQuality,
                 conversationStyle: conversationStyle,
             )
@@ -642,6 +643,9 @@ struct CVMediaAlbumItem: Equatable {
     /// Tellomi (tellomi/tellomi#1263, spec R-1): the sender covered it (spoiler) and this device hasn't uncovered it yet.
     var isTellomiSpoilerCovered = false
 
+    /// Tellomi (tellomi/tellomi#1263, spec R-2): a live photo's moving half.
+    var tellomiLiveVideo: TellomiLivePhoto.Video?
+
     static func ==(lhs: CVMediaAlbumItem, rhs: CVMediaAlbumItem) -> Bool {
         return lhs.attachment == rhs.attachment
             && lhs.hasCaption == rhs.hasCaption
@@ -649,5 +653,6 @@ struct CVMediaAlbumItem: Equatable {
             && lhs.isBroken == rhs.isBroken
             && lhs.threadHasPendingMessageRequest == rhs.threadHasPendingMessageRequest
             && lhs.isTellomiSpoilerCovered == rhs.isTellomiSpoilerCovered
+            && (lhs.tellomiLiveVideo == nil) == (rhs.tellomiLiveVideo == nil)
     }
 }

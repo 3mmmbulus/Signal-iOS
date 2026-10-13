@@ -520,6 +520,9 @@
 /* Short text label for a photo attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_PHOTO" = "फोटो";
 
+/* Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge */
+"ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO" = "Live Photo";
+
 /* Short text label for a video attachment, used for thread preview and on the lock screen */
 "ATTACHMENT_TYPE_VIDEO" = "व्हिडिओ";
 
@@ -11003,6 +11006,7 @@
 "MEDIA_VIEWER_TELLOMI_ALL_ITEMS_FORMAT" = "सर्व %@ आयटम";
 "MEDIA_VIEWER_TELLOMI_ALL_PHOTOS_FORMAT" = "सर्व %@ फोटो";
 "MEDIA_VIEWER_TELLOMI_ALL_VIDEOS_FORMAT" = "सर्व %@ व्हिडिओ";
+"MEDIA_VIEWER_TELLOMI_LIVE" = "Live";
 "MEDIA_VIEWER_TELLOMI_PAUSE" = "थांबवा";
 "MEDIA_VIEWER_TELLOMI_PLAY" = "प्ले करा";
 "MEDIA_VIEWER_TELLOMI_PLAYBACK_SPEED" = "प्लेबॅकचा वेग";

@@ -14,6 +14,8 @@ protocol MediaItemViewControllerDelegate: AnyObject {
     func mediaItemViewControllerFullyZoomedOut(_ viewController: MediaItemViewController)
     /// Tellomi（#1257，照 Telegram）：超过 30 秒、不循环的视频放完了（查看器把控件叫出来，中间是播放键）。
     func mediaItemViewControllerVideoDidPlayToEnd(_ viewController: MediaItemViewController)
+    /// Tellomi（#1263，spec R-2）：这一页的实况开始 / 停止带声循环（查看器的「实况」按钮跟着变）。
+    func mediaItemViewController(_ viewController: MediaItemViewController, tellomiLiveActiveDidChange isActive: Bool)
 }
 
 protocol VideoPlaybackStatusProvider: AnyObject {
@@ -132,6 +134,8 @@ class MediaItemViewController: OWSViewController, VideoPlaybackStatusProvider {
         // some performance cost.
         mediaView.layer.minificationFilter = .trilinear
         mediaView.layer.magnificationFilter = .trilinear
+
+        configureTellomiLivePhoto()
 
         scrollView = ZoomableMediaView(mediaView: mediaView, onSingleTap: { [weak self] in
             guard let self else { return }
@@ -336,6 +340,7 @@ class MediaItemViewController: OWSViewController, VideoPlaybackStatusProvider {
     /// 这一页成了查看器的当前页——刚打开、手指横滑、缩略条跳转都走这里。下载好的视频直接播；还没下载完的，下载完（`replaceGalleryItem`）再播。
     /// 上游翻页不自动播，靠每页正中的播放键；那个键换成跟着四角按钮一起出现的播放 / 暂停以后，停着的视频看上去和图片一样、画面上也没有能点的。
     func tellomiDidBecomeCurrentPage() {
+        tellomiAutoplayLiveIfNeeded()
         guard isVideo else { return }
         shouldAutoPlayVideo = true
         guard !hasAutoPlayedVideo, isViewLoaded, videoPlayerView != nil, galleryItem.isVideoReadyToPlay else { return }
@@ -347,6 +352,93 @@ class MediaItemViewController: OWSViewController, VideoPlaybackStatusProvider {
     func tellomiDidResignCurrentPage() {
         shouldAutoPlayVideo = false
         hasAutoPlayedVideo = false
+        tellomiLiveView?.stop(animated: false)
+        setTellomiLiveActive(false)
+    }
+
+    // MARK: - Tellomi live photo (#1263, spec R-2)
+
+    private var tellomiLiveView: TellomiLivePhotoView?
+    private var hasAutoplayedTellomiLive = false
+    private(set) var isTellomiLiveActive = false
+
+    var isTellomiLivePhoto: Bool { tellomiLiveView != nil }
+
+    /// A live photo's moving half sits inside the still (so it zooms with it), shown in full like the still. Holding the
+    /// picture plays it with sound until let go (Telegram iOS gallery: hold 0.3 s anywhere).
+    private func configureTellomiLivePhoto() {
+        tellomiLiveView = nil
+        guard galleryItem.tellomiLiveVideo != nil, mediaView is UIImageView else { return }
+        let liveView = TellomiLivePhotoView(fill: false)
+        mediaView.addSubview(liveView)
+        liveView.autoPinEdgesToSuperviewEdges()
+        liveView.onStopped = { [weak self] in
+            self?.setTellomiLiveActive(false)
+        }
+        tellomiLiveView = liveView
+
+        let hold = UILongPressGestureRecognizer(target: self, action: #selector(didHoldTellomiLive(_:)))
+        hold.minimumPressDuration = 0.3
+        mediaView.addGestureRecognizer(hold)
+    }
+
+    /// Plays once, muted, the first time this page shows (Telegram iOS `playLivePhotoAutoplayIfNeeded`).
+    private func tellomiAutoplayLiveIfNeeded() {
+        guard let video = galleryItem.tellomiLiveVideo, let liveView = tellomiLiveView, !hasAutoplayedTellomiLive, !isTellomiLiveActive else {
+            return
+        }
+        hasAutoplayedTellomiLive = true
+        Task { [weak self, weak liveView] in
+            guard let url = try? await TellomiLivePhoto.fetchVideo(video) else { return }
+            guard let self, let liveView, !self.isTellomiLiveActive else { return }
+            liveView.play(url, loopWithSound: false)
+        }
+    }
+
+    /// The viewer's live button: plays looping with sound, or stops.
+    func toggleTellomiLive() {
+        if isTellomiLiveActive {
+            stopTellomiLive()
+        } else {
+            startTellomiLive()
+        }
+    }
+
+    private func startTellomiLive() {
+        guard let video = galleryItem.tellomiLiveVideo, let liveView = tellomiLiveView else { return }
+        setTellomiLiveActive(true)
+        Task { [weak self, weak liveView] in
+            guard let self else { return }
+            guard let url = try? await TellomiLivePhoto.fetchVideo(video) else {
+                self.setTellomiLiveActive(false)
+                return
+            }
+            guard let liveView, self.isTellomiLiveActive else { return }
+            liveView.play(url, loopWithSound: true)
+        }
+    }
+
+    private func stopTellomiLive() {
+        tellomiLiveView?.stop(animated: true)
+        setTellomiLiveActive(false)
+    }
+
+    private func setTellomiLiveActive(_ isActive: Bool) {
+        guard isTellomiLiveActive != isActive else { return }
+        isTellomiLiveActive = isActive
+        delegate?.mediaItemViewController(self, tellomiLiveActiveDidChange: isActive)
+    }
+
+    @objc
+    private func didHoldTellomiLive(_ gesture: UILongPressGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            startTellomiLive()
+        case .ended, .cancelled, .failed:
+            stopTellomiLive()
+        default:
+            break
+        }
     }
 
     // MARK: - VideoPlaybackStatusProvider

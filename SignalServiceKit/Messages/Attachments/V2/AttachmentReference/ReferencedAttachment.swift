@@ -151,11 +151,18 @@ extension ReferencedAttachment {
     public func previewText(
         includeFileName: Bool = false,
         includeEmoji: Bool = true,
+        isTellomiLivePhoto: Bool = false,
     ) -> String {
         let mimeType = attachment.mimeType
 
         let attachmentString: String
-        if reference.renderingFlag == .tellomiAsFile {
+        if isTellomiLivePhoto {
+            // Tellomi (tellomi/tellomi#1263, spec R-2): "Live Photo" (Telegram: Message.LivePhoto)
+            attachmentString = OWSLocalizedString(
+                "ATTACHMENT_TYPE_TELLOMI_LIVE_PHOTO",
+                comment: "Short text label for a live photo (a still with a few seconds of video), used for thread preview, on the lock screen and on its badge",
+            )
+        } else if reference.renderingFlag == .tellomiAsFile {
             // Tellomi (ADR-0068): sent as a file reads as a file, whatever the content type (same as Android).
             if includeFileName, let filename = reference.sourceFilename {
                 attachmentString = filename.ows_stripped()
