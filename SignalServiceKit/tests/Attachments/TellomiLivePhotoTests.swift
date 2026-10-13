@@ -72,6 +72,65 @@ class TellomiLivePhotoTests: XCTestCase {
         db.read { tx in XCTAssertTrue(TellomiLivePhoto.isLivePhoto(prior, tx: tx)) }
     }
 
+    // MARK: - Autoplay (owner 2026-10-13: every time it comes on screen, as Telegram)
+
+    func testPlaysOncePerAppearanceAndAgainWhenItComesBack() throws {
+        TellomiLivePhoto.resetForTesting()
+        let (threadRowId, messageRowId) = insertThreadAndInteraction()
+        let live = try insertBodyAttachment(messageRowId: messageRowId, threadRowId: threadRowId, order: 0, still: try still(video: video()))
+        let video = try XCTUnwrap(db.read { tx in TellomiLivePhoto.video(live, tx: tx) })
+        let start = Date()
+
+        XCTAssertFalse(TellomiLivePhoto.claimAutoplay(video), "not on screen")
+
+        TellomiLivePhoto.appeared(video, now: start)
+        XCTAssertTrue(TellomiLivePhoto.claimAutoplay(video))
+        XCTAssertFalse(TellomiLivePhoto.claimAutoplay(video), "once per appearance")
+
+        // The cell rebuilt for an update: gone and back straight away is the same appearance
+        TellomiLivePhoto.disappeared(video, now: start.addingTimeInterval(1))
+        TellomiLivePhoto.appeared(video, now: start.addingTimeInterval(1.1))
+        XCTAssertFalse(TellomiLivePhoto.claimAutoplay(video))
+
+        // Scrolled away and back: plays again
+        TellomiLivePhoto.disappeared(video, now: start.addingTimeInterval(2))
+        TellomiLivePhoto.appeared(video, now: start.addingTimeInterval(2 + TellomiLivePhoto.reappearanceGrace))
+        XCTAssertTrue(TellomiLivePhoto.claimAutoplay(video))
+    }
+
+    func testCoveredOrNotYetDownloadedPlaysLaterInTheSameAppearance() throws {
+        TellomiLivePhoto.resetForTesting()
+        let (threadRowId, messageRowId) = insertThreadAndInteraction()
+        let live = try insertBodyAttachment(messageRowId: messageRowId, threadRowId: threadRowId, order: 0, still: try still(video: video()))
+        let video = try XCTUnwrap(db.read { tx in TellomiLivePhoto.video(live, tx: tx) })
+        let start = Date()
+
+        // Shown but not asked (covered / still downloading); the downloaded still replaces the cell right away
+        TellomiLivePhoto.appeared(video, now: start)
+        TellomiLivePhoto.disappeared(video, now: start.addingTimeInterval(3))
+        TellomiLivePhoto.appeared(video, now: start.addingTimeInterval(3.01))
+        XCTAssertTrue(TellomiLivePhoto.claimAutoplay(video))
+    }
+
+    func testShownTwiceLeavesWhenBothHaveGone() throws {
+        TellomiLivePhoto.resetForTesting()
+        let (threadRowId, messageRowId) = insertThreadAndInteraction()
+        let live = try insertBodyAttachment(messageRowId: messageRowId, threadRowId: threadRowId, order: 0, still: try still(video: video()))
+        let video = try XCTUnwrap(db.read { tx in TellomiLivePhoto.video(live, tx: tx) })
+        let start = Date()
+
+        TellomiLivePhoto.appeared(video, now: start)
+        TellomiLivePhoto.appeared(video, now: start)
+        XCTAssertTrue(TellomiLivePhoto.claimAutoplay(video))
+        TellomiLivePhoto.disappeared(video, now: start.addingTimeInterval(1))
+        TellomiLivePhoto.appeared(video, now: start.addingTimeInterval(5))
+        XCTAssertFalse(TellomiLivePhoto.claimAutoplay(video), "the other one never left")
+        TellomiLivePhoto.disappeared(video, now: start.addingTimeInterval(6))
+        TellomiLivePhoto.disappeared(video, now: start.addingTimeInterval(6))
+        TellomiLivePhoto.appeared(video, now: start.addingTimeInterval(7))
+        XCTAssertTrue(TellomiLivePhoto.claimAutoplay(video))
+    }
+
     // MARK: - Helpers
 
     private func video(contentType: String = "video/mp4", cdnKey: String? = "cdn-key-video", nested: Bool = false) -> SSKProtoAttachmentPointer {

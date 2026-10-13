@@ -26,6 +26,8 @@ class CVMediaView: ManualLayoutViewWithLayer {
     /// Tellomi (tellomi/tellomi#1263, spec R-2): a live photo's moving half, its player and its badge.
     private var tellomiLiveVideo: TellomiLivePhoto.Video?
     private var tellomiLiveView: TellomiLivePhotoView?
+    /// Counted as on screen in `TellomiLivePhoto.appeared` / `disappeared` (between `loadMedia` and `unloadMedia`).
+    private var isTellomiLiveShowing = false
 
     // Circular Play / Pause / Download progress etc
     private static let centerButtonSize: CGFloat = 44
@@ -114,13 +116,16 @@ class CVMediaView: ManualLayoutViewWithLayer {
 
     private static let tellomiLiveBadgeSize: CGFloat = 22
 
-    /// A live photo plays its moving half once, muted, the first time it shows in this run (spec R-2; Telegram:
-    /// `ChatMessageInteractiveMediaNode` autoplays without sound when the bubble appears, then fades back to the still).
-    /// Not while it is covered, and not before the still is here. A tap still opens the viewer.
+    /// A live photo plays its moving half once, muted, every time it comes on screen, then fades back to the still
+    /// (spec R-2, owner 2026-10-13 as Telegram: `ChatMessageInteractiveMediaNode` plays it without sound whenever the
+    /// bubble becomes visible). The cell being rebuilt for an update isn't a new appearance (`TellomiLivePhoto.appeared`).
+    /// Not while it is covered, and not before the still is here: then it plays once uncovered / downloaded, if still on
+    /// screen. A tap still opens the viewer.
     private func tellomiAutoplayLivePhotoIfNeeded() {
         guard
             let video = tellomiLiveVideo,
             let liveView = tellomiLiveView,
+            isTellomiLiveShowing,
             !isTellomiSpoilerCovering,
             case .stream = attachment,
             TellomiLivePhoto.claimAutoplay(video)
@@ -134,9 +139,31 @@ class CVMediaView: ManualLayoutViewWithLayer {
         }
     }
 
+    private func tellomiLiveDidAppear() {
+        guard let tellomiLiveVideo, !isTellomiLiveShowing else { return }
+        isTellomiLiveShowing = true
+        TellomiLivePhoto.appeared(tellomiLiveVideo)
+    }
+
+    private func tellomiLiveDidDisappear() {
+        guard let tellomiLiveVideo, isTellomiLiveShowing else { return }
+        isTellomiLiveShowing = false
+        TellomiLivePhoto.disappeared(tellomiLiveVideo)
+    }
+
+    deinit {
+        // Dropped without being unloaded: still counts as leaving the screen
+        if isTellomiLiveShowing, let tellomiLiveVideo {
+            TellomiLivePhoto.disappeared(tellomiLiveVideo)
+        }
+    }
+
     func loadMedia() {
         AssertIsOnMainThread()
-        defer { tellomiAutoplayLivePhotoIfNeeded() }
+        defer {
+            tellomiLiveDidAppear()
+            tellomiAutoplayLivePhotoIfNeeded()
+        }
 
         guard let reusableMediaView else {
             return
@@ -156,6 +183,7 @@ class CVMediaView: ManualLayoutViewWithLayer {
     func unloadMedia() {
         AssertIsOnMainThread()
         tellomiLiveView?.stop(animated: false)
+        tellomiLiveDidDisappear()
 
         guard let reusableMediaView else {
             return

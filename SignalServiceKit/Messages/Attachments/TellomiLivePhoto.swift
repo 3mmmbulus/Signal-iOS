@@ -19,7 +19,7 @@ public enum TellomiLivePhoto {
     private static let maxVideoBytes: UInt32 = 30 * 1024 * 1024
 
     private static let downloaded = AtomicValue<[String: URL]>([:], lock: .init())
-    private static let autoplayed = AtomicSet<String>(lock: .init())
+    private static let appearances = AtomicValue<[String: Appearance]>([:], lock: .init())
 
     // MARK: - Wire
 
@@ -121,17 +121,55 @@ public enum TellomiLivePhoto {
         fileprivate let decryptionMetadata: DecryptionMetadata
     }
 
-    /// 会话里第一次出现时自动静音放一遍（spec R-2）：这次运行里每张只放一次，返回 true 的那一次去放。
-    /// Telegram iOS 是每次出现都放；spec 写的是「第一次出现时」。
+    // MARK: - Autoplay
+
+    /// 会话里每次出现都静音放一遍（owner 2026-10-13 照 Telegram：`ChatMessageInteractiveMediaNode` 每次从看不见变成看得见都放）。
+    /// 消息更新时整格重建、下载完换成原图，是先 `disappeared` 再马上 `appeared`：离开不到这么久又回来，还算同一次出现，不再放。
+    public static let reappearanceGrace: TimeInterval = 0.5
+
+    private struct Appearance {
+        var showing = 0
+        var hiddenAt: Date?
+        var played = false
+    }
+
+    /// 一个视图开始显示这张实况（会话里的格子出现了）。
+    public static func appeared(_ video: Video, now: Date = Date()) {
+        appearances.update { all in
+            var appearance = all[video.cacheKey] ?? Appearance()
+            if appearance.showing == 0, let hiddenAt = appearance.hiddenAt, now.timeIntervalSince(hiddenAt) >= reappearanceGrace {
+                appearance.played = false
+            }
+            appearance.showing += 1
+            all[video.cacheKey] = appearance
+        }
+    }
+
+    /// 那个视图不再显示它了（滑出屏幕、整格重建、会话页收起）。
+    public static func disappeared(_ video: Video, now: Date = Date()) {
+        appearances.update { all in
+            guard var appearance = all[video.cacheKey], appearance.showing > 0 else { return }
+            appearance.showing -= 1
+            if appearance.showing == 0 {
+                appearance.hiddenAt = now
+            }
+            all[video.cacheKey] = appearance
+        }
+    }
+
+    /// 这一次出现还没放过：返回 true 的那一次去放。罩着、原图还没到时先别问，等能放了再问。
     public static func claimAutoplay(_ video: Video) -> Bool {
-        guard !autoplayed.contains(video.cacheKey) else { return false }
-        autoplayed.insert(video.cacheKey)
-        return true
+        appearances.update { all in
+            guard var appearance = all[video.cacheKey], appearance.showing > 0, !appearance.played else { return false }
+            appearance.played = true
+            all[video.cacheKey] = appearance
+            return true
+        }
     }
 
 #if TESTABLE_BUILD
     public static func resetForTesting() {
-        autoplayed.removeAllValues()
+        appearances.set([:])
         downloaded.set([:])
     }
 

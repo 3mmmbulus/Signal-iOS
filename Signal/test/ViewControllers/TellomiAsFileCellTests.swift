@@ -371,6 +371,41 @@ final class TellomiAsFileCellTests: XCTestCase {
         XCTAssertEqual(stopped, 2)
     }
 
+    /// 照 Telegram（owner 2026-10-13）：会话里每次出现都静音放一遍；格子马上重建（消息更新）不算新出现，不重放。
+    @MainActor
+    func testTheBubblePlaysEachTimeItComesOnScreen() async throws {
+        let thread = makeThread()
+        let live = try await insertStream(renderingFlag: .default, fileName: "IMG_0016.PNG", thread: thread, livePhoto: true)
+        try cacheLiveVideo(of: live)
+        let hosted = try await host(message: live, thread: thread, width: 402)
+        defer { hosted.tearDown() }
+        let liveView = try XCTUnwrap(Self.find(TellomiLivePhotoView.self, in: hosted.cellView))
+
+        try await Self.wait(until: { liveView.isPlaying }, seconds: 2)
+        try await Self.wait(until: { !liveView.isPlaying }, seconds: 5)
+
+        // Rebuilt in place: not a new appearance
+        hosted.cellView.isCellVisible = false
+        hosted.cellView.isCellVisible = true
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertFalse(liveView.isPlaying)
+
+        // Off screen and back: plays again
+        hosted.cellView.isCellVisible = false
+        try await Task.sleep(nanoseconds: UInt64((TellomiLivePhoto.reappearanceGrace + 0.1) * 1_000_000_000))
+        hosted.cellView.isCellVisible = true
+        try await Self.wait(until: { liveView.isPlaying }, seconds: 2)
+    }
+
+    @MainActor
+    private static func wait(until condition: () -> Bool, seconds: TimeInterval, file: StaticString = #filePath, line: UInt = #line) async throws {
+        let deadline = Date().addingTimeInterval(seconds)
+        while !condition(), Date() < deadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        XCTAssertTrue(condition(), "timed out", file: file, line: line)
+    }
+
     /// 查看器：实况那一页左上角有「实况」按钮（跟着顶栏出现），点一下带声循环、再点停；打开时先静音放一遍。
     @MainActor
     func testTheViewerHasTheLiveButton() async throws {
