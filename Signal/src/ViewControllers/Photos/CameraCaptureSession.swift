@@ -246,20 +246,25 @@ class CameraCaptureSession: NSObject {
 
     func toggleFlashMode() -> Guarantee<Void> {
         return sessionQueue.async(.promise) {
-            switch self.photoCapture.flashMode {
-            case .auto:
-                Logger.debug("new flashMode: on")
-                self.photoCapture.flashMode = .on
-            case .on:
-                Logger.debug("new flashMode: off")
-                self.photoCapture.flashMode = .off
-            case .off:
-                Logger.debug("new flashMode: auto")
-                self.photoCapture.flashMode = .auto
-            @unknown default:
-                owsFailDebug("unknown flashMode: \(self.photoCapture.flashMode)")
-                self.photoCapture.flashMode = .auto
-            }
+            let flashMode = Self.nextFlashMode(after: self.photoCapture.flashMode)
+            Logger.debug("new flashMode: \(flashMode.rawValue)")
+            self.photoCapture.flashMode = flashMode
+        }
+    }
+
+    /// Tellomi（tellomi/tellomi#1520 C-5）：关 → 开 → 自动 → 关（照 Telegram 新相机 `CameraScreen.toggleFlashMode` 拍照时的顺序，
+    /// 和 Tellomi 安卓 `FlashMode.next()` 一样；上游是自动 → 开 → 关）。
+    static func nextFlashMode(after flashMode: AVCaptureDevice.FlashMode) -> AVCaptureDevice.FlashMode {
+        switch flashMode {
+        case .off:
+            return .on
+        case .on:
+            return .auto
+        case .auto:
+            return .off
+        @unknown default:
+            owsFailDebug("unknown flashMode: \(flashMode)")
+            return .off
         }
     }
 

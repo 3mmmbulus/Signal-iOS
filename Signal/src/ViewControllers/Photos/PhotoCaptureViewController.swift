@@ -1489,6 +1489,8 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
     }
 
     private func didTapFlashMode() {
+        // Tellomi C-5：切的时候轻震一下（同 Telegram）。
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         cameraCaptureSession.toggleFlashMode().done {
             self.updateFlashModeControl(animated: true)
         }.catch { error in
