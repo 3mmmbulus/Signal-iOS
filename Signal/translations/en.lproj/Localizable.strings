@@ -10995,6 +10995,27 @@
 /* Link at the bottom of the cross-border notice that opens the Third-Party Sharing and SDK List. */
 "TELLOMI_CROSS_BORDER_THIRD_PARTY_LINK" = "Read the Third-Party Sharing and SDK List";
 
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_FOLLOWING_EMPTY_BODY" = "Posts from your friends and the people and topics you follow will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_FOLLOWING_EMPTY_TITLE" = "No posts from people you follow";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "Recommended posts will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "Nothing here yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_FOLLOWING" = "Following";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_RECOMMEND" = "For you";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_TITLE" = "Feed";
+
 /* Button in the first-launch privacy notice: agree. */
 "TELLOMI_FIRST_LAUNCH_AGREE" = "Agree";
 

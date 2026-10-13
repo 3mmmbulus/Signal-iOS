@@ -10950,6 +10950,27 @@
 /* Link at the bottom of the cross-border notice that opens the Third-Party Sharing and SDK List. */
 "TELLOMI_CROSS_BORDER_THIRD_PARTY_LINK" = "查看《第三方信息共享及 SDK 清單》";
 
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_FOLLOWING_EMPTY_BODY" = "好友和你關注的人、話題發的動態會出現在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_FOLLOWING_EMPTY_TITLE" = "關注的人還沒有發動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "推薦的動態會出現在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "還沒有內容";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_FOLLOWING" = "關注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_RECOMMEND" = "推薦";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_TITLE" = "動態";
+
 /* Button in the first-launch privacy notice: agree. */
 "TELLOMI_FIRST_LAUNCH_AGREE" = "同意";
 

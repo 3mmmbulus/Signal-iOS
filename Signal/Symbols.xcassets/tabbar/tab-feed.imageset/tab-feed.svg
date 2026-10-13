@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <!-- Copyright 2026 重庆半格智能科技有限公司 · SPDX-License-Identifier: AGPL-3.0-only -->
+  <!-- 底栏「动态」图标：一张卡片，上面一行头像 + 文字，下面两行文字（和 Android tellomi_feed_28 同一个图形） -->
+  <rect x="4.5" y="4.5" width="19" height="19" rx="4" fill="none" stroke="#000" stroke-width="2"/>
+  <circle cx="10.5" cy="10.5" r="2" fill="#000"/>
+  <path d="M14.5 10.5h5M8.5 16.5h11M8.5 20h7" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+</svg>

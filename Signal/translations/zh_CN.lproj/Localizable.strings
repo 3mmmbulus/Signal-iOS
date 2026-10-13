@@ -10833,6 +10833,27 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "点击替换表情符号";
 
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_FOLLOWING_EMPTY_BODY" = "好友和你关注的人、话题发的动态会出现在这里。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_FOLLOWING_EMPTY_TITLE" = "关注的人还没有发动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "推荐的动态会出现在这里。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "还没有内容";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_FOLLOWING" = "关注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_RECOMMEND" = "推荐";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TAB_TITLE" = "动态";
+
 /* Tellomi (ADR-0063 §5.5): toast after the link was copied because nothing could open it */
 "TELLOMI_LINKS_LINK_COPIED" = "已复制链接";
 

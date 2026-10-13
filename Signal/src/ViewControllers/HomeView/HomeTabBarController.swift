@@ -19,13 +19,21 @@ class HomeTabBarController: UITabBarController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// Tellomi：底栏的顺序不再等于 `rawValue`（动态在最左、按开关显示），下标一律走 `visibleTabs`。
     enum Tabs: Int {
         case chatList = 0
         case calls = 1
         case stories = 2
+        /// Tellomi（M11）：动态。`TellomiFeed.isTabEnabled` 为真时放在最左（`dynamic-feed.md` 第三节第 17 条）。
+        case feed = 3
 
         var title: String {
             switch self {
+            case .feed:
+                return OWSLocalizedString(
+                    "TELLOMI_FEED_TAB_TITLE",
+                    comment: "Title for the social feed tab in the home tab bar.",
+                )
             case .chatList:
                 return OWSLocalizedString(
                     "CHAT_LIST_TITLE_INBOX",
@@ -46,6 +54,8 @@ class HomeTabBarController: UITabBarController {
 
         var image: UIImage? {
             switch self {
+            case .feed:
+                return UIImage(named: "tab-feed")
             case .chatList:
                 return UIImage(imageLiteralResourceName: "tab-chats")
             case .calls:
@@ -57,6 +67,8 @@ class HomeTabBarController: UITabBarController {
 
         var selectedImage: UIImage? {
             switch self {
+            case .feed:
+                return UIImage(named: "tab-feed")
             case .chatList:
                 return UIImage(named: "tab-chats")
             case .calls:
@@ -76,6 +88,8 @@ class HomeTabBarController: UITabBarController {
 
         var tabIdentifier: String {
             switch self {
+            case .feed:
+                return "feed"
             case .chatList:
                 return "chats"
             case .calls:
@@ -94,6 +108,10 @@ class HomeTabBarController: UITabBarController {
     lazy var storiesViewController = StoriesViewController(spoilerState: SpoilerRenderState())
     lazy var storiesNavController = OWSNavigationController(rootViewController: storiesViewController)
     lazy var storiesTabBarItem = Tabs.stories.tabBarItem
+
+    lazy var feedViewController = FeedViewController()
+    lazy var feedNavController = OWSNavigationController(rootViewController: feedViewController)
+    lazy var feedTabBarItem = Tabs.feed.tabBarItem
 
     lazy var callsListViewController = CallsListViewController()
     lazy var callsListNavController = OWSNavigationController(rootViewController: callsListViewController)
@@ -121,9 +139,15 @@ class HomeTabBarController: UITabBarController {
         return uiTab as! UITab
     }
 
+    /// 现在底栏上有哪些标签，按显示顺序。
+    private(set) var visibleTabs = [Tabs]()
+
     var selectedHomeTab: Tabs {
-        get { Tabs(rawValue: selectedIndex) ?? .chatList }
-        set { selectedIndex = newValue.rawValue }
+        get { visibleTabs[safe: selectedIndex] ?? .chatList }
+        set {
+            guard let index = visibleTabs.firstIndex(of: newValue) else { return }
+            selectedIndex = index
+        }
     }
 
     var owsTabBar: OWSTabBar? {
@@ -138,6 +162,7 @@ class HomeTabBarController: UITabBarController {
         delegate = self
 
         NotificationCenter.default.addObserver(self, selector: #selector(storiesEnabledStateDidChange), name: .storiesEnabledStateDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(feedTabStateDidChange), name: .tellomiFeedTabStateDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applyTheme), name: .themeDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterForeground), name: .OWSApplicationWillEnterForeground, object: nil)
         applyTheme()
@@ -148,6 +173,8 @@ class HomeTabBarController: UITabBarController {
         let areStoriesEnabled = SSKEnvironment.shared.databaseStorageRef.read { StoryManager.areStoriesEnabled(transaction: $0) }
 
         updateTabBars(areStoriesEnabled: areStoriesEnabled)
+        // 动态在最左，但打开 App 默认显示「聊天」（dynamic-feed.md 第三节第 17 条）
+        selectedHomeTab = .chatList
 
         AppEnvironment.shared.badgeManager.addObserver(self)
         storyBadgeCountManager.beginObserving(observer: self)
@@ -160,6 +187,27 @@ class HomeTabBarController: UITabBarController {
         if selectedHomeTab == .stories {
             storyBadgeCountManager.markAllStoriesRead()
         }
+        // 远程配置没有变更通知：回到前台时看一眼 global.feed.enabled 变了没有（R-2.11：随下一次拉取生效）
+        updateFeedTabIfNeeded()
+    }
+
+    @objc
+    private func feedTabStateDidChange() {
+        updateFeedTabIfNeeded()
+    }
+
+    private func updateFeedTabIfNeeded() {
+        let isFeedVisible = visibleTabs.contains(.feed)
+        guard TellomiFeed.isTabEnabled != isFeedVisible else { return }
+
+        let previouslySelected = selectedHomeTab
+        updateTabBars(areStoriesEnabled: StoryManager.areStoriesEnabled)
+        if visibleTabs.contains(previouslySelected) {
+            selectedHomeTab = previouslySelected
+        } else {
+            feedNavController.popToRootViewController(animated: false)
+            selectedHomeTab = .chatList
+        }
     }
 
     @objc
@@ -168,7 +216,8 @@ class HomeTabBarController: UITabBarController {
     }
 
     private func updateTabBars(areStoriesEnabled: Bool) {
-        let newTabs = tabsToShow(areStoriesEnabled: areStoriesEnabled)
+        let newTabs = Self.tabsToShow(areStoriesEnabled: areStoriesEnabled, isFeedEnabled: TellomiFeed.isTabEnabled)
+        visibleTabs = newTabs
         if #available(iOS 18, *), UIDevice.current.isIPad {
             self.tabs = newTabs.map(uiTab(for:))
         } else {
@@ -197,6 +246,8 @@ class HomeTabBarController: UITabBarController {
         tabBarItem: UITabBarItem,
     ) {
         switch tab {
+        case .feed:
+            return (feedNavController, feedTabBarItem)
         case .chatList:
             return (chatListNavController, chatListTabBarItem)
         case .calls:
@@ -206,8 +257,12 @@ class HomeTabBarController: UITabBarController {
         }
     }
 
-    private func tabsToShow(areStoriesEnabled: Bool) -> [Tabs] {
-        var tabs = [Tabs.chatList, Tabs.calls]
+    static func tabsToShow(areStoriesEnabled: Bool, isFeedEnabled: Bool) -> [Tabs] {
+        var tabs = [Tabs]()
+        if isFeedEnabled {
+            tabs.append(Tabs.feed)
+        }
+        tabs += [Tabs.chatList, Tabs.calls]
         if areStoriesEnabled {
             tabs.append(Tabs.stories)
         }
@@ -338,7 +393,8 @@ extension HomeTabBarController: StoryBadgeCountObserver {
                 return lhsX < rhsX
             }
         }
-        let badgeView = sortedBadgeViews[safe: Tabs.stories.rawValue]
+        guard let storiesIndex = visibleTabs.firstIndex(of: .stories) else { return }
+        let badgeView = sortedBadgeViews[safe: storiesIndex]
         badgeView?.layer.transform = CATransform3DIdentity
         let xOffset: CGFloat = CurrentAppContext().isRTL ? 0 : -5
         badgeView?.layer.transform = CATransform3DMakeTranslation(xOffset, 1, 1)
@@ -351,6 +407,9 @@ extension HomeTabBarController: UITabBarControllerDelegate {
         if selectedViewController == viewController {
             let tableView: UITableView
             switch selectedHomeTab {
+            case .feed:
+                feedViewController.scrollToTop()
+                return true
             case .chatList:
                 tableView = chatListViewController.tableView
             case .stories:

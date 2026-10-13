@@ -169,6 +169,19 @@ class InternalSettingsViewController: OWSTableViewController2 {
             contents.add(tellomiRegionSection(provider))
         }
 
+        // Tellomi（M11 动态）：服务端还没下发 global.feed.enabled 时先打开「动态」标签，用本机样例数据
+        let feedSection = OWSTableSection(title: "Tellomi Feed")
+        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. The feed then uses on-device sample data and sends no requests."
+        feedSection.add(.switch(
+            withText: "Force feed tab",
+            isOn: { TellomiFeed.isForcedByInternalUser },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isForcedByInternalUser = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
+        contents.add(feedSection)
+
         // format counts with thousands separator
         let numberFormatter = NumberFormatter()
         numberFormatter.formatterBehavior = .behavior10_4

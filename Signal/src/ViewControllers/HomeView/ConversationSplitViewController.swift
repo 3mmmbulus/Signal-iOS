@@ -14,6 +14,7 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
     private var chatListNavController: OWSNavigationController { homeVC.chatListNavController }
     private var callsListNavController: OWSNavigationController { homeVC.callsListNavController }
     private var storiesNavController: OWSNavigationController { homeVC.storiesNavController }
+    private var feedNavController: OWSNavigationController { homeVC.feedNavController }
 
     private lazy var detailNavController = OWSNavigationController()
     private var lastActiveInterfaceOrientation = UIInterfaceOrientation.unknown
@@ -47,6 +48,8 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
 
     var topViewController: UIViewController? {
         let selectedNavController: OWSNavigationController = switch homeVC.selectedHomeTab {
+        case .feed:
+            feedNavController
         case .chatList:
             chatListNavController
         case .calls:
@@ -142,6 +145,8 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
 
     private func selectedTabPopToRoot(animated: Bool) {
         switch homeVC.selectedHomeTab {
+        case .feed:
+            feedNavController.popToRootViewController(animated: animated)
         case .calls:
             callsListNavController.popToRootViewController(animated: animated)
         case .chatList:

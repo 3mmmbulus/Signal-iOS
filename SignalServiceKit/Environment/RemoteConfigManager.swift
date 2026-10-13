@@ -351,6 +351,14 @@ public class RemoteConfig {
         return provider.lowercased() != "none"
     }
 
+    /// Tellomi（M11 动态，ADR-0071 §8.8、tellomi/tellomi#1355）：「动态」标签显不显示。
+    ///
+    /// 服务端按账号所在的内容区域和内测名单算好下发（`global.feed.enabled`）；没下发就是关。客户端不做区域判断
+    /// （ADR-0071 §十五）。和 Android 的 `RemoteConfig.feedEnabled` 同一个键、同一个默认值。
+    public var isTellomiFeedEnabled: Bool {
+        return isEnabled(.tellomiFeedEnabled, defaultValue: false)
+    }
+
     // MARK: -
 
     public var shouldCheckForServiceExtensionFailures: Bool {
@@ -744,6 +752,8 @@ private enum IsEnabledFlag: String, FlagType {
     case cardOneTimeDonationKillSwitch = "ios.cardOneTimeDonationKillSwitch"
     case enableAutoAPNSRotation = "ios.enableAutoAPNSRotation"
     case enableGifSearch = "global.gifSearch"
+    /// Tellomi（M11 动态，ADR-0071 §8.8）：「动态」标签显不显示。
+    case tellomiFeedEnabled = "global.feed.enabled"
     case messageResendKillSwitch = "ios.messageResendKillSwitch"
     case paymentsResetKillSwitch = "ios.paymentsResetKillSwitch"
     case paypalGiftDonationKillSwitch = "ios.paypalGiftDonationKillSwitch"
@@ -771,6 +781,8 @@ private enum IsEnabledFlag: String, FlagType {
         case .cardOneTimeDonationKillSwitch: false
         case .enableAutoAPNSRotation: false
         case .enableGifSearch: false
+        // 紧急开关关掉整个区域的动态时也是改这个值，随下一次远程配置拉取生效（dynamic-feed.md R-2.11）
+        case .tellomiFeedEnabled: true
         case .messageResendKillSwitch: false
         case .paymentsResetKillSwitch: false
         case .paypalGiftDonationKillSwitch: false
