@@ -10,18 +10,36 @@ import UIKit
 /// 「动态」标签（M11 P1，`dynamic-feed.md` 第四节 L2-1）。
 ///
 /// 顶栏只有一行：「推荐 / 关注」居中（`FeedTopBarView`）。两栏左右滑切换，滑块和内容一起跟手。
-/// 每栏一个 `FeedTimelineViewController`。打开 App 默认还是「聊天」（第三节第 17 条），这里只是最左边的标签。
+/// 每栏一个 `FeedTimelineViewController`，数据都在 `FeedStore`。打开 App 默认还是「聊天」（第三节第 17 条），这里只是最左边的标签。
 final class FeedViewController: OWSViewController, HomeTabViewController {
 
     private(set) var tabs: [FeedTab] = FeedTab.allCases
     private(set) var pages = [FeedTimelineViewController]()
+    let store: FeedStore
 
     private lazy var topBar = FeedTopBarView(tabs: tabs)
     private let pagingScrollView = UIScrollView()
 
-    override init() {
+    init(source: FeedSource = FeedSources.current()) {
+        store = FeedStore(source: source)
         super.init()
-        pages = tabs.map { FeedTimelineViewController(tab: $0) }
+        pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
+
+        store.onChange = { [weak self] tab in
+            guard let self else { return }
+            for page in self.pages where tab == nil || page.feedTab == tab {
+                page.apply()
+            }
+        }
+        store.onTransientError = { [weak self] error in
+            guard let self, self.viewIfLoaded?.window != nil else { return }
+            switch error {
+            case .network:
+                self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_NETWORK_ERROR", comment: "Feed: toast when refreshing the feed failed but older posts are still shown."))
+            case .actionFailed:
+                self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: "Feed: toast when liking or another action on a post failed."))
+            }
+        }
     }
 
     override func viewDidLoad() {
@@ -48,6 +66,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             page.didMove(toParent: self)
         }
         updateScrollsToTop()
+
+        Task { await store.loadConfig() }
     }
 
     override func viewDidLayoutSubviews() {
@@ -84,10 +104,14 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     }
 
     /// 点状态栏回顶只交给当前这一栏（同一屏里有多个 `scrollsToTop` 的滚动视图时系统一个都不处理）。
+    /// 一栏第一次露出时才去取它的第一页。
     private func updateScrollsToTop() {
         let selected = topBar.selectedIndex
         for (index, page) in pages.enumerated() {
             page.isCurrentPage = index == selected
+        }
+        if let tab = tabs[safe: selected] {
+            store.onTabShown(tab)
         }
     }
 }
