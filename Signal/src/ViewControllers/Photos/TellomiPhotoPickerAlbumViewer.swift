@@ -10,7 +10,20 @@ import SignalUI
 /// 网格点照片打开整本相册的查看器，左右滑看整本相册，点开不自动选中；单击照片或右上角勾选即时增减（照 Telegram
 /// `TGMediaPickerGalleryPhotoItemView` 单击切换）；选中计数点开切出已选；底部「裁剪」「绘制」直接打开上游对应的工具，
 /// 「编辑」进上游的预览 / 编辑页，都先看到当前这张（照 Telegram `TGMediaPickerGalleryPhotoItem` 底部工具栏的 Crop / Paint）。
+///
+/// 给了 [FileMode] 时是「文件」页相册网格的预览（tellomi/tellomi#1263 F-3，owner 2026-10-13 照 Telegram）：不能编辑（Telegram iOS
+/// 文件模式用 `TGMediaEditingContext contextForCaptionsOnly`，安卓 `PhotoViewer` 的 `isDocumentsPicker` 把编辑都藏起来），没有已选计数；
+/// 底部换成文件名 +「尺寸 · 时长 · 大小」（同 Telegram 安卓 `docNameTextView` / `docInfoTextView`）、说明输入框和发送。
 final class TellomiPhotoPickerAlbumViewer: UIViewController {
+
+    struct FileMode {
+        let fileName: (TellomiPhotoPickerItem) -> String?
+        let fileDetails: (TellomiPhotoPickerItem) -> String
+        let initialCaption: String
+        let onCaptionChanged: (String) -> Void
+        /// 发送：参数是正在看的这一张（一个都没勾时调用方发它）。
+        let onSend: (TellomiPhotoPickerItem) -> Void
+    }
 
     var selectionNumber: (String) -> Int? = { _ in nil }
     var selectedCount: () -> Int = { 0 }
@@ -23,6 +36,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     private let items: [TellomiPhotoPickerItem]
     private var currentIndex: Int
     private var laidOutSize = CGSize.zero
+    private let fileMode: FileMode?
 
     private enum DismissMetrics {
         static let velocityThreshold: CGFloat = 700
@@ -129,10 +143,75 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         return stack
     }()
 
-    init(library: TellomiPhotoPickerLibrary, album: TellomiPhotoPickerAlbum, initialIndex: Int) {
+    // MARK: 文件模式（F-3）
+
+    private let fileBar: UIView = {
+        let bar = UIView()
+        bar.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        return bar
+    }()
+
+    private let fileNameLabel: UILabel = {
+        let label = UILabel()
+        label.font = .dynamicTypeBodyClamped
+        label.textColor = .white
+        label.lineBreakMode = .byTruncatingMiddle
+        return label
+    }()
+
+    private let fileDetailsLabel: UILabel = {
+        let label = UILabel()
+        label.font = .dynamicTypeSubheadlineClamped
+        label.textColor = UIColor.white.withAlphaComponent(0.7)
+        return label
+    }()
+
+    private lazy var captionField: UITextField = {
+        let field = UITextField()
+        field.font = .dynamicTypeBodyClamped
+        field.textColor = .white
+        field.tintColor = .Signal.accent
+        field.attributedPlaceholder = NSAttributedString(
+            string: OWSLocalizedString("IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER", comment: "Placeholder of the caption field in the photo picker's send bar."),
+            attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.5)],
+        )
+        field.returnKeyType = .default
+        field.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            self.fileMode?.onCaptionChanged(self.captionField.text ?? "")
+        }, for: .editingChanged)
+        return field
+    }()
+
+    private lazy var fileSendButton: UIButton = {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = Theme.iconImage(.arrowUp)
+        configuration.baseBackgroundColor = .Signal.accent
+        configuration.baseForegroundColor = .white
+        configuration.cornerStyle = .capsule
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.didTapFileSend() })
+        button.accessibilityLabel = MessageStrings.sendButton
+        return button
+    }()
+
+    /// 发送键右上角：勾了几个（照 Telegram 预览发送键上的计数）。
+    private let sendBadge: UILabel = {
+        let label = UILabel()
+        label.font = .monospacedDigitSystemFont(ofSize: 12, weight: .semibold)
+        label.textColor = .black
+        label.backgroundColor = .white
+        label.textAlignment = .center
+        label.layer.cornerRadius = 9
+        label.layer.masksToBounds = true
+        label.isHidden = true
+        return label
+    }()
+
+    init(library: TellomiPhotoPickerLibrary, album: TellomiPhotoPickerAlbum, initialIndex: Int, fileMode: FileMode? = nil) {
         self.library = library
         self.items = (0..<library.itemCount(in: album)).map { library.item(at: $0, in: album) }
         self.currentIndex = min(max(initialIndex, 0), max(library.itemCount(in: album) - 1, 0))
+        self.fileMode = fileMode
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -193,7 +272,64 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             toolsStack.trailingAnchor.constraint(equalTo: editButton.leadingAnchor, constant: -12),
             toolsStack.centerYAnchor.constraint(equalTo: editButton.centerYAnchor),
         ])
+        if let fileMode {
+            setUpFileBar(initialCaption: fileMode.initialCaption)
+        }
         refreshChrome(animatedCheck: false)
+    }
+
+    /// 文件模式的底栏：文件名、「尺寸 · 时长 · 大小」，再下面说明 + 发送；键盘弹起时整条跟着上来。
+    private func setUpFileBar(initialCaption: String) {
+        editButton.isHidden = true
+        toolsStack.isHidden = true
+        captionField.text = initialCaption
+
+        let capsule = UIView()
+        capsule.backgroundColor = UIColor.white.withAlphaComponent(0.15)
+        capsule.layer.cornerRadius = 20
+        capsule.addSubview(captionField)
+        captionField.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(hMargin: 14, vMargin: 0))
+
+        let sendContainer = UIView()
+        sendContainer.addSubview(fileSendButton)
+        sendContainer.addSubview(sendBadge)
+        fileSendButton.autoPinEdgesToSuperviewEdges()
+
+        let row = UIStackView(arrangedSubviews: [capsule, sendContainer])
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = 8
+
+        let stack = UIStackView(arrangedSubviews: [fileNameLabel, fileDetailsLabel, row])
+        stack.axis = .vertical
+        stack.spacing = 2
+        stack.setCustomSpacing(10, after: fileDetailsLabel)
+
+        fileBar.addSubview(stack)
+        for subview in [stack, capsule, sendContainer, sendBadge] {
+            subview.translatesAutoresizingMaskIntoConstraints = false
+        }
+        NSLayoutConstraint.activate([
+            fileBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            fileBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            fileBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            stack.topAnchor.constraint(equalTo: fileBar.topAnchor, constant: 10),
+            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -12),
+            stack.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -8),
+            capsule.heightAnchor.constraint(equalToConstant: 40),
+            sendContainer.widthAnchor.constraint(equalToConstant: 40),
+            sendContainer.heightAnchor.constraint(equalToConstant: 40),
+            sendBadge.heightAnchor.constraint(equalToConstant: 18),
+            sendBadge.widthAnchor.constraint(greaterThanOrEqualToConstant: 18),
+            sendBadge.centerXAnchor.constraint(equalTo: sendContainer.trailingAnchor, constant: -4),
+            sendBadge.centerYAnchor.constraint(equalTo: sendContainer.topAnchor, constant: 4),
+        ])
+    }
+
+    private func didTapFileSend() {
+        guard items.indices.contains(currentIndex) else { return }
+        fileMode?.onSend(items[currentIndex])
     }
 
     override func viewDidLayoutSubviews() {
@@ -288,7 +424,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     }
 
     private var chromeViews: [UIView] {
-        [closeButton, positionPill, checkButton, countButton, toolsStack, editButton]
+        [closeButton, positionPill, checkButton, countButton, toolsStack, editButton] + (fileMode != nil ? [fileBar] : [])
     }
 
     private var currentPageIsZoomed: Bool {
@@ -319,11 +455,19 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             let itemId = items[currentIndex].id
             checkButton.setNumber(selectionNumber(itemId), accentColor: .Signal.accent, animated: animatedCheck)
             let item = items[currentIndex]
-            toolsStack.isHidden = item.isVideo || item.isAnimatedImage
+            toolsStack.isHidden = fileMode != nil || item.isVideo || item.isAnimatedImage
+            if let fileMode {
+                let name = fileMode.fileName(item)
+                fileNameLabel.text = name
+                fileNameLabel.isHidden = name?.isEmpty ?? true
+                fileDetailsLabel.text = fileMode.fileDetails(item)
+            }
         }
 
         let count = selectedCount()
-        countButton.isHidden = count == 0
+        sendBadge.text = " \(OWSFormat.formatInt(count)) "
+        sendBadge.isHidden = fileMode == nil || count == 0
+        countButton.isHidden = fileMode != nil || count == 0
         countButton.configuration?.attributedTitle = AttributedString(
             OWSFormat.formatInt(count),
             attributes: AttributeContainer([.font: UIFont.monospacedDigitSystemFont(ofSize: 17, weight: .medium)]),
@@ -581,6 +725,21 @@ extension TellomiPhotoPickerAlbumViewer {
 
     var isCropShownForTesting: Bool { !toolsStack.isHidden && !cropButton.isHidden }
     var isPenShownForTesting: Bool { !toolsStack.isHidden && !penButton.isHidden }
+    var isEditShownForTesting: Bool { !editButton.isHidden }
+    var isFileBarShownForTesting: Bool { fileBar.superview != nil }
+    var fileNameTextForTesting: String? { fileNameLabel.isHidden ? nil : fileNameLabel.text }
+    var fileDetailsTextForTesting: String? { fileDetailsLabel.text }
+    var captionTextForTesting: String? { captionField.text }
+    var sendBadgeTextForTesting: String? { sendBadge.isHidden ? nil : sendBadge.text?.trimmingCharacters(in: .whitespaces) }
+
+    func typeCaptionForTesting(_ text: String) {
+        captionField.text = text
+        captionField.sendActions(for: .editingChanged)
+    }
+
+    func tapFileSendForTesting() {
+        didTapFileSend()
+    }
 }
 
 #endif

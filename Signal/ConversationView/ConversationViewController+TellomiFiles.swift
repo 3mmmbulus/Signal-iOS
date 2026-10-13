@@ -77,38 +77,23 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
         }
     }
 
-    /// F-3（tellomi/tellomi#1263）：「从相册中选择」勾的：相册里的原文件、原文件名（ADR-0068 asFile，不压缩、不转码；
-    /// 选了「转成 JPEG」的 HEIC 除外），按勾选的顺序每个一条、立即发送；其余同上（超过上限的、发完收起 Sheet 连同盖在上面的网格）。
-    func filesPage(
-        _ page: TellomiAttachmentFilesViewController,
-        sendGalleryItems items: [TellomiPhotoPickerItem],
-        convertHeicToJpeg: Bool,
-        library: TellomiPhotoPickerLibrary,
-        from gallery: UIViewController,
-    ) {
-        let limits = OutgoingAttachmentLimits.currentLimits()
-        tellomiSendPreparedFiles(from: gallery, limits: limits) {
-            var prepared = TellomiPreparedFiles()
-            for item in items {
-                do {
-                    switch try await library.fileAttachment(for: item, convertHeicToJpeg: convertHeicToJpeg, attachmentLimits: limits) {
-                    case .attachment(let attachment): prepared.attachments.append(attachment)
-                    case .tooLarge(let fileName): prepared.tooLarge.append(fileName)
-                    }
-                } catch {
-                    Logger.warn("Couldn't prepare a gallery item as a file: \(error)")
-                    prepared.failed = true
-                }
-            }
-            return prepared
+    /// F-3（tellomi/tellomi#1263，owner 2026-10-13 照 Telegram）：先收起附件 Sheet，再整屏推出相册网格；取消就回到聊天
+    /// （Telegram iOS `attachmentController?.dismiss` 后 `presentFileGallery`）。网格用自己的一份系统相册（`onChange` 只有一个）。
+    func filesPageDidSelectGallery(_ page: TellomiAttachmentFilesViewController) {
+        dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            let gallery = TellomiFilesGalleryViewController(library: TellomiSystemPhotoLibrary())
+            gallery.delegate = self
+            gallery.modalPresentationStyle = .fullScreen
+            self.present(gallery, animated: true)
         }
     }
-
     /// 文件页几条「立即发送」的共同收尾：转圈里准备好附件，每个一条发出去；超过上限的发完再提示「文件太大」并写明上限，
     /// 一个都没准备成就提示失败；发出去了就收起 Sheet。
-    private func tellomiSendPreparedFiles(
+    fileprivate func tellomiSendPreparedFiles(
         from presenter: UIViewController,
         limits: OutgoingAttachmentLimits,
+        messageBody: MessageBody? = nil,
         prepare: @escaping () async -> TellomiPreparedFiles,
     ) {
         ModalActivityIndicatorViewController.present(
@@ -120,7 +105,7 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
                 if !attachments.isEmpty {
                     await TellomiPhotoPickerSending.sendSeparately(
                         ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: .standard),
-                        messageBody: nil,
+                        messageBody: messageBody,
                     ) { part, body in
                         // 文件页发的东西不带聊天输入框里的草稿：发完不清（同 Android clearCompose = false）
                         await self.sendAttachments(part, messageBody: body, from: presenter, attachmentLimits: limits, clearsDraft: false)
@@ -208,6 +193,37 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
                 }
             },
         )
+    }
+}
+
+
+extension ConversationViewController: TellomiFilesGalleryDelegate {
+
+    func filesGalleryDidCancel(_ gallery: TellomiFilesGalleryViewController) {
+        gallery.dismiss(animated: true)
+    }
+
+    /// F-3：「从相册中选择」勾的：相册里的原文件、原文件名（ADR-0068 asFile，不压缩、不转码；选了「转成 JPEG」的 HEIC 除外），
+    /// 按勾选的顺序每个一条、立即发送，说明挂最后一个；超过上限的同「从文件中选择」；发完收起网格。
+    func filesGallery(_ gallery: TellomiFilesGalleryViewController, send items: [TellomiPhotoPickerItem], convertHeicToJpeg: Bool, caption: String?) {
+        let limits = OutgoingAttachmentLimits.currentLimits()
+        let library = gallery.library
+        let messageBody = caption.map { MessageBody(text: $0, ranges: .empty) }
+        tellomiSendPreparedFiles(from: gallery, limits: limits, messageBody: messageBody) {
+            var prepared = TellomiPreparedFiles()
+            for item in items {
+                do {
+                    switch try await library.fileAttachment(for: item, convertHeicToJpeg: convertHeicToJpeg, attachmentLimits: limits) {
+                    case .attachment(let attachment): prepared.attachments.append(attachment)
+                    case .tooLarge(let fileName): prepared.tooLarge.append(fileName)
+                    }
+                } catch {
+                    Logger.warn("Couldn't prepare a gallery item as a file: \(error)")
+                    prepared.failed = true
+                }
+            }
+            return prepared
+        }
     }
 }
 

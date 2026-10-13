@@ -57,8 +57,15 @@ protocol TellomiPhotoPickerLibrary: AnyObject {
     /// 超过上限的不出附件，交回文件名，由调用方统一提示。
     func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile
 
+    /// Tellomi（#1263 F-3）：相册里当前版本的文件大小（「文件」页相册预览底部的「尺寸 · 时长 · 大小」）；不知道就 nil。
+    func fileSize(for item: TellomiPhotoPickerItem) -> Int64?
+
     /// 相册内容变了（比如「选择更多照片…」之后），网格要重读。
     var onChange: (() -> Void)? { get set }
+}
+
+extension TellomiPhotoPickerLibrary {
+    func fileSize(for item: TellomiPhotoPickerItem) -> Int64? { nil }
 }
 
 protocol TellomiPhotoPickerRequest {
@@ -225,6 +232,18 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
         guard let asset = item.asset else { return nil }
         let resources = PHAssetResource.assetResources(for: asset)
         return (Self.originalResource(in: resources, isVideo: item.isVideo) ?? Self.currentResource(in: resources, isVideo: item.isVideo))?.originalFilename
+    }
+
+    /// `PHAssetResource` 没有公开的大小，系统相册自己记在 `fileSize` 里（KVC）；读不到（以后改名了）就不显示，不崩。
+    func fileSize(for item: TellomiPhotoPickerItem) -> Int64? {
+        guard let asset = item.asset,
+              let resource = Self.currentResource(in: PHAssetResource.assetResources(for: asset), isVideo: item.isVideo),
+              resource.responds(to: NSSelectorFromString("fileSize")),
+              let size = (resource.value(forKey: "fileSize") as? NSNumber)?.int64Value,
+              size > 0 else {
+            return nil
+        }
+        return size
     }
 
     func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile {
