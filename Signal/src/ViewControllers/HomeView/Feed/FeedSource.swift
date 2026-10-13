@@ -15,6 +15,9 @@ protocol FeedSource: AnyObject {
 
     /// 发一条。`clientNonce` 每条草稿一个，重试时不变（引擎补上 `client_nonce` 去重后会带上，契约 7.2）。
     func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse
+
+    /// 日志类事件（曝光等），一批最多 `FeedAPI.maxEvents` 条（契约 6.1）。
+    func reportEvents(_ events: [FeedEventPayload]) async throws
 }
 
 /// 发不出去：引擎的发帖接口还不收图片（`media_keys` 和媒体上传待引擎补，契约 7.1），或者没有可用的内容引擎。
@@ -75,6 +78,10 @@ final class RemoteFeedSource: FeedSource {
         return try await api.createPost(draft.request)
     }
 
+    func reportEvents(_ events: [FeedEventPayload]) async throws {
+        try await api.events(events)
+    }
+
     private func hydrate(_ items: [FeedItemRef]) async throws -> [FeedCard] {
         var ids = [String]()
         for item in items where !ids.contains(item.id) {
@@ -109,6 +116,7 @@ final class EmptyFeedSource: FeedSource {
     func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
         throw FeedPublishError.feedNotAvailable
     }
+    func reportEvents(_ events: [FeedEventPayload]) async throws {}
 }
 
 enum FeedSources {

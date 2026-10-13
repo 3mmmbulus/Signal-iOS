@@ -89,6 +89,42 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         composeButton.autoPinEdge(toSuperviewSafeArea: .bottom, withInset: 16)
 
         Task { await store.loadConfig() }
+
+        // 退到后台：停掉曝光计时，发掉攒着的事件（契约 6.1）
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: .OWSApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: .OWSApplicationWillEnterForeground, object: nil)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setFeedVisible(true)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        setFeedVisible(false)
+    }
+
+    @objc
+    private func didEnterBackground() {
+        setFeedVisible(false)
+    }
+
+    @objc
+    private func willEnterForeground() {
+        if viewIfLoaded?.window != nil {
+            setFeedVisible(true)
+        }
+    }
+
+    /// 动态页在不在屏幕上；看不见时 `FeedStore` 停掉曝光计时并发掉攒着的事件。
+    func setFeedVisible(_ visible: Bool) {
+        for page in pages {
+            page.isFeedVisible = visible
+        }
+        if !visible {
+            store.onFeedHidden()
+        }
     }
 
     override func viewDidLayoutSubviews() {

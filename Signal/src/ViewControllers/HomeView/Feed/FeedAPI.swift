@@ -114,6 +114,13 @@ final class FeedAPI {
         return try await send(FeedCreatePostResponse.self, self.request(path: ["v1", "feed", "posts"], method: "POST", body: body))
     }
 
+    /// 日志类事件，一批最多 100 条；失败由调用方丢弃，不重试（契约 6.1）。
+    func events(_ events: [FeedEventPayload]) async throws {
+        precondition(events.count <= Self.maxEvents, "at most \(Self.maxEvents) events per call")
+        let body = try Self.encoder.encode(FeedEventsRequest(events: events))
+        try await sendNoContent(request(path: ["v1", "feed", "events"], method: "POST", body: body))
+    }
+
     // MARK: -
 
     static let encoder: JSONEncoder = {

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SignalServiceKit
 import UIKit
 
 /// 本机样例：内部用户在内容引擎接上之前看界面用。人名、内容全是虚构的，守 `internal-beta-content-generator.md` 4.1
@@ -138,6 +139,14 @@ final class SampleFeedSource: FeedSource {
             published[clientNonce] = response
             return response
         }
+    }
+
+    /// 样例不连网：事件只记个数，方便内部用户在日志里看曝光有没有在算。
+    private(set) var reportedEvents = [FeedEventPayload]()
+
+    func reportEvents(_ events: [FeedEventPayload]) async throws {
+        locked { reportedEvents += events }
+        Logger.debug("feed sample events: \(events.count)")
     }
 
     private func locked<T>(_ body: () -> T) -> T {

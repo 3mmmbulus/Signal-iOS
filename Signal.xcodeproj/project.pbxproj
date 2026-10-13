@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F4E2C7521CFD67A865A0ED64 /* TellomiFeedEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44666E8BEB02E40DDDA80F9D /* TellomiFeedEventsTests.swift */; };
+		FCF3C4D0F24BDA34670BED65 /* FeedEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBA571ED9EF0C0ED68094FF /* FeedEvents.swift */; };
 		8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */; };
 		BF51D902C773B036AF8C4225 /* FeedComposeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81755B6DDE2D1E8E14DC786F /* FeedComposeViewController.swift */; };
 		719ADD908C83E4ABC8C41C87 /* FeedDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C411365C201A97F1B371282 /* FeedDraft.swift */; };
@@ -4422,6 +4424,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		44666E8BEB02E40DDDA80F9D /* TellomiFeedEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsTests.swift; sourceTree = "<group>"; };
+		FBBA571ED9EF0C0ED68094FF /* FeedEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEvents.swift; sourceTree = "<group>"; };
 		B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedComposeTests.swift; sourceTree = "<group>"; };
 		81755B6DDE2D1E8E14DC786F /* FeedComposeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedComposeViewController.swift; sourceTree = "<group>"; };
 		0C411365C201A97F1B371282 /* FeedDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDraft.swift; sourceTree = "<group>"; };
@@ -8995,6 +8999,7 @@
 		6191B7E29708F4AFAFF9C38E /* Feed */ = {
 			isa = PBXGroup;
 			children = (
+				FBBA571ED9EF0C0ED68094FF /* FeedEvents.swift */,
 				81755B6DDE2D1E8E14DC786F /* FeedComposeViewController.swift */,
 				0C411365C201A97F1B371282 /* FeedDraft.swift */,
 				B3C7964B69C1ABFDE546A7A5 /* FeedPostCell.swift */,
@@ -10018,6 +10023,7 @@
 		34B3F8951E8DF1B90035BE1A /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				44666E8BEB02E40DDDA80F9D /* TellomiFeedEventsTests.swift */,
 				B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */,
 				3EA81FA0FB2FA755202E7A4D /* TellomiFeedClientTests.swift */,
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
@@ -18947,6 +18953,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCF3C4D0F24BDA34670BED65 /* FeedEvents.swift in Sources */,
 				BF51D902C773B036AF8C4225 /* FeedComposeViewController.swift in Sources */,
 				719ADD908C83E4ABC8C41C87 /* FeedDraft.swift in Sources */,
 				E9E3FF7AD059A1FD395B08C2 /* FeedPostCell.swift in Sources */,
@@ -19827,6 +19834,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4E2C7521CFD67A865A0ED64 /* TellomiFeedEventsTests.swift in Sources */,
 				8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */,
 				66E8ABD7206DBA93C31FE724 /* TellomiFeedClientTests.swift in Sources */,
 				E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */,

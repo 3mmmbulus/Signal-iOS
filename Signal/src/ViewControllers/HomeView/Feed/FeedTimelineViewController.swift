@@ -20,7 +20,15 @@ final class FeedTimelineViewController: OWSViewController {
 
     /// 是不是当前露出的这一栏。点状态栏回顶只交给当前这一栏。
     var isCurrentPage = false {
-        didSet { tableView.scrollsToTop = isCurrentPage }
+        didSet {
+            tableView.scrollsToTop = isCurrentPage
+            reportVisibleCards()
+        }
+    }
+
+    /// 动态页现在在屏幕上（不是在别的标签、不在后台）。
+    var isFeedVisible = false {
+        didSet { reportVisibleCards() }
     }
 
     private lazy var emptyStateView = FeedEmptyStateView(title: feedTab.emptyTitle, body: feedTab.emptyBody)
@@ -119,6 +127,40 @@ final class FeedTimelineViewController: OWSViewController {
         if !state.refreshing, refreshControl.isRefreshing {
             refreshControl.endRefreshing()
         }
+
+        reportVisibleCards()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        reportVisibleCards()
+    }
+
+    /// 曝光（契约 6.1）：露出过半的帖子交给 `FeedStore` 计时；不是当前这一栏、动态页不在屏幕上时报空。
+    /// 「不感兴趣」后的反馈卡不算。
+    func reportVisibleCards() {
+        guard isViewLoaded else { return }
+        store.onCardsVisible(feedTab, visibleCardIds())
+    }
+
+    func visibleCardIds() -> Set<String> {
+        guard isCurrentPage, isFeedVisible else { return [] }
+        let viewportMinY = tableView.contentOffset.y + tableView.adjustedContentInset.top
+        let viewportMaxY = tableView.contentOffset.y + tableView.bounds.height - tableView.adjustedContentInset.bottom
+        var ids = Set<String>()
+        for case let cell as FeedPostCell in tableView.visibleCells {
+            guard let card = cell.card else { continue }
+            let fraction = FeedImpressionTracker.visibleFraction(
+                itemMinY: cell.frame.minY,
+                itemHeight: cell.frame.height,
+                viewportMinY: viewportMinY,
+                viewportMaxY: viewportMaxY,
+            )
+            if fraction >= FeedImpressionTracker.minVisibleFraction {
+                ids.insert(card.id)
+            }
+        }
+        return ids
     }
 
     var rows: [Row] {
@@ -144,6 +186,10 @@ extension FeedTimelineViewController: UITableViewDataSource, UITableViewDelegate
         cell.onLike = { [weak self] card in self?.store.toggleLike(card) }
         cell.onNotInterested = { [weak self] card in self?.store.notInterested(card) }
         return cell
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        reportVisibleCards()
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

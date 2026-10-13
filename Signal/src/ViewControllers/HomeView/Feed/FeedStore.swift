@@ -43,8 +43,85 @@ final class FeedStore {
 
     private var loadTasks = [FeedTab: Task<Void, Never>]()
 
-    init(source: FeedSource) {
+    private let now: () -> Date
+    private var impressionTrackers = [FeedTab: FeedImpressionTracker]()
+    private var lastVisible = [FeedTab: Set<String>]()
+    private var impressionRechecks = [FeedTab: Task<Void, Never>]()
+    private var events = FeedEventBuffer()
+    private var flushTimer: Task<Void, Never>?
+
+    init(source: FeedSource, now: @escaping () -> Date = Date.init) {
         self.source = source
+        self.now = now
+    }
+
+    // MARK: - Impressions（契约 6.1）
+
+    /// 还没发出去的事件数（单测用）。
+    var pendingEventCount: Int {
+        return events.pending.count
+    }
+
+    /// 列表每次滚动 / 布局变化时调：`visibleIds` 是这一栏现在露出过半的卡片。满 1 秒的记一次曝光；
+    /// 停着不动时由这里自己约下一次检查，不靠界面再来调。
+    func onCardsVisible(_ tab: FeedTab, _ visibleIds: Set<String>) {
+        lastVisible[tab] = visibleIds
+        var tracker = impressionTrackers[tab] ?? FeedImpressionTracker()
+        let date = now()
+        var full = false
+        for id in tracker.update(visibleIds: visibleIds, now: date) {
+            full = events.add(.impression(contentId: id, tab: tab, at: date)) || full
+        }
+        let nextCheck = tracker.nextCheckAt
+        impressionTrackers[tab] = tracker
+        if full {
+            flushEvents()
+        }
+        startFlushTimerIfNeeded()
+
+        impressionRechecks[tab]?.cancel()
+        guard let nextCheck else { return }
+        let delay = max(nextCheck.timeIntervalSince(date), 0)
+        impressionRechecks[tab] = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000) + 1_000_000)
+            guard !Task.isCancelled, let self else { return }
+            self.onCardsVisible(tab, self.lastVisible[tab] ?? [])
+        }
+    }
+
+    /// 动态页看不见了（切到别的标签、退到后台）：停掉计时，发掉攒着的事件。
+    func onFeedHidden() {
+        for tab in FeedTab.allCases {
+            onCardsVisible(tab, [])
+        }
+        flushEvents()
+    }
+
+    /// 发掉攒着的事件；失败的丢掉，不重试、不落盘。
+    func flushEvents() {
+        let batches = events.drain()
+        guard !batches.isEmpty else { return }
+        Task { [source] in
+            for batch in batches {
+                do {
+                    try await source.reportEvents(batch)
+                } catch {
+                    Logger.warn("feed events dropped: \(batch.count)")
+                }
+            }
+        }
+    }
+
+    /// 攒不满 50 条时每 30 秒发一次。
+    private func startFlushTimerIfNeeded() {
+        guard flushTimer == nil else { return }
+        flushTimer = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(FeedEventBuffer.flushInterval * 1_000_000_000))
+                guard !Task.isCancelled, let self else { return }
+                self.flushEvents()
+            }
+        }
     }
 
     func tab(_ tab: FeedTab) -> FeedTabState {
