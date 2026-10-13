@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Ara no, només vull veure els meus xats";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "No actualitzis";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Podràs veure l'historial dels xats, però no podràs enviar ni rebre missatges fins que actualitzis.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Properament";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Envia i rep fitxers de qualsevol tipus, de fins a %@ cadascun.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Envia (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Ja no és en aquest dispositiu";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Aquest fitxer ja no és en aquest dispositiu, de manera que no es pot tornar a enviar.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Fitxers enviats recentment";

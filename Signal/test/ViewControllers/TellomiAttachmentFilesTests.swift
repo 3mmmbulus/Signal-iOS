@@ -281,17 +281,92 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         XCTAssertEqual(hosted.page.tableViewForTesting.numberOfRows(inSection: 0), 3)
     }
 
-    /// F-3 要等协议（#1263）：「从相册中选择」在，但置灰，点了不交给会话页。
+    /// F-3（#1263）：「从相册中选择」不再置灰；点了全屏盖上相册网格，取消回到这一页，什么都不发。
     @MainActor
-    func testSelectFromGalleryIsComingSoon() throws {
-        let hosted = host(files: [])
+    func testSelectFromGalleryOpensTheGalleryFullScreen() async throws {
+        let hosted = host(files: [], inWindow: true, galleryLibrary: GalleryPhotoLibrary())
+        defer { hosted.window?.isHidden = true }
+        try await settle()
         let row = try XCTUnwrap(cell(in: hosted, row: 0, section: 0))
-        XCTAssertTrue(row.accessibilityTraits.contains(.notEnabled))
-        XCTAssertFalse(try XCTUnwrap(cell(in: hosted, row: 1, section: 0)).accessibilityTraits.contains(.notEnabled))
+        XCTAssertFalse(row.accessibilityTraits.contains(.notEnabled))
+
         hosted.page.tapEntryForTesting(.gallery)
+        let gallery = try await waitFor { hosted.page.presentedGalleryForTesting }
+        XCTAssertEqual(gallery.modalPresentationStyle, .fullScreen)
+        XCTAssertEqual(gallery.titleForTesting, "Recents")
+
+        gallery.tapCancelForTesting()
+        _ = try await waitFor { hosted.page.presentedGalleryForTesting == nil ? true : nil }
+        XCTAssertTrue(hosted.delegate.galleryItems.isEmpty)
         XCTAssertTrue(hosted.delegate.sent.isEmpty)
         XCTAssertTrue(hosted.delegate.pickedURLs.isEmpty)
-        XCTAssertTrue(hosted.delegate.dockSelections.isEmpty)
+    }
+
+    /// F-3：点格子 = 勾选（带序号），再点取消；底栏「发送（N）」，0 个时是置灰的「发送」；发出去的按勾选的顺序。
+    @MainActor
+    func testGalleryTicksInOrderAndSendsThemThroughTheFilesPage() throws {
+        let hosted = host(files: [])
+        let gallery = hostGallery(GalleryPhotoLibrary(), filesPage: hosted.page)
+        XCTAssertFalse(gallery.isSendEnabledForTesting)
+        XCTAssertEqual(gallery.sendTitleForTesting, MessageStrings.sendButton)
+        XCTAssertFalse(gallery.isEmptyStateShownForTesting)
+
+        gallery.tapItemForTesting(2)
+        gallery.tapItemForTesting(0)
+        gallery.tapItemForTesting(5)
+        gallery.tapItemForTesting(0)
+        XCTAssertEqual(gallery.selectedIds, ["r2", "r5"])
+        XCTAssertTrue(gallery.isSendEnabledForTesting)
+        XCTAssertEqual(gallery.sendTitleForTesting, "Send (2)")
+
+        gallery.tapSendForTesting()
+        XCTAssertEqual(hosted.delegate.galleryItems.map { $0.items.map(\.id) }, [["r2", "r5"]])
+        XCTAssertEqual(hosted.delegate.galleryItems.first?.convertHeicToJpeg, false)
+        XCTAssertFalse(gallery.isAskingAboutHeicForTesting)
+    }
+
+    /// F-3：最多 100 个；第 101 个点了不加。
+    @MainActor
+    func testGallerySelectsAtMostOneHundred() throws {
+        let gallery = hostGallery(GalleryPhotoLibrary(recentCount: 101), filesPage: host(files: []).page)
+        for index in 0..<101 {
+            gallery.tapItemForTesting(index)
+        }
+        XCTAssertEqual(gallery.selectedIds.count, TellomiFilesGalleryViewController.maxSelection)
+        XCTAssertEqual(gallery.selectedIds.last, "r99")
+    }
+
+    /// F-3：换相册（标题跟着变、网格换内容），已勾的留着；空相册显示「没有照片或视频」。
+    @MainActor
+    func testGallerySwitchesAlbumsAndKeepsTheSelection() throws {
+        let library = GalleryPhotoLibrary()
+        let gallery = hostGallery(library, filesPage: host(files: []).page)
+        gallery.tapItemForTesting(1)
+
+        let empty = try XCTUnwrap(library.albums().last)
+        gallery.switchAlbumForTesting(empty)
+        XCTAssertEqual(gallery.titleForTesting, "Empty")
+        XCTAssertEqual(gallery.collectionViewForTesting.numberOfItems(inSection: 0), 0)
+        XCTAssertTrue(gallery.isEmptyStateShownForTesting)
+        XCTAssertEqual(gallery.selectedIds, ["r1"])
+        XCTAssertEqual(gallery.sendTitleForTesting, "Send (1)")
+    }
+
+    /// F-3：勾的里有 HEIC 先问要不要转成 JPEG（同 Telegram iOS 文件模式、同「···」以文件发送），选了再交出去。
+    @MainActor
+    func testGalleryAsksAboutHeicBeforeSending() throws {
+        let hosted = host(files: [])
+        let gallery = hostGallery(GalleryPhotoLibrary(heicIds: ["r3"]), filesPage: hosted.page)
+        gallery.tapItemForTesting(3)
+        gallery.tapItemForTesting(4)
+
+        gallery.tapSendForTesting()
+        XCTAssertTrue(gallery.isAskingAboutHeicForTesting)
+        XCTAssertTrue(hosted.delegate.galleryItems.isEmpty)
+
+        gallery.chooseHeicForTesting(convert: true)
+        XCTAssertEqual(hosted.delegate.galleryItems.map { $0.items.map(\.id) }, [["r3", "r4"]])
+        XCTAssertEqual(hosted.delegate.galleryItems.first?.convertHeicToJpeg, true)
     }
 
     /// F-1：dock 的「文件」格选中；别的格子交给会话页（「相册」换回选图页）；重复点「文件」不交出去。
@@ -435,7 +510,8 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
 
     // MARK: - Screenshots
 
-    /// 截图（TELLOMI_SHOTS=1）：同真机把「文件」页当附件 Sheet 弹出来——空、5 条、20 条（有 🔍）、多选、搜索结果收起、搜不到。
+    /// 截图（TELLOMI_SHOTS=1）：同真机把「文件」页当附件 Sheet 弹出来——空、5 条、20 条（有 🔍）、多选、搜索结果收起、搜不到、
+    /// 「从相册中选择」的网格（勾了两个）。
     @MainActor
     func testFilesPageScreenshots() async throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
@@ -470,6 +546,17 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         try await settle()
         try save(render(search.window!), name: "files-6-no-results.png", width: width)
         search.window?.isHidden = true
+
+        let gallery = host(files: [], asAttachmentSheet: true, galleryLibrary: GalleryPhotoLibrary(recentCount: 30))
+        try await settle()
+        gallery.page.tapEntryForTesting(.gallery)
+        let grid = try await waitFor { gallery.page.presentedGalleryForTesting }
+        try await settle()
+        grid.tapItemForTesting(2)
+        grid.tapItemForTesting(0)
+        try await settle()
+        try save(render(gallery.window!), name: "files-7-gallery.png", width: width)
+        gallery.window?.isHidden = true
     }
 
     // MARK: - Hosting
@@ -486,6 +573,7 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         canScan: Bool = true,
         inWindow: Bool = false,
         asAttachmentSheet: Bool = false,
+        galleryLibrary: TellomiPhotoPickerLibrary = EmptyPhotoLibrary(),
     ) -> Hosted {
         let delegate = RecordingFilesDelegate()
         let page = TellomiAttachmentFilesViewController(
@@ -493,6 +581,7 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
             maxFileSizeText: "97.5 MB",
             canScan: canScan,
             dockItems: TellomiAttachmentDockItem.allCases,
+            makeGalleryLibrary: { galleryLibrary },
         )
         page.delegate = delegate
         guard inWindow || asAttachmentSheet, let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else {
@@ -522,6 +611,17 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         }
         window.layoutIfNeeded()
         return Hosted(page: page, delegate: delegate, window: window)
+    }
+
+    /// F-3 的相册网格，不进窗口：交给「文件」页的回调（同真机那条路）。
+    @MainActor
+    private func hostGallery(_ library: TellomiPhotoPickerLibrary, filesPage: TellomiAttachmentFilesViewController) -> TellomiFilesGalleryViewController {
+        let gallery = TellomiFilesGalleryViewController(library: library)
+        gallery.delegate = filesPage
+        gallery.loadViewIfNeeded()
+        gallery.view.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        gallery.view.layoutIfNeeded()
+        return gallery
     }
 
     /// 取一行前先排一次版：`reloadData()` 之后要排过版才有可见的格子。
@@ -672,6 +772,7 @@ private final class RecordingFilesDelegate: TellomiAttachmentFilesDelegate {
     var dockSelections = [TellomiAttachmentDockItem]()
     var pickedURLs = [[URL]]()
     var sent = [Sent]()
+    var galleryItems = [(items: [TellomiPhotoPickerItem], convertHeicToJpeg: Bool)]()
 
     func filesPageDidCancel(_ page: TellomiAttachmentFilesViewController) {
         cancels += 1
@@ -687,6 +788,16 @@ private final class RecordingFilesDelegate: TellomiAttachmentFilesDelegate {
 
     func filesPage(_ page: TellomiAttachmentFilesViewController, send files: [TellomiRecentFile], messageBody: MessageBody?) {
         sent.append(Sent(files: files, body: messageBody))
+    }
+
+    func filesPage(
+        _ page: TellomiAttachmentFilesViewController,
+        sendGalleryItems items: [TellomiPhotoPickerItem],
+        convertHeicToJpeg: Bool,
+        library: TellomiPhotoPickerLibrary,
+        from gallery: UIViewController,
+    ) {
+        galleryItems.append((items, convertHeicToJpeg))
     }
 }
 
@@ -720,6 +831,58 @@ private final class EmptyPhotoLibrary: TellomiPhotoPickerLibrary {
 
     func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile {
         fatalError("no items")
+    }
+}
+
+/// F-3 的相册网格用：「Recents」[recentCount] 项（r0…）、「Empty」一项都没有；[heicIds] 里的算 HEIC；缩略图是纯色块。
+private final class GalleryPhotoLibrary: TellomiPhotoPickerLibrary {
+    var isAccessLimited = false
+    var isAccessDenied = false
+    var onChange: (() -> Void)?
+
+    private let recentCount: Int
+    private let heicIds: Set<String>
+
+    init(recentCount: Int = 12, heicIds: Set<String> = []) {
+        self.recentCount = recentCount
+        self.heicIds = heicIds
+    }
+
+    func albums() -> [TellomiPhotoPickerAlbum] {
+        [
+            TellomiPhotoPickerAlbum(id: "recents", title: "Recents", count: recentCount, isRecents: true),
+            TellomiPhotoPickerAlbum(id: "empty", title: "Empty", count: 0, isRecents: false),
+        ]
+    }
+
+    func itemCount(in album: TellomiPhotoPickerAlbum) -> Int {
+        album.isRecents ? recentCount : 0
+    }
+
+    func item(at index: Int, in album: TellomiPhotoPickerAlbum) -> TellomiPhotoPickerItem {
+        TellomiPhotoPickerItem(id: "r\(index)", isVideo: index == 1, duration: index == 1 ? 42 : 0, isLivePhoto: false, isAnimatedImage: false, pixelSize: CGSize(width: 3024, height: 4032), asset: nil)
+    }
+
+    private struct NoopRequest: TellomiPhotoPickerRequest {
+        func cancel() {}
+    }
+
+    func requestThumbnail(for item: TellomiPhotoPickerItem, targetSize: CGSize, completion: @escaping (UIImage?) -> Void) -> TellomiPhotoPickerRequest {
+        let hue = CGFloat(Int(item.id.dropFirst()) ?? 0).truncatingRemainder(dividingBy: 12) / 12
+        completion(UIImage.image(color: UIColor(hue: hue, saturation: 0.55, brightness: 0.85, alpha: 1), size: CGSize(square: 8)))
+        return NoopRequest()
+    }
+
+    func attachment(for item: TellomiPhotoPickerItem, attachmentLimits: OutgoingAttachmentLimits) async throws -> PreviewableAttachment {
+        throw OWSAssertionError("not used")
+    }
+
+    func isHeic(_ item: TellomiPhotoPickerItem) -> Bool { heicIds.contains(item.id) }
+
+    func originalFileName(for item: TellomiPhotoPickerItem) -> String? { "IMG_\(item.id).JPG" }
+
+    func fileAttachment(for item: TellomiPhotoPickerItem, convertHeicToJpeg: Bool, attachmentLimits: OutgoingAttachmentLimits) async throws -> TellomiPhotoPickerFile {
+        throw OWSAssertionError("not used")
     }
 }
 

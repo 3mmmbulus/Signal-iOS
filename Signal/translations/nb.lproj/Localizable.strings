@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Ikke nå, bare vis samtalene mine";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Ikke oppdater";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Du kan se samtaleloggen din, men du kan ikke sende eller motta meldinger før du har oppdatert.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Kommer snart";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Send og motta filer av alle typer, opptil %@ per fil.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Send (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Finnes ikke lenger på denne enheten";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Denne filen finnes ikke lenger på denne enheten, så den kan ikke sendes på nytt.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Nylig sendte filer";

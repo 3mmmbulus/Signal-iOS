@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Όχι τώρα, μόνο προβολή συνομιλιών";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Χωρίς ενημέρωση";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Μπορείς να δεις το ιστορικό των συνομιλιών σου, αλλά δεν θα μπορείς να στέλνεις ή να λαμβάνεις μηνύματα μέχρι να κάνεις ενημέρωση.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Σύντομα διαθέσιμο";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Στείλε και λάβε αρχεία οποιουδήποτε τύπου, έως %@ το καθένα.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Αποστολή (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Δεν υπάρχει πια σε αυτή τη συσκευή";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Αυτό το αρχείο δεν υπάρχει πια σε αυτή τη συσκευή, οπότε δεν μπορεί να σταλεί ξανά.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Αρχεία που στάλθηκαν πρόσφατα";

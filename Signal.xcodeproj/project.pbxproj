@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E766D30F13B9707AA3B2C46C /* TellomiFilesGalleryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16C45C34B2132E99B05CCE51 /* TellomiFilesGalleryViewController.swift */; };
 		01F3B152FAEC6FFCB2CBEEE8 /* TellomiCaptionAboveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4DD504FB532E1065756074 /* TellomiCaptionAboveTests.swift */; };
 		2AEC09FCE6B202E2C02FB37C /* TellomiCaptionAbove.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9486A7DA162EC8358677A646 /* TellomiCaptionAbove.swift */; };
 		4F6CCE7CB832604F4E759839 /* TellomiAsFileCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFD12E2CB5BBC4E5DE00FC8 /* TellomiAsFileCellTests.swift */; };
@@ -4399,6 +4400,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		16C45C34B2132E99B05CCE51 /* TellomiFilesGalleryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFilesGalleryViewController.swift; sourceTree = "<group>"; };
 		7D4DD504FB532E1065756074 /* TellomiCaptionAboveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionAboveTests.swift; sourceTree = "<group>"; };
 		9486A7DA162EC8358677A646 /* TellomiCaptionAbove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionAbove.swift; sourceTree = "<group>"; };
 		EDFD12E2CB5BBC4E5DE00FC8 /* TellomiAsFileCellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAsFileCellTests.swift; sourceTree = "<group>"; };
@@ -11805,6 +11807,7 @@
 				4B85C8E3CB9FBF6A0AE3B43C /* TellomiScannedDocument.swift */,
 				8395664094170BF01E1BD550 /* TellomiRecentFilesDatabaseSource.swift */,
 				9DBFB4871F0C17176FDF3DE2 /* TellomiAttachmentFilesViewController.swift */,
+				16C45C34B2132E99B05CCE51 /* TellomiFilesGalleryViewController.swift */,
 				00DB1A1EA26FEC3D46DE4784 /* TellomiAttachmentSheetController.swift */,
 				B42D474684F6FD03D4E8E524 /* TellomiRecentFileCell.swift */,
 				DAC115CC0CA5B9F692122B4D /* TellomiFileTypeIcon.swift */,
@@ -18900,6 +18903,7 @@
 				704D7F5E1343417E818B6A8F /* TellomiScannedDocument.swift in Sources */,
 				3587922E7C45A8B2B5F3DF52 /* TellomiRecentFilesDatabaseSource.swift in Sources */,
 				5CE7E2EDA57094378B020DF4 /* TellomiAttachmentFilesViewController.swift in Sources */,
+				E766D30F13B9707AA3B2C46C /* TellomiFilesGalleryViewController.swift in Sources */,
 				050E5D1AE683F2E88C7A1C21 /* TellomiAttachmentSheetController.swift in Sources */,
 				C92DC1FB7E3BC05DF994ED29 /* TellomiRecentFileCell.swift in Sources */,
 				A1852FFCCB5AD1A3EB713F85 /* TellomiFileTypeIcon.swift in Sources */,

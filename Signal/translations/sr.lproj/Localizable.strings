@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Не сада, само прикажи моја ћаскања";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Не ажурирај";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Можете да прегледате историју ћаскања, али нећете моћи да шаљете и примате поруке док не ажурирате.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Ускоро";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Шаљите и примајте фајлове било ког типа, до %@ по фајлу.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Пошаљи (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Више није на овом уређају";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Овај фајл више није на овом уређају, па не може поново да се пошаље.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Недавно послати фајлови";

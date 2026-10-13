@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Teď ne, jen zobrazit chaty";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Neaktualizovat";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Můžete si prohlížet historii chatů, ale dokud neaktualizujete, nebudete moci odesílat ani přijímat zprávy.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Již brzy";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Odesílejte a přijímejte soubory libovolného typu o velikosti až %@ každý.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Zaslat (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Již není v tomto zařízení";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Tento soubor již není v tomto zařízení, a proto ho nelze znovu odeslat.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Nedávno odeslané soubory";

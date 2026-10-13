@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "לא עכשיו, רק לצפות בצ׳אטים שלי";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "לא לעדכן";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "אפשר לצפות בהיסטוריית הצ׳אטים, אבל לא ניתן לשלוח או לקבל הודעות עד לעדכון.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "בקרוב";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "שליחה וקבלה של קבצים מכל סוג, עד %@ לכל קובץ.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "שלח (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "כבר לא במכשיר הזה";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "הקובץ הזה כבר לא נמצא במכשיר הזה, ולכן אי אפשר לשלוח אותו שוב.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "קבצים שנשלחו לאחרונה";

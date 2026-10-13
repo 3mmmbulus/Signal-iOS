@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Nu acum, vreau doar să-mi văd conversațiile";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Nu actualiza";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Îți poți vedea istoricul conversațiilor, dar nu vei putea trimite sau primi mesaje până când nu actualizezi.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "În curând";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Trimite și primește fișiere de orice tip, de până la %@ fiecare.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Trimite (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Nu se mai află pe acest dispozitiv";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Acest fișier nu se mai află pe acest dispozitiv, așa că nu poate fi trimis din nou.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Fișiere trimise recent";

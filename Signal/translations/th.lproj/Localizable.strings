@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "ไว้ก่อน ขอดูแชทอย่างเดียว";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "ไม่อัปเดต";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "คุณยังดูประวัติแชทได้ แต่จะส่งหรือรับข้อความไม่ได้จนกว่าจะอัปเดต";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "เร็วๆ นี้";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "ส่งและรับไฟล์ได้ทุกประเภท ไฟล์ละไม่เกิน %@";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "ส่ง (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "ไม่อยู่ในอุปกรณ์เครื่องนี้แล้ว";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "ไฟล์นี้ไม่อยู่ในอุปกรณ์เครื่องนี้แล้ว จึงส่งซ้ำไม่ได้";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "ไฟล์ที่ส่งล่าสุด";

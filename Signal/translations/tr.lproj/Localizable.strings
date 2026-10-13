@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Şimdi değil, yalnızca sohbetlerimi görüntüle";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Güncelleme Yapma";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Sohbet geçmişini görüntüleyebilirsin ancak güncelleyene kadar mesaj gönderip alamazsın.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Yakında";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Her türden dosyayı gönder ve al; her biri en fazla %@ olabilir.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Gönder (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Artık bu cihazda değil";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Bu dosya artık bu cihazda olmadığı için tekrar gönderilemez.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Son Gönderilen Dosyalar";

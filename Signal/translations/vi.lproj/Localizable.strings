@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Để sau, chỉ xem cuộc trò chuyện của tôi";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Không cập nhật";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Bạn có thể xem lịch sử trò chuyện, nhưng sẽ không thể gửi hoặc nhận tin nhắn cho đến khi cập nhật.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Sắp ra mắt";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Gửi và nhận tệp thuộc mọi loại, tối đa %@ mỗi tệp.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Gửi (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Không còn trên thiết bị này";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Tệp này không còn trên thiết bị này nên không thể gửi lại.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Tệp đã gửi gần đây";

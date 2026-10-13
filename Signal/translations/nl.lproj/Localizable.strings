@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Niet nu, alleen mijn chats bekijken";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Niet bijwerken";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Je kunt je chatgeschiedenis bekijken, maar je kunt geen berichten verzenden of ontvangen totdat je bijwerkt.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Binnenkort beschikbaar";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Verzend en ontvang bestanden van elk type, tot %@ per bestand.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Verzend (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Niet meer op dit apparaat";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Dit bestand staat niet meer op dit apparaat en kan daarom niet opnieuw worden verzonden.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Recent verzonden bestanden";

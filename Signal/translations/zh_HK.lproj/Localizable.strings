@@ -450,11 +450,11 @@
 /* Attachment error message for attachments without any data */
 "ATTACHMENT_ERROR_MISSING_DATA" = "附件沒有内容。";
 
-/* Tellomi (tellomi/tellomi#1121): Shown for an attachment option that isn't available yet. */
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "即將支援";
-
 /* Tellomi (tellomi/tellomi#1121): Shown on the files page of the attachment sheet when you haven't sent any files. Embeds {{maximum size of one file}}. */
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "傳送和接收任何類型的檔案，每個最大 %@。";
+
+/* Send button of the gallery opened from the files page, which sends the ticked photos and videos as files. Embeds {{number of ticked items}}. */
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "傳送（%@）";
 
 /* Tellomi (tellomi/tellomi#1121): Subtitle of a recently sent file whose local copy was deleted, so it can't be sent again. */
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "已不在本機";

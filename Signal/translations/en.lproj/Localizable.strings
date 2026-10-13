@@ -461,11 +461,11 @@
 /* Attachment error message for attachments without any data */
 "ATTACHMENT_ERROR_MISSING_DATA" = "Attachment is empty.";
 
-/* Toast shown when tapping an attachment option that isn't available yet. */
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Coming soon";
-
 /* Shown on the files page when you haven't sent any files. Embeds {{maximum size of one file}}. */
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Send and receive files of any type, up to %@ each.";
+
+/* Send button of the gallery opened from the files page, which sends the ticked photos and videos as files. Embeds {{number of ticked items}}. */
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Send (%@)";
 
 /* Subtitle of a recently sent file whose local copy was deleted, so it can't be sent again. */
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "No longer on this device";

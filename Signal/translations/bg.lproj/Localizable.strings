@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Не сега, само да видя чатовете си";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Без актуализиране";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Можете да разглеждате историята на чатовете си, но няма да можете да изпращате и получавате съобщения, докато не актуализирате.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Очаквайте скоро";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Изпращайте и получавайте файлове от всякакъв тип, до %@ всеки.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Изпращане (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Вече не е на това устройство";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Този файл вече не е на това устройство, затова не може да бъде изпратен отново.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Наскоро изпратени файлове";

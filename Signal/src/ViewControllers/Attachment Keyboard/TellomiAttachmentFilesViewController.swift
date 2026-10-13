@@ -38,13 +38,23 @@ protocol TellomiAttachmentFilesDelegate: AnyObject {
     func filesPage(_ page: TellomiAttachmentFilesViewController, sendFilesAt urls: [URL])
     /// 立即发送（F-7：点一行；F-8：多选后说明挂在最后一个），发完关掉 Sheet。
     func filesPage(_ page: TellomiAttachmentFilesViewController, send files: [TellomiRecentFile], messageBody: MessageBody?)
+    /// 「从相册中选择」勾的（F-3，tellomi/tellomi#1263）：相册里的原文件按文件发（ADR-0068 asFile），每个一条，发完关掉 Sheet；
+    /// [convertHeicToJpeg] 时其中的 HEIC 先转成 JPEG。[gallery] 是还盖在 Sheet 上的相册网格（准备文件的转圈、「文件太大」从它上面弹）。
+    func filesPage(
+        _ page: TellomiAttachmentFilesViewController,
+        sendGalleryItems items: [TellomiPhotoPickerItem],
+        convertHeicToJpeg: Bool,
+        library: TellomiPhotoPickerLibrary,
+        from gallery: UIViewController,
+    )
 }
 
 /// Tellomi（tellomi/tellomi#1121，需求 `docs/product/specs/attachment-files-location.md` §二，照 Telegram iOS
 /// `AttachmentFileController` / `AttachmentFileSearchItem` 的结构与交互，只读机制、一行没搬）：附件 Sheet 的「文件」页。
 ///
 /// - 顶栏：左 ✕、中间「文件」、右 🔍（最近文件 > 10 条或加载中才有，F-10）。
-/// - 一张卡三行（F-2）：从相册中选择（= 原图按文件发送，要等 #1263 的协议，先置灰「即将支持」）/ 从文件中选择 / 扫描文件（能扫描的设备才有）。
+/// - 一张卡三行（F-2）：从相册中选择（= 原图按文件发送，F-3：全屏相册网格 [TellomiFilesGalleryViewController]）/ 从文件中选择 /
+///   扫描文件（能扫描的设备才有）。
 /// - 「最近发送的文件」（F-6）：加载中是骨架；一条都没有时是一句说明，上限读服务端配置（F-9）；点一行立即发送并关闭（F-7），
 ///   已不在本机的置灰、点了只提示；长按「选择」进多选（F-8），底栏换成「说明 + 发送」、藏 🔍。
 /// - 搜索（F-10）：藏 dock、展开全屏、搜索框贴底；本机文件名、大小写与全半角不敏感、0.6 秒防抖；分组「我发送的文件」；
@@ -74,6 +84,8 @@ final class TellomiAttachmentFilesViewController: UIViewController {
     private let maxFileSizeText: String
     private let entries: [Entry]
     private let dockItems: [TellomiAttachmentDockItem]
+    /// F-3 的相册网格读的相册（测试里换成假的）。每次打开新建一个：和选图页那份分开，各自接相册变化的回调。
+    private let makeGalleryLibrary: () -> TellomiPhotoPickerLibrary
 
     /// nil = 还在读。
     private(set) var files: [TellomiRecentFile]?
@@ -90,11 +102,13 @@ final class TellomiAttachmentFilesViewController: UIViewController {
         maxFileSizeText: String,
         canScan: Bool,
         dockItems: [TellomiAttachmentDockItem],
+        makeGalleryLibrary: @escaping () -> TellomiPhotoPickerLibrary = { TellomiSystemPhotoLibrary() },
     ) {
         self.source = source
         self.maxFileSizeText = maxFileSizeText
         self.entries = canScan ? [.gallery, .files, .scan] : [.gallery, .files]
         self.dockItems = dockItems
+        self.makeGalleryLibrary = makeGalleryLibrary
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -385,13 +399,20 @@ final class TellomiAttachmentFilesViewController: UIViewController {
     private func didTap(entry: Entry) {
         switch entry {
         case .gallery:
-            // F-3「原图按文件发送」要等协议（#1263），先只提示
-            presentToast(text: OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_COMING_SOON", comment: "Toast shown when tapping an attachment option that isn't available yet."))
+            presentGallery()
         case .files:
             presentDocumentPicker()
         case .scan:
             presentScanner()
         }
+    }
+
+    /// F-3：全屏相册网格（文件模式），盖在 Sheet 上；取消了回到这一页。
+    private func presentGallery() {
+        let gallery = TellomiFilesGalleryViewController(library: makeGalleryLibrary())
+        gallery.delegate = self
+        gallery.modalPresentationStyle = .fullScreen
+        present(gallery, animated: true)
     }
 
     /// F-4：系统文件选择器，可多选；复制一份到本机再给我们（iCloud 上没下载的由系统下完），不申请别的权限。
@@ -633,7 +654,6 @@ extension TellomiAttachmentFilesViewController: UITableViewDataSource, UITableVi
         case .gallery:
             content.text = OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_SELECT_FROM_GALLERY", comment: "Row on the files page: send photos or videos from the gallery as files, without compression.")
             content.image = UIImage(named: "album-tilt")
-            content.secondaryText = OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_COMING_SOON", comment: "Toast shown when tapping an attachment option that isn't available yet.")
         case .files:
             content.text = OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_SELECT_FROM_FILES", comment: "Row on the files page that opens the system file picker.")
             content.image = UIImage(named: "file-28")
@@ -641,14 +661,12 @@ extension TellomiAttachmentFilesViewController: UITableViewDataSource, UITableVi
             content.text = OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_SCAN_DOCUMENT", comment: "Row on the files page that scans paper documents into one PDF.")
             content.image = UIImage(systemName: "doc.viewfinder")
         }
-        let isAvailable = entry != .gallery
-        content.textProperties.color = isAvailable ? .Signal.accent : .Signal.tertiaryLabel
-        content.imageProperties.tintColor = isAvailable ? .Signal.accent : .Signal.tertiaryLabel
-        content.secondaryTextProperties.color = .Signal.tertiaryLabel
+        content.textProperties.color = .Signal.accent
+        content.imageProperties.tintColor = .Signal.accent
         content.imageProperties.maximumSize = CGSize(square: 24)
         content.imageProperties.reservedLayoutSize = CGSize(square: 28)
         cell.contentConfiguration = content
-        cell.accessibilityTraits = isAvailable ? .button : [.button, .notEnabled]
+        cell.accessibilityTraits = .button
     }
 
     private func selectionNumber(of file: TellomiRecentFile) -> Int? {
@@ -719,6 +737,19 @@ extension TellomiAttachmentFilesViewController: UIDocumentPickerDelegate, VNDocu
     func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
         Logger.warn("Document scan failed: \(error)")
         controller.dismiss(animated: true)
+    }
+}
+
+// MARK: - Gallery (F-3)
+
+extension TellomiAttachmentFilesViewController: TellomiFilesGalleryDelegate {
+
+    func filesGalleryDidCancel(_ gallery: TellomiFilesGalleryViewController) {
+        gallery.dismiss(animated: true)
+    }
+
+    func filesGallery(_ gallery: TellomiFilesGalleryViewController, send items: [TellomiPhotoPickerItem], convertHeicToJpeg: Bool) {
+        delegate?.filesPage(self, sendGalleryItems: items, convertHeicToJpeg: convertHeicToJpeg, library: gallery.library, from: gallery)
     }
 }
 
@@ -798,6 +829,10 @@ extension TellomiAttachmentFilesViewController {
 
     var presentedDocumentPickerForTesting: UIDocumentPickerViewController? {
         presentedViewController as? UIDocumentPickerViewController
+    }
+
+    var presentedGalleryForTesting: TellomiFilesGalleryViewController? {
+        presentedViewController as? TellomiFilesGalleryViewController
     }
 }
 

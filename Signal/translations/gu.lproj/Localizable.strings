@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "અત્યારે નહીં, ફક્ત મારી ચેટ જોવી છે";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "અપડેટ ન કરો";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "તમે તમારી ચેટ હિસ્ટરી જોઈ શકો છો, પરંતુ અપડેટ કરો ત્યાં સુધી મેસેજ મોકલી કે મેળવી શકશો નહીં.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "જલ્દી આવી રહ્યું છે";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "કોઈ પણ પ્રકારની ફાઇલ મોકલો અને મેળવો, દરેક વધુમાં વધુ %@ સુધી.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "મોકલો (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "હવે આ ડિવાઇસ પર નથી";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "આ ફાઇલ હવે આ ડિવાઇસ પર નથી, તેથી તેને ફરીથી મોકલી શકાતી નથી.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "તાજેતરમાં મોકલેલી ફાઇલો";

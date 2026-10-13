@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Nicht jetzt, nur meine Chats ansehen";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Nicht aktualisieren";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Du kannst deinen Chatverlauf ansehen, aber erst nach dem Update wieder Nachrichten senden oder empfangen.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Demnächst verfügbar";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Sende und empfange Dateien beliebigen Typs, jeweils bis zu %@.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Senden (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Nicht mehr auf diesem Gerät";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Diese Datei ist nicht mehr auf diesem Gerät und kann daher nicht erneut gesendet werden.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Zuletzt gesendete Dateien";

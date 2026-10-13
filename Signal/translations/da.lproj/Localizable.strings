@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Ikke nu, vis kun mine chats";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Opdater ikke";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Du kan se din chathistorik, men du kan ikke sende eller modtage beskeder, før du opdaterer.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Kommer snart";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Send og modtag filer af enhver type, op til %@ hver.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Send (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Findes ikke længere på denne enhed";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Denne fil findes ikke længere på denne enhed og kan derfor ikke sendes igen.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Senest sendte filer";

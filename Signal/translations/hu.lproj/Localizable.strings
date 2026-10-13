@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Most nem, csak megnézem a csevegéseimet";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Nem frissítek";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Megtekintheted a csevegéseid előzményeit, de a frissítésig nem tudsz üzeneteket küldeni vagy fogadni.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Hamarosan";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Bármilyen típusú fájlt küldhetsz és fogadhatsz, fájlonként legfeljebb %@ méretig.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Küldés (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Már nincs ezen az eszközön";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Ez a fájl már nincs ezen az eszközön, ezért nem küldhető el újra.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Nemrég küldött fájlok";

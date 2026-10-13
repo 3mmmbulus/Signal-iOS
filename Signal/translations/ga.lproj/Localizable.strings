@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "Ní anois, féach ar mo chomhráite amháin";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "Ná Nuashonraigh";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "Is féidir leat do stair comhráite a fheiceáil, ach ní bheidh tú in ann teachtaireachtaí a sheoladh ná a fháil go dtí go nuashonraíonn tú an aip.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "Ar fáil go luath";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "Seol agus faigh comhaid de chineál ar bith, suas le %@ an ceann.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "Seol (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "Níl ar an ngléas seo a thuilleadh";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "Níl an comhad seo ar an ngléas seo a thuilleadh, mar sin ní féidir é a sheoladh arís.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "Comhaid a Seoladh le Déanaí";

@@ -10926,8 +10926,8 @@
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_BUTTON" = "ليس الآن، أريد عرض دردشاتي فقط";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM" = "عدم التحديث";
 "APP_EXPIRED_TELLOMI_BLOCKING_VIEW_CHATS_ONLY_CONFIRM_MESSAGE" = "يمكنك عرض سجل دردشاتك، لكن لن تتمكن من إرسال الرسائل أو تلقيها قبل التحديث.";
-"ATTACHMENT_FILES_TELLOMI_COMING_SOON" = "قريبًا";
 "ATTACHMENT_FILES_TELLOMI_EMPTY_FORMAT" = "أرسل واستقبل ملفات من أي نوع، بحد أقصى %@ للملف الواحد.";
+"ATTACHMENT_FILES_TELLOMI_GALLERY_SEND_FORMAT" = "إرسال (%@)";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE" = "لم يعد موجودًا على هذا الجهاز";
 "ATTACHMENT_FILES_TELLOMI_NOT_ON_DEVICE_CANT_SEND" = "لم يعد هذا الملف موجودًا على هذا الجهاز، لذا لا يمكن إرساله مرة أخرى.";
 "ATTACHMENT_FILES_TELLOMI_RECENT_HEADER" = "الملفات المُرسَلة مؤخرًا";

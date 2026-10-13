@@ -59,44 +59,83 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
     /// （不压缩、不转码，对方画成文件行、用系统应用打开），tellomi/tellomi#1263 之前是压成照片 / 转成 mp4 发的。
     func filesPage(_ page: TellomiAttachmentFilesViewController, sendFilesAt urls: [URL]) {
         let limits = OutgoingAttachmentLimits.currentLimits()
+        tellomiSendPreparedFiles(from: page, limits: limits) {
+            var prepared = TellomiPreparedFiles()
+            for url in urls {
+                do {
+                    if let attachment = try await Self.tellomiBuildFileAttachment(url: url, limits: limits) {
+                        prepared.attachments.append(attachment)
+                    } else {
+                        prepared.tooLarge.append(url.lastPathComponent)
+                    }
+                } catch {
+                    Logger.warn("Couldn't prepare picked file: \(error)")
+                    prepared.failed = true
+                }
+            }
+            return prepared
+        }
+    }
+
+    /// F-3（tellomi/tellomi#1263）：「从相册中选择」勾的：相册里的原文件、原文件名（ADR-0068 asFile，不压缩、不转码；
+    /// 选了「转成 JPEG」的 HEIC 除外），按勾选的顺序每个一条、立即发送；其余同上（超过上限的、发完收起 Sheet 连同盖在上面的网格）。
+    func filesPage(
+        _ page: TellomiAttachmentFilesViewController,
+        sendGalleryItems items: [TellomiPhotoPickerItem],
+        convertHeicToJpeg: Bool,
+        library: TellomiPhotoPickerLibrary,
+        from gallery: UIViewController,
+    ) {
+        let limits = OutgoingAttachmentLimits.currentLimits()
+        tellomiSendPreparedFiles(from: gallery, limits: limits) {
+            var prepared = TellomiPreparedFiles()
+            for item in items {
+                do {
+                    switch try await library.fileAttachment(for: item, convertHeicToJpeg: convertHeicToJpeg, attachmentLimits: limits) {
+                    case .attachment(let attachment): prepared.attachments.append(attachment)
+                    case .tooLarge(let fileName): prepared.tooLarge.append(fileName)
+                    }
+                } catch {
+                    Logger.warn("Couldn't prepare a gallery item as a file: \(error)")
+                    prepared.failed = true
+                }
+            }
+            return prepared
+        }
+    }
+
+    /// 文件页几条「立即发送」的共同收尾：转圈里准备好附件，每个一条发出去；超过上限的发完再提示「文件太大」并写明上限，
+    /// 一个都没准备成就提示失败；发出去了就收起 Sheet。
+    private func tellomiSendPreparedFiles(
+        from presenter: UIViewController,
+        limits: OutgoingAttachmentLimits,
+        prepare: @escaping () async -> TellomiPreparedFiles,
+    ) {
         ModalActivityIndicatorViewController.present(
-            fromViewController: page,
+            fromViewController: presenter,
             title: CommonStrings.preparingModal,
             asyncBlock: { modal in
-                var attachments = [PreviewableAttachment]()
-                var tooLarge = [String]()
-                var failed = false
-                for url in urls {
-                    do {
-                        if let attachment = try await Self.tellomiBuildFileAttachment(url: url, limits: limits) {
-                            attachments.append(attachment)
-                        } else {
-                            tooLarge.append(url.lastPathComponent)
-                        }
-                    } catch {
-                        Logger.warn("Couldn't prepare picked file: \(error)")
-                        failed = true
-                    }
-                }
+                let prepared = await prepare()
+                let attachments = prepared.attachments
                 if !attachments.isEmpty {
                     await TellomiPhotoPickerSending.sendSeparately(
                         ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: .standard),
                         messageBody: nil,
                     ) { part, body in
                         // 文件页发的东西不带聊天输入框里的草稿：发完不清（同 Android clearCompose = false）
-                        await self.sendAttachments(part, messageBody: body, from: page, attachmentLimits: limits, clearsDraft: false)
+                        await self.sendAttachments(part, messageBody: body, from: presenter, attachmentLimits: limits, clearsDraft: false)
                     }
                 }
                 modal.dismiss(completion: {
-                    if let name = tooLarge.first {
+                    if let name = prepared.tooLarge.first {
                         let limitText = ByteCountFormatter.string(fromByteCount: Int64(clamping: limits.maxPlaintextBytes), countStyle: .file)
                         OWSActionSheets.showActionSheet(title: String.nonPluralLocalizedStringWithFormat(
                             OWSLocalizedString("ATTACHMENT_FILES_TELLOMI_TOO_LARGE_FORMAT", comment: "Alert when a picked file is over the size limit. Embeds {{file name}} and {{maximum size of one file}}."),
                             name,
                             limitText,
-                        ), fromViewController: attachments.isEmpty ? page : nil)
-                    } else if failed, attachments.isEmpty {
-                        OWSActionSheets.showActionSheet(title: OWSLocalizedString("ATTACHMENT_PICKER_DOCUMENTS_FAILED_ALERT_TITLE", comment: "Alert title when picking a document fails for an unknown reason"), fromViewController: page)
+                        ), fromViewController: attachments.isEmpty ? presenter : nil)
+                    } else if prepared.failed, attachments.isEmpty {
+                        OWSActionSheets.showActionSheet(title: OWSLocalizedString("ATTACHMENT_PICKER_DOCUMENTS_FAILED_ALERT_TITLE", comment: "Alert title when picking a document fails for an unknown reason"), fromViewController: presenter)
                     }
                     if !attachments.isEmpty {
                         self.dismiss(animated: true)
@@ -170,4 +209,13 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
             },
         )
     }
+}
+
+/// Tellomi（#1121、#1263）：文件页一次「立即发送」准备好的东西。
+private struct TellomiPreparedFiles {
+    var attachments = [PreviewableAttachment]()
+    /// 超过上限、没发的文件名。
+    var tooLarge = [String]()
+    /// 有读不出来的。
+    var failed = false
 }
