@@ -18,11 +18,13 @@ protocol TellomiPhotoPickerDelegate: AnyObject {
 
     /// 发送：网格里直接发（P-10）、「···」里立即发（P-5），或从上游预览 / 编辑页发。
     /// 附件按勾的顺序；画质只管这一次（D9）；`separately` 时一张一条、说明挂最后一条。发完由接收方把面板收起。
+    /// `captionAboveMedia`（#1263，ADR-0068 §4.7）：说明文字画在媒体上方（「···」里切的）。
     func photoPicker(
         _ picker: TellomiPhotoPickerViewController,
         send approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
         separately: Bool,
+        captionAboveMedia: Bool,
     )
 
     /// 说明和会话输入框是同一段字（同上游的预览页）。
@@ -78,6 +80,13 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case sendHighQuality
         case sendStandardQuality
         case sendSeparately
+        /// M-2（#1263，ADR-0068 §4.7）：说明文字上移 / 下移（开关，不发送）。
+        case moveCaptionUp
+        case moveCaptionDown
+
+        var isToggle: Bool {
+            self == .moveCaptionUp || self == .moveCaptionDown
+        }
     }
 
     weak var delegate: TellomiPhotoPickerDelegate?
@@ -88,8 +97,10 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private let library: TellomiPhotoPickerLibrary
     private let defaultImageQuality: ImageQuality
     private let canSendSeparately: Bool
-    /// #1263：「以文件发送」只给会话（同「单独发送」，一个一条地发）。
+    /// #1263：「以文件发送」「说明文字上移 / 下移」只给会话（同「单独发送」，由会话页发）。
     private let canSendAsFile: Bool
+    /// M-2（ADR-0068 §4.7）：这一次的说明在媒体上方。只管这一次打开的面板。
+    private var isCaptionAboveMedia = false
     private let hasQuotedReplyDraft: Bool
     private let maxSelection: Int
     let attachmentLimits: OutgoingAttachmentLimits
@@ -1005,15 +1016,24 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         if selectedIds.count >= 2, canSendSeparately {
             items.append(.sendSeparately)
         }
+        // M-2：写了说明才有（同 Telegram iOS `isCaptionAboveMediaAvailable = hasCaption`），放在分隔线下面。
+        if canSendAsFile, !selectedIds.isEmpty, messageBodyForSending != nil {
+            items.append(isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp)
+        }
         return items
     }
 
     private func moreMenuActions() -> [UIMenuElement] {
-        moreMenuItems().map { item in
-            UIAction(title: Self.title(for: item, selectedCount: selectedIds.count), image: Self.image(for: item)) { [weak self] _ in
+        let actions = moreMenuItems().map { item in
+            (item, UIAction(title: Self.title(for: item, selectedCount: selectedIds.count), image: Self.image(for: item)) { [weak self] _ in
                 self?.perform(item)
-            }
+            })
         }
+        // 开关类的项单独成一节，前面系统画一条分隔线（同 Telegram 的 `.separator`）。
+        let sendActions: [UIMenuElement] = actions.filter { !$0.0.isToggle }.map(\.1)
+        let toggleActions: [UIMenuElement] = actions.filter { $0.0.isToggle }.map(\.1)
+        guard !toggleActions.isEmpty else { return sendActions }
+        return sendActions + [UIMenu(title: "", options: .displayInline, children: toggleActions)]
     }
 
     private static func title(for item: MoreMenuItem, selectedCount: Int) -> String {
@@ -1031,6 +1051,10 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY", comment: "Photo picker more-menu item: send the selection right away in standard quality (this time only).")
         case .sendSeparately:
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_SEPARATELY", comment: "Photo picker more-menu item: send each selected photo as its own message.")
+        case .moveCaptionUp:
+            OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP", comment: "Photo picker more-menu item: show the caption above the photos in the sent message.")
+        case .moveCaptionDown:
+            OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN", comment: "Photo picker more-menu item: show the caption below the photos in the sent message (the default).")
         }
     }
 
@@ -1040,6 +1064,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case .sendHighQuality: UIImage(named: "hd")
         case .sendStandardQuality: UIImage(named: "hd-slash")
         case .sendSeparately: Theme.iconImage(.buttonPhotoLibrary)
+        case .moveCaptionUp: UIImage(named: "arrow-up")
+        case .moveCaptionDown: UIImage(named: "arrow-down")
         }
     }
 
@@ -1053,6 +1079,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             send(quality: .standard, separately: false)
         case .sendSeparately:
             send(quality: defaultImageQuality, separately: true)
+        case .moveCaptionUp, .moveCaptionDown:
+            // 菜单自己收起，下次打开换成另一项（同 Telegram：点了先收起再切）。
+            isCaptionAboveMedia.toggle()
         }
     }
 
@@ -1179,6 +1208,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 send: ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: self.defaultImageQuality),
                 messageBody: messageBody,
                 separately: true,
+                // 按文件发的不适用（ADR-0068 §4.7）。
+                captionAboveMedia: false,
             )
         }
         guard let name = tooLarge.first else {
@@ -1214,6 +1245,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 send: ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: quality),
                 messageBody: messageBody,
                 separately: separately,
+                captionAboveMedia: self.isCaptionAboveMedia,
             )
         }
     }
@@ -1471,7 +1503,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         didApproveAttachments approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
     ) {
-        delegate?.photoPicker(self, send: approvedAttachments, messageBody: messageBody, separately: false)
+        delegate?.photoPicker(self, send: approvedAttachments, messageBody: messageBody, separately: false, captionAboveMedia: isCaptionAboveMedia)
     }
 
     func attachmentApprovalDidCancel() {

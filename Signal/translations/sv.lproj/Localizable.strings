@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Behåll HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Du har begränsat Tellomis åtkomst till dina foton.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Fler alternativ";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Flytta bildtext nedåt";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Flytta bildtext uppåt";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Senaste";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Välj";

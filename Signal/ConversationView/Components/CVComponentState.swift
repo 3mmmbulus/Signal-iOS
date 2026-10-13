@@ -568,6 +568,10 @@ public struct CVComponentState: Equatable {
 
     let messageHasBodyAttachments: Bool
 
+    /// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：说明文字画在媒体上方——有正文、按媒体显示的图片 / 视频，
+    /// 标记为真（`TellomiCaptionAbove`）。一次性查看、带链接预览的不适用。
+    let tellomiCaptionAboveMedia: Bool
+
     fileprivate init(
         messageCellType: CVMessageCellType,
         senderName: SenderName?,
@@ -601,7 +605,9 @@ public struct CVComponentState: Equatable {
         messageHasBodyAttachments: Bool,
         hasRenderableContent: Bool,
         poll: Poll?,
+        tellomiCaptionAboveMedia: Bool = false,
     ) {
+        self.tellomiCaptionAboveMedia = tellomiCaptionAboveMedia
         self.messageCellType = messageCellType
         self.senderName = senderName
         self.senderAvatar = senderAvatar
@@ -787,6 +793,8 @@ public struct CVComponentState: Equatable {
                 messageHasBodyAttachments: messageHasBodyAttachments,
                 hasRenderableContent: hasRenderableContent,
                 poll: poll,
+                tellomiCaptionAboveMedia: bodyText != nil && bodyMedia != nil && viewOnce == nil && linkPreview == nil
+                    && TellomiCaptionAbove.isCaptionAboveMedia(messageUniqueId: interaction.uniqueId, tx: itemBuildingContext.transaction),
             )
         }
 

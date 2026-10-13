@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Păstrează HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ai limitat accesul Tellomi la fotografiile tale.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Mai multe opțiuni";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Mută descrierea jos";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Mută descrierea sus";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotografie";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Recente";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Selectează";

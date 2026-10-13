@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "الإبقاء على HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "لقد قيّدتَ وصول Tellomi إلى صورك.";
 "IMAGE_PICKER_TELLOMI_MORE" = "المزيد من الخيارات";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "نقل التعليق إلى الأسفل";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "نقل التعليق إلى الأعلى";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "صورة";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "الأحدث";
 "IMAGE_PICKER_TELLOMI_SELECT" = "تحديد";

@@ -410,6 +410,38 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(properties[kCGImagePropertyOrientation] as? Int, 6)
     }
 
+    /// M-2（ADR-0068 §4.7）：写了说明才有「说明文字上移」，在最后；点了换成「下移」；之后发出去带着它，按文件发的不带。
+    @MainActor
+    func testCaptionCanBeMovedAbove() async throws {
+        let hosted = host(canSendAsFile: true, initialText: "说明")
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionUp)
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, "Move Caption Up")
+
+        picker.performMoreMenuItemForTesting(.moveCaptionUp)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown)
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, "Move Caption Down")
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
+
+        picker.performMoreMenuItemForTesting(.sendHighQuality)
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertTrue(sent.captionAboveMedia)
+
+        picker.performMoreMenuItemForTesting(.sendAsFile)
+        let asFile = try await nextSend(hosted, count: 2)
+        XCTAssertFalse(asFile.captionAboveMedia, "按文件发的不适用")
+    }
+
+    @MainActor
+    func testNoCaptionNoCaptionItem() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        hosted.picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertFalse(hosted.picker.moreMenuItemsForTesting.contains(.moveCaptionUp))
+    }
+
     // MARK: - P-9 / P-10 在网格里直接发
 
     /// 会话输入框里已打的字带过来当说明；发送按勾的顺序、默认画质、不是一次性查看，说明随这次发出去。
@@ -1912,6 +1944,7 @@ private final class RecordingPickerDelegate: TellomiPhotoPickerDelegate {
         let approved: ApprovedAttachments
         let body: MessageBody?
         let separately: Bool
+        var captionAboveMedia = false
     }
 
     var cancels = 0
@@ -1937,8 +1970,8 @@ private final class RecordingPickerDelegate: TellomiPhotoPickerDelegate {
         cameraRequests += 1
     }
 
-    func photoPicker(_ picker: TellomiPhotoPickerViewController, send approvedAttachments: ApprovedAttachments, messageBody: MessageBody?, separately: Bool) {
-        sent.append(Sent(approved: approvedAttachments, body: messageBody, separately: separately))
+    func photoPicker(_ picker: TellomiPhotoPickerViewController, send approvedAttachments: ApprovedAttachments, messageBody: MessageBody?, separately: Bool, captionAboveMedia: Bool) {
+        sent.append(Sent(approved: approvedAttachments, body: messageBody, separately: separately, captionAboveMedia: captionAboveMedia))
     }
 
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?) {

@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Giữ HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Bạn đã giới hạn quyền truy cập ảnh của Tellomi.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Thêm tùy chọn";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Chuyển chú thích xuống dưới";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Chuyển chú thích lên trên";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Ảnh";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Gần đây";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Chọn";

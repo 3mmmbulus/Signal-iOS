@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Zachowaj HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Dostęp aplikacji Tellomi do Twoich zdjęć został ograniczony.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Więcej opcji";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Przenieś podpis w dół";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Przenieś podpis w górę";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Zdjęcie";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Ostatnie";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Wybierz";

@@ -337,6 +337,7 @@ public class OWSIncomingSentMessageTranscript: SentMessageTranscript {
             expireTimerVersion: dataMessage.expireTimerVersion,
             storyTimestamp: storyTimestamp,
             storyAuthorAci: storyAuthorAci,
+            tellomiCaptionAboveMedia: dataMessage.tellomi?.captionAboveMedia == true,
         )
     }
 

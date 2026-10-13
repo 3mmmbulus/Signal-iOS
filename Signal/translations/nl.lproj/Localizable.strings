@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC behouden";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Je hebt de toegang van Tellomi tot je foto's beperkt.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Meer opties";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Bijschrift naar beneden";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Bijschrift naar boven";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Recent";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Selecteren";

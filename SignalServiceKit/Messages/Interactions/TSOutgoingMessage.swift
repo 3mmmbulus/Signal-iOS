@@ -495,6 +495,11 @@ extension TSOutgoingMessage {
             builder.setGiftBadge(giftBadgeBuilder.buildInfallibly())
         }
 
+        // Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：只在说明在上方时写 `tellomi = 1000`，别的消息字节和上游一样；不提协议版本。
+        if let tellomi = TellomiCaptionAbove.proto(messageUniqueId: self.uniqueId, tx: tx) {
+            builder.setTellomi(tellomi)
+        }
+
         builder.setRequiredProtocolVersion(UInt32(requiredProtocolVersion))
         return builder
     }

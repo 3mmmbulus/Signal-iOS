@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Zadrži HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ograničili ste Tellomiju pristup fotografijama.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Više opcija";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Premjesti opis dolje";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Premjesti opis gore";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotografija";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Nedavno";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Odaberi";

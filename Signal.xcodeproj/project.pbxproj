@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01F3B152FAEC6FFCB2CBEEE8 /* TellomiCaptionAboveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4DD504FB532E1065756074 /* TellomiCaptionAboveTests.swift */; };
+		2AEC09FCE6B202E2C02FB37C /* TellomiCaptionAbove.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9486A7DA162EC8358677A646 /* TellomiCaptionAbove.swift */; };
 		4F6CCE7CB832604F4E759839 /* TellomiAsFileCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFD12E2CB5BBC4E5DE00FC8 /* TellomiAsFileCellTests.swift */; };
 		CFEB11CEA579AEABAAA59B70 /* TellomiAsFileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28522E56753D6E18A8566F09 /* TellomiAsFileTests.swift */; };
 		D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */; };
@@ -4397,6 +4399,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7D4DD504FB532E1065756074 /* TellomiCaptionAboveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionAboveTests.swift; sourceTree = "<group>"; };
+		9486A7DA162EC8358677A646 /* TellomiCaptionAbove.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionAbove.swift; sourceTree = "<group>"; };
 		EDFD12E2CB5BBC4E5DE00FC8 /* TellomiAsFileCellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAsFileCellTests.swift; sourceTree = "<group>"; };
 		28522E56753D6E18A8566F09 /* TellomiAsFileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAsFileTests.swift; sourceTree = "<group>"; };
 		5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptureFilmstripTests.swift; sourceTree = "<group>"; };
@@ -10599,6 +10603,7 @@
 			children = (
 				5088330B2FE0B1E500CE51AC /* AutoDownloadPolicyTest.swift */,
 				28522E56753D6E18A8566F09 /* TellomiAsFileTests.swift */,
+				7D4DD504FB532E1065756074 /* TellomiCaptionAboveTests.swift */,
 				50ED28012F0EDB0B00E57C54 /* ImageQualityTest.swift */,
 			);
 			path = Attachments;
@@ -15688,6 +15693,7 @@
 				F9C5C8DE289453B100548EEE /* TSOutgoingMessage.h */,
 				F9C5C8F7289453B100548EEE /* TSOutgoingMessage.m */,
 				F9C5C8F8289453B100548EEE /* TSOutgoingMessage.swift */,
+				9486A7DA162EC8358677A646 /* TellomiCaptionAbove.swift */,
 				D9495A6C2C7683D100843BC1 /* TSOutgoingMessageRecipientState.swift */,
 				04A23EB42FD8615100C42B42 /* TSReleaseNotesMessage+SDS.swift */,
 				04A23EB02FD85A1F00C42B42 /* TSReleaseNotesMessage.h */,
@@ -21020,6 +21026,7 @@
 				F9C5CBF6289453B300548EEE /* TSOutgoingMessage+SDS.swift in Sources */,
 				F9C5CBEB289453B300548EEE /* TSOutgoingMessage.m in Sources */,
 				F9C5CBEC289453B300548EEE /* TSOutgoingMessage.swift in Sources */,
+				2AEC09FCE6B202E2C02FB37C /* TellomiCaptionAbove.swift in Sources */,
 				D9495A6D2C7683D100843BC1 /* TSOutgoingMessageRecipientState.swift in Sources */,
 				503C06362F4774F40073D54A /* TSPaymentModel.swift in Sources */,
 				F9C5CD8A289453B300548EEE /* TSPaymentModels.m in Sources */,
@@ -21142,6 +21149,7 @@
 				50B6BCB62AEC68940010FB3B /* AuthorMergeHelperTest.swift in Sources */,
 				5088330C2FE0B1E500CE51AC /* AutoDownloadPolicyTest.swift in Sources */,
 				CFEB11CEA579AEABAAA59B70 /* TellomiAsFileTests.swift in Sources */,
+				01F3B152FAEC6FFCB2CBEEE8 /* TellomiCaptionAboveTests.swift in Sources */,
 				D93F4D5D2D801D750042926C /* AvatarDefaultColorManagerTest.swift in Sources */,
 				D33DD45F051AA1FA8A4261BE /* TellomiAvatarInitialsTest.swift in Sources */,
 				10387E811C8CFF1FA76F6969 /* TellomiReceiveGateTest.swift in Sources */,

@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC megtartása";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Korlátoztad a Tellomi hozzáférését a fotóidhoz.";
 "IMAGE_PICKER_TELLOMI_MORE" = "További lehetőségek";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Felirat alulra";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Felirat felülre";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotó";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Legutóbbiak";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Kiválasztás";

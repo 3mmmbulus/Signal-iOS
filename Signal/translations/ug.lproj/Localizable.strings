@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC نى ساقلاش";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "سىز Tellomi نىڭ رەسىملىرىڭىزنى زىيارەت قىلىشىنى چەكلىدىڭىز.";
 "IMAGE_PICKER_TELLOMI_MORE" = "تېخىمۇ كۆپ تاللانما";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "چۈشەندۈرۈشنى ئاستىغا يۆتكەش";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "چۈشەندۈرۈشنى ئۈستىگە يۆتكەش";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "رەسىم";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "يېقىنقىلار";
 "IMAGE_PICKER_TELLOMI_SELECT" = "تاللاش";

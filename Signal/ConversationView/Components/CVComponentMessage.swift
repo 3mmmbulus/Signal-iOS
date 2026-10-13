@@ -409,7 +409,8 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         }
 
         if let bodyMediaState = componentState.bodyMedia {
-            let shouldFooterOverlayMedia = (bodyText == nil && !isBorderless && !itemViewState.shouldHideFooter && !tapForMoreState.shouldShowFooter)
+            // Tellomi（ADR-0068 §4.7）：说明文字在上方时，图是气泡最下面一块，时间压在图上（同 Telegram 说明在上方时的样子）。
+            let shouldFooterOverlayMedia = ((bodyText == nil || componentState.tellomiCaptionAboveMedia) && !isBorderless && !itemViewState.shouldHideFooter && !tapForMoreState.shouldShowFooter)
             if shouldFooterOverlayMedia {
                 owsAssertDebug(footerOverlay == nil)
                 if let footerState = itemViewState.footerState {
@@ -676,6 +677,8 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 struct SelectionLayoutHelper {
                     let outerContentView: UIView
                     let bodyTextRootView: UIView
+                    /// Tellomi（ADR-0068 §4.7）：说明文字在媒体上方——文字那个勾对着说明，附件那个勾对着下面的图。
+                    let tellomiCaptionAboveMedia: Bool
 
                     func applyLayout(bottomSelectionView: UIView, topSelectionView: UIView?) {
                         let size = MessageSelectionView.preferredSize
@@ -688,6 +691,17 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                         // coordinate system.
                         let bodyTextFrame = superview.convert(bodyTextRootView.bounds, from: bodyTextRootView)
                         let outerContentFrame = superview.convert(outerContentView.bounds, from: outerContentView)
+
+                        if tellomiCaptionAboveMedia {
+                            // bottomSelectionView 是文字那部分，topSelectionView 是附件那部分。
+                            let textY = bodyTextFrame.midY - size.height * 0.5
+                            bottomSelectionView.frame = CGRect(origin: CGPoint(x: 0, y: textY), size: size)
+                            if let topSelectionView {
+                                let mediaMidY = bodyTextFrame.maxY.average(outerContentFrame.maxY)
+                                topSelectionView.frame = CGRect(origin: CGPoint(x: 0, y: mediaMidY - size.height * 0.5), size: size)
+                            }
+                            return
+                        }
 
                         if let topSelectionView {
                             // "Top" should center-align with the area above the body text.
@@ -707,6 +721,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 let selectionLayoutHelper = SelectionLayoutHelper(
                     outerContentView: outerContentView,
                     bodyTextRootView: bodyTextRootView,
+                    tellomiCaptionAboveMedia: componentState.tellomiCaptionAboveMedia,
                 )
 
                 let secondarySelectionView = componentView.secondarySelectionView
@@ -1112,6 +1127,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         case topFullWidth
         case topNested
         case bottomFullWidth
+        /// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：说明文字在媒体上方时，正文在引用 / 链接预览之后、媒体之前单独一节，
+        /// 媒体接着单独一节（全宽）；时间留在最下面的 bottomNestedText。别的消息这两节都是空的，不出现。
+        case tellomiCaptionAboveText
+        case tellomiCaptionAboveMedia
         case bottomNestedShare
         case bottomNestedText
         case bottomButtons
@@ -1120,7 +1139,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         // Ordering of the keys in each section determines the ordering of the subcomponents.
         var hasStack: Bool {
             switch self {
-            case .topFullWidth, .topNested, .bottomFullWidth, .bottomNestedShare, .bottomNestedText:
+            case .topFullWidth, .topNested, .bottomFullWidth, .tellomiCaptionAboveText, .tellomiCaptionAboveMedia, .bottomNestedShare, .bottomNestedText:
                 return true
             case .bottomButtons, .bottomLabel:
                 return false
@@ -1129,9 +1148,9 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
         var isNestedSection: Bool {
             switch self {
-            case .topNested, .bottomNestedShare, .bottomNestedText:
+            case .topNested, .tellomiCaptionAboveText, .bottomNestedShare, .bottomNestedText:
                 return true
-            case .topFullWidth, .bottomFullWidth, .bottomButtons, .bottomLabel:
+            case .topFullWidth, .bottomFullWidth, .tellomiCaptionAboveMedia, .bottomButtons, .bottomLabel:
                 return false
             }
         }
@@ -1145,6 +1164,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 return CVComponentMessage.topNestedCVComponentKeys
             case .bottomFullWidth:
                 return CVComponentMessage.bottomFullWidthCVComponentKeys
+            case .tellomiCaptionAboveText:
+                return [.bodyText]
+            case .tellomiCaptionAboveMedia:
+                return [.bodyMedia]
             case .bottomNestedShare:
                 return CVComponentMessage.bottomNestedShareCVComponentKeys
             case .bottomNestedText:
@@ -1164,6 +1187,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 return CVComponentMessage.measurementKey_topNestedStackView
             case .bottomFullWidth:
                 return CVComponentMessage.measurementKey_bottomFullWidthStackView
+            case .tellomiCaptionAboveText:
+                return CVComponentMessage.measurementKey_tellomiCaptionAboveTextStackView
+            case .tellomiCaptionAboveMedia:
+                return CVComponentMessage.measurementKey_tellomiCaptionAboveMediaStackView
             case .bottomNestedShare:
                 return CVComponentMessage.measurementKey_bottomNestedShareStackView
             case .bottomNestedText:
@@ -1182,6 +1209,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 return componentView.topNestedStackView
             case .bottomFullWidth:
                 return componentView.bottomFullWidthStackView
+            case .tellomiCaptionAboveText:
+                return componentView.tellomiCaptionAboveTextStackView
+            case .tellomiCaptionAboveMedia:
+                return componentView.tellomiCaptionAboveMediaStackView
             case .bottomNestedShare:
                 return componentView.bottomNestedShareStackView
             case .bottomNestedText:
@@ -1206,7 +1237,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
     fileprivate func buildContentSections() -> [ContentSection] {
         var contentSections = [ContentSection]()
         for sectionType in SectionType.allCases {
-            let subcomponents = subcomponents(forKeys: sectionType.possibleComponentKeys)
+            let subcomponents = subcomponents(forKeys: componentKeys(for: sectionType))
             if !subcomponents.isEmpty {
                 contentSections.append(ContentSection(
                     sectionType: sectionType,
@@ -1215,6 +1246,21 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             }
         }
         return contentSections
+    }
+
+    /// Tellomi（ADR-0068 §4.7）：说明文字在媒体上方时，正文和媒体从原来的节挪到 Tellomi 的两节里；别的消息照上游。
+    fileprivate func componentKeys(for sectionType: SectionType) -> [CVComponentKey] {
+        let captionAbove = componentState.tellomiCaptionAboveMedia
+        switch sectionType {
+        case .tellomiCaptionAboveText, .tellomiCaptionAboveMedia:
+            return captionAbove ? sectionType.possibleComponentKeys : []
+        case .bottomFullWidth:
+            return captionAbove ? sectionType.possibleComponentKeys.filter { $0 != .bodyMedia } : sectionType.possibleComponentKeys
+        case .bottomNestedText:
+            return captionAbove ? sectionType.possibleComponentKeys.filter { $0 != .bodyText } : sectionType.possibleComponentKeys
+        case .topFullWidth, .topNested, .bottomNestedShare, .bottomButtons, .bottomLabel:
+            return sectionType.possibleComponentKeys
+        }
     }
 
     fileprivate func enumerate(
@@ -1277,7 +1323,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
     ) -> CVStackViewConfig {
 
         switch sectionType {
-        case .topFullWidth:
+        case .topFullWidth, .tellomiCaptionAboveMedia:
             return buildFullWidthStackConfig(includeTopMargin: false, includeBottomMargin: false)
         case .bottomFullWidth:
             var applyTopMargin = false
@@ -1296,7 +1342,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 applyTopMargin = true
             }
             return buildFullWidthStackConfig(includeTopMargin: applyTopMargin, includeBottomMargin: applyBottomMargin)
-        case .topNested, .bottomNestedShare, .bottomNestedText:
+        case .topNested, .tellomiCaptionAboveText, .bottomNestedShare, .bottomNestedText:
             let topMargin: ContentStackMargin
             if let previousSectionItem = previousSectionItems.last {
                 // The top margin of a section's stack reflects the first item
@@ -1685,6 +1731,8 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
     private static let measurementKey_bottomFullWidthStackView = "CVComponentMessage.measurementKey_bottomFullWidthStackView"
     private static let measurementKey_bottomNestedShareStackView = "CVComponentMessage.measurementKey_bottomNestedShareStackView"
     private static let measurementKey_bottomNestedTextStackView = "CVComponentMessage.measurementKey_bottomNestedTextStackView"
+    private static let measurementKey_tellomiCaptionAboveTextStackView = "CVComponentMessage.measurementKey_tellomiCaptionAboveTextStackView"
+    private static let measurementKey_tellomiCaptionAboveMediaStackView = "CVComponentMessage.measurementKey_tellomiCaptionAboveMediaStackView"
     private static let measurementKey_reactions = "CVComponentMessage.measurementKey_reactions"
     private static let measurementKey_bottomNestedTextSpacing = "CVComponentMessage.measurementKey_bottomNestedTextSpacing"
 
@@ -2365,6 +2413,9 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         fileprivate let bottomFullWidthStackView = ManualStackView(name: "message.bottomFullWidthStackView")
         fileprivate let bottomNestedShareStackView = ManualStackView(name: "message.bottomNestedShareStackView")
         fileprivate let bottomNestedTextStackView = ManualStackView(name: "message.bottomNestedTextStackView")
+        // Tellomi（ADR-0068 §4.7）：说明文字在媒体上方时用的两节。
+        fileprivate let tellomiCaptionAboveTextStackView = ManualStackView(name: "message.tellomiCaptionAboveTextStackView")
+        fileprivate let tellomiCaptionAboveMediaStackView = ManualStackView(name: "message.tellomiCaptionAboveMediaStackView")
 
         // If hasSecondaryContentForSelection is false, this is used to select
         // all content.
@@ -2613,6 +2664,8 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 bottomFullWidthStackView.reset()
                 bottomNestedShareStackView.reset()
                 bottomNestedTextStackView.reset()
+                tellomiCaptionAboveTextStackView.reset()
+                tellomiCaptionAboveMediaStackView.reset()
 
                 for swipeToReplyWrapper in swipeToReplyWrappers {
                     if swipeToReplyWrapper.shouldReset {

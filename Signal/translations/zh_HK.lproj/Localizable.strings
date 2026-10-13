@@ -5229,6 +5229,12 @@
 /* Accessibility label for the more-options button in the photo picker. */
 "IMAGE_PICKER_TELLOMI_MORE" = "更多選項";
 
+/* Photo picker more-menu item: show the caption below the photos in the sent message (the default). */
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "說明文字下移";
+
+/* Photo picker more-menu item: show the caption above the photos in the sent message. */
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "說明文字上移";
+
 /* Accessibility label for a photo in the photo picker. */
 "IMAGE_PICKER_TELLOMI_PHOTO" = "相片";
 

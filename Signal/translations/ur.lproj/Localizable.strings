@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC رکھیں";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "آپ نے Tellomi کی تصاویر تک رسائی محدود کر دی ہے۔";
 "IMAGE_PICKER_TELLOMI_MORE" = "مزید اختیارات";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "کیپشن نیچے لے جائیں";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "کیپشن اوپر لے جائیں";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "تصویر";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "حالیہ";
 "IMAGE_PICKER_TELLOMI_SELECT" = "منتخب کریں";

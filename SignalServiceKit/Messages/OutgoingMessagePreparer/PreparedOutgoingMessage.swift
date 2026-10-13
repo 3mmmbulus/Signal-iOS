@@ -400,3 +400,19 @@ extension PreparedOutgoingMessage: Equatable {
         return lhs.messageForSending.uniqueId == rhs.messageForSending.uniqueId
     }
 }
+
+// MARK: - Tellomi
+
+extension PreparedOutgoingMessage {
+    /// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：要发的这条在库里的 uniqueId（编辑的是原消息那一行）；故事 / 临时消息没有。
+    public var tellomiPersistedMessageUniqueId: String? {
+        switch messageType {
+        case .persisted(let persisted):
+            return persisted.message.uniqueId
+        case .editMessage(let editMessage):
+            return editMessage.editedMessage.uniqueId
+        case .story, .transient:
+            return nil
+        }
+    }
+}

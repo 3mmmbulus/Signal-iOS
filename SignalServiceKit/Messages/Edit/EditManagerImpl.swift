@@ -131,6 +131,9 @@ public class EditManagerImpl: EditManager {
             tx: tx,
         )
 
+        // Tellomi（ADR-0068 §4.7）：编辑带的是整条新 DataMessage，说明在上方 / 下方跟着它改（还是原来那一行）。
+        TellomiCaptionAbove.apply(from: newDataMessage, messageUniqueId: editedMessage.uniqueId, tx: tx)
+
         return editedMessage
     }
 

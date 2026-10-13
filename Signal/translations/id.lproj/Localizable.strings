@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Pertahankan HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Anda telah membatasi akses Tellomi ke foto Anda.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Opsi lainnya";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Pindahkan Keterangan ke Bawah";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Pindahkan Keterangan ke Atas";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Terbaru";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Pilih";

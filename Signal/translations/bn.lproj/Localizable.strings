@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC রাখুন";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "আপনি ছবিতে Tellomi-এর অ্যাক্সেস সীমিত করেছেন।";
 "IMAGE_PICKER_TELLOMI_MORE" = "আরও বিকল্প";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "ক্যাপশন নিচে সরান";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "ক্যাপশন উপরে সরান";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "ছবি";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "সাম্প্রতিক";
 "IMAGE_PICKER_TELLOMI_SELECT" = "বেছে নিন";

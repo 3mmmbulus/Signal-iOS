@@ -1603,6 +1603,10 @@ public final class MessageReceiver {
         // undecryptable message. The sender may have resent the message. If so, we
         // should swap it in place of the placeholder.
         message.insertOrReplacePlaceholder(from: SignalServiceAddress(envelope.sourceAci), transaction: tx)
+        // Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：说明文字在媒体上方。新消息只在为真时写，别的消息不多一次写库。
+        if dataMessage.tellomi?.captionAboveMedia == true {
+            TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: message.uniqueId, tx: tx)
+        }
 
         // Inserting the message may have modified the thread on disk, so reload
         // it. For example, we may have marked the thread as visible.

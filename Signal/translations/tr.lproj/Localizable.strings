@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC olarak kalsın";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Tellomi'nin fotoğraflarına erişimini sınırladın.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Diğer seçenekler";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Açıklamayı Aşağı Taşı";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Açıklamayı Yukarı Taşı";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotoğraf";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Son Eklenenler";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Seç";

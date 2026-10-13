@@ -44,6 +44,9 @@ public enum SentMessageTranscriptType {
 
         public let storyTimestamp: UInt64?
         public let storyAuthorAci: Aci?
+
+        /// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：`DataMessage.tellomi.captionAboveMedia`。
+        public var tellomiCaptionAboveMedia: Bool = false
     }
 
     public struct PaymentNotification {

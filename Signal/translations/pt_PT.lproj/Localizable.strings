@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Manter HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Limitou o acesso do Tellomi às suas fotos.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Mais opções";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Mover legenda para baixo";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Mover legenda para cima";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Foto";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Recentes";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Selecionar";

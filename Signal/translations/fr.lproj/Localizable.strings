@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Conserver le HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Vous avez limité l'accès de Tellomi à vos photos.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Plus d'options";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Déplacer la légende en bas";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Déplacer la légende en haut";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Photo";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Récents";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Sélectionner";

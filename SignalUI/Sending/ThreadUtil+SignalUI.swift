@@ -16,6 +16,7 @@ extension ThreadUtil {
         thread: TSThread,
         quotedReplyDraft: DraftQuotedReplyModel? = nil,
         linkPreviewDraft: OWSLinkPreviewDraft? = nil,
+        tellomiCaptionAboveMedia: Bool = false,
         persistenceCompletionHandler persistenceCompletion: PersistenceCompletion? = nil,
     ) {
         let messageTimestamp = MessageTimestampGenerator.sharedInstance.generateTimestamp()
@@ -60,6 +61,7 @@ extension ThreadUtil {
                 unpreparedMessage,
                 benchEventId: benchEventId,
                 thread: thread,
+                tellomiCaptionAboveMedia: tellomiCaptionAboveMedia,
                 persistenceCompletionHandler: persistenceCompletion,
             )
         }
@@ -134,12 +136,17 @@ extension ThreadUtil {
         _ unpreparedMessage: UnpreparedOutgoingMessage,
         benchEventId: String,
         thread: TSThread,
+        tellomiCaptionAboveMedia: Bool = false,
         persistenceCompletionHandler persistenceCompletion: PersistenceCompletion? = nil,
     ) async {
         await SSKEnvironment.shared.databaseStorageRef.awaitableWrite { writeTransaction in
             guard let preparedMessage = try? unpreparedMessage.prepare(tx: writeTransaction) else {
                 owsFailDebug("Failed to prepare message")
                 return
+            }
+            // Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：进发送队列之前、同一个事务里记上，发送时组 DataMessage 读得到。
+            if tellomiCaptionAboveMedia {
+                TellomiCaptionAbove.mark(preparedMessage, tx: writeTransaction)
             }
             let promise = SSKEnvironment.shared.messageSenderJobQueueRef.add(
                 .promise,

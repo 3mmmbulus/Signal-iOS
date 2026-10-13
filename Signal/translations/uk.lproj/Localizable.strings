@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Залишити HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ви обмежили доступ Tellomi до своїх фото.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Інші параметри";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Перемістити підпис униз";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Перемістити підпис угору";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Фото";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Нещодавні";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Вибрати";

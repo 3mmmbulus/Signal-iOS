@@ -382,6 +382,7 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
         from viewController: UIViewController,
         messageBody: MessageBody?,
         attachmentLimits: OutgoingAttachmentLimits,
+        captionAboveMedia: Bool = false,
     ) async throws -> Bool {
         return try await tryToSendAttachments(
             approvedAttachments,
@@ -389,6 +390,7 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
             from: viewController,
             attachmentLimits: attachmentLimits,
             untrustedThreshold: Date().addingTimeInterval(-OWSIdentityManagerImpl.Constants.defaultUntrustedInterval),
+            captionAboveMedia: captionAboveMedia,
         )
     }
 
@@ -406,6 +408,7 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
         from viewController: UIViewController,
         attachmentLimits: OutgoingAttachmentLimits,
         untrustedThreshold: Date,
+        captionAboveMedia: Bool = false,
     ) async throws -> Bool {
         AssertIsOnMainThread()
 
@@ -453,6 +456,8 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
             attachments: (sendableAttachments, isViewOnce: approvedAttachments.isViewOnce),
             thread: self.thread,
             quotedReplyDraft: inputToolbar.quotedReplyDraft,
+            // Tellomi（#1263，ADR-0068 §4.7）：说明文字在媒体上方（选图「···」里选的）。没有说明就没有意义，不记。
+            tellomiCaptionAboveMedia: captionAboveMedia && messageBody != nil,
             persistenceCompletionHandler: {
                 AssertIsOnMainThread()
                 self.loadCoordinator.enqueueReload()
@@ -952,6 +957,7 @@ extension ConversationViewController: SendMediaNavDelegate {
         from viewController: UIViewController,
         attachmentLimits: OutgoingAttachmentLimits,
         clearsDraft: Bool = true,
+        captionAboveMedia: Bool = false,
     ) async -> Bool {
         let didSend: Bool
         do {
@@ -960,6 +966,7 @@ extension ConversationViewController: SendMediaNavDelegate {
                 from: viewController,
                 messageBody: messageBody,
                 attachmentLimits: attachmentLimits,
+                captionAboveMedia: captionAboveMedia,
             )
         } catch {
             self.showErrorAlert(attachmentError: error as? SignalAttachmentError)

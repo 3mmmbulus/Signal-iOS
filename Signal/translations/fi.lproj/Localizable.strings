@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Säilytä HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Olet rajoittanut Tellomin pääsyä kuviisi.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Lisää vaihtoehtoja";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Siirrä kuvateksti alas";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Siirrä kuvateksti ylös";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Kuva";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Viimeisimmät";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Valitse";

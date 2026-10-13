@@ -119,6 +119,91 @@ final class TellomiAsFileCellTests: XCTestCase {
         XCTAssertNil(Self.thumbnail(in: hosted.cellView))
     }
 
+    // MARK: - 说明文字在媒体上方（ADR-0068 §4.7）
+
+    /// 标记为真：正文在图上面（同一个气泡里），时间压在图上。
+    @MainActor
+    func testCaptionAboveMediaPutsTheTextAboveThePhoto() async throws {
+        let thread = makeThread()
+        let message = try await insertStream(renderingFlag: .default, fileName: "IMG_0004.PNG", thread: thread, body: "说明在图上面")
+        write { tx in TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: message.uniqueId, tx: tx) }
+
+        let hosted = try await host(message: message, thread: thread, width: 402)
+        defer { hosted.tearDown() }
+        XCTAssertTrue(hosted.componentState.tellomiCaptionAboveMedia)
+        let (text, media) = try Self.textAndMediaFrames(in: hosted.cellView)
+        XCTAssertLessThanOrEqual(text.maxY, media.minY + 0.5, "说明在图上面")
+    }
+
+    /// 没有标记：和上游一样，正文在图下面。
+    @MainActor
+    func testWithoutTheFlagTheCaptionStaysBelow() async throws {
+        let thread = makeThread()
+        let message = try await insertStream(renderingFlag: .default, fileName: "IMG_0005.PNG", thread: thread, body: "说明在图下面")
+
+        let hosted = try await host(message: message, thread: thread, width: 402)
+        defer { hosted.tearDown() }
+        XCTAssertFalse(hosted.componentState.tellomiCaptionAboveMedia)
+        let (text, media) = try Self.textAndMediaFrames(in: hosted.cellView)
+        XCTAssertGreaterThanOrEqual(text.minY, media.maxY - 0.5, "说明在图下面")
+    }
+
+    /// 只有文字（或按文件发的图）：标记没有意义，照常画。
+    @MainActor
+    func testTheFlagMeansNothingWithoutMediaShownAsMedia() async throws {
+        let thread = makeThread()
+        let textOnly = try insertMessage(thread: thread, body: "只有文字")
+        let asFile = try await insertStream(renderingFlag: .tellomiAsFile, fileName: "IMG_0006.PNG", thread: thread, body: "按文件发的")
+        write { tx in
+            TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: textOnly.uniqueId, tx: tx)
+            TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: asFile.uniqueId, tx: tx)
+        }
+
+        for message in [textOnly, asFile] as [TSMessage] {
+            let hosted = try await host(message: message, thread: thread, width: 402)
+            XCTAssertFalse(hosted.componentState.tellomiCaptionAboveMedia)
+            hosted.tearDown()
+        }
+    }
+
+    /// 给人看的截图：说明在上方 / 在下方，浅色。
+    @MainActor
+    func testCaptionAboveShots() async throws {
+        guard ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1" else {
+            throw XCTSkip("只在 TELLOMI_SHOTS=1 时截图")
+        }
+        let thread = makeThread()
+        let above = try await insertStream(renderingFlag: .default, fileName: "IMG_0007.PNG", thread: thread, body: "说明文字在图片上方")
+        let below = try await insertStream(renderingFlag: .default, fileName: "IMG_0008.PNG", thread: thread, body: "说明文字在图片下方（默认）")
+        write { tx in TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: above.uniqueId, tx: tx) }
+        var images = [UIImage]()
+        for message in [above, below] {
+            let hosted = try await host(message: message, thread: thread, width: 402)
+            images.append(render(hosted))
+            hosted.tearDown()
+        }
+        try save(stack(images, width: 402, dark: false), name: "caption-above-light.png")
+    }
+
+    /// 正文和图在 cell 里的位置。
+    private static func textAndMediaFrames(in cellView: UIView) throws -> (text: CGRect, media: CGRect) {
+        let textView = try XCTUnwrap(CVComponentBodyText.findBodyTextRootView(cellView))
+        let mediaView = try XCTUnwrap(find(CVMediaAlbumView.self, in: cellView))
+        return (cellView.convert(textView.bounds, from: textView), cellView.convert(mediaView.bounds, from: mediaView))
+    }
+
+    private static func find<T: UIView>(_ type: T.Type, in view: UIView) -> T? {
+        if let match = view as? T {
+            return match
+        }
+        for subview in view.subviews {
+            if let match = find(type, in: subview) {
+                return match
+            }
+        }
+        return nil
+    }
+
     /// 给人看的截图：普通图片 / 按文件（已下载）/ 按文件（没下载）/ 普通 PDF，浅色和深色各一张。
     @MainActor
     func testShots() async throws {
@@ -157,13 +242,17 @@ final class TellomiAsFileCellTests: XCTestCase {
         }
     }
 
-    private func insertMessage(thread: TSContactThread) throws -> TSIncomingMessage {
+    private func insertMessage(thread: TSContactThread, body: String? = nil) throws -> TSIncomingMessage {
         let authorAci = try XCTUnwrap(thread.contactAddress.aci)
         return write { tx in
+            let messageBody = body.map {
+                DependenciesBridge.shared.attachmentContentValidator.truncatedMessageBodyForInlining(MessageBody(text: $0, ranges: .empty), tx: tx)
+            }
             let message = TSIncomingMessageBuilder.withDefaultValues(
                 thread: thread,
                 timestamp: Date.ows_millisecondTimestamp(),
                 authorAci: authorAci,
+                messageBody: messageBody,
             ).build()
             message.anyInsert(transaction: tx)
             return message
@@ -212,8 +301,8 @@ final class TellomiAsFileCellTests: XCTestCase {
 
     /// Already here (downloaded, or sent from this device).
     @MainActor
-    private func insertStream(renderingFlag: AttachmentReference.RenderingFlag, fileName: String, thread: TSContactThread) async throws -> TSMessage {
-        let message = try insertMessage(thread: thread)
+    private func insertStream(renderingFlag: AttachmentReference.RenderingFlag, fileName: String, thread: TSContactThread, body: String? = nil) async throws -> TSMessage {
+        let message = try insertMessage(thread: thread, body: body)
         let pending = try await DependenciesBridge.shared.attachmentContentValidator.validateDataContents(
             gradientPng(size: CGSize(width: 1200, height: 900)),
             mimeType: "image/png",

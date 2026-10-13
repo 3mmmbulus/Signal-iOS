@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Запазване на HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ограничили сте достъпа на Tellomi до снимките си.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Още опции";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Преместване на надписа надолу";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Преместване на надписа нагоре";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Снимка";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Скорошни";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Избор";

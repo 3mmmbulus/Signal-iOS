@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "להשאיר HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "הגבלת את הגישה של Tellomi לתמונות שלך.";
 "IMAGE_PICKER_TELLOMI_MORE" = "אפשרויות נוספות";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "העברת הכיתוב למטה";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "העברת הכיתוב למעלה";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "תמונה";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "אחרונות";
 "IMAGE_PICKER_TELLOMI_SELECT" = "בחירה";

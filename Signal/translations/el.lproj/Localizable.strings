@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Διατήρηση HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Έχεις περιορίσει την πρόσβαση του Tellomi στις φωτογραφίες σου.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Περισσότερες επιλογές";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Μετακίνηση λεζάντας κάτω";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Μετακίνηση λεζάντας πάνω";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Φωτογραφία";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Πρόσφατα";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Επιλογή";

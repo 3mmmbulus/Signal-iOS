@@ -187,6 +187,7 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
         send approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
         separately: Bool,
+        captionAboveMedia: Bool,
     ) {
         // 从上游预览页发的时候它盖在网格上面，提示与安全码确认都从最上面那一层弹。
         let fromViewController = picker.presentedViewController ?? picker
@@ -196,11 +197,12 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
             title: CommonStrings.preparingModal,
             asyncBlock: { modal in
                 if separately {
+                    // 说明只挂最后一条，「说明在上方」也只对它（没有说明的那几条不记）。
                     await TellomiPhotoPickerSending.sendSeparately(approvedAttachments, messageBody: messageBody) { part, body in
-                        await self.sendAttachments(part, messageBody: body, from: fromViewController, attachmentLimits: attachmentLimits)
+                        await self.sendAttachments(part, messageBody: body, from: fromViewController, attachmentLimits: attachmentLimits, captionAboveMedia: captionAboveMedia)
                     }
                 } else {
-                    await self.sendAttachments(approvedAttachments, messageBody: messageBody, from: fromViewController, attachmentLimits: attachmentLimits)
+                    await self.sendAttachments(approvedAttachments, messageBody: messageBody, from: fromViewController, attachmentLimits: attachmentLimits, captionAboveMedia: captionAboveMedia)
                 }
                 modal.dismiss(completion: {
                     self.dismiss(animated: true)

@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC રાખો";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "તમે Tellomi ની તમારા ફોટા સુધીની ઍક્સેસ મર્યાદિત કરી છે.";
 "IMAGE_PICKER_TELLOMI_MORE" = "વધુ વિકલ્પો";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "કૅપ્શન નીચે ખસેડો";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "કૅપ્શન ઉપર ખસેડો";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "ફોટો";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "તાજેતરના";
 "IMAGE_PICKER_TELLOMI_SELECT" = "પસંદ કરો";

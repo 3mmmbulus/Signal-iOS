@@ -10983,6 +10983,8 @@
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Ponechat HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Omezili jste přístup aplikace Tellomi k fotografiím.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Další možnosti";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Přesunout popisek dolů";
+"IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Přesunout popisek nahoru";
 "IMAGE_PICKER_TELLOMI_PHOTO" = "Fotografie";
 "IMAGE_PICKER_TELLOMI_RECENTS" = "Nedávné";
 "IMAGE_PICKER_TELLOMI_SELECT" = "Vybrat";
