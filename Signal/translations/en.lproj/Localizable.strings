@@ -11768,3 +11768,15 @@
 
 /* Title of the privacy notice shown the first time the app is opened. */
 "TELLOMI_FIRST_LAUNCH_TITLE" = "Welcome to Tellomi";
+
+/* Tellomi: accessibility label of the small red dot on the settings entry when a newer version is available. */
+"TELLOMI_UPDATE_AVAILABLE_DOT" = "New version available";
+
+/* Tellomi: secondary button on the card shown when a newer version is available. Closes the card. */
+"TELLOMI_UPDATE_AVAILABLE_LATER" = "Later";
+
+/* Tellomi: action on the chat list reminder about a newer version. Hides the reminder for three days. */
+"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "Remind me in 3 days";
+
+/* Tellomi: title of the card shown once on the chat list, the chat list reminder and the About row when a newer version is available. Embeds {{ version number, e.g. 0.1.5 }}. */
+"TELLOMI_UPDATE_AVAILABLE_TITLE" = "Tellomi %@ is available";

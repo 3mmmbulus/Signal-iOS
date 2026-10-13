@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F82E582811570D59B8DB6D76 /* TellomiUpdateRecommended.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3BF67DC104899D92531288 /* TellomiUpdateRecommended.swift */; };
 		5D24AF865D30E1687821D5EA /* TellomiUpdateManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */; };
 		A7E949506E56B5E62D2F9FA4 /* TellomiUpdateManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */; };
 		040277FA303DCFA6009C1468 /* LocalFileBackupAttachmentRestoreProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040277F9303DCF9B009C1468 /* LocalFileBackupAttachmentRestoreProgress.swift */; };
@@ -4392,6 +4393,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FD3BF67DC104899D92531288 /* TellomiUpdateRecommended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateRecommended.swift; sourceTree = "<group>"; };
 		A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateManifests.swift; sourceTree = "<group>"; };
 		9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUpdateManifest.swift; sourceTree = "<group>"; };
 		040277F9303DCF9B009C1468 /* LocalFileBackupAttachmentRestoreProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileBackupAttachmentRestoreProgress.swift; sourceTree = "<group>"; };
@@ -11895,6 +11897,7 @@
 				052647C02C6404D70076E99D /* ChatListFilterStore.swift */,
 				D91FBCF32E2E9E9E00D0BCDB /* ChatListFYISheetCoordinator.swift */,
 				E5C5F9B376A0C61A853783B1 /* TellomiNotificationPrimer.swift */,
+				FD3BF67DC104899D92531288 /* TellomiUpdateRecommended.swift */,
 				05B411242C62845000A1EDBC /* ChatListInboxFilterSection.swift */,
 				2B81A481B618D2B7F74FAC86 /* ChatListConnectionTitle.swift */,
 				50101FB32B08447000C648E4 /* ChatListProxyButtonCreator.swift */,
@@ -19021,6 +19024,7 @@
 				052647C12C6404DD0076E99D /* ChatListFilterStore.swift in Sources */,
 				D91FBCF42E2E9EA200D0BCDB /* ChatListFYISheetCoordinator.swift in Sources */,
 				268FEB66C9E0A43BF02E0405 /* TellomiNotificationPrimer.swift in Sources */,
+				F82E582811570D59B8DB6D76 /* TellomiUpdateRecommended.swift in Sources */,
 				05B411252C62845000A1EDBC /* ChatListInboxFilterSection.swift in Sources */,
 				9EDB47182FD066D7352194E2 /* ChatListConnectionTitle.swift in Sources */,
 				50101FB42B08447000C648E4 /* ChatListProxyButtonCreator.swift in Sources */,

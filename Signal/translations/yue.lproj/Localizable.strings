@@ -11240,3 +11240,7 @@
 "TELLOMI_FIRST_LAUNCH_BODY_FORMAT" = "我們按%1$@處理您的個人信息：註冊只需要手機號碼；訊息、資料和附件都是端到端加密的，我們讀不到。";
 "TELLOMI_FIRST_LAUNCH_DISAGREE_HINT" = "需要同意後才能使用 Tellomi；不同意的話，我們不會收集任何資訊。";
 "TELLOMI_FIRST_LAUNCH_TITLE" = "歡迎使用 Tellomi";
+"TELLOMI_UPDATE_AVAILABLE_DOT" = "有新版本";
+"TELLOMI_UPDATE_AVAILABLE_LATER" = "遲啲先";
+"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "3 日之後再提我";
+"TELLOMI_UPDATE_AVAILABLE_TITLE" = "有新版本 %@";

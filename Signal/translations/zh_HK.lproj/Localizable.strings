@@ -11178,6 +11178,10 @@
 
 /* Tellomi: Footer for the Generate Link Previews setting. Says plainly that, when on, the device visits the website when the user sends a link. */
 "TELLOMI_SETTINGS_LINK_PREVIEWS_FOOTER" = "開啟後，傳送連結時你的裝置會存取該網站。";
+"TELLOMI_UPDATE_AVAILABLE_DOT" = "有新版本";
+"TELLOMI_UPDATE_AVAILABLE_LATER" = "以後再說";
+"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "3 日後再提醒";
+"TELLOMI_UPDATE_AVAILABLE_TITLE" = "發現新版本 %@";
 
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "粗體";

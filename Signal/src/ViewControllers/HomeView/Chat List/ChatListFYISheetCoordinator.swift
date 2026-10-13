@@ -63,8 +63,14 @@ class ChatListFYISheetCoordinator {
         /// Tellomi（#1218 F-01、#1112）：注册后第一次进首屏的通知说明页（`TellomiNotificationPrimer`）。
         struct NotificationPrimer {}
 
+        /// Tellomi（tellomi/tellomi#1491）：推荐更新的首页卡片，同一版本只弹一次（`TellomiUpdateRecommendedSheet`）。
+        struct TellomiUpdateRecommended {
+            let offer: TellomiUpdateManifests.Offer
+        }
+
         case smsVerificationCodeSent(SMSVerificationCodeSent)
         case notificationPrimer(NotificationPrimer)
+        case tellomiUpdateRecommended(TellomiUpdateRecommended)
         case badgeThanks(BadgeThanks)
         case badgeIssue(BadgeIssue)
         case badgeExpiration(BadgeExpiration)
@@ -154,6 +160,12 @@ class ChatListFYISheetCoordinator {
             // Tellomi（#1218 F-01）：排在「有人拿你的号码收验证码」之后、其余所有 FYI 之前——
             // 注册后第一次进首屏，先把通知这件事问掉。
             return .notificationPrimer(FYISheet.NotificationPrimer())
+        } else if
+            let offer = TellomiUpdateManifests.currentOffer(tx: tx, appExpiry: DependenciesBridge.shared.appExpiry, now: now),
+            TellomiUpdateManifests.shouldShowRecommendedSheet(offer: offer, shownForBuild: TellomiUpdateManifests.recommendedPromptShownBuild(tx: tx))
+        {
+            // Tellomi（tellomi/tellomi#1491，需求 3.4「推荐更新」）：进首页弹一次，同一个版本只弹一次
+            return .tellomiUpdateRecommended(FYISheet.TellomiUpdateRecommended(offer: offer))
         } else if let sheet = shouldShowBadgeThanksSheet(successMode: .oneTimeBoost, tx: tx) {
             return sheet
         } else if let sheet = shouldShowBadgeThanksSheet(successMode: .recurringSubscriptionInitiation, tx: tx) {
@@ -326,6 +338,8 @@ class ChatListFYISheetCoordinator {
             await _present(smsVerificationCodeSent: smsVerificationCodeSent, from: chatListViewController)
         case .notificationPrimer(let notificationPrimer):
             _present(notificationPrimer: notificationPrimer, from: chatListViewController)
+        case .tellomiUpdateRecommended(let tellomiUpdateRecommended):
+            await _present(tellomiUpdateRecommended: tellomiUpdateRecommended, from: chatListViewController)
         case .badgeThanks(let badgeThanks):
             await _present(badgeThanks: badgeThanks, from: chatListViewController)
         case .badgeIssue(let badgeIssue):
@@ -360,6 +374,19 @@ class ChatListFYISheetCoordinator {
             chatListViewController?.updateNotificationsDisabledReminderView()
         })
         chatListViewController.present(sheet, animated: true)
+    }
+
+    /// 弹出去就记下这一版（不管点了什么），同一个版本不再弹。
+    private func _present(
+        tellomiUpdateRecommended: FYISheet.TellomiUpdateRecommended,
+        from chatListViewController: ChatListViewController,
+    ) async {
+        Logger.info("Showing the Tellomi recommended update card.")
+        let offer = tellomiUpdateRecommended.offer
+        await db.awaitableWrite { tx in
+            TellomiUpdateManifests.markRecommendedPromptShown(build: offer.build, tx: tx)
+        }
+        chatListViewController.present(TellomiUpdateRecommendedSheet(offer: offer), animated: true)
     }
 
     private func _present(

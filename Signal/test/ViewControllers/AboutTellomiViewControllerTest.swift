@@ -20,9 +20,36 @@ final class AboutTellomiViewControllerTest: XCTestCase {
     }
 
     private func makeViewController(_ actions: RecordingActions) -> AboutTellomiViewController {
-        let viewController = AboutTellomiViewController(actions: actions, versionName: "0.1.2", buildNumber: "175101")
+        let viewController = AboutTellomiViewController(actions: actions, versionName: "0.1.2", buildNumber: "175101", updateOffer: nil)
         viewController.loadViewIfNeeded()
         return viewController
+    }
+
+    /// tellomi/tellomi#1491（需求 3.4「可选更新」）：有新版本时「更新」一组第一行是「Tellomi x 可用」，点了去清单里的 TestFlight 链接。
+    func testANewerVersionAddsARowThatOpensTheUpdate() {
+        let offer = TellomiUpdateManifests.Offer(
+            tier: .optional,
+            version: "0.1.1",
+            build: 6,
+            updateUrl: URL(string: "https://testflight.apple.com/join/AbCdEfGh"),
+            notesUrl: nil,
+        )
+        var opened: [TellomiUpdateManifests.Offer] = []
+        let actions = RecordingActions()
+        let viewController = AboutTellomiViewController(
+            actions: actions,
+            versionName: "0.1.0",
+            buildNumber: "5",
+            updateOffer: offer,
+            openUpdate: { opened.append($0) },
+        )
+        viewController.loadViewIfNeeded()
+
+        let updates = viewController.contents.sections[1]
+        XCTAssertEqual(updates.items.count, 2, "the new version row comes before 'Check for updates'")
+        updates.items[0].actionBlock?()
+        XCTAssertEqual(opened, [offer])
+        XCTAssertEqual(actions.events, [])
     }
 
     func testTappingTheVersionCopiesTheFullVersion() {

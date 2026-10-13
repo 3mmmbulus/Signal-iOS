@@ -26,6 +26,8 @@ public class CLVReminderViews {
     fileprivate var usernameLinkCorruptedReminderView = UIView()
     /// Tellomi（#1218 F-01）：系统通知被拒 / 被关时常驻的「通知已关闭 · 去设置」。
     fileprivate var notificationsDisabledReminderView = UIView()
+    /// Tellomi（tellomi/tellomi#1491）：推荐更新的「Tellomi x 可用 · 立即更新」；点了给「立即更新 / 3 天后再提醒」。
+    fileprivate let updateAvailableReminderView = ReminderView(style: .info, text: "")
 
     public weak var chatListViewController: ChatListViewController?
 
@@ -131,6 +133,65 @@ public class CLVReminderViews {
         notificationsDisabledReminderView.isHidden = true
         reminderStackView.addArrangedSubview(notificationsDisabledReminderView)
         notificationsDisabledReminderView.accessibilityIdentifier = "notificationsDisabledReminderView"
+
+        // Tellomi（tellomi/tellomi#1491，需求 app-update-and-version-policy §3.4「推荐更新」）：先藏着，判过清单再说
+        updateAvailableReminderView.actionTitle = OWSLocalizedString(
+            "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON",
+            value: "Update now",
+            comment: "Tellomi: The main button on the 'update required' page. Opens the page where the new version can be installed.",
+        )
+        updateAvailableReminderView.isHidden = true
+        reminderStackView.addArrangedSubview(updateAvailableReminderView)
+        updateAvailableReminderView.accessibilityIdentifier = "updateAvailableReminderView"
+    }
+
+    /// 推荐档挂提示，否则（没有新版本、只是可选、只读、「3 天后再提醒」期间）收起。返回显示状态有没有变。
+    func configureUpdateAvailable(offer: TellomiUpdateManifests.Offer?) -> Bool {
+        let wasHidden = updateAvailableReminderView.isHidden
+        guard let offer else {
+            updateAvailableReminderView.isHidden = true
+            return !wasHidden
+        }
+        updateAvailableReminderView.text = TellomiUpdateOffersUI.title(offer)
+        updateAvailableReminderView.tapAction = { [weak self] in
+            self?.didTapUpdateAvailableReminder(offer: offer)
+        }
+        updateAvailableReminderView.isHidden = false
+        return wasHidden
+    }
+
+    /// iOS 的提示条没有关闭按钮：点了以后给「立即更新」和「3 天后再提醒」（需求 3.4：可关，关后 3 天再出现）。
+    private func didTapUpdateAvailableReminder(offer: TellomiUpdateManifests.Offer) {
+        guard let chatListViewController else {
+            return
+        }
+        let actionSheet = ActionSheetController(title: TellomiUpdateOffersUI.title(offer), message: nil)
+        actionSheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString(
+                "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON",
+                value: "Update now",
+                comment: "Tellomi: The main button on the 'update required' page. Opens the page where the new version can be installed.",
+            ),
+            handler: { _ in
+                TellomiUpdateOffersUI.openUpdate(offer)
+            },
+        ))
+        actionSheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString(
+                "TELLOMI_UPDATE_AVAILABLE_SNOOZE",
+                value: "Remind me in 3 days",
+                comment: "Tellomi: action on the chat list reminder about a newer version. Hides the reminder for three days.",
+            ),
+            handler: { [weak self] _ in
+                SSKEnvironment.shared.databaseStorageRef.write { tx in
+                    TellomiUpdateManifests.snoozeBanner(now: Date(), tx: tx)
+                }
+                self?.updateAvailableReminderView.isHidden = true
+                self?.chatListViewController?.loadCoordinator.loadIfNecessary()
+            },
+        ))
+        actionSheet.addAction(OWSActionSheets.cancelAction)
+        chatListViewController.presentActionSheet(actionSheet)
     }
 
     fileprivate func updateDeregisteredView(_ deregisteredState: DeregisteredState?) {
@@ -221,7 +282,8 @@ public class CLVReminderViews {
             !self.paymentsReminderView.isHidden ||
             !self.usernameCorruptedReminderView.isHidden ||
             !self.usernameLinkCorruptedReminderView.isHidden ||
-            !self.notificationsDisabledReminderView.isHidden
+            !self.notificationsDisabledReminderView.isHidden ||
+            !self.updateAvailableReminderView.isHidden
 
     }
 }
@@ -273,6 +335,21 @@ extension ChatListViewController {
         } else {
             self.paymentsReminderView.isHidden = false
             self.configureUnreadPaymentsBannerMultiple(paymentsReminderView, unreadCount: unreadPaymentNotificationsCount)
+        }
+    }
+
+    /// Tellomi（tellomi/tellomi#1491）：推荐更新的提示条（看缓存的更新清单）。
+    public func updateUpdateAvailableReminderView() {
+        let now = Date()
+        let (offer, snoozedAt) = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            (
+                TellomiUpdateManifests.currentOffer(tx: tx, appExpiry: DependenciesBridge.shared.appExpiry, now: now),
+                TellomiUpdateManifests.bannerSnoozedAt(tx: tx),
+            )
+        }
+        let shouldShow = TellomiUpdateManifests.shouldShowBanner(offer: offer, snoozedAt: snoozedAt, now: now)
+        if reminderViews.configureUpdateAvailable(offer: shouldShow ? offer : nil) {
+            loadCoordinator.loadIfNecessary()
         }
     }
 

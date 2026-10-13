@@ -103,6 +103,7 @@ public class ChatListViewController: OWSViewController, HomeTabViewController {
         updatePaymentReminderView()
         updateUsernameReminderView()
         updateNotificationsDisabledReminderView() // Tellomi（#1218 F-01）
+        updateUpdateAvailableReminderView() // Tellomi（#1491）
         updateTableViewPaddingIfNeeded()
         observeNotifications()
     }
@@ -518,6 +519,10 @@ public class ChatListViewController: OWSViewController, HomeTabViewController {
             badgeColor = .Signal.accent
             onDidDismissContextMenu = {}
         } else if viewState.settingsButtonCreator.hasConsumedMediaTierCapacity {
+            badgeColor = .Signal.red
+            onDidDismissContextMenu = {}
+        } else if db.read(block: { TellomiUpdateManifests.shouldShowSettingsDot(tx: $0, appExpiry: DependenciesBridge.shared.appExpiry) }) {
+            // Tellomi（tellomi/tellomi#1491，需求 3.4「可选更新」）：有新版本、还没进「关于」看过——设置入口一个小红点，优先级最低
             badgeColor = .Signal.red
             onDidDismissContextMenu = {}
         } else {

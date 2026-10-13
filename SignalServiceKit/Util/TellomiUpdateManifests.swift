@@ -25,6 +25,9 @@ public enum TellomiUpdateManifests {
     /// 回前台时最多这么久拉一次（需求 §3.2「节流 6 小时」）；只读时每次回前台都拉，好让撤销尽快生效。
     public static let checkInterval: TimeInterval = 6 * .hour
 
+    /// 采信了一份新清单（在主线程发）：会话列表的推荐提示、设置入口的小红点跟着重判。
+    public static let didChangeNotification = Notification.Name("TellomiUpdateManifestDidChange")
+
     private static let keyValueStore = KeyValueStore(collection: "TellomiUpdateManifest")
     private static let manifestKey = "manifest"
     private static let serialKey = "serial"
@@ -137,6 +140,9 @@ public enum TellomiUpdateManifests {
             keyValueStore.setUInt64(manifest.serial, key: serialKey, transaction: tx)
         }
         Logger.info("Accepted update manifest \(manifest.serial): latest \(manifest.latest.build), recommended \(manifest.recommendedMinBuild), required \(manifest.requiredMinBuild).")
+        await MainActor.run {
+            NotificationCenter.default.post(name: didChangeNotification, object: nil)
+        }
         return true
     }
 
@@ -228,5 +234,115 @@ public enum TellomiUpdateManifests {
             Logger.info("The required update was withdrawn. Leaving read-only.")
             await appExpiry.tellomiReleaseServerExpiry(now: now, db: db)
         }
+    }
+}
+
+// MARK: - 推荐档、可选档（tellomi/tellomi#1491 第二刀）
+
+/// 推荐档、可选档在哪里露面（需求 app-update-and-version-policy.md §3.4、判据 3 / 4），和 Android `UpdateOffers` 同一套规则：
+/// - 推荐：进首页弹一次底部卡片（同一版本只弹一次）+ 会话列表顶部一条提示（「3 天后再提醒」就 3 天不出现）；
+/// - 可选（推荐档也算）：不弹；「关于」里显示「有新版本」，设置入口一个小红点，进一次「关于」就消失；
+/// - 只读时（必须档、服务端 499、构建到期）都不出：那时说话的是阻断页和只读提示。
+extension TellomiUpdateManifests {
+
+    /// 清单里比这台新的最新版，以及它属于哪一档（只会是可选或推荐）。
+    public struct Offer: Equatable {
+        public let tier: TellomiUpdateManifest.Tier
+        public let version: String
+        public let build: UInt64
+        /// 「立即更新」去哪：清单里的 TestFlight 公开链接；nil = 官网下载页。
+        public let updateUrl: URL?
+        public let notesUrl: URL?
+
+        public init(tier: TellomiUpdateManifest.Tier, version: String, build: UInt64, updateUrl: URL?, notesUrl: URL?) {
+            self.tier = tier
+            self.version = version
+            self.build = build
+            self.updateUrl = updateUrl
+            self.notesUrl = notesUrl
+        }
+    }
+
+    /// 提示被「3 天后再提醒」以后这么久不出现。
+    public static let bannerSnooze: TimeInterval = 3 * .day
+
+    private static let recommendedPromptShownBuildKey = "recommendedPromptShownBuild"
+    private static let bannerSnoozedAtKey = "bannerSnoozedAt"
+    private static let aboutSeenBuildKey = "aboutSeenBuild"
+
+    public static func offer(manifest: TellomiUpdateManifest?, build: UInt64, now: Date, isReadOnly: Bool) -> Offer? {
+        guard let manifest, !isReadOnly else {
+            return nil
+        }
+        let tier = manifest.tier(build: build, now: now)
+        guard tier == .optional || tier == .recommended else {
+            return nil
+        }
+        return Offer(tier: tier, version: manifest.latest.version, build: manifest.latest.build, updateUrl: manifest.latest.url, notesUrl: manifest.notesUrl)
+    }
+
+    /// 当前的提议；没有清单、没有新版本或者处在只读时为 nil。
+    public static func currentOffer(tx: DBReadTransaction, appExpiry: AppExpiry, now: Date = Date()) -> Offer? {
+        guard let build = currentBuild() else {
+            return nil
+        }
+        return offer(manifest: current(tx: tx), build: build, now: now, isReadOnly: appExpiry.isExpired(now: now))
+    }
+
+    /// 推荐档的首页卡片：同一个最新版只弹一次。
+    public static func shouldShowRecommendedSheet(offer: Offer?, shownForBuild: UInt64?) -> Bool {
+        guard let offer, offer.tier == .recommended else {
+            return false
+        }
+        return shownForBuild != offer.build
+    }
+
+    /// 推荐档的会话列表提示：「3 天后再提醒」之后 3 天内不出现（时钟往回拨过就照常出现）。
+    public static func shouldShowBanner(offer: Offer?, snoozedAt: Date?, now: Date) -> Bool {
+        guard let offer, offer.tier == .recommended else {
+            return false
+        }
+        guard let snoozedAt else {
+            return true
+        }
+        let sinceSnoozed = now.timeIntervalSince(snoozedAt)
+        return sinceSnoozed < 0 || sinceSnoozed >= bannerSnooze
+    }
+
+    /// 设置入口的小红点：有新版本，而且还没在「关于」里看过这一版。
+    public static func shouldShowSettingsDot(offer: Offer?, seenBuild: UInt64?) -> Bool {
+        guard let offer else {
+            return false
+        }
+        return seenBuild != offer.build
+    }
+
+    public static func recommendedPromptShownBuild(tx: DBReadTransaction) -> UInt64? {
+        return keyValueStore.getUInt64(recommendedPromptShownBuildKey, transaction: tx)
+    }
+
+    public static func markRecommendedPromptShown(build: UInt64, tx: DBWriteTransaction) {
+        keyValueStore.setUInt64(build, key: recommendedPromptShownBuildKey, transaction: tx)
+    }
+
+    public static func bannerSnoozedAt(tx: DBReadTransaction) -> Date? {
+        return keyValueStore.getDate(bannerSnoozedAtKey, transaction: tx)
+    }
+
+    public static func snoozeBanner(now: Date, tx: DBWriteTransaction) {
+        keyValueStore.setDate(now, key: bannerSnoozedAtKey, transaction: tx)
+    }
+
+    public static func aboutSeenBuild(tx: DBReadTransaction) -> UInt64? {
+        return keyValueStore.getUInt64(aboutSeenBuildKey, transaction: tx)
+    }
+
+    public static func markSeenInAbout(build: UInt64, tx: DBWriteTransaction) {
+        keyValueStore.setUInt64(build, key: aboutSeenBuildKey, transaction: tx)
+    }
+
+    /// 设置入口（会话列表左上角头像、设置里「关于 Tellomi」一行）要不要小红点。
+    public static func shouldShowSettingsDot(tx: DBReadTransaction, appExpiry: AppExpiry) -> Bool {
+        return shouldShowSettingsDot(offer: currentOffer(tx: tx, appExpiry: appExpiry), seenBuild: aboutSeenBuild(tx: tx))
     }
 }

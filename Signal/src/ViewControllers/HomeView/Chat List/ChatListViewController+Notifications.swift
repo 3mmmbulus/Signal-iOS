@@ -73,6 +73,13 @@ extension ChatListViewController {
             name: AppExpiry.AppExpiryDidChange,
             object: nil,
         )
+        // Tellomi（tellomi/tellomi#1491）：拿到新的更新清单，推荐提示、设置入口小红点和首页卡片跟着重判
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(tellomiUpdateManifestDidChange),
+            name: TellomiUpdateManifests.didChangeNotification,
+            object: nil,
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(significantTimeChangeNotification),
@@ -241,7 +248,18 @@ extension ChatListViewController {
         AssertIsOnMainThread()
 
         updateExpirationReminderView()
+        updateUpdateAvailableReminderView() // Tellomi（#1491）：只读时不挂推荐提示
+        updateBarButtonItems()
         loadCoordinator.loadIfNecessary()
+    }
+
+    @objc
+    private func tellomiUpdateManifestDidChange(_ notification: NSNotification) {
+        AssertIsOnMainThread()
+
+        updateUpdateAvailableReminderView()
+        updateBarButtonItems()
+        showFYISheetIfNecessary()
     }
 
     @objc
@@ -267,6 +285,8 @@ extension ChatListViewController {
         updateShouldBeUpdatingView()
         // Tellomi（#1218 F-01）：从系统设置回来，通知可能已经打开或关掉
         updateNotificationsDisabledReminderView()
+        // Tellomi（#1491）：「3 天后再提醒」可能刚好到期
+        updateUpdateAvailableReminderView()
     }
 
     @objc

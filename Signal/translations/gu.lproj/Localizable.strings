@@ -11240,3 +11240,7 @@
 "TELLOMI_FIRST_LAUNCH_BODY_FORMAT" = "We handle your personal information according to our %1$@. Signing up only needs your phone number, and your messages, profile and attachments are end-to-end encrypted — we can't read them.";
 "TELLOMI_FIRST_LAUNCH_DISAGREE_HINT" = "You need to agree before using Tellomi. If you don't, we won't collect any information.";
 "TELLOMI_FIRST_LAUNCH_TITLE" = "Welcome to Tellomi";
+"TELLOMI_UPDATE_AVAILABLE_DOT" = "નવું વર્ઝન ઉપલબ્ધ છે";
+"TELLOMI_UPDATE_AVAILABLE_LATER" = "પછી";
+"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "3 દિવસ પછી યાદ કરાવો";
+"TELLOMI_UPDATE_AVAILABLE_TITLE" = "Tellomi %@ ઉપલબ્ધ છે";

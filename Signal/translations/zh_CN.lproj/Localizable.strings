@@ -11760,3 +11760,7 @@
 
 /* Title of the privacy notice shown the first time the app is opened. */
 "TELLOMI_FIRST_LAUNCH_TITLE" = "欢迎使用 Tellomi";
+"TELLOMI_UPDATE_AVAILABLE_DOT" = "有新版本";
+"TELLOMI_UPDATE_AVAILABLE_LATER" = "以后再说";
+"TELLOMI_UPDATE_AVAILABLE_SNOOZE" = "3 天后再提醒";
+"TELLOMI_UPDATE_AVAILABLE_TITLE" = "发现新版本 %@";

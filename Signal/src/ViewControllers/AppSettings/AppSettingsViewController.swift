@@ -124,6 +124,87 @@ class AppSettingsViewController: OWSTableViewController2 {
         updateTableContents()
     }
 
+    /// Tellomi（tellomi/tellomi#1491）：「关于 Tellomi」一行上的小红点；从「关于」回来时可能该消失了。
+    private var showsAboutUpdateDot = false
+
+    private static func shouldShowAboutUpdateDot() -> Bool {
+        return SSKEnvironment.shared.databaseStorageRef.read { tx in
+            TellomiUpdateManifests.shouldShowSettingsDot(tx: tx, appExpiry: DependenciesBridge.shared.appExpiry)
+        }
+    }
+
+    /// 「关于 Tellomi」一行；有新版本、还没进去看过时行尾一个小红点（需求 app-update-and-version-policy §3.4「可选更新」）。
+    private func aboutTellomiItem() -> OWSTableItem {
+        let title = OWSLocalizedString(
+            "SETTINGS_ABOUT_TELLOMI_TITLE",
+            value: "About Tellomi",
+            comment: "Tellomi: title of the About Tellomi page and of its row in settings.",
+        )
+        let open: () -> Void = { [weak self] in
+            self?.navigationController?.pushViewController(AboutTellomiViewController(), animated: true)
+        }
+        showsAboutUpdateDot = Self.shouldShowAboutUpdateDot()
+        guard showsAboutUpdateDot else {
+            return .disclosureItem(icon: .info, withText: title, actionBlock: open)
+        }
+        return OWSTableItem(
+            customCellBlock: {
+                let cell = OWSTableItem.newCell()
+                cell.preservesSuperviewLayoutMargins = true
+                cell.contentView.preservesSuperviewLayoutMargins = true
+
+                let iconView = OWSTableItem.imageView(forIcon: .info, tintColor: nil, iconSize: OWSTableItem.iconSize)
+                iconView.setCompressionResistanceHorizontalHigh()
+
+                let nameLabel = UILabel()
+                nameLabel.text = title
+                nameLabel.textColor = Theme.primaryTextColor
+                nameLabel.font = OWSTableItem.primaryLabelFont
+                nameLabel.adjustsFontForContentSizeCategory = true
+                nameLabel.numberOfLines = 0
+                nameLabel.lineBreakMode = .byWordWrapping
+                nameLabel.setContentHuggingLow()
+                nameLabel.setCompressionResistanceHigh()
+
+                let dot = OWSLayerView.circleView()
+                dot.backgroundColor = .Signal.red
+                dot.autoSetDimensions(to: CGSize(square: 10))
+                dot.setContentHuggingHorizontalHigh()
+                dot.setCompressionResistanceHorizontalHigh()
+
+                let contentRow = UIStackView(arrangedSubviews: [
+                    iconView,
+                    UIView.spacer(withWidth: OWSTableItem.iconSpacing),
+                    nameLabel,
+                    UIView.hStretchingSpacer(),
+                    dot,
+                ])
+                contentRow.alignment = .center
+                cell.contentView.addSubview(contentRow)
+                contentRow.setContentHuggingHigh()
+                contentRow.autoPinEdgesToSuperviewMargins()
+                contentRow.autoSetDimension(.height, toSize: OWSTableItem.iconSize, relation: .greaterThanOrEqual)
+
+                cell.accessibilityLabel = title + ", " + OWSLocalizedString(
+                    "TELLOMI_UPDATE_AVAILABLE_DOT",
+                    value: "New version available",
+                    comment: "Tellomi: accessibility label of the small red dot on the settings entry when a newer version is available.",
+                )
+                cell.accessibilityIdentifier = UIView.accessibilityIdentifier(in: self, name: "aboutTellomi")
+                cell.accessoryType = .disclosureIndicator
+                return cell
+            },
+            actionBlock: open,
+        )
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if Self.shouldShowAboutUpdateDot() != showsAboutUpdateDot {
+            updateTableContents()
+        }
+    }
+
     func updateTableContents() {
         let db = DependenciesBridge.shared.db
         let tsAccountManager = DependenciesBridge.shared.tsAccountManager
@@ -414,17 +495,7 @@ class AppSettingsViewController: OWSTableViewController2 {
             },
         ))
         // Tellomi（tellomi/tellomi#1165）：「关于 Tellomi」从「帮助」里拿出来，紧跟「帮助」
-        section3.add(.disclosureItem(
-            icon: .info,
-            withText: OWSLocalizedString(
-                "SETTINGS_ABOUT_TELLOMI_TITLE",
-                value: "About Tellomi",
-                comment: "Tellomi: title of the About Tellomi page and of its row in settings.",
-            ),
-            actionBlock: { [weak self] in
-                self?.navigationController?.pushViewController(AboutTellomiViewController(), animated: true)
-            },
-        ))
+        section3.add(aboutTellomiItem())
         section3.add(.item(
             icon: .settingsInvite,
             name: OWSLocalizedString("SETTINGS_INVITE_TITLE", comment: "Settings table view cell label"),

@@ -244,7 +244,122 @@ final class TellomiUpdateRequiredTest: SignalBaseTest {
         XCTAssertEqual(opened, [ourNotes])
     }
 
+    func testTheRecommendedCardLinksTheReleaseNotes() throws {
+        // 需求 §3.2.1：说明正文在官网更新日志，推荐卡片用 notesUrl 链过去；清单没带地址就只有「更新不会影响聊天记录」那一句
+        let learnMore = OWSLocalizedString("APP_EXPIRED_TELLOMI_BLOCKING_LEARN_MORE", value: "What's in this update", comment: "")
+        guard case .attributed(let text) = TellomiUpdateRecommendedSheet.bodyText(notesUrl: ourNotes) else {
+            return XCTFail("expected the release notes link")
+        }
+        let linkRange = (text.string as NSString).range(of: learnMore)
+        XCTAssertNotEqual(linkRange.location, NSNotFound, text.string)
+        XCTAssertEqual(text.attribute(.link, at: linkRange.location, effectiveRange: nil) as? URL, ourNotes)
+        XCTAssertTrue(text.string.hasPrefix(OWSLocalizedString("APP_EXPIRED_TELLOMI_BLOCKING_CHATS_KEPT", value: "Updating keeps all the chats on this phone.", comment: "")), text.string)
+
+        guard case .plain(let plain) = TellomiUpdateRecommendedSheet.bodyText(notesUrl: nil) else {
+            return XCTFail("expected plain text without a notes address")
+        }
+        XCTAssertFalse(plain.contains(learnMore), plain)
+    }
+
+    func testTheChatListReminderShowsOnlyWithAnOffer() throws {
+        // 推荐档挂「Tellomi x 可用 · 立即更新」；没有要推荐的（可选档、只读、「3 天后再提醒」期间，调用方都传 nil）就收起
+        let reminders = CLVReminderViews()
+        try hideTheOtherReminders(in: reminders)
+        let reminder = try XCTUnwrap(subview(of: reminders.reminderViewCell, identifier: "updateAvailableReminderView"))
+        XCTAssertTrue(reminder.isHidden)
+        XCTAssertFalse(reminders.hasVisibleReminders)
+
+        let offer = TellomiUpdateManifests.Offer(tier: .recommended, version: "0.1.1", build: 6, updateUrl: nil, notesUrl: ourNotes)
+        XCTAssertTrue(reminders.configureUpdateAvailable(offer: offer), "shown: the chat list has to reload")
+        XCTAssertFalse(reminder.isHidden)
+        XCTAssertTrue(reminders.hasVisibleReminders)
+        let shown = labelTexts(in: reminder)
+        XCTAssertTrue(shown.contains(TellomiUpdateOffersUI.title(offer)), "\(shown)")
+        XCTAssertTrue(shown.contains(OWSLocalizedString("APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON", value: "Update now", comment: "")), "\(shown)")
+        XCTAssertFalse(reminders.configureUpdateAvailable(offer: offer), "already shown: nothing to reload")
+
+        XCTAssertTrue(reminders.configureUpdateAvailable(offer: nil), "hidden again")
+        XCTAssertTrue(reminder.isHidden)
+        XCTAssertFalse(reminders.hasVisibleReminders)
+    }
+
+    /// 会话列表平时按各自的状态把别的提示（服务中断、归档说明、用户名出错……）收起来；单独建出来时没人收，这里只留更新提示。
+    private func hideTheOtherReminders(in reminders: CLVReminderViews) throws {
+        let stack = try XCTUnwrap(reminders.reminderViewCell.contentView.subviews.lazy.compactMap { $0 as? UIStackView }.first)
+        for view in stack.arrangedSubviews where view.accessibilityIdentifier != "updateAvailableReminderView" {
+            view.isHidden = true
+        }
+    }
+
+    /// 给人看的截图（TELLOMI_SHOTS=1 时才跑，同 `AboutTellomiViewControllerTest`）：必须档阻断页（清单写的安全原因 + 版本 +
+    /// 「了解更新内容」）、推荐档的首页卡片和会话列表顶部提示、「关于」里「Tellomi x 可用」一行。写到 `TELLOMI_SHOTS_DIR/<屏宽>/`。
+    func testShotsOfTheUpdateTiers() async throws {
+        guard ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1" else {
+            throw XCTSkip("只在 TELLOMI_SHOTS=1 时截图")
+        }
+        let root = ProcessInfo.processInfo.environment["TELLOMI_SHOTS_DIR"] ?? NSTemporaryDirectory()
+        let directory = URL(fileURLWithPath: root).appendingPathComponent("\(Int(UIScreen.main.bounds.size.width))")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        enum Presentation {
+            case root, navigation, sheet
+        }
+
+        func shoot(_ viewController: UIViewController, name: String, presentation: Presentation) async throws {
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            let base = UIViewController()
+            base.view.backgroundColor = .Signal.background
+            switch presentation {
+            case .root: window.rootViewController = viewController
+            case .navigation: window.rootViewController = UINavigationController(rootViewController: viewController)
+            case .sheet: window.rootViewController = base
+            }
+            window.isHidden = false
+            window.layoutIfNeeded()
+            if presentation == .sheet {
+                base.present(viewController, animated: false)
+            }
+            // 底部卡片自己的转场（从底下滑上来、再按内容定高）不看 animated 参数，多等一会儿让它停稳
+            try await Task.sleep(nanoseconds: presentation == .sheet ? 1_500_000_000 : 500_000_000)
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            try XCTUnwrap(image.pngData()).write(to: directory.appendingPathComponent("\(name).png"))
+            if presentation == .sheet {
+                base.dismiss(animated: false)
+            }
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        let link = URL(string: "https://testflight.apple.com/join/AbCdEfGh")!
+        let blocking = TellomiUpdateRequiredAppBlockingViewController(openUpdatePage: {}, openNotes: { _ in }, viewChatsOnly: {})
+        blocking.pageInfo = TellomiUpdateRequiredPageInfo(reason: .security, newVersion: "0.1.1", notesUrl: ourNotes, updateUrl: link)
+        try await shoot(blocking, name: "update-required-security", presentation: .root)
+
+        let offer = TellomiUpdateManifests.Offer(tier: .recommended, version: "0.1.1", build: 6, updateUrl: link, notesUrl: ourNotes)
+        try await shoot(FullScreenUpdateRecommendedSheet(offer: offer), name: "update-recommended-card", presentation: .sheet)
+
+        // 会话列表顶上的提示：和会话列表一样，提示那一格放在表格第一行
+        let reminders = CLVReminderViews()
+        try hideTheOtherReminders(in: reminders)
+        _ = reminders.configureUpdateAvailable(offer: offer)
+        let list = ReminderCellTableViewController(cell: reminders.reminderViewCell)
+        list.title = OWSLocalizedString("CHAT_LIST_TITLE_INBOX", value: "Chats", comment: "")
+        try await shoot(list, name: "update-recommended-reminder", presentation: .navigation)
+
+        let about = AboutTellomiViewController(actions: nil, versionName: "0.1.0", buildNumber: "5", updateOffer: offer, openUpdate: { _ in })
+        try await shoot(about, name: "about-update-available", presentation: .navigation)
+    }
+
     // MARK: - The page
+
+    private func subview(of view: UIView, identifier: String) -> UIView? {
+        if view.accessibilityIdentifier == identifier {
+            return view
+        }
+        return view.subviews.lazy.compactMap { self.subview(of: $0, identifier: identifier) }.first
+    }
 
     private func labelTexts(in view: UIView) -> [String] {
         var result: [String] = []
@@ -374,6 +489,43 @@ private final class FakeUpdateRequiredBlockHost: TellomiUpdateRequiredBlockHost 
     var isUpdateRequiredBlockActive = false
     var updateRequiredViewChatsOnlyHandler: (@MainActor () -> Void)?
     var updateRequiredPageInfo: TellomiUpdateRequiredPageInfo = .serverRejected
+}
+
+/// 截图用：`TestAppContext` 的 frame 只有 300×400，底部卡片按它算最大高度会被截短；这里按真实屏幕算（App 里 frame 就是主窗口）。
+private final class FullScreenUpdateRecommendedSheet: TellomiUpdateRecommendedSheet {
+    override func maximumAllowedHeight() -> CGFloat {
+        UIScreen.main.bounds.size.height - view.safeAreaInsets.top
+    }
+}
+
+/// 截图用：只有一行（会话列表顶上那一格提示）的表格。
+private final class ReminderCellTableViewController: UITableViewController {
+    private let cell: UITableViewCell
+
+    init(cell: UITableViewCell) {
+        self.cell = cell
+        super.init(style: .plain)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        tableView.backgroundColor = .Signal.background
+        tableView.separatorStyle = .none
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 80
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        1
+    }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        cell
+    }
 }
 
 /// Tellomi（tellomi/tellomi#1491）：更新清单的采信、判档和撤销（需求 app-update-and-version-policy.md §3.2.1）。和 Android 的
@@ -575,6 +727,65 @@ final class TellomiUpdateManifestTest: XCTestCase {
     func testTheBuildNumberIsTheFourthVersionComponent() {
         XCTAssertEqual(TellomiUpdateManifests.currentBuild(appVersion: "0.1.0.5"), 5)
         XCTAssertNil(TellomiUpdateManifests.currentBuild(appVersion: "0.1.0"))
+    }
+
+    // MARK: - 推荐档、可选档（tellomi/tellomi#1491 第二刀）
+
+    private func offerManifest(recommended: UInt64 = 0, required: UInt64 = 0, requiredFrom: Date? = nil) -> TellomiUpdateManifest {
+        TellomiUpdateManifest(
+            serial: 1,
+            latest: .init(version: "0.1.1", build: 8, url: URL(string: "https://testflight.apple.com/join/AbCdEfGh")),
+            recommendedMinBuild: recommended,
+            requiredMinBuild: required,
+            requiredReason: required > 0 ? .security : nil,
+            requiredFrom: requiredFrom,
+            notesUrl: nil,
+        )
+    }
+
+    func testANewerVersionIsAnOptionalOfferAndARecommendedThresholdMakesItRecommended() {
+        let now = Date()
+        XCTAssertEqual(TellomiUpdateManifests.offer(manifest: offerManifest(), build: 5, now: now, isReadOnly: false)?.tier, .optional)
+        XCTAssertEqual(TellomiUpdateManifests.offer(manifest: offerManifest(recommended: 6), build: 5, now: now, isReadOnly: false)?.tier, .recommended)
+        XCTAssertEqual(
+            TellomiUpdateManifests.offer(manifest: offerManifest(required: 6, requiredFrom: now.addingTimeInterval(.day)), build: 5, now: now, isReadOnly: false)?.tier,
+            .recommended,
+            "a required update that is not in force yet is recommended first",
+        )
+        XCTAssertEqual(TellomiUpdateManifests.offer(manifest: offerManifest(), build: 5, now: now, isReadOnly: false)?.updateUrl, URL(string: "https://testflight.apple.com/join/AbCdEfGh"))
+    }
+
+    func testNoOfferWhenUpToDateRequiredOrReadOnly() {
+        let now = Date()
+        XCTAssertNil(TellomiUpdateManifests.offer(manifest: offerManifest(), build: 8, now: now, isReadOnly: false))
+        XCTAssertNil(TellomiUpdateManifests.offer(manifest: nil, build: 5, now: now, isReadOnly: false))
+        XCTAssertNil(TellomiUpdateManifests.offer(manifest: offerManifest(required: 6), build: 5, now: now, isReadOnly: false), "the blocking page speaks for the required tier")
+        XCTAssertNil(TellomiUpdateManifests.offer(manifest: offerManifest(recommended: 6), build: 5, now: now, isReadOnly: true))
+    }
+
+    func testTheRecommendedCardIsShownOncePerVersion() {
+        let offer = TellomiUpdateManifests.offer(manifest: offerManifest(recommended: 6), build: 5, now: Date(), isReadOnly: false)
+        XCTAssertTrue(TellomiUpdateManifests.shouldShowRecommendedSheet(offer: offer, shownForBuild: nil))
+        XCTAssertFalse(TellomiUpdateManifests.shouldShowRecommendedSheet(offer: offer, shownForBuild: 8))
+        XCTAssertTrue(TellomiUpdateManifests.shouldShowRecommendedSheet(offer: offer, shownForBuild: 7), "a newer version is shown again")
+        XCTAssertFalse(TellomiUpdateManifests.shouldShowRecommendedSheet(offer: TellomiUpdateManifests.offer(manifest: offerManifest(), build: 5, now: Date(), isReadOnly: false), shownForBuild: nil))
+    }
+
+    func testTheReminderComesBackThreeDaysAfterRemindMeLater() {
+        let now = Date()
+        let offer = TellomiUpdateManifests.offer(manifest: offerManifest(recommended: 6), build: 5, now: now, isReadOnly: false)
+        XCTAssertTrue(TellomiUpdateManifests.shouldShowBanner(offer: offer, snoozedAt: nil, now: now))
+        XCTAssertFalse(TellomiUpdateManifests.shouldShowBanner(offer: offer, snoozedAt: now.addingTimeInterval(-3 * .day + 1), now: now))
+        XCTAssertTrue(TellomiUpdateManifests.shouldShowBanner(offer: offer, snoozedAt: now.addingTimeInterval(-3 * .day), now: now))
+        XCTAssertTrue(TellomiUpdateManifests.shouldShowBanner(offer: offer, snoozedAt: now.addingTimeInterval(.day), now: now), "the clock went backwards")
+        XCTAssertFalse(TellomiUpdateManifests.shouldShowBanner(offer: TellomiUpdateManifests.offer(manifest: offerManifest(), build: 5, now: now, isReadOnly: false), snoozedAt: nil, now: now), "the optional tier has no reminder")
+    }
+
+    func testTheSettingsDotStaysUntilThisVersionWasSeenInAbout() {
+        let offer = TellomiUpdateManifests.offer(manifest: offerManifest(), build: 5, now: Date(), isReadOnly: false)
+        XCTAssertTrue(TellomiUpdateManifests.shouldShowSettingsDot(offer: offer, seenBuild: nil))
+        XCTAssertFalse(TellomiUpdateManifests.shouldShowSettingsDot(offer: offer, seenBuild: 8))
+        XCTAssertFalse(TellomiUpdateManifests.shouldShowSettingsDot(offer: nil, seenBuild: nil))
     }
 
     func testTheEmbeddedPublicKeyIsTheReleaseKeyEveryClientTrusts() {

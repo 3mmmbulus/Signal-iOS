@@ -76,14 +76,25 @@ final class AboutTellomiViewController: OWSTableViewController2 {
     private let buildNumber: String
     private var actions: AboutTellomiActions!
     private var defaultActions: DefaultAboutTellomiActions?
+    /// Tellomi（tellomi/tellomi#1491，需求 3.4「可选更新」）：清单里有比这台新的版本时，「更新」一组多一行「Tellomi x 可用」。
+    private let updateOffer: TellomiUpdateManifests.Offer?
+    private let openUpdate: (TellomiUpdateManifests.Offer) -> Void
 
     init(
         actions: AboutTellomiActions? = nil,
         versionName: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
         buildNumber: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "",
+        updateOffer: TellomiUpdateManifests.Offer? = AboutTellomiViewController.currentUpdateOffer(),
+        openUpdate: ((TellomiUpdateManifests.Offer) -> Void)? = nil,
     ) {
         self.versionName = versionName
         self.buildNumber = buildNumber
+        self.updateOffer = updateOffer
+        self.openUpdate = openUpdate ?? { offer in
+            MainActor.assumeIsolated {
+                TellomiUpdateOffersUI.openUpdate(offer)
+            }
+        }
         super.init()
         if let actions {
             self.actions = actions
@@ -97,6 +108,22 @@ final class AboutTellomiViewController: OWSTableViewController2 {
     override func viewDidLoad() {
         super.viewDidLoad()
         updateTableContents()
+    }
+
+    static func currentUpdateOffer() -> TellomiUpdateManifests.Offer? {
+        return SSKEnvironment.shared.databaseStorageRef.read { tx in
+            TellomiUpdateManifests.currentOffer(tx: tx, appExpiry: DependenciesBridge.shared.appExpiry)
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // 进了「关于」：这一版看过了，设置入口的小红点消失
+        if let updateOffer {
+            SSKEnvironment.shared.databaseStorageRef.write { tx in
+                TellomiUpdateManifests.markSeenInAbout(build: updateOffer.build, tx: tx)
+            }
+        }
     }
 
     override func themeDidChange() {
@@ -125,6 +152,19 @@ final class AboutTellomiViewController: OWSTableViewController2 {
 
         let updatesSection = OWSTableSection()
         updatesSection.headerTitle = OWSLocalizedString("SETTINGS_ABOUT_TELLOMI_SECTION_UPDATES", value: "Updates", comment: "Tellomi: section header in About Tellomi.")
+        if let updateOffer {
+            updatesSection.add(.item(
+                name: TellomiUpdateOffersUI.title(updateOffer),
+                accessoryText: OWSLocalizedString(
+                    "APP_EXPIRED_TELLOMI_BLOCKING_UPDATE_BUTTON",
+                    value: "Update now",
+                    comment: "Tellomi: The main button on the 'update required' page. Opens the page where the new version can be installed.",
+                ),
+                accessoryType: .disclosureIndicator,
+                accessibilityIdentifier: "tellomi.about.updateAvailable",
+                actionBlock: { [weak self] in self?.openUpdate(updateOffer) },
+            ))
+        }
         updatesSection.add(.disclosureItem(
             withText: OWSLocalizedString("SETTINGS_ABOUT_TELLOMI_CHECK_FOR_UPDATES", value: "Check for updates", comment: "Tellomi: row in About Tellomi that opens the download page."),
             actionBlock: { [weak self] in self?.actions.openInAppBrowser(TellomiAboutLinks.download) },
