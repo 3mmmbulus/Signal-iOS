@@ -2725,11 +2725,38 @@ public nonisolated struct BackupProto_StandardMessage: @unchecked Sendable {
     set {_uniqueStorage()._reactions = newValue}
   }
 
+  /// Tellomi (ADR-0068 §4.7): caption above the media. Field numbers from 1000
+  /// on are Tellomi's (docs/signal/VERSIONS.md in tellomi/tellomi); same as
+  /// tellomi/libsignal rust/message-backup/src/proto/backup.proto.
+  public var tellomi: BackupProto_TellomiStandardMessage {
+    get {_storage._tellomi ?? BackupProto_TellomiStandardMessage()}
+    set {_uniqueStorage()._tellomi = newValue}
+  }
+  /// Returns true if `tellomi` has been explicitly set.
+  public var hasTellomi: Bool {_storage._tellomi != nil}
+  /// Clears the value of `tellomi`. Subsequent reads from it will return its default value.
+  public mutating func clearTellomi() {_uniqueStorage()._tellomi = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+/// Tellomi (ADR-0068 §4.7), same as SignalService.TellomiDataMessage.
+public nonisolated struct BackupProto_TellomiStandardMessage: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The body is drawn above the media instead of below. Only meaningful with
+  /// a body and at least one image / video shown as media; ignored otherwise.
+  public var captionAboveMedia: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 public nonisolated struct BackupProto_ContactMessage: Sendable {
@@ -3627,6 +3654,17 @@ public nonisolated struct BackupProto_MessageAttachment: @unchecked Sendable {
   /// Clears the value of `clientUuid`. Subsequent reads from it will return its default value.
   public mutating func clearClientUuid() {_uniqueStorage()._clientUuid = nil}
 
+  /// Tellomi (ADR-0068 §4.5): how it is presented. Field numbers from 1000 on
+  /// are Tellomi's (docs/signal/VERSIONS.md in tellomi/tellomi).
+  public var tellomi: BackupProto_TellomiAttachment {
+    get {_storage._tellomi ?? BackupProto_TellomiAttachment()}
+    set {_uniqueStorage()._tellomi = newValue}
+  }
+  /// Returns true if `tellomi` has been explicitly set.
+  public var hasTellomi: Bool {_storage._tellomi != nil}
+  /// Clears the value of `tellomi`. Subsequent reads from it will return its default value.
+  public mutating func clearTellomi() {_uniqueStorage()._tellomi = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// Similar to SignalService.AttachmentPointer.Flags,
@@ -3675,6 +3713,44 @@ public nonisolated struct BackupProto_MessageAttachment: @unchecked Sendable {
     ]
 
   }
+
+  public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+/// Tellomi (ADR-0068 §4.1 / §4.5), same fields as SignalService.TellomiAttachment.
+/// Combinations a receiver would ignore (a spoiler on something sent as a file,
+/// a live photo video on a video, ...) are kept as they are: importers apply the
+/// same rules as when the message was received.
+public nonisolated struct BackupProto_TellomiAttachment: @unchecked Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Shown as a file row: original bytes and file name.
+  public var asFile: Bool {
+    get {_storage._asFile}
+    set {_uniqueStorage()._asFile = newValue}
+  }
+
+  /// Covered until tapped. Whether it was uncovered on a device is not backed up.
+  public var spoiler: Bool {
+    get {_storage._spoiler}
+    set {_uniqueStorage()._spoiler = newValue}
+  }
+
+  /// The moving half (video) of a live photo whose still is this attachment.
+  public var livePhotoVideo: BackupProto_FilePointer {
+    get {_storage._livePhotoVideo ?? BackupProto_FilePointer()}
+    set {_uniqueStorage()._livePhotoVideo = newValue}
+  }
+  /// Returns true if `livePhotoVideo` has been explicitly set.
+  public var hasLivePhotoVideo: Bool {_storage._livePhotoVideo != nil}
+  /// Clears the value of `livePhotoVideo`. Subsequent reads from it will return its default value.
+  public mutating func clearLivePhotoVideo() {_uniqueStorage()._livePhotoVideo = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
@@ -9824,7 +9900,7 @@ nonisolated extension BackupProto_Text: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StandardMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}quote\0\u{1}text\0\u{1}attachments\0\u{1}linkPreview\0\u{1}longText\0\u{1}reactions\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}quote\0\u{1}text\0\u{1}attachments\0\u{1}linkPreview\0\u{1}longText\0\u{1}reactions\0\u{2}b\u{f}tellomi\0")
 
   fileprivate class _StorageClass {
     var _quote: BackupProto_Quote? = nil
@@ -9833,6 +9909,7 @@ nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftP
     var _linkPreview: [BackupProto_LinkPreview] = []
     var _longText: BackupProto_FilePointer? = nil
     var _reactions: [BackupProto_Reaction] = []
+    var _tellomi: BackupProto_TellomiStandardMessage? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -9849,6 +9926,7 @@ nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftP
       _linkPreview = source._linkPreview
       _longText = source._longText
       _reactions = source._reactions
+      _tellomi = source._tellomi
     }
   }
 
@@ -9873,6 +9951,7 @@ nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftP
         case 4: try { try decoder.decodeRepeatedMessageField(value: &_storage._linkPreview) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._longText) }()
         case 6: try { try decoder.decodeRepeatedMessageField(value: &_storage._reactions) }()
+        case 1000: try { try decoder.decodeSingularMessageField(value: &_storage._tellomi) }()
         default: break
         }
       }
@@ -9903,6 +9982,9 @@ nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftP
       if !_storage._reactions.isEmpty {
         try visitor.visitRepeatedMessageField(value: _storage._reactions, fieldNumber: 6)
       }
+      try { if let v = _storage._tellomi {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1000)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -9918,10 +10000,41 @@ nonisolated extension BackupProto_StandardMessage: SwiftProtobuf.Message, SwiftP
         if _storage._linkPreview != rhs_storage._linkPreview {return false}
         if _storage._longText != rhs_storage._longText {return false}
         if _storage._reactions != rhs_storage._reactions {return false}
+        if _storage._tellomi != rhs_storage._tellomi {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension BackupProto_TellomiStandardMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TellomiStandardMessage"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.captionAboveMedia) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.captionAboveMedia != false {
+      try visitor.visitSingularBoolField(value: self.captionAboveMedia, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: BackupProto_TellomiStandardMessage, rhs: BackupProto_TellomiStandardMessage) -> Bool {
+    if lhs.captionAboveMedia != rhs.captionAboveMedia {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -11019,13 +11132,14 @@ nonisolated extension BackupProto_LinkPreview: SwiftProtobuf.Message, SwiftProto
 
 nonisolated extension BackupProto_MessageAttachment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MessageAttachment"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pointer\0\u{1}flag\0\u{1}wasDownloaded\0\u{1}clientUuid\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pointer\0\u{1}flag\0\u{1}wasDownloaded\0\u{1}clientUuid\0\u{2}e\u{f}tellomi\0")
 
   fileprivate class _StorageClass {
     var _pointer: BackupProto_FilePointer? = nil
     var _flag: BackupProto_MessageAttachment.Flag = .none
     var _wasDownloaded: Bool = false
     var _clientUuid: Data? = nil
+    var _tellomi: BackupProto_TellomiAttachment? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -11040,6 +11154,7 @@ nonisolated extension BackupProto_MessageAttachment: SwiftProtobuf.Message, Swif
       _flag = source._flag
       _wasDownloaded = source._wasDownloaded
       _clientUuid = source._clientUuid
+      _tellomi = source._tellomi
     }
   }
 
@@ -11062,6 +11177,7 @@ nonisolated extension BackupProto_MessageAttachment: SwiftProtobuf.Message, Swif
         case 2: try { try decoder.decodeSingularEnumField(value: &_storage._flag) }()
         case 3: try { try decoder.decodeSingularBoolField(value: &_storage._wasDownloaded) }()
         case 4: try { try decoder.decodeSingularBytesField(value: &_storage._clientUuid) }()
+        case 1001: try { try decoder.decodeSingularMessageField(value: &_storage._tellomi) }()
         default: break
         }
       }
@@ -11086,6 +11202,9 @@ nonisolated extension BackupProto_MessageAttachment: SwiftProtobuf.Message, Swif
       try { if let v = _storage._clientUuid {
         try visitor.visitSingularBytesField(value: v, fieldNumber: 4)
       } }()
+      try { if let v = _storage._tellomi {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1001)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -11099,6 +11218,7 @@ nonisolated extension BackupProto_MessageAttachment: SwiftProtobuf.Message, Swif
         if _storage._flag != rhs_storage._flag {return false}
         if _storage._wasDownloaded != rhs_storage._wasDownloaded {return false}
         if _storage._clientUuid != rhs_storage._clientUuid {return false}
+        if _storage._tellomi != rhs_storage._tellomi {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -11110,6 +11230,90 @@ nonisolated extension BackupProto_MessageAttachment: SwiftProtobuf.Message, Swif
 
 nonisolated extension BackupProto_MessageAttachment.Flag: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}VOICE_MESSAGE\0\u{1}BORDERLESS\0\u{1}GIF\0")
+}
+
+nonisolated extension BackupProto_TellomiAttachment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TellomiAttachment"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}asFile\0\u{1}spoiler\0\u{1}livePhotoVideo\0")
+
+  fileprivate class _StorageClass {
+    var _asFile: Bool = false
+    var _spoiler: Bool = false
+    var _livePhotoVideo: BackupProto_FilePointer? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _asFile = source._asFile
+      _spoiler = source._spoiler
+      _livePhotoVideo = source._livePhotoVideo
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularBoolField(value: &_storage._asFile) }()
+        case 2: try { try decoder.decodeSingularBoolField(value: &_storage._spoiler) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._livePhotoVideo) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if _storage._asFile != false {
+        try visitor.visitSingularBoolField(value: _storage._asFile, fieldNumber: 1)
+      }
+      if _storage._spoiler != false {
+        try visitor.visitSingularBoolField(value: _storage._spoiler, fieldNumber: 2)
+      }
+      try { if let v = _storage._livePhotoVideo {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: BackupProto_TellomiAttachment, rhs: BackupProto_TellomiAttachment) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._asFile != rhs_storage._asFile {return false}
+        if _storage._spoiler != rhs_storage._spoiler {return false}
+        if _storage._livePhotoVideo != rhs_storage._livePhotoVideo {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 nonisolated extension BackupProto_FilePointer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

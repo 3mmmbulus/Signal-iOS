@@ -63,6 +63,8 @@ extension BackupArchive {
             fileprivate let bodyAttachments: [BackupProto_MessageAttachment]
             fileprivate let quotedMessageThumbnail: BackupProto_MessageAttachment?
             fileprivate let linkPreviewImage: BackupProto_FilePointer?
+            /// Tellomi (ADR-0068 §4.7): set on the message once it is restored.
+            fileprivate let tellomiCaptionAboveMedia: Bool
         }
 
         /// Note: not a "Contact" in the Signal sense (not a Recipient or SignalAccount), just a message
@@ -502,6 +504,11 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
             return errorResult
         }
         standardMessage.reactions = reactions
+
+        // Tellomi (ADR-0068 §4.7)
+        if let tellomi = TellomiBackupArchiving.standardMessage(message, tx: context.tx) {
+            standardMessage.tellomi = tellomi
+        }
 
         if partialErrors.isEmpty {
             return .success(.standardMessage(standardMessage))
@@ -1166,6 +1173,10 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
                     context: context,
                 ))
             }
+            // Tellomi (ADR-0068 §4.7)
+            if text.tellomiCaptionAboveMedia {
+                TellomiCaptionAbove.setCaptionAboveMedia(true, messageUniqueId: message.uniqueId, tx: context.tx)
+            }
         case .contactShare(let contactShare):
             downstreamObjectResults.append(reactionArchiver.restoreReactions(
                 contactShare.reactions,
@@ -1500,6 +1511,7 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
                 bodyAttachments: standardMessage.attachments,
                 quotedMessageThumbnail: quotedMessageThumbnail,
                 linkPreviewImage: linkPreviewAttachment,
+                tellomiCaptionAboveMedia: standardMessage.hasTellomi && standardMessage.tellomi.captionAboveMedia,
             ))
             if partialErrors.isEmpty {
                 return .success(contents)
@@ -1517,6 +1529,7 @@ class BackupArchiveTSMessageContentsArchiver: BackupArchiveProtoStreamWriter {
                     bodyAttachments: standardMessage.attachments,
                     quotedMessageThumbnail: quotedMessageThumbnail,
                     linkPreviewImage: linkPreviewAttachment,
+                    tellomiCaptionAboveMedia: standardMessage.hasTellomi && standardMessage.tellomi.captionAboveMedia,
                 )),
                 partialErrors + messageBodyErrors,
             )

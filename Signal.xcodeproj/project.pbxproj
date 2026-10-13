@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B5F02C3BFD92AE54E8AA28AC /* TellomiBackupArchiving.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4DF4DCE0AE9E799DE2BFC5 /* TellomiBackupArchiving.swift */; };
 		F4E2C7521CFD67A865A0ED64 /* TellomiFeedEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44666E8BEB02E40DDDA80F9D /* TellomiFeedEventsTests.swift */; };
 		FCF3C4D0F24BDA34670BED65 /* FeedEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBA571ED9EF0C0ED68094FF /* FeedEvents.swift */; };
 		8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */; };
@@ -4424,6 +4425,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0C4DF4DCE0AE9E799DE2BFC5 /* TellomiBackupArchiving.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiBackupArchiving.swift; sourceTree = "<group>"; };
 		44666E8BEB02E40DDDA80F9D /* TellomiFeedEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsTests.swift; sourceTree = "<group>"; };
 		FBBA571ED9EF0C0ED68094FF /* FeedEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEvents.swift; sourceTree = "<group>"; };
 		B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedComposeTests.swift; sourceTree = "<group>"; };
@@ -11497,6 +11499,7 @@
 				66F6D69D2C77E4C500EFAF75 /* BackupArchiveContactAttachmentArchiver.swift */,
 				66232AD62CB993DF00AE6A76 /* BackupArchiveInteractionStore.swift */,
 				665F6F9C2C5C2FAD0002915C /* BackupArchiveMessageAttachmentArchiver.swift */,
+				0C4DF4DCE0AE9E799DE2BFC5 /* TellomiBackupArchiving.swift */,
 				044D84462E9FEDE20090BA64 /* BackupArchivePollArchiver.swift */,
 				6605B9812B19547C00E8A68A /* BackupArchiveReactionArchiver.swift */,
 				664A4D302CE2A27600AC26F3 /* BackupArchiveReactionStore.swift */,
@@ -20102,6 +20105,7 @@
 				665C0D5E2ADF53E200539A37 /* BackupArchiveManagerImpl.swift in Sources */,
 				C10E9FAF2BB778E100A609B9 /* BackupArchiveManagerMock.swift in Sources */,
 				665F6F9D2C5C2FAD0002915C /* BackupArchiveMessageAttachmentArchiver.swift in Sources */,
+				B5F02C3BFD92AE54E8AA28AC /* TellomiBackupArchiving.swift in Sources */,
 				044A2C6E2EEB444E00AA3CA0 /* BackupArchivePinMessageChatUpdateArchiver.swift in Sources */,
 				044D84472E9FEE010090BA64 /* BackupArchivePollArchiver.swift in Sources */,
 				044D84452E9FDDF00090BA64 /* BackupArchivePollTerminateChatUpdateArchiver.swift in Sources */,

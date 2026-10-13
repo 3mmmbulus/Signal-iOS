@@ -102,7 +102,8 @@ public enum TellomiLivePhoto {
         store.setData(data, key: TellomiMediaSpoiler.bodyKey(messageRowId: priorRevisionRowId, orderInMessage: orderInMessage), transaction: tx)
     }
 
-    private static func storedPointer(_ reference: AttachmentReference, tx: DBReadTransaction) -> SSKProtoAttachmentPointer? {
+    /// The nested pointer kept for this still (backups export it). Nil when it is not a live photo.
+    static func storedPointer(_ reference: AttachmentReference, tx: DBReadTransaction) -> SSKProtoAttachmentPointer? {
         guard
             case .message(.bodyAttachment) = reference.owner,
             let key = TellomiMediaSpoiler.key(for: reference.owner),

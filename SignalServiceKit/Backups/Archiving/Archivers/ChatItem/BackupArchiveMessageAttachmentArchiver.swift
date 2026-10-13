@@ -44,6 +44,10 @@ class BackupArchiveMessageAttachmentArchiver: BackupArchiveProtoStreamWriter {
             attachmentProto.pointer = pointerProto
             attachmentProto.flag = referencedAttachment.reference.renderingFlag.asBackupProtoFlag
             attachmentProto.wasDownloaded = referencedAttachment.attachment.asStream() != nil
+            // Tellomi (ADR-0068 §4.5): as a file, covered, live photo
+            if let tellomi = TellomiBackupArchiving.attachment(referencedAttachment.reference, tx: context.tx) {
+                attachmentProto.tellomi = tellomi
+            }
 
             switch referencedAttachment.reference.owner {
             case .message(.bodyAttachment(let metadata)):
@@ -84,6 +88,10 @@ class BackupArchiveMessageAttachmentArchiver: BackupArchiveProtoStreamWriter {
         attachmentProto.flag = referencedAttachment.reference.renderingFlag.asBackupProtoFlag
         attachmentProto.wasDownloaded = referencedAttachment.attachment.asStream() != nil
         // NOTE: clientUuid is unecessary for quoted reply attachments.
+        // Tellomi (ADR-0068 §4.5): a covered quoted thumbnail stays covered
+        if let tellomi = TellomiBackupArchiving.attachment(referencedAttachment.reference, tx: context.tx) {
+            attachmentProto.tellomi = tellomi
+        }
 
         return attachmentProto
     }
@@ -132,18 +140,21 @@ class BackupArchiveMessageAttachmentArchiver: BackupArchiveProtoStreamWriter {
 
         let ownedAttachments = withUnwrappedUUIDs.enumerated().map { idx, withUnwrappedUUID in
             let (attachment, clientUUID) = withUnwrappedUUID
+            let owner: AttachmentReference.OwnerBuilder = .messageBodyAttachment(.init(
+                messageRowId: messageRowId,
+                receivedAtTimestamp: message.receivedAtTimestamp,
+                threadRowId: thread.threadRowId,
+                isViewOnce: message.isViewOnceMessage,
+                isPastEditRevision: message.isPastEditRevision(),
+                orderInMessage: UInt32(idx),
+            ))
+            // Tellomi (ADR-0068 §4.5): covered, live photo -- as when it was received
+            TellomiBackupArchiving.restore(attachment, owner: owner, tx: context.tx)
             return OwnedAttachmentBackupPointerProto(
                 proto: attachment.pointer,
-                renderingFlag: attachment.flag.asAttachmentFlag,
+                renderingFlag: TellomiBackupArchiving.renderingFlag(attachment, isQuotedThumbnail: false),
                 clientUUID: clientUUID,
-                owner: .messageBodyAttachment(.init(
-                    messageRowId: messageRowId,
-                    receivedAtTimestamp: message.receivedAtTimestamp,
-                    threadRowId: thread.threadRowId,
-                    isViewOnce: message.isViewOnceMessage,
-                    isPastEditRevision: message.isPastEditRevision(),
-                    orderInMessage: UInt32(idx),
-                )),
+                owner: owner,
             )
         }
 
@@ -197,16 +208,19 @@ class BackupArchiveMessageAttachmentArchiver: BackupArchiveProtoStreamWriter {
             clientUUID = nil
         }
 
+        let owner: AttachmentReference.OwnerBuilder = .quotedReplyAttachment(.init(
+            messageRowId: messageRowId,
+            receivedAtTimestamp: message.receivedAtTimestamp,
+            threadRowId: thread.threadRowId,
+            isPastEditRevision: message.isPastEditRevision(),
+        ))
+        // Tellomi (ADR-0068 §4.5): a covered quoted thumbnail stays covered
+        TellomiBackupArchiving.restore(attachment, owner: owner, tx: context.tx)
         let ownedAttachment = OwnedAttachmentBackupPointerProto(
             proto: attachment.pointer,
-            renderingFlag: attachment.flag.asAttachmentFlag,
+            renderingFlag: TellomiBackupArchiving.renderingFlag(attachment, isQuotedThumbnail: true),
             clientUUID: clientUUID,
-            owner: .quotedReplyAttachment(.init(
-                messageRowId: messageRowId,
-                receivedAtTimestamp: message.receivedAtTimestamp,
-                threadRowId: thread.threadRowId,
-                isPastEditRevision: message.isPastEditRevision(),
-            )),
+            owner: owner,
         )
 
         return restoreAttachments(
@@ -394,8 +408,7 @@ extension AttachmentReference.RenderingFlag {
         case .shouldLoop:
             return .gif
         case .tellomiAsFile:
-            // Tellomi (ADR-0068 §4.5): backups don't carry asFile yet (needs MessageAttachment.tellomi in
-            // libsignal's backup.proto first); restored, it is an ordinary attachment again.
+            // Tellomi (ADR-0068 §4.5): carried in MessageAttachment.tellomi.asFile instead.
             return .none
         }
     }

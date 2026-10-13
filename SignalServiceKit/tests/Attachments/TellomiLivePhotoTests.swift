@@ -131,6 +131,99 @@ class TellomiLivePhotoTests: XCTestCase {
         XCTAssertTrue(TellomiLivePhoto.claimAutoplay(video))
     }
 
+    // MARK: - Backups (ADR-0068 §4.5)
+
+    /// Covered and live go into a backup (uncovered on this device doesn't) and come back on another message as
+    /// when they were received.
+    func testABackupCarriesCoveredAndLiveAndRestoresThem() throws {
+        let (threadRowId, messageRowId) = insertThreadAndInteraction()
+        let original = try insertBodyAttachment(messageRowId: messageRowId, threadRowId: threadRowId, order: 0, still: try still(video: video(), spoiler: true))
+        db.write { tx in _ = TellomiMediaSpoiler.markRevealed(original, tx: tx) }
+
+        let exported = try XCTUnwrap(db.read { tx in TellomiBackupArchiving.attachment(original, tx: tx) })
+        XCTAssertFalse(exported.asFile)
+        XCTAssertTrue(exported.spoiler)
+        XCTAssertEqual(exported.livePhotoVideo.locatorInfo.transitCdnKey, "cdn-key-video")
+        XCTAssertEqual(exported.livePhotoVideo.locatorInfo.transitCdnNumber, 3)
+        XCTAssertEqual(exported.livePhotoVideo.locatorInfo.encryptedDigest, Data(repeating: 9, count: 32))
+        XCTAssertEqual(exported.livePhotoVideo.contentType, "video/mp4")
+
+        let (restoredThreadRowId, restoredRowId) = insertThreadAndInteraction()
+        let restored = try restoreFromBackup(exported, contentType: "image/heic", messageRowId: restoredRowId, threadRowId: restoredThreadRowId)
+        db.read { tx in
+            XCTAssertTrue(TellomiMediaSpoiler.isSpoiler(restored, tx: tx))
+            XCTAssertTrue(TellomiMediaSpoiler.isCovered(restored, tx: tx), "uncovered on the other device isn't carried")
+            XCTAssertTrue(TellomiLivePhoto.isLivePhoto(restored, tx: tx))
+            XCTAssertNotNil(TellomiLivePhoto.video(restored, tx: tx))
+        }
+    }
+
+    /// Coming back, the rules of receiving apply.
+    func testRestoringAppliesTheRulesOfReceiving() throws {
+        let (threadRowId, messageRowId) = insertThreadAndInteraction()
+        let live = try insertBodyAttachment(messageRowId: messageRowId, threadRowId: threadRowId, order: 0, still: try still(video: video()))
+        let liveVideo = try XCTUnwrap(db.read { tx in TellomiBackupArchiving.attachment(live, tx: tx) }).livePhotoVideo
+
+        // As a file wins: neither covered nor live
+        var asFile = BackupProto_TellomiAttachment()
+        asFile.asFile = true
+        asFile.spoiler = true
+        asFile.livePhotoVideo = liveVideo
+        let (thread1, row1) = insertThreadAndInteraction()
+        let restoredAsFile = try restoreFromBackup(asFile, contentType: "image/heic", messageRowId: row1, threadRowId: thread1)
+        db.read { tx in
+            XCTAssertFalse(TellomiMediaSpoiler.isSpoiler(restoredAsFile, tx: tx))
+            XCTAssertFalse(TellomiLivePhoto.isLivePhoto(restoredAsFile, tx: tx))
+        }
+        var message = BackupProto_MessageAttachment()
+        message.tellomi = asFile
+        XCTAssertEqual(TellomiBackupArchiving.renderingFlag(message, isQuotedThumbnail: false), .tellomiAsFile)
+        XCTAssertEqual(TellomiBackupArchiving.renderingFlag(message, isQuotedThumbnail: true), .default, "a quoted thumbnail is never a file")
+
+        // A moving half only on a still
+        var onVideo = BackupProto_TellomiAttachment()
+        onVideo.livePhotoVideo = liveVideo
+        let (thread2, row2) = insertThreadAndInteraction()
+        let restoredVideo = try restoreFromBackup(onVideo, contentType: "video/mp4", messageRowId: row2, threadRowId: thread2)
+        db.read { tx in XCTAssertFalse(TellomiLivePhoto.isLivePhoto(restoredVideo, tx: tx)) }
+
+        // ...and only a video with where it is
+        var noLocation = onVideo
+        noLocation.livePhotoVideo.locatorInfo.clearTransitCdnKey()
+        let (thread3, row3) = insertThreadAndInteraction()
+        let restoredNoLocation = try restoreFromBackup(noLocation, contentType: "image/heic", messageRowId: row3, threadRowId: thread3)
+        db.read { tx in XCTAssertFalse(TellomiLivePhoto.isLivePhoto(restoredNoLocation, tx: tx)) }
+
+        // Nothing Tellomi: nothing in the backup
+        let (thread4, row4) = insertThreadAndInteraction()
+        let plain = try insertBodyAttachment(messageRowId: row4, threadRowId: thread4, order: 0, still: try still(video: nil))
+        db.read { tx in XCTAssertNil(TellomiBackupArchiving.attachment(plain, tx: tx)) }
+    }
+
+    /// Through the bytes another device reads, then restored the way `BackupArchiveMessageAttachmentArchiver` does it.
+    private func restoreFromBackup(
+        _ tellomi: BackupProto_TellomiAttachment,
+        contentType: String,
+        messageRowId: Int64,
+        threadRowId: Int64,
+    ) throws -> AttachmentReference {
+        var attachment = BackupProto_MessageAttachment()
+        attachment.pointer.contentType = contentType
+        attachment.tellomi = tellomi
+        let data: Data = try attachment.serializedBytes()
+        let decoded = try BackupProto_MessageAttachment(serializedBytes: data)
+        let owner = AttachmentReference.OwnerBuilder.messageBodyAttachment(.init(
+            messageRowId: messageRowId,
+            receivedAtTimestamp: Date().ows_millisecondsSince1970,
+            threadRowId: threadRowId,
+            isViewOnce: false,
+            isPastEditRevision: false,
+            orderInMessage: 0,
+        ))
+        db.write { tx in TellomiBackupArchiving.restore(decoded, owner: owner, tx: tx) }
+        return try insertBodyAttachment(messageRowId: messageRowId, threadRowId: threadRowId, order: 0, still: try still(video: nil))
+    }
+
     // MARK: - Helpers
 
     private func video(contentType: String = "video/mp4", cdnKey: String? = "cdn-key-video", nested: Bool = false) -> SSKProtoAttachmentPointer {
@@ -193,6 +286,8 @@ class TellomiLivePhotoTests: XCTestCase {
                 ),
                 tx: tx,
             )
+            // Both, as `AttachmentManagerImpl` does for every received pointer
+            TellomiMediaSpoiler.markReceived(still, mimeType: "image/heic", owner: owner, tx: tx)
             TellomiLivePhoto.markReceived(still, mimeType: "image/heic", owner: owner, tx: tx)
         }
         return try XCTUnwrap(db.read { tx in

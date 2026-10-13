@@ -413,7 +413,6 @@ final class TellomiAsFileCellTests: XCTestCase {
         let live = try await insertStream(renderingFlag: .default, fileName: "IMG_0014.PNG", thread: thread, livePhoto: true)
         try cacheLiveVideo(of: live)
         let (window, viewer, page) = try await hostViewer(live, thread: thread)
-        defer { window.isHidden = true }
 
         // Opening plays it once, muted
         XCTAssertNotNil(Self.find(TellomiLivePhotoView.self, in: page.view))
@@ -433,6 +432,11 @@ final class TellomiAsFileCellTests: XCTestCase {
         page.toggleTellomiLive()
         XCTAssertFalse(page.isTellomiLiveActive)
         XCTAssertFalse(button.isSelected)
+
+        // Take the viewer down and let what it scheduled run while the environment is still here
+        window.rootViewController = nil
+        window.isHidden = true
+        try await Task.sleep(nanoseconds: 500_000_000)
     }
 
     /// 给人看的截图：会话里的实况（角标、放到一半）、查看器的「实况」按钮。
