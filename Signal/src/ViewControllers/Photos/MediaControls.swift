@@ -106,6 +106,14 @@ final class CameraCaptureControl: UIControl {
 
     weak var delegate: CameraCaptureControlDelegate?
 
+    /// Tellomi（tellomi/tellomi#1520 C-1，同 Tellomi 安卓）：录像模式里快门是红的，点一下开始录、再点一下停；按住照旧是按住录。
+    var isVideoMode = false {
+        didSet {
+            guard oldValue != isVideoMode, recordingState == .notRecording else { return }
+            updateShutterButtonAppearanceForCurrentState()
+        }
+    }
+
     init(axis: Axis) {
         super.init(frame: CGRect(origin: .zero, size: CameraCaptureControl.intrinsicContentSize(forAxis: axis)))
 
@@ -292,7 +300,7 @@ final class CameraCaptureControl: UIControl {
         switch recordingState {
         case .notRecording, .maybeStartingRecording:
             shutterButtonInnerCircle.alpha = 1
-            shutterButtonInnerCircle.backgroundColor = .white
+            shutterButtonInnerCircle.backgroundColor = isVideoMode ? .Signal.red : .white
 
             shutterButtonOuterCircleWidthConstraint.constant = LayoutMetrics.outerCircleDefaultSize
             shutterButtonInnerCircleWidthConstraint.constant = LayoutMetrics.innerCircleSize
@@ -578,14 +586,8 @@ final class CameraCaptureControl: UIControl {
                     finishVideoRecording()
                 }
 
-            case .notRecording, .maybeStartingRecording:
-                if recordingState == .maybeStartingRecording {
-                    recordingState = .notRecording
-                }
-                capturePhoto()
-
-            case .recordingLocked, .recordingUsingVoiceOver:
-                break
+            case .notRecording, .maybeStartingRecording, .recordingLocked, .recordingUsingVoiceOver:
+                handleTap()
             }
 
         case .cancelled, .failed:
@@ -601,6 +603,36 @@ final class CameraCaptureControl: UIControl {
         @unknown default:
             owsFailDebug("unexpected gesture state: \(gesture.state.rawValue)")
         }
+    }
+
+    /// 按下又松开、没按到开始录：拍照模式拍一张；录像模式开始录、不用按住（Tellomi C-1），点着在录的再点一下停。
+    private func handleTap() {
+        switch recordingState {
+        case .notRecording, .maybeStartingRecording:
+            if recordingState == .maybeStartingRecording {
+                recordingState = .notRecording
+            }
+            didTap()
+
+        case .recordingUsingVoiceOver:
+            // Tellomi C-1：录像模式里点着开始的，再点一下快门就停（停止键本来也能停）。
+            if isVideoMode {
+                finishVideoRecording()
+            }
+
+        case .recording, .recordingLocked:
+            break
+        }
+    }
+
+    private func didTap() {
+        guard isVideoMode else {
+            capturePhoto()
+            return
+        }
+        // 先把自己摆成「点着在录」，相机页回过头来设录像状态时就不会改成「按住在录」。
+        setRecordingState(.recordingUsingVoiceOver, animationDuration: animationDuration)
+        startVideoRecording()
     }
 
     private static let minDistanceBeforeActivatingLockSlider: CGFloat = 30
@@ -1794,11 +1826,17 @@ final class ComposerTypeSelectionControl: UISegmentedControl {
         comment: "One of two possible sources when composing a new story. Displayed at the bottom in in-app camera.",
     )
 
-    init() {
+    convenience init() {
+        self.init(segmentTitles: [ComposerTypeSelectionControl.titleCamera, ComposerTypeSelectionControl.titleText])
+    }
+
+    /// Tellomi（tellomi/tellomi#1520 C-1）：同一种样子、别的几个选项（会话里的相机：「视频 | 照片」）。
+    init(segmentTitles: [String]) {
         super.init(frame: .zero)
 
-        insertSegment(withTitle: ComposerTypeSelectionControl.titleText.uppercased(), at: 0, animated: false)
-        insertSegment(withTitle: ComposerTypeSelectionControl.titleCamera.uppercased(), at: 0, animated: false)
+        for (index, title) in segmentTitles.enumerated() {
+            insertSegment(withTitle: title.uppercased(), at: index, animated: false)
+        }
 
         // Use a clear image for the background and the dividers
         if #unavailable(iOS 26) {
@@ -1873,6 +1911,12 @@ extension CameraCaptureControl {
         get {
             switch recordingState {
             case .notRecording:
+                if isVideoMode {
+                    return OWSLocalizedString(
+                        "CAMERA_VO_TAKE_VIDEO",
+                        comment: "VoiceOver label for other possible action for round capture button in in-app camera.",
+                    )
+                }
                 return OWSLocalizedString(
                     "CAMERA_VO_TAKE_PICTURE",
                     comment: "VoiceOver label for the round capture button in in-app camera.",
@@ -1907,7 +1951,11 @@ extension CameraCaptureControl {
     override func accessibilityActivate() -> Bool {
         switch recordingState {
         case .notRecording:
-            capturePhoto()
+            if isVideoMode {
+                startVideoRecording()
+            } else {
+                capturePhoto()
+            }
 
         case .recordingUsingVoiceOver:
             accessibilityStopVideoRecording()
@@ -2208,6 +2256,13 @@ extension CameraCaptureControl {
     }
 
     static var longPressDurationForTesting: TimeInterval { longPressDurationThreshold }
+
+    /// 同手指点一下快门（按下马上松开）。
+    func tapForTesting() {
+        handleTap()
+    }
+
+    var shutterInnerColorForTesting: UIColor? { shutterButtonInnerCircle.backgroundColor }
 }
 
 #endif

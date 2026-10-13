@@ -341,12 +341,10 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
 
             let captureControlState: CameraCaptureControl.RecordingState = UIAccessibility.isVoiceOverRunning ? .recordingUsingVoiceOver : .recording
             let animationDuration: TimeInterval = animated ? 0.4 : 0
-            cameraBottomBar.captureControl.setRecordingState(
-                captureControlState,
-                animationDuration: animationDuration,
-            )
-            if let cameraSideBar {
-                cameraSideBar.cameraCaptureControl.setRecordingState(
+            // Tellomi C-1：快门自己已经摆好了的（录像模式里点着开始的、按住开始的）不改。
+            let captureControls = [cameraBottomBar.captureControl, cameraSideBar?.cameraCaptureControl].compactMap { $0 }
+            for captureControl in captureControls where captureControl.recordingState == .notRecording || captureControl.recordingState == .maybeStartingRecording {
+                captureControl.setRecordingState(
                     captureControlState,
                     animationDuration: animationDuration,
                 )
@@ -366,6 +364,7 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         }
 
         cameraBottomBar.setIsRecordingVideo(isRecordingVideo, animated: animated)
+        cameraModeControl?.setIsHidden(isRecordingVideo, animated: animated)
         if let cameraSideBar {
             cameraSideBar.setIsRecordingVideo(isRecordingVideo, animated: animated)
         }
@@ -449,6 +448,42 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
 
     // Optional because in some flows (e.g. launching from chat) it's camera-only UI.
     private var composerTypeSelectionControl: ComposerTypeSelectionControl?
+
+    /// Tellomi（tellomi/tellomi#1520 C-1，同 Tellomi 安卓 `MediaCaptureModeBar`；Telegram 聊天相机 `TGCameraModeControl`）：
+    /// 没有「相机 | 文字」那条的相机（会话里的）底部一条「视频 | 照片」，点字或在取景框上横滑切换（右滑视频、左滑照片）；录像时收起。
+    private var cameraModeControl: ComposerTypeSelectionControl?
+    private var isVideoMode = false
+
+    /// 底部那条选择条：快拍里是「相机 | 文字」，会话里是「视频 | 照片」，摆在同一个位置。
+    private var bottomSelectionControl: UIView? { composerTypeSelectionControl ?? cameraModeControl }
+
+    private func setVideoMode(_ isVideoMode: Bool, animated: Bool) {
+        guard !isRecordingVideo, self.isVideoMode != isVideoMode else {
+            cameraModeControl?.selectedSegmentIndex = self.isVideoMode ? 0 : 1
+            return
+        }
+        self.isVideoMode = isVideoMode
+        cameraModeControl?.selectedSegmentIndex = isVideoMode ? 0 : 1
+        cameraBottomBar.captureControl.isVideoMode = isVideoMode
+        cameraSideBar?.cameraCaptureControl.isVideoMode = isVideoMode
+        // 同 Telegram：录像的闪光灯只有开 / 关，切到录像时「自动」改成「开」。
+        if isVideoMode, cameraCaptureSession.flashMode == .auto {
+            cameraCaptureSession.setFlashMode(.on).done {
+                self.updateFlashModeControl(animated: animated)
+            }
+        }
+    }
+
+    @objc
+    private func didSwipeToVideoMode() {
+        setVideoMode(true, animated: true)
+    }
+
+    @objc
+    private func didSwipeToPhotoMode() {
+        setVideoMode(false, animated: true)
+    }
+
     // Composer mode selection control is only hidden when editing text story.
     private func updateComposerTypeSelectionControlVisibility(animated: Bool) {
         guard let composerTypeSelectionControl, isTextEditorUIInitialized else { return }
@@ -700,10 +735,10 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
             constant: -layoutPadding,
         ))
 
-        if let composerTypeSelectionControl {
+        if let bottomSelectionControl {
             constraints += [
                 // CAMERA | TEXT control is pinned to the bottom of the screen with a fixed margin.
-                composerTypeSelectionControl.bottomAnchor.constraint(
+                bottomSelectionControl.bottomAnchor.constraint(
                     equalTo: topLevelContentContainer.bottomAnchor,
                     constant: -layoutPadding,
                 ),
@@ -711,13 +746,13 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
                 // Bottom camera controls are placed above CAMERA | TEXT with a fixed margin.
                 // Note that `cameraBottomBar` might be hidden - but we still position it properly.
                 cameraBottomBar.bottomAnchor.constraint(
-                    equalTo: composerTypeSelectionControl.topAnchor,
+                    equalTo: bottomSelectionControl.topAnchor,
                     constant: -layoutPadding,
                 ),
 
                 // Proceed button is centered vertically with CAMERA | TEXT control.
                 cameraModeProceedButton.centerYAnchor.constraint(
-                    equalTo: composerTypeSelectionControl.centerYAnchor,
+                    equalTo: bottomSelectionControl.centerYAnchor,
                 ),
             ]
         } else {
@@ -854,8 +889,8 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         ))
 
         // CAMERA | TEXT control has a fixed spacing below the content view.
-        if let composerTypeSelectionControl {
-            constraints.append(composerTypeSelectionControl.topAnchor.constraint(
+        if let bottomSelectionControl {
+            constraints.append(bottomSelectionControl.topAnchor.constraint(
                 equalTo: contentView.bottomAnchor,
                 constant: 16,
             ))
@@ -873,9 +908,9 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         // * horizontal: aligned to the trailing edge of the screen.
         // * vertical: below camera viewfinder, aligned with CAMERA | TEXT control if it's there.
         constraints.append(cameraModeProceedButton.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor))
-        if let composerTypeSelectionControl {
+        if let bottomSelectionControl {
             constraints.append(cameraModeProceedButton.centerYAnchor.constraint(
-                equalTo: composerTypeSelectionControl.centerYAnchor,
+                equalTo: bottomSelectionControl.centerYAnchor,
             ))
         } else {
             constraints.append(cameraModeProceedButton.topAnchor.constraint(
@@ -930,23 +965,23 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
             constant: -verticalSpacing,
         ))
 
-        if let composerTypeSelectionControl {
+        if let bottomSelectionControl {
             constraints += [
                 // CAMERA | TEXT control is pinned to the bottom of the screen with a fixed margin.
-                composerTypeSelectionControl.bottomAnchor.constraint(
+                bottomSelectionControl.bottomAnchor.constraint(
                     equalTo: contentView.bottomAnchor,
                     constant: -verticalSpacing,
                 ),
 
                 // Camera controls are placed above CAMERA | TEXT with a fixed margin.
                 cameraBottomBar.bottomAnchor.constraint(
-                    equalTo: composerTypeSelectionControl.topAnchor,
+                    equalTo: bottomSelectionControl.topAnchor,
                     constant: -verticalSpacing,
                 ),
 
                 // Proceed button is centered vertically with CAMERA | TEXT control.
                 cameraModeProceedButton.centerYAnchor.constraint(
-                    equalTo: composerTypeSelectionControl.centerYAnchor,
+                    equalTo: bottomSelectionControl.centerYAnchor,
                 ),
             ]
         } else {
@@ -1084,6 +1119,32 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
             ])
 
             self.composerTypeSelectionControl = composerTypeSelectionControl
+        } else {
+            // Tellomi C-1：会话里的相机，同一个位置是「视频 | 照片」。
+            let cameraModeControl = ComposerTypeSelectionControl(segmentTitles: [CommonStrings.attachmentTypeVideo, CommonStrings.attachmentTypePhoto])
+            cameraModeControl.selectedSegmentIndex = 1
+            cameraModeControl.translatesAutoresizingMaskIntoConstraints = false
+            cameraModeControl.addAction(
+                UIAction { [weak self, weak cameraModeControl] _ in
+                    guard let self, let cameraModeControl else { return }
+                    self.setVideoMode(cameraModeControl.selectedSegmentIndex == 0, animated: true)
+                },
+                for: .valueChanged,
+            )
+            view.addSubview(cameraModeControl)
+            NSLayoutConstraint.activate([
+                cameraModeControl.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            ])
+            self.cameraModeControl = cameraModeControl
+
+            // 同 Telegram 聊天相机：在取景框上右滑到视频、左滑到照片（从右到左的语言反过来）。
+            let isRTL = CurrentAppContext().isRTL
+            let toVideo = UISwipeGestureRecognizer(target: self, action: #selector(didSwipeToVideoMode))
+            toVideo.direction = isRTL ? .left : .right
+            previewView.addGestureRecognizer(toVideo)
+            let toPhoto = UISwipeGestureRecognizer(target: self, action: #selector(didSwipeToPhotoMode))
+            toPhoto.direction = isRTL ? .right : .left
+            previewView.addGestureRecognizer(toPhoto)
         }
 
         // Zoom control.
@@ -1491,7 +1552,7 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
     private func didTapFlashMode() {
         // Tellomi C-5：切的时候轻震一下（同 Telegram）。
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        cameraCaptureSession.toggleFlashMode().done {
+        cameraCaptureSession.toggleFlashMode(isVideoMode: isVideoMode).done {
             self.updateFlashModeControl(animated: true)
         }.catch { error in
             owsFailDebug("Error: \(error)")

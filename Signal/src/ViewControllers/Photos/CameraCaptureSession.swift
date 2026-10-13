@@ -244,22 +244,29 @@ class CameraCaptureSession: NSObject {
 
     var flashMode: AVCaptureDevice.FlashMode { photoCapture.flashMode }
 
-    func toggleFlashMode() -> Guarantee<Void> {
+    func toggleFlashMode(isVideoMode: Bool = false) -> Guarantee<Void> {
         return sessionQueue.async(.promise) {
-            let flashMode = Self.nextFlashMode(after: self.photoCapture.flashMode)
+            let flashMode = Self.nextFlashMode(after: self.photoCapture.flashMode, isVideoMode: isVideoMode)
             Logger.debug("new flashMode: \(flashMode.rawValue)")
             self.photoCapture.flashMode = flashMode
         }
     }
 
+    /// Tellomi（tellomi/tellomi#1520 C-1）：切到录像模式时「自动」改成「开」（同 Telegram）。
+    func setFlashMode(_ flashMode: AVCaptureDevice.FlashMode) -> Guarantee<Void> {
+        return sessionQueue.async(.promise) {
+            self.photoCapture.flashMode = flashMode
+        }
+    }
+
     /// Tellomi（tellomi/tellomi#1520 C-5）：关 → 开 → 自动 → 关（照 Telegram 新相机 `CameraScreen.toggleFlashMode` 拍照时的顺序，
-    /// 和 Tellomi 安卓 `FlashMode.next()` 一样；上游是自动 → 开 → 关）。
-    static func nextFlashMode(after flashMode: AVCaptureDevice.FlashMode) -> AVCaptureDevice.FlashMode {
+    /// 和 Tellomi 安卓 `FlashMode.next()` 一样；上游是自动 → 开 → 关）。录像模式（C-1）只有关 / 开。
+    static func nextFlashMode(after flashMode: AVCaptureDevice.FlashMode, isVideoMode: Bool = false) -> AVCaptureDevice.FlashMode {
         switch flashMode {
         case .off:
             return .on
         case .on:
-            return .auto
+            return isVideoMode ? .off : .auto
         case .auto:
             return .off
         @unknown default:
