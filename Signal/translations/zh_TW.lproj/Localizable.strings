@@ -5190,6 +5190,24 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "繪製以模糊其他臉孔或區域";
 
+/* Image editor brush menu: a pen that ends in an arrow head. */
+"IMAGE_EDITOR_TELLOMI_BRUSH_ARROW" = "箭頭";
+
+/* Image editor brush menu: the eraser, which removes earlier drawing. */
+"IMAGE_EDITOR_TELLOMI_BRUSH_ERASER" = "橡皮擦";
+
+/* Image editor brush menu: the translucent highlighter. */
+"IMAGE_EDITOR_TELLOMI_BRUSH_HIGHLIGHTER" = "螢光筆";
+
+/* Accessibility label of the image editor's brush button, which opens a menu of brushes (pen, arrow, highlighter, neon, eraser). */
+"IMAGE_EDITOR_TELLOMI_BRUSH_MENU" = "選擇畫筆";
+
+/* Image editor brush menu: a glowing neon pen. */
+"IMAGE_EDITOR_TELLOMI_BRUSH_NEON" = "霓虹";
+
+/* Image editor brush menu: the regular pen. */
+"IMAGE_EDITOR_TELLOMI_BRUSH_PEN" = "筆刷";
+
 /* Accessibility label of the eyedropper button in the image editor's draw and text tools; it lets the user pick a color from the photo. */
 "IMAGE_EDITOR_TELLOMI_EYEDROPPER" = "從圖片中取色";
 

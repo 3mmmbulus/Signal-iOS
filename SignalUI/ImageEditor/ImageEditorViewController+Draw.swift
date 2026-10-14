@@ -106,6 +106,7 @@ extension ImageEditorViewController {
                 strokeType: currentStrokeType,
                 unitSamples: currentStrokeSamples,
                 unitStrokeWidth: unitStrokeWidth,
+                isFinished: false,
             )
             model.append(item: stroke)
             currentStroke = stroke
@@ -128,10 +129,15 @@ extension ImageEditorViewController {
                 strokeType: currentStrokeType,
                 unitSamples: currentStrokeSamples,
                 unitStrokeWidth: unitStrokeWidth,
+                isFinished: gestureRecognizer.state == .ended,
             )
             model.replace(item: stroke, suppressUndo: true)
 
             if gestureRecognizer.state == .ended {
+                // Tellomi（tellomi/tellomi#1522 E-2）：抬手了，箭头长出来。
+                if stroke.strokeType == .arrow {
+                    imageEditorView.canvasView.animateArrowHead(itemId: stroke.itemId)
+                }
                 currentStroke = nil
                 currentStrokeSamples.removeAll()
             } else {
@@ -148,7 +154,62 @@ extension ImageEditorViewController {
         var strokeType: ImageEditorStrokeItem.StrokeType = .pen {
             didSet {
                 updateStrokeTypeButtonImage()
+                updateStrokeTypeMenu()
             }
+        }
+
+        /// Tellomi（tellomi/tellomi#1522 E-2，照 Telegram 两端一排可选的笔）：画笔键点开是笔的菜单，按 Telegram 的顺序——
+        /// 笔、箭头、荧光笔（Telegram 的「马克笔」）、霓虹、橡皮。上游这里是笔 / 荧光笔来回切。
+        static let brushes: [ImageEditorStrokeItem.StrokeType] = [.pen, .arrow, .highlighter, .neon, .eraser]
+
+        var onStrokeTypeSelected: ((ImageEditorStrokeItem.StrokeType) -> Void)?
+
+        func select(strokeType: ImageEditorStrokeItem.StrokeType) {
+            self.strokeType = strokeType
+            onStrokeTypeSelected?(strokeType)
+        }
+
+        static func title(for strokeType: ImageEditorStrokeItem.StrokeType) -> String {
+            switch strokeType {
+            case .pen, .blur:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_BRUSH_PEN", comment: "Image editor brush menu: the regular pen.")
+            case .highlighter:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_BRUSH_HIGHLIGHTER", comment: "Image editor brush menu: the translucent highlighter.")
+            case .arrow:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_BRUSH_ARROW", comment: "Image editor brush menu: a pen that ends in an arrow head.")
+            case .neon:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_BRUSH_NEON", comment: "Image editor brush menu: a glowing neon pen.")
+            case .eraser:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_BRUSH_ERASER", comment: "Image editor brush menu: the eraser, which removes earlier drawing.")
+            }
+        }
+
+        static func image(for strokeType: ImageEditorStrokeItem.StrokeType) -> UIImage {
+            let symbol = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+            switch strokeType {
+            case .pen, .blur:
+                return UIImage(imageLiteralResourceName: "brush-pen")
+            case .highlighter:
+                return UIImage(imageLiteralResourceName: "brush-highlighter")
+            case .arrow:
+                return UIImage(systemName: "arrow.up.right", withConfiguration: symbol) ?? UIImage()
+            case .neon:
+                return UIImage(systemName: "scribble.variable", withConfiguration: symbol) ?? UIImage()
+            case .eraser:
+                return UIImage(systemName: "eraser", withConfiguration: symbol) ?? UIImage()
+            }
+        }
+
+        private func updateStrokeTypeMenu() {
+            strokeTypeButton.menu = UIMenu(children: Self.brushes.map { brush in
+                UIAction(
+                    title: Self.title(for: brush),
+                    image: Self.image(for: brush),
+                    state: brush == strokeType ? .on : .off,
+                ) { [weak self] _ in
+                    self?.select(strokeType: brush)
+                }
+            })
         }
 
         let colorPickerBar: ColorPickerBar
@@ -162,18 +223,11 @@ extension ImageEditorViewController {
         let eyedropperButton = ImageEditorViewController.makeEyedropperButton()
 
         private func updateStrokeTypeButtonImage() {
-            switch strokeType {
-            case .pen:
-                strokeTypeButton.configuration?.image = UIImage(imageLiteralResourceName: "brush-pen")
-            case .highlighter:
-                strokeTypeButton.configuration?.image = UIImage(imageLiteralResourceName: "brush-highlighter")
-            case .blur:
+            guard strokeType != .blur else {
                 owsFailDebug("Invalid stroke type")
+                return
             }
-        }
-
-        func toggleStrokeType() {
-            strokeType = strokeType == .pen ? .highlighter : .pen
+            strokeTypeButton.configuration?.image = Self.image(for: strokeType)
         }
 
         init(currentColor: ColorPickerBarColor) {
@@ -188,6 +242,12 @@ extension ImageEditorViewController {
             strokeTypeButton.setCompressionResistanceHorizontalHigh()
             eyedropperButton.setCompressionResistanceHorizontalHigh()
             updateStrokeTypeButtonImage() // just in case
+            strokeTypeButton.showsMenuAsPrimaryAction = true
+            strokeTypeButton.accessibilityLabel = OWSLocalizedString(
+                "IMAGE_EDITOR_TELLOMI_BRUSH_MENU",
+                comment: "Accessibility label of the image editor's brush button, which opens a menu of brushes (pen, arrow, highlighter, neon, eraser).",
+            )
+            updateStrokeTypeMenu()
 
             // I had to use a custom layout guide because stack view isn't centered
             // but instead has slight offset towards the trailing edge.

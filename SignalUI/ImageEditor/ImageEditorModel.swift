@@ -59,6 +59,9 @@ class ImageEditorModel {
 
     var blurredSourceImage: CGImage?
 
+    /// Tellomi（tellomi/tellomi#1522 E-2）：橡皮用原图搭底图，每动一下都要重搭；原图解码一次留在模型上，跟着模型一起释放。
+    var tellomiDecodedSrcImage: UIImage?
+
     var color = ColorPickerBarColor.defaultColor
 
     init(normalizedImage: NormalizedImage) throws {

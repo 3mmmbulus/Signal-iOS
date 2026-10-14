@@ -84,10 +84,9 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
             },
             for: .valueChanged,
         )
-        toolbar.strokeTypeButton.addAction(
-            UIAction { [weak self] _ in self?.didTapStrokeTypeButton() },
-            for: .primaryActionTriggered,
-        )
+        toolbar.onStrokeTypeSelected = { [weak self] strokeType in
+            self?.didSelectStrokeType(strokeType)
+        }
         toolbar.eyedropperButton.addAction(
             UIAction { [weak self] _ in self?.didTapEyedropperButton() },
             for: .primaryActionTriggered,

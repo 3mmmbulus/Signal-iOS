@@ -50,16 +50,16 @@ extension ImageEditorViewController {
 
     func updateStrokeWidthPreviewColor() {
         switch currentStrokeType {
-        case .pen: strokeWidthPreviewDot.backgroundColor = model.color.color
+        case .pen, .arrow, .neon: strokeWidthPreviewDot.backgroundColor = model.color.color
         case .highlighter: strokeWidthPreviewDot.backgroundColor = model.color.color.withAlphaComponent(Self.highligherStrokeOpacity)
-        case .blur: strokeWidthPreviewDot.backgroundColor = .white
+        case .blur, .eraser: strokeWidthPreviewDot.backgroundColor = .white
         }
     }
 
-    func didTapStrokeTypeButton() {
+    /// Tellomi（tellomi/tellomi#1522 E-2）：从画笔菜单选了一支笔。
+    func didSelectStrokeType(_ strokeType: ImageEditorStrokeItem.StrokeType) {
         owsAssertDebug(currentStroke == nil)
-        drawToolbar.toggleStrokeType()
-        currentStrokeType = drawToolbar.strokeType
+        currentStrokeType = strokeType
     }
 
     @objc

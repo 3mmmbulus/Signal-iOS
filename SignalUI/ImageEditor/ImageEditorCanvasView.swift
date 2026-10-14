@@ -564,6 +564,8 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
     private func updateContent(changedItemIds: [String]) {
         AssertIsOnMainThread()
 
+        let changedItemIds = itemIdsIncludingAffectedErasers(changedItemIds)
+
         // Don't animate changes.
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -875,6 +877,45 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         shapeLayer.path = bezierPath.cgPath
         shapeLayer.fillColor = nil
 
+        // Tellomi（tellomi/tellomi#1522 E-2，照 Telegram 两端的画笔）：箭头、霓虹、橡皮。
+        switch item.strokeType {
+        case .neon:
+            let neon = neonLayer(path: bezierPath.cgPath, strokeWidth: strokeWidth, color: item.color ?? .white, viewSize: viewSize)
+            neon.zPosition = zPositionForItem(item: item, model: model, zPositionBase: brushLayerZ)
+            return neon
+        case .eraser:
+            shapeLayer.strokeColor = UIColor.black.cgColor
+            shapeLayer.lineCap = .round
+            shapeLayer.lineJoin = .round
+            return eraserLayerForItem(item: item, model: model, transform: transform, viewSize: viewSize, mask: shapeLayer)
+        case .arrow:
+            if
+                item.isFinished,
+                let head = ImageEditorStrokeItem.arrowHead(
+                    points: points,
+                    strokeWidth: strokeWidth,
+                    imageLongSide: max(imageFrame.width, imageFrame.height),
+                )
+            {
+                for arm in [head.arm1, head.arm2] {
+                    let armPath = UIBezierPath()
+                    armPath.move(to: head.tip)
+                    armPath.addLine(to: arm)
+                    let armLayer = CAShapeLayer()
+                    armLayer.name = arrowHeadLayerName
+                    armLayer.frame = shapeLayer.bounds
+                    armLayer.path = armPath.cgPath
+                    armLayer.lineWidth = strokeWidth
+                    armLayer.strokeColor = shapeLayer.strokeColor
+                    armLayer.fillColor = nil
+                    armLayer.lineCap = .round
+                    shapeLayer.addSublayer(armLayer)
+                }
+            }
+        case .pen, .highlighter, .blur:
+            break
+        }
+
         if item.strokeType == .highlighter {
             shapeLayer.lineCap = CAShapeLayerLineCap.square
             shapeLayer.lineJoin = CAShapeLayerLineJoin.bevel
@@ -898,6 +939,134 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
 
             return shapeLayer
         }
+    }
+
+    // MARK: - Tellomi brushes (tellomi/tellomi#1522 E-2)
+
+    static let arrowHeadLayerName = "TellomiArrowHead"
+
+    /// 箭头抬手后长出来（照 Telegram 两端：0.2 s）。只在画布上动，发出去的图直接是完整的箭头。
+    func animateArrowHead(itemId: String) {
+        guard let layer = contentLayerMap[itemId] else { return }
+        for arm in layer.sublayers ?? [] where arm.name == Self.arrowHeadLayerName {
+            let animation = CABasicAnimation(keyPath: "strokeEnd")
+            animation.fromValue = 0
+            animation.toValue = 1
+            animation.duration = 0.2
+            animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            arm.add(animation, forKey: "TellomiArrowHead")
+        }
+    }
+
+    /// 霓虹的三层颜色（照 Telegram 两端）：外面一圈笔色的光，中间笔色的浅色，芯是白的；几乎是黑色时芯是黑的、光是紫的（照 Telegram iOS）。
+    static func neonColors(for color: UIColor) -> (glow: UIColor, body: UIColor, core: UIColor) {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        let lightness = 0.299 * red + 0.587 * green + 0.114 * blue
+        if lightness < 0.07 {
+            let purple = UIColor(rgbHex: 0x440881)
+            return (purple, purple, .black)
+        }
+        return (color, color.blended(with: .white, alpha: 0.8), .white)
+    }
+
+    private class func neonLayer(path: CGPath, strokeWidth: CGFloat, color: UIColor, viewSize: CGSize) -> CALayer {
+        let colors = neonColors(for: color)
+        let container = CALayer()
+        container.frame = CGRect(origin: .zero, size: viewSize)
+
+        func strokeLayer(width: CGFloat, color: UIColor) -> CAShapeLayer {
+            let layer = CAShapeLayer()
+            layer.frame = container.bounds
+            layer.path = path
+            layer.lineWidth = width
+            layer.strokeColor = color.cgColor
+            layer.fillColor = nil
+            layer.lineCap = .round
+            layer.lineJoin = .round
+            return layer
+        }
+
+        let glow = strokeLayer(width: strokeWidth * 2, color: colors.glow.withAlphaComponent(0.5))
+        glow.shadowColor = colors.glow.cgColor
+        glow.shadowOpacity = 1
+        glow.shadowRadius = strokeWidth
+        glow.shadowOffset = .zero
+        container.addSublayer(glow)
+        container.addSublayer(strokeLayer(width: strokeWidth, color: colors.body))
+        container.addSublayer(strokeLayer(width: strokeWidth * 0.5, color: colors.core))
+        return container
+    }
+
+    /// 橡皮（照 Telegram 两端：只擦涂鸦层）：Signal 的笔画在“画笔层”，在模糊之上、文字贴纸之下，所以橡皮就是画笔层里一层
+    /// “底图”，按橡皮的线露出来——底图是照片、人脸模糊，加上在这块橡皮之后才画的模糊（之前画的模糊被它擦掉，照 Telegram）。
+    /// 它在之前的笔画上面、之后的笔画下面，文字贴纸始终在上面，所以只擦得掉之前的笔画。
+    private class func eraserLayerForItem(
+        item: ImageEditorStrokeItem,
+        model: ImageEditorModel,
+        transform: ImageEditorTransform,
+        viewSize: CGSize,
+        mask: CAShapeLayer,
+    ) -> CALayer? {
+        guard let baseImageLayer = eraserBaseImageLayer(model: model, transform: transform, viewSize: viewSize) else {
+            return nil
+        }
+        baseImageLayer.zPosition = 0
+        var baseLayers: [CALayer] = [baseImageLayer]
+        let eraserIndex = model.itemIds.firstIndex(of: item.itemId) ?? Int.max
+        for other in model.items {
+            if let blurRegions = other as? ImageEditorBlurRegionsItem {
+                if let layer = blurRegionsLayerForItem(item: blurRegions, model: model, transform: transform, viewSize: viewSize) {
+                    baseLayers.append(layer)
+                }
+            } else if
+                let stroke = other as? ImageEditorStrokeItem,
+                stroke.strokeType == .blur,
+                let index = model.itemIds.firstIndex(of: stroke.itemId),
+                index > eraserIndex,
+                let layer = strokeLayerForItem(item: stroke, model: model, transform: transform, viewSize: viewSize)
+            {
+                baseLayers.append(layer)
+            }
+        }
+
+        let container = CALayer()
+        container.frame = CGRect(origin: .zero, size: viewSize)
+        for layer in baseLayers.sorted(by: { $0.zPosition < $1.zPosition }) {
+            container.addSublayer(layer)
+        }
+        mask.frame = container.bounds
+        container.mask = mask
+        container.zPosition = zPositionForItem(item: item, model: model, zPositionBase: brushLayerZ)
+        return container
+    }
+
+    private class func eraserBaseImageLayer(model: ImageEditorModel, transform: ImageEditorTransform, viewSize: CGSize) -> CALayer? {
+        let srcImage: UIImage
+        if let cached = model.tellomiDecodedSrcImage {
+            srcImage = cached
+        } else {
+            guard let loaded = loadSrcImage(model: model) else { return nil }
+            model.tellomiDecodedSrcImage = loaded
+            srcImage = loaded
+        }
+        let imageLayer = CALayer()
+        imageLayer.contents = srcImage.cgImage
+        imageLayer.contentsScale = srcImage.scale
+        updateImageLayer(imageLayer: imageLayer, viewSize: viewSize, imageSize: model.srcImageSizePixels, transform: transform)
+        return imageLayer
+    }
+
+    /// 橡皮的底图里有模糊：模糊一变，橡皮也要重画。
+    private func itemIdsIncludingAffectedErasers(_ changedItemIds: [String]) -> [String] {
+        let eraserIds = model.items.compactMap { ($0 as? ImageEditorStrokeItem)?.strokeType == .eraser ? $0.itemId : nil }
+        guard !eraserIds.isEmpty else { return changedItemIds }
+        let touchesBase = changedItemIds.contains { itemId in
+            guard let item = model.item(forId: itemId) else { return true }
+            return item.itemType == .blurRegions || (item as? ImageEditorStrokeItem)?.strokeType == .blur
+        }
+        guard touchesBase else { return changedItemIds }
+        return changedItemIds + eraserIds.filter { !changedItemIds.contains($0) }
     }
 
     private class func blurRegionsLayerForItem(
@@ -963,6 +1132,11 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
     }
 
     #if TESTABLE_BUILD
+    /// Tellomi（tellomi/tellomi#1522 E-2）：测试里看某一项的图层（橡皮、霓虹、箭头）。
+    class func layerForTesting(item: ImageEditorItem, model: ImageEditorModel, viewSize: CGSize) -> CALayer? {
+        layerForItem(item: item, model: model, shouldFadeTransformableItemWithID: nil, transform: model.currentTransform(), viewSize: viewSize)
+    }
+
     /// Tellomi（tellomi/tellomi#1522 E-4）：测试里看文字图层（有底色时是外面那层，文字在 `contentLayer` 里）。
     class func textLayerForTesting(item: ImageEditorTextItem, model: ImageEditorModel, viewSize: CGSize) -> CATextLayer? {
         let layer = textLayerForItem(item: item, model: model, isFaded: false, transform: model.currentTransform(), viewSize: viewSize)

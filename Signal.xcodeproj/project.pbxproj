@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F1DC99DD8A249C3B4AFED6A4 /* TellomiImageEditorBrushTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */; };
 		FA256CF5BDAE0696B9E2BD11 /* TellomiImageEditorEyedropperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */; };
 		11F01F2D91D00A4CEB35E786 /* TellomiEyedropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C006F7195DD44CF31CACAC /* TellomiEyedropperView.swift */; };
 		66E3818A17DFD980EE9D800A /* ImageEditorViewController+Eyedropper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1803078A042B587AE797A9E1 /* ImageEditorViewController+Eyedropper.swift */; };
@@ -4434,6 +4435,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorBrushTests.swift; sourceTree = "<group>"; };
 		F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorEyedropperTests.swift; sourceTree = "<group>"; };
 		E9C006F7195DD44CF31CACAC /* TellomiEyedropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiEyedropperView.swift; sourceTree = "<group>"; };
 		1803078A042B587AE797A9E1 /* ImageEditorViewController+Eyedropper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageEditorViewController+Eyedropper.swift"; sourceTree = "<group>"; };
@@ -10100,6 +10102,7 @@
 				34BBC85F220E883200857249 /* ImageEditorModelTest.swift */,
 				34BBC860220E883200857249 /* ImageEditorTest.swift */,
 				DD0CD29A6BCF4AACABE37A7A /* TellomiImageEditorTextTests.swift */,
+				0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */,
 				F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */,
 			);
 			path = ImageEditor;
@@ -19927,6 +19930,7 @@
 				34BBC861220E883300857249 /* ImageEditorModelTest.swift in Sources */,
 				34BBC862220E883300857249 /* ImageEditorTest.swift in Sources */,
 				EB0D5AC10C04E8FE1AE16AB3 /* TellomiImageEditorTextTests.swift in Sources */,
+				F1DC99DD8A249C3B4AFED6A4 /* TellomiImageEditorBrushTests.swift in Sources */,
 				FA256CF5BDAE0696B9E2BD11 /* TellomiImageEditorEyedropperTests.swift in Sources */,
 				D970460A2E81D5C00034C05D /* InfoMessageGroupUpdateMigratorTest.swift in Sources */,
 				D931080E2B338D15006A034E /* InterleavingCompositeCursorTest.swift in Sources */,
