@@ -5014,6 +5014,9 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "Disegna per sfocare volti o aree aggiuntive";
 
+/* Accessibility label of the button in the image editor's text tool that cycles the text alignment between left, center and right. */
+"IMAGE_EDITOR_TELLOMI_TEXT_ALIGNMENT" = "Text Alignment";
+
 /* Momentarily shown to the user when attempting to select more images than is allowed. Embeds {{max number of items}} that can be shared. */
 "IMAGE_PICKER_CAN_SELECT_NO_MORE_TOAST_FORMAT" = "Non puoi condividere più di %1$@ elementi.";
 

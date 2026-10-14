@@ -295,7 +295,7 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
     lazy var textViewWrapperView = UIView()
     lazy var textViewBackgroundView = UIView()
     lazy var textViewAccessoryToolbar: TextStylingToolbar = {
-        let toolbar = TextStylingToolbar(currentColor: currentTextItem?.textItem.color)
+        let toolbar = TextStylingToolbar(currentColor: currentTextItem?.textItem.color, showsAlignment: true)
         toolbar.addAction(
             UIAction { [weak self] action in
                 guard let self, let textStylingToolbar = action.sender as? TextStylingToolbar else { return }
@@ -309,6 +309,10 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
         )
         toolbar.decorationStyleButton.addAction(
             UIAction { [weak self] _ in self?.didTapDecorationStyleButton() },
+            for: .primaryActionTriggered,
+        )
+        toolbar.alignmentButton?.addAction(
+            UIAction { [weak self] _ in self?.didTapAlignmentButton() },
             for: .primaryActionTriggered,
         )
         toolbar.doneButton.addAction(

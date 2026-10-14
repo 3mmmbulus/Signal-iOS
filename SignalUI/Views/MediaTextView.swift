@@ -13,6 +13,20 @@ public class MediaTextView: UITextView {
         case coloredBackground // white text, colored background
         case underline // white text, colored underline
         case outline // white text, colored outline
+        /// Tellomi（tellomi/tellomi#1522 E-4）：colored text on a translucent black or white background, as Telegram's "semi"
+        /// text style. Only the image editor offers it; it is last so the story composer's cycle never reaches it.
+        case semiTransparentBackground
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-4，照 Telegram iOS `DrawingTextEntityView` 的 `.semi`）：亮的字配 75% 黑底，暗的字配 75% 白底。
+    public static func semiTransparentBackgroundColor(forTextColor textColor: UIColor) -> UIColor {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        textColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        let lightness = (max(red, green, blue) + min(red, green, blue)) / 2
+        return lightness > 0.7 ? UIColor.black.withAlphaComponent(0.75) : UIColor.white.withAlphaComponent(0.75)
     }
 
     // Resource names are derived from these values. Do not change without consideration.
@@ -69,8 +83,9 @@ public class MediaTextView: UITextView {
     public func update(
         using textStylingToolbar: TextStylingToolbar,
         fontPointSize: CGFloat,
-        textAlignment: NSTextAlignment = .center,
+        textAlignment: NSTextAlignment? = nil,
     ) {
+        let textAlignment = textAlignment ?? textStylingToolbar.textAlignment
         let font = MediaTextView.font(for: textStylingToolbar.textStyle, withPointSize: fontPointSize)
         updateWith(
             textForegroundColor: textStylingToolbar.textForegroundColor,
@@ -160,7 +175,7 @@ public class TextStylingToolbar: UIControl {
 
     public var textForegroundColor: UIColor {
         switch decorationStyle {
-        case .none, .whiteBackground: return colorPickerBar.uiColor
+        case .none, .whiteBackground, .semiTransparentBackground: return colorPickerBar.uiColor
 
         case .coloredBackground:
             // Switch text color to black if background is almost white.
@@ -181,12 +196,14 @@ public class TextStylingToolbar: UIControl {
             return textColor.isCloseToColor(.white) ? .black : .white
 
         case .coloredBackground: return colorPickerBar.uiColor
+
+        case .semiTransparentBackground: return MediaTextView.semiTransparentBackgroundColor(forTextColor: colorPickerBar.uiColor)
         }
     }
 
     public var textDecorationColor: UIColor? {
         switch decorationStyle {
-        case .none, .whiteBackground, .coloredBackground: return nil
+        case .none, .whiteBackground, .coloredBackground, .semiTransparentBackground: return nil
         case .outline, .underline: return colorPickerBar.uiColor
         }
     }
@@ -198,6 +215,24 @@ public class TextStylingToolbar: UIControl {
             let buttonImageName = decorationStyle == .none ? "text_effects" : "text_effects-fill"
             decorationStyleButton.configuration?.image = UIImage(named: buttonImageName)
         }
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-4）：对齐键，只有图片编辑器给（`showsAlignment`），快拍的文字不变。
+    public let alignmentButton: UIButton?
+
+    public var textAlignment: NSTextAlignment = .center {
+        didSet {
+            alignmentButton?.configuration?.image = Self.alignmentImage(for: textAlignment)
+        }
+    }
+
+    private static func alignmentImage(for alignment: NSTextAlignment) -> UIImage? {
+        let name = switch alignment {
+        case .left: "text.alignleft"
+        case .right: "text.alignright"
+        default: "text.aligncenter"
+        }
+        return UIImage(systemName: name, withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .medium))
     }
 
     public let doneButton: UIButton = UIButton(
@@ -212,7 +247,7 @@ public class TextStylingToolbar: UIControl {
     private lazy var stackView: UIStackView = {
         let stackView: UIStackView
         if #available(iOS 26, *) {
-            let buttonStack = UIStackView(arrangedSubviews: [textStyleButton, decorationStyleButton])
+            let buttonStack = UIStackView(arrangedSubviews: [textStyleButton, decorationStyleButton] + [alignmentButton].compactMap { $0 })
             buttonStack.spacing = 8
             buttonStack.directionalLayoutMargins = .init(hMargin: 2, vMargin: 0)
             buttonStack.isLayoutMarginsRelativeArrangement = true
@@ -231,8 +266,11 @@ public class TextStylingToolbar: UIControl {
             ])
             stackView = UIStackView(arrangedSubviews: [glassPanel, colorPickerBar, doneButton])
         } else {
-            stackView = UIStackView(arrangedSubviews: [textStyleButton, decorationStyleButton, colorPickerBar, doneButton])
+            stackView = UIStackView(arrangedSubviews: [textStyleButton, decorationStyleButton] + [alignmentButton].compactMap { $0 } + [colorPickerBar, doneButton])
             stackView.setCustomSpacing(8, after: textStyleButton)
+            if alignmentButton != nil {
+                stackView.setCustomSpacing(8, after: decorationStyleButton)
+            }
         }
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.alignment = .center
@@ -240,7 +278,7 @@ public class TextStylingToolbar: UIControl {
         return stackView
     }()
 
-    public init(currentColor: ColorPickerBarColor? = nil) {
+    public init(currentColor: ColorPickerBarColor? = nil, showsAlignment: Bool = false) {
         colorPickerBar = ColorPickerBar(color: currentColor ?? ColorPickerBarColor.white)
 
         // No background for leading buttons on iOS 26 because they are placed onto a glass panel together.
@@ -255,6 +293,20 @@ public class TextStylingToolbar: UIControl {
             size: 44,
             withBackground: useBackgroundForLeadingEdgeButtons,
         ))
+        if showsAlignment, let alignmentImage = Self.alignmentImage(for: .center) {
+            let button = UIButton(configuration: .roundMedia(
+                image: alignmentImage,
+                size: 44,
+                withBackground: useBackgroundForLeadingEdgeButtons,
+            ))
+            button.accessibilityLabel = OWSLocalizedString(
+                "IMAGE_EDITOR_TELLOMI_TEXT_ALIGNMENT",
+                comment: "Accessibility label of the button in the image editor's text tool that cycles the text alignment between left, center and right.",
+            )
+            alignmentButton = button
+        } else {
+            alignmentButton = nil
+        }
 
         super.init(frame: .zero)
 
@@ -271,6 +323,7 @@ public class TextStylingToolbar: UIControl {
 
         textStyleButton.setCompressionResistanceHigh()
         decorationStyleButton.setCompressionResistanceHigh()
+        alignmentButton?.setCompressionResistanceHigh()
         doneButton.setCompressionResistanceHigh()
 
         stackView.translatesAutoresizingMaskIntoConstraints = false

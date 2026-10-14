@@ -962,6 +962,14 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         return zPositionBase + CGFloat(itemIndex) * zPositionSpacing
     }
 
+    #if TESTABLE_BUILD
+    /// Tellomi（tellomi/tellomi#1522 E-4）：测试里看文字图层（有底色时是外面那层，文字在 `contentLayer` 里）。
+    class func textLayerForTesting(item: ImageEditorTextItem, model: ImageEditorModel, viewSize: CGSize) -> CATextLayer? {
+        let layer = textLayerForItem(item: item, model: model, isFaded: false, transform: model.currentTransform(), viewSize: viewSize)
+        return (layer?.sublayers?.first as? CATextLayer) ?? (layer as? CATextLayer)
+    }
+    #endif
+
     private class func textLayerForItem(
         item: ImageEditorTextItem,
         model: ImageEditorModel,
@@ -1020,6 +1028,7 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
             imageFrame: imageFrame,
             unitWidth: item.unitWidth,
             background: background,
+            alignment: item.textAlignment,
             item: item,
             model: model,
             isFaded: isFaded,
@@ -1033,6 +1042,7 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         imageFrame: CGRect,
         unitWidth: CGFloat = 1,
         background: ImageEditorItemBackground?,
+        alignment: NSTextAlignment = .center,
         item: any ImageEditorTransformable,
         model: ImageEditorModel,
         isFaded: Bool,
@@ -1042,7 +1052,12 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         let textLayer = EditorTextLayer(itemId: item.itemId)
         textLayer.string = attributedString
         textLayer.isWrapped = true
-        textLayer.alignmentMode = .center
+        // Tellomi（tellomi/tellomi#1522 E-4）：照文字的对齐。
+        textLayer.alignmentMode = switch alignment {
+        case .left: .left
+        case .right: .right
+        default: .center
+        }
         // I don't think we need to enable allowsFontSubpixelQuantization
         // or set truncationMode.
 

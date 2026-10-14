@@ -129,7 +129,7 @@ extension ImageEditorViewController {
         textView.updateWith(
             textForegroundColor: textItem.textForegroundColor,
             font: textItem.font,
-            textAlignment: .center,
+            textAlignment: textItem.textAlignment,
             textDecorationColor: textItem.textDecorationColor,
             decorationStyle: textItem.decorationStyle,
         )
@@ -166,6 +166,7 @@ extension ImageEditorViewController {
         textViewAccessoryToolbar.currentColorPickerValue = textItem.color
         textViewAccessoryToolbar.textStyle = textItem.textStyle
         textViewAccessoryToolbar.decorationStyle = textItem.decorationStyle
+        textViewAccessoryToolbar.textAlignment = textItem.textAlignment
 
         textView.text = textItem.text
         updateTextViewAttributes(using: textItem)
@@ -226,6 +227,7 @@ extension ImageEditorViewController {
         textItem = textItem.with(
             textStyle: textViewAccessoryToolbar.textStyle,
             decorationStyle: textViewAccessoryToolbar.decorationStyle,
+            textAlignment: textViewAccessoryToolbar.textAlignment,
         )
 
         // Deleting all text results in text object being deleted.
@@ -295,12 +297,35 @@ extension ImageEditorViewController {
         updateTextViewAttributes(using: textViewAccessoryToolbar)
     }
 
+    /// 图片编辑器里文字样式的顺序：无、白底、彩底、半透明底（Tellomi tellomi/tellomi#1522 E-4，照 Telegram 的 semi）、下划线；
+    /// 描边上游本来就跳过。
+    static let decorationStyleCycle: [MediaTextView.DecorationStyle] = [
+        .none, .whiteBackground, .coloredBackground, .semiTransparentBackground, .underline,
+    ]
+
+    static func nextDecorationStyle(after decorationStyle: MediaTextView.DecorationStyle) -> MediaTextView.DecorationStyle {
+        let cycle = decorationStyleCycle
+        guard let index = cycle.firstIndex(of: decorationStyle) else { return .none }
+        return cycle[(index + 1) % cycle.count]
+    }
+
     func didTapDecorationStyleButton() {
-        var decorationStyle = textViewAccessoryToolbar.decorationStyle.next()
-        if decorationStyle == .outline {
-            decorationStyle = .none
+        textViewAccessoryToolbar.decorationStyle = Self.nextDecorationStyle(after: textViewAccessoryToolbar.decorationStyle)
+        updateTextViewAttributes(using: textViewAccessoryToolbar)
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-4）：对齐按 左 → 中 → 右 → 左 循环（照 Telegram iOS `DrawingScreen` 的 toggleAlignment、
+    /// 安卓 `PaintTextOptionsView` 的 `(currentAlign + 1) % 3`）。
+    static func nextTextAlignment(after alignment: NSTextAlignment) -> NSTextAlignment {
+        switch alignment {
+        case .left: return .center
+        case .center: return .right
+        default: return .left
         }
-        textViewAccessoryToolbar.decorationStyle = decorationStyle
+    }
+
+    func didTapAlignmentButton() {
+        textViewAccessoryToolbar.textAlignment = Self.nextTextAlignment(after: textViewAccessoryToolbar.textAlignment)
         updateTextViewAttributes(using: textViewAccessoryToolbar)
     }
 

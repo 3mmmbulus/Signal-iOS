@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EB0D5AC10C04E8FE1AE16AB3 /* TellomiImageEditorTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0CD29A6BCF4AACABE37A7A /* TellomiImageEditorTextTests.swift */; };
 		5A92D05A6548625913B79CEA /* TellomiImageEditorCropAspectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B8D2DFEFED854BC41142080 /* TellomiImageEditorCropAspectTests.swift */; };
 		D05B5DA804E799FAF4A8F706 /* TellomiCameraModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */; };
 		E4DBE237FB1F34D42369789E /* TellomiCameraFlashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1DF4F792CA5A5ED910E432 /* TellomiCameraFlashTests.swift */; };
@@ -4430,6 +4431,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DD0CD29A6BCF4AACABE37A7A /* TellomiImageEditorTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorTextTests.swift; sourceTree = "<group>"; };
 		8B8D2DFEFED854BC41142080 /* TellomiImageEditorCropAspectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorCropAspectTests.swift; sourceTree = "<group>"; };
 		147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCameraModeTests.swift; sourceTree = "<group>"; };
 		1A1DF4F792CA5A5ED910E432 /* TellomiCameraFlashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCameraFlashTests.swift; sourceTree = "<group>"; };
@@ -10089,6 +10091,7 @@
 			children = (
 				34BBC85F220E883200857249 /* ImageEditorModelTest.swift */,
 				34BBC860220E883200857249 /* ImageEditorTest.swift */,
+				DD0CD29A6BCF4AACABE37A7A /* TellomiImageEditorTextTests.swift */,
 			);
 			path = ImageEditor;
 			sourceTree = "<group>";
@@ -19912,6 +19915,7 @@
 				3499998222EF1E2100654932 /* GRDBFullTextSearcherTest.swift in Sources */,
 				34BBC861220E883300857249 /* ImageEditorModelTest.swift in Sources */,
 				34BBC862220E883300857249 /* ImageEditorTest.swift in Sources */,
+				EB0D5AC10C04E8FE1AE16AB3 /* TellomiImageEditorTextTests.swift in Sources */,
 				D970460A2E81D5C00034C05D /* InfoMessageGroupUpdateMigratorTest.swift in Sources */,
 				D931080E2B338D15006A034E /* InterleavingCompositeCursorTest.swift in Sources */,
 				45C845AF291467F7005F6EA5 /* JournalingOrderedDictionaryTests.swift in Sources */,

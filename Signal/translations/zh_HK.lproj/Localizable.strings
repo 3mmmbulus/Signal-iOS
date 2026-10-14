@@ -5190,6 +5190,9 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "隨意描繪以模糊額外的樣貌或區域";
 
+/* Accessibility label of the button in the image editor's text tool that cycles the text alignment between left, center and right. */
+"IMAGE_EDITOR_TELLOMI_TEXT_ALIGNMENT" = "文字對齊";
+
 /* Momentarily shown to the user when attempting to select more images than is allowed. Embeds {{max number of items}} that can be shared. */
 "IMAGE_PICKER_CAN_SELECT_NO_MORE_TOAST_FORMAT" = "您無法分享超過 %1$@ 個項目。";
 

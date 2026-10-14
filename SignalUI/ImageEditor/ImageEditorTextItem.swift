@@ -15,6 +15,9 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
 
     let textStyle: MediaTextView.TextStyle
 
+    /// Tellomi（tellomi/tellomi#1522 E-4）：左 / 中 / 右对齐（照 Telegram 两端文字的对齐键）；默认居中，同上游。
+    let textAlignment: NSTextAlignment
+
     let fontSize: CGFloat
     static let defaultFontSize: CGFloat = 36
     var font: UIFont {
@@ -23,7 +26,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
 
     var textForegroundColor: UIColor {
         switch decorationStyle {
-        case .none, .whiteBackground: return color.color
+        case .none, .whiteBackground, .semiTransparentBackground: return color.color
 
         case .coloredBackground:
             let backgroundColor = color.color
@@ -42,12 +45,14 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             return textColor.isCloseToColor(.white) ? .black : .white
 
         case .coloredBackground: return color.color
+
+        case .semiTransparentBackground: return MediaTextView.semiTransparentBackgroundColor(forTextColor: color.color)
         }
     }
 
     var textDecorationColor: UIColor? {
         switch decorationStyle {
-        case .none, .whiteBackground, .coloredBackground: return nil
+        case .none, .whiteBackground, .coloredBackground, .semiTransparentBackground: return nil
         case .outline, .underline: return color.color
         }
     }
@@ -94,6 +99,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
         fontSize: CGFloat,
         textStyle: MediaTextView.TextStyle = .regular,
         decorationStyle: MediaTextView.DecorationStyle = .none,
+        textAlignment: NSTextAlignment = .center,
         fontReferenceImageWidth: CGFloat,
         unitCenter: ImageEditorSample = ImageEditorSample(x: 0.5, y: 0.5),
         unitWidth: CGFloat = ImageEditorTextItem.kDefaultUnitWidth,
@@ -105,6 +111,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
         self.fontSize = fontSize
         self.textStyle = textStyle
         self.decorationStyle = decorationStyle
+        self.textAlignment = textAlignment
         self.fontReferenceImageWidth = fontReferenceImageWidth
         self.unitCenter = unitCenter
         self.unitWidth = unitWidth
@@ -121,6 +128,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
         fontSize: CGFloat,
         textStyle: MediaTextView.TextStyle,
         decorationStyle: MediaTextView.DecorationStyle,
+        textAlignment: NSTextAlignment = .center,
         fontReferenceImageWidth: CGFloat,
         unitCenter: ImageEditorSample,
         unitWidth: CGFloat,
@@ -132,6 +140,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
         self.fontSize = fontSize
         self.textStyle = textStyle
         self.decorationStyle = decorationStyle
+        self.textAlignment = textAlignment
         self.fontReferenceImageWidth = fontReferenceImageWidth
         self.unitCenter = unitCenter
         self.unitWidth = unitWidth
@@ -171,6 +180,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -187,6 +197,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -203,6 +214,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -219,6 +231,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -235,6 +248,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -251,6 +265,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -259,7 +274,11 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
         )
     }
 
-    func with(textStyle: MediaTextView.TextStyle, decorationStyle: MediaTextView.DecorationStyle) -> ImageEditorTextItem {
+    func with(
+        textStyle: MediaTextView.TextStyle,
+        decorationStyle: MediaTextView.DecorationStyle,
+        textAlignment: NSTextAlignment,
+    ) -> ImageEditorTextItem {
         ImageEditorTextItem(
             itemId: itemId,
             text: text,
@@ -267,6 +286,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             fontSize: fontSize,
             textStyle: textStyle,
             decorationStyle: decorationStyle,
+            textAlignment: textAlignment,
             fontReferenceImageWidth: fontReferenceImageWidth,
             unitCenter: unitCenter,
             unitWidth: unitWidth,
@@ -285,6 +305,7 @@ final class ImageEditorTextItem: ImageEditorItem, ImageEditorTransformable, Equa
             lhs.color == rhs.color &&
             lhs.textStyle == rhs.textStyle &&
             lhs.decorationStyle == rhs.decorationStyle &&
+            lhs.textAlignment == rhs.textAlignment &&
             lhs.fontSize.fuzzyEquals(rhs.fontSize) &&
             lhs.fontReferenceImageWidth.fuzzyEquals(rhs.fontReferenceImageWidth) &&
             lhs.unitCenter.fuzzyEquals(rhs.unitCenter) &&
