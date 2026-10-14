@@ -20,6 +20,8 @@ import UIKit
 final class TellomiScheduleTimeSheet: UIViewController {
 
     private let isReminder: Bool
+    /// 改时间时带着原来的时间打开（同 TG 两端「改时间」）；新排的是 nil，用默认。
+    private let initialDate: Date?
     private let onSchedule: (Date) -> Void
     private let now: () -> Date
 
@@ -50,8 +52,9 @@ final class TellomiScheduleTimeSheet: UIViewController {
     }()
 
     /// - Parameter isReminder: 收藏（给自己）里叫「设置提醒」。
-    init(isReminder: Bool, now: @escaping () -> Date = { Date() }, onSchedule: @escaping (Date) -> Void) {
+    init(isReminder: Bool, initialDate: Date? = nil, now: @escaping () -> Date = { Date() }, onSchedule: @escaping (Date) -> Void) {
         self.isReminder = isReminder
+        self.initialDate = initialDate
         self.now = now
         self.onSchedule = onSchedule
         super.init(nibName: nil, bundle: nil)
@@ -137,7 +140,7 @@ final class TellomiScheduleTimeSheet: UIViewController {
         datePicker.minuteInterval = 1
         datePicker.minimumDate = Self.minimumDate(now: now)
         datePicker.maximumDate = Self.maximumDate(now: now)
-        datePicker.date = Self.defaultDate(now: now)
+        datePicker.date = initialDate.map { Self.clamped($0, now: now) } ?? Self.defaultDate(now: now)
         datePicker.addAction(UIAction { [weak self] _ in
             self?.refreshMinimumDate()
             self?.updateConfirmTitle()

@@ -364,6 +364,11 @@ public extension ConversationViewController {
         }
 
         self.inputToolbar = inputToolbar
+        // Tellomi（#1519 M-4）：有定时消息就出日历键；发送键长按能定时发送。
+        tellomiRefreshScheduledMessagesButton()
+        inputToolbar.tellomiSetSendLongPress { [weak self] button in
+            self?.tellomiPresentTextSendPreview(from: button)
+        }
     }
 
     func reloadDraft() {

@@ -1011,6 +1011,11 @@ extension ConversationViewController: SendMediaNavDelegate {
                 captionAboveMedia: captionAboveMedia,
                 tellomiScheduledAt: tellomiScheduledAt,
             )
+        } catch TellomiScheduledMessageSender.ScheduleError.tooManyScheduled {
+            // Tellomi（#1519 M-4）：一个会话最多 100 条定时消息。选图页发之前已经查过、在那里提示了（`photoPicker(_:send:…)`）；
+            // 这里只是两处同时排时的兜底：停下，不再排后面的。
+            Logger.warn("Hit the scheduled message limit while scheduling.")
+            return false
         } catch {
             self.showErrorAlert(attachmentError: error as? SignalAttachmentError)
             return false

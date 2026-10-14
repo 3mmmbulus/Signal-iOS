@@ -64,6 +64,24 @@ public final class TellomiScheduledMessageSender {
         syncNotifications()
     }
 
+    /// 改时间（定时消息页）。上次建不成的这次再试（到新时间）。
+    public func reschedule(id: String, to date: Date) async {
+        do {
+            _ = try await SSKEnvironment.shared.databaseStorageRef.awaitableWrite { tx in
+                try TellomiScheduledMessageStore.reschedule(id: id, to: date, tx: tx)
+            }
+        } catch {
+            Logger.warn("Couldn't reschedule a scheduled message: \(error)")
+        }
+        failedSinceActivation.remove(id)
+        scheduleTimer()
+    }
+
+    /// 这个会话还能排几条（到上限 `maxScheduledPerChat` 为止）。
+    public static func remainingCapacity(threadUniqueId: String, tx: DBReadTransaction) -> Int {
+        max(0, maxScheduledPerChat - TellomiScheduledMessageStore.fetchAll(threadUniqueId: threadUniqueId, tx: tx).count)
+    }
+
     /// 到点通知上点了它或「立即发送」：这一条马上发（还没到点的提前到现在），等它进了发送队列再返回。
     public func sendNow(id: String) async {
         let now = self.now()
@@ -102,7 +120,25 @@ public final class TellomiScheduledMessageSender {
 
     // MARK: - Scheduling
 
+    /// 一个会话最多排这么多条（同 Telegram：服务器上限 100，两端都提示 `MessageScheduledLimitReached`）。
+    public nonisolated static let maxScheduledPerChat = 100
+
+    public enum ScheduleError: Error, LocalizedError {
+        case tooManyScheduled
+
+        public var errorDescription: String? {
+            String.nonPluralLocalizedStringWithFormat(
+                OWSLocalizedString(
+                    "TELLOMI_SCHEDULED_MESSAGES_LIMIT_REACHED_FORMAT",
+                    comment: "Alert when a chat already has the maximum number of scheduled messages. Embeds {{the maximum, e.g. 100}}.",
+                ),
+                OWSFormat.formatInt(TellomiScheduledMessageSender.maxScheduledPerChat),
+            )
+        }
+    }
+
     /// 排一条：附件（已渲染 / 压缩好的）复制到记录自己的目录，记下来。`at` 已过也行：马上发。
+    /// 这个会话已经排满 `maxScheduledPerChat` 条时抛 `ScheduleError.tooManyScheduled`。
     @discardableResult
     public func schedule(
         body: MessageBody?,
@@ -114,10 +150,28 @@ public final class TellomiScheduledMessageSender {
         captionAboveMedia: Bool,
         at date: Date,
     ) async throws -> TellomiScheduledMessage {
+        let threadUniqueId = thread.uniqueId
+        let capacity = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            Self.remainingCapacity(threadUniqueId: threadUniqueId, tx: tx)
+        }
+        guard capacity > 0 else {
+            throw ScheduleError.tooManyScheduled
+        }
         let id = UUID().uuidString
         let directory = TellomiScheduledMessageStore.directory(for: id)
         do {
             let storedAttachments = try await Self.storeFiles(attachments, in: directory)
+            var linkPreviewImageFileName: String?
+            if let imageData = linkPreviewDraft?.imageData {
+                guard OWSFileSystem.ensureDirectoryExists(directory.path) else {
+                    throw OWSAssertionError("Couldn't create the scheduled message directory.")
+                }
+                let fileName = "link-preview"
+                let url = directory.appendingPathComponent(fileName)
+                try imageData.write(to: url, options: .completeFileProtectionUntilFirstUserAuthentication)
+                OWSFileSystem.protectFileOrFolder(atPath: url.path)
+                linkPreviewImageFileName = fileName
+            }
             let message = try TellomiScheduledMessage(
                 id: id,
                 threadUniqueId: thread.uniqueId,
@@ -127,7 +181,7 @@ public final class TellomiScheduledMessageSender {
                 isViewOnce: isViewOnce,
                 captionAboveMedia: captionAboveMedia && body?.isEmpty == false,
                 replyInfo: quotedReplyDraft.flatMap(Self.replyInfo(for:)),
-                linkPreview: linkPreviewDraft.map(TellomiScheduledMessage.LinkPreview.init),
+                linkPreview: linkPreviewDraft.map { TellomiScheduledMessage.LinkPreview($0, imageFileName: linkPreviewImageFileName) },
             )
             try await SSKEnvironment.shared.databaseStorageRef.awaitableWrite { tx in
                 try TellomiScheduledMessageStore.insert(message, tx: tx)
@@ -273,7 +327,7 @@ public final class TellomiScheduledMessageSender {
                 isViewOnce: message.isViewOnce,
                 thread: thread,
                 quotedReplyDraft: message.replyInfo.flatMap(Self.quotedReplyDraft(for:)),
-                linkPreviewDraft: message.linkPreview?.draft,
+                linkPreviewDraft: message.linkPreview?.draft(in: TellomiScheduledMessageStore.directory(for: message.id)),
                 captionAboveMedia: message.captionAboveMedia,
                 claim: ThreadUtil.TellomiEnqueueClaim(
                     isStillDue: { tx in TellomiScheduledMessageStore.isDue(id: message.id, now: now, tx: tx) },

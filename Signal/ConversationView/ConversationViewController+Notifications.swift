@@ -10,6 +10,13 @@ extension ConversationViewController {
     func addNotificationListeners() {
         AssertIsOnMainThread()
 
+        // Tellomi（tellomi/tellomi#1519 M-4）：定时消息一变，输入框里的日历键跟着出 / 收。
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(tellomiScheduledMessagesDidChange(_:)),
+            name: TellomiScheduledMessageStore.didChange,
+            object: nil,
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(blockListDidChange),

@@ -11217,6 +11217,39 @@
 /* Title of the one-time sheet shown on the chat list after registration, explaining why Tellomi asks for notification permission. */
 "TELLOMI_NOTIFICATION_PRIMER_TITLE" = "及时收到新消息";
 
+/* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
+"TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "删除定时消息";
+
+/* Destructive confirmation in the reminders list: delete this reminder. */
+"TELLOMI_SCHEDULED_MESSAGES_DELETE_REMINDER" = "删除提醒";
+
+/* Shown in the scheduled messages list of a chat when there are none. */
+"TELLOMI_SCHEDULED_MESSAGES_EMPTY" = "这里还没有定时消息。";
+
+/* Day header in the scheduled messages list. Embeds {{date, e.g. 'October 15'}}. */
+"TELLOMI_SCHEDULED_MESSAGES_FOR_DAY_FORMAT" = "定于 %@ 发送";
+
+/* Day header in the scheduled messages list for messages due later today. */
+"TELLOMI_SCHEDULED_MESSAGES_FOR_TODAY" = "定于今天发送";
+
+/* Alert when a chat already has the maximum number of scheduled messages. Embeds {{the maximum, e.g. 100}}. */
+"TELLOMI_SCHEDULED_MESSAGES_LIMIT_REACHED_FORMAT" = "抱歉，最多只能定时 %@ 条消息。";
+
+/* Shown in the reminders list in Saved Messages when there are none. */
+"TELLOMI_SCHEDULED_MESSAGES_REMINDERS_EMPTY" = "这里还没有提醒。";
+
+/* Title of the list of reminders (scheduled messages to yourself) in Saved Messages. */
+"TELLOMI_SCHEDULED_MESSAGES_REMINDERS_TITLE" = "提醒";
+
+/* Context menu item on a scheduled message: choose a different time. */
+"TELLOMI_SCHEDULED_MESSAGES_RESCHEDULE" = "更改时间";
+
+/* Context menu item on a scheduled message: send it right away. */
+"TELLOMI_SCHEDULED_MESSAGES_SEND_NOW" = "立即发送";
+
+/* Title of the list of messages scheduled to be sent later in a chat. */
+"TELLOMI_SCHEDULED_MESSAGES_TITLE" = "定时消息";
+
 /* Body of the notification shown when a scheduled message is due and the app isn't open. It never includes the message text. */
 "TELLOMI_SCHEDULED_MESSAGE_DUE_NOTIFICATION_BODY" = "定时消息到时间了，点一下发送。";
 
@@ -11225,12 +11258,6 @@
 
 /* Long-press send menu item and sheet title: choose a time to send this message later. */
 "TELLOMI_SCHEDULE_MESSAGE" = "定时发送";
-
-/* Toast after scheduling a message to be sent later. Embeds {{date and time, e.g. 'Today at 14:35'}}. */
-"TELLOMI_SCHEDULE_MESSAGE_SCHEDULED_TOAST_FORMAT" = "已定时：%@";
-
-/* Toast after setting a reminder in Saved Messages (note to self). Embeds {{date and time, e.g. 'Today at 14:35'}}. */
-"TELLOMI_SCHEDULE_REMINDER_SET_TOAST_FORMAT" = "已设置提醒：%@";
 
 /* Button in the reminder time sheet (Saved Messages) for a day after tomorrow. Embeds {{date}} and {{time}}. */
 "TELLOMI_SCHEDULE_REMIND_ON_FORMAT" = "%1$@ %2$@ 提醒";

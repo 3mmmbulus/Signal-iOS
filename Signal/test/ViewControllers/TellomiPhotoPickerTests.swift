@@ -678,6 +678,26 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertNil(next.scheduledAt)
     }
 
+    /// 这个会话已经排满 100 条：选「定时发送」时就说，不弹选时间、什么都不发。
+    @MainActor
+    func testAFullChatIsToldBeforeChoosingATime() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        hosted.delegate.scheduledMessageCapacity = 0
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.longPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        preview.performActionForTesting(at: preview.actionTitlesForTesting.count - 1)
+        let alerted = await waitUntil {
+            var top: UIViewController? = picker
+            while let presented = top?.presentedViewController { top = presented }
+            return top is ActionSheetController
+        }
+        XCTAssertTrue(alerted)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty)
+    }
+
     /// 收藏（给自己）里叫「设置提醒」（同 Telegram 两端 `SetReminder`）。
     @MainActor
     func testSavedMessagesSaysSetAReminder() async throws {
@@ -2363,6 +2383,12 @@ private final class RecordingPickerDelegate: TellomiPhotoPickerDelegate {
 
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?) {
         bodies.append(messageBody)
+    }
+
+    var scheduledMessageCapacity = 100
+
+    func photoPickerScheduledMessageCapacity(_ picker: TellomiPhotoPickerViewController) -> Int {
+        scheduledMessageCapacity
     }
 }
 

@@ -10396,6 +10396,39 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "Πάτα για αντικατάσταση ενός emoji";
 
+/* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
+"TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "Delete Scheduled Message";
+
+/* Destructive confirmation in the reminders list: delete this reminder. */
+"TELLOMI_SCHEDULED_MESSAGES_DELETE_REMINDER" = "Delete Reminder";
+
+/* Shown in the scheduled messages list of a chat when there are none. */
+"TELLOMI_SCHEDULED_MESSAGES_EMPTY" = "No scheduled messages here yet.";
+
+/* Day header in the scheduled messages list. Embeds {{date, e.g. 'October 15'}}. */
+"TELLOMI_SCHEDULED_MESSAGES_FOR_DAY_FORMAT" = "Scheduled for %@";
+
+/* Day header in the scheduled messages list for messages due later today. */
+"TELLOMI_SCHEDULED_MESSAGES_FOR_TODAY" = "Scheduled for today";
+
+/* Alert when a chat already has the maximum number of scheduled messages. Embeds {{the maximum, e.g. 100}}. */
+"TELLOMI_SCHEDULED_MESSAGES_LIMIT_REACHED_FORMAT" = "Sorry, you can't schedule more than %@ messages.";
+
+/* Shown in the reminders list in Saved Messages when there are none. */
+"TELLOMI_SCHEDULED_MESSAGES_REMINDERS_EMPTY" = "No reminders here yet.";
+
+/* Title of the list of reminders (scheduled messages to yourself) in Saved Messages. */
+"TELLOMI_SCHEDULED_MESSAGES_REMINDERS_TITLE" = "Reminders";
+
+/* Context menu item on a scheduled message: choose a different time. */
+"TELLOMI_SCHEDULED_MESSAGES_RESCHEDULE" = "Reschedule";
+
+/* Context menu item on a scheduled message: send it right away. */
+"TELLOMI_SCHEDULED_MESSAGES_SEND_NOW" = "Send Now";
+
+/* Title of the list of messages scheduled to be sent later in a chat. */
+"TELLOMI_SCHEDULED_MESSAGES_TITLE" = "Scheduled Messages";
+
 /* Body of the notification shown when a scheduled message is due and the app isn't open. It never includes the message text. */
 "TELLOMI_SCHEDULED_MESSAGE_DUE_NOTIFICATION_BODY" = "Your scheduled message is due. Tap to send it.";
 
@@ -10404,12 +10437,6 @@
 
 /* Long-press send menu item and sheet title: choose a time to send this message later. */
 "TELLOMI_SCHEDULE_MESSAGE" = "Schedule Message";
-
-/* Toast after scheduling a message to be sent later. Embeds {{date and time, e.g. 'Today at 14:35'}}. */
-"TELLOMI_SCHEDULE_MESSAGE_SCHEDULED_TOAST_FORMAT" = "Scheduled: %@";
-
-/* Toast after setting a reminder in Saved Messages (note to self). Embeds {{date and time, e.g. 'Today at 14:35'}}. */
-"TELLOMI_SCHEDULE_REMINDER_SET_TOAST_FORMAT" = "Reminder set: %@";
 
 /* Button in the reminder time sheet (Saved Messages) for a day after tomorrow. Embeds {{date}} and {{time}}. */
 "TELLOMI_SCHEDULE_REMIND_ON_FORMAT" = "Remind on %1$@ at %2$@";

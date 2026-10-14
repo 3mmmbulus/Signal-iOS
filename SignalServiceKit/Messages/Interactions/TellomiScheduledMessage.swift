@@ -29,21 +29,25 @@ public struct TellomiScheduledMessage: Codable, Equatable {
         }
     }
 
-    /// `OWSLinkPreviewDraft` 的字段（排定时已经取好，到点不再上网取）。
+    /// `OWSLinkPreviewDraft` 的字段（排定时已经取好，到点不再上网取）。预览图另存成记录目录里的文件（`imageFileName`），
+    /// 不放进记录：每次读记录都要解码整条。
     public struct LinkPreview: Codable, Equatable {
         public let url: URL
         public let title: String?
+        /// 旧格式才有（图放在记录里）；新排的是 nil、图在 `imageFileName`。
         public let imageData: Data?
+        public let imageFileName: String?
         public let imageMimeType: String?
         public let previewDescription: String?
         public let date: Date?
         public let isForwarded: Bool
         public let rich: Data?
 
-        public init(_ draft: OWSLinkPreviewDraft) {
+        public init(_ draft: OWSLinkPreviewDraft, imageFileName: String?) {
             url = draft.url
             title = draft.title
-            imageData = draft.imageData
+            imageData = nil
+            self.imageFileName = draft.imageData == nil ? nil : imageFileName
             imageMimeType = draft.imageMimeType
             previewDescription = draft.previewDescription
             date = draft.date
@@ -51,11 +55,13 @@ public struct TellomiScheduledMessage: Codable, Equatable {
             rich = draft.rich
         }
 
-        public var draft: OWSLinkPreviewDraft {
-            OWSLinkPreviewDraft(
+        /// - Parameter directory: 这条记录的目录（预览图文件在里面）。
+        public func draft(in directory: URL) -> OWSLinkPreviewDraft {
+            let fileData = imageFileName.flatMap { try? Data(contentsOf: directory.appendingPathComponent($0)) }
+            return OWSLinkPreviewDraft(
                 url: url,
                 title: title,
-                imageData: imageData,
+                imageData: fileData ?? imageData,
                 imageMimeType: imageMimeType,
                 previewDescription: previewDescription,
                 date: date,
@@ -134,6 +140,16 @@ public struct TellomiScheduledMessage: Codable, Equatable {
 public enum TellomiScheduledMessageStore {
 
     public static let didChange = Notification.Name("TellomiScheduledMessageStoreDidChange")
+    /// `didChange` 的 userInfo 里：这次变了的会话（`Set<String>`）。会话页、定时消息页只管自己会话的。
+    public static let changedThreadUniqueIdsKey = "TellomiScheduledMessageChangedThreadUniqueIds"
+
+    /// 这次的变化和这个会话有没有关系（没带会话的一律算有关）。
+    public static func didChange(_ notification: Notification, affect threadUniqueId: String) -> Bool {
+        guard let changed = notification.userInfo?[changedThreadUniqueIdsKey] as? Set<String> else {
+            return true
+        }
+        return changed.contains(threadUniqueId)
+    }
 
     private static let store = KeyValueStore(collection: "TellomiScheduledMessage")
 
@@ -219,7 +235,7 @@ public enum TellomiScheduledMessageStore {
     /// 记下一条（文件要先放进 `directory(for:)`）。
     public static func insert(_ message: TellomiScheduledMessage, tx: DBWriteTransaction) throws {
         try store.setCodable(message, key: message.id, transaction: tx)
-        postDidChange(tx: tx)
+        postDidChange(threadUniqueIds: [message.threadUniqueId], tx: tx)
     }
 
     /// 改到点时刻。记录已经没了（发出 / 删掉）返回 false。
@@ -230,7 +246,7 @@ public enum TellomiScheduledMessageStore {
         }
         message.scheduledAt = date
         try store.setCodable(message, key: id, transaction: tx)
-        postDidChange(tx: tx)
+        postDidChange(threadUniqueIds: [message.threadUniqueId], tx: tx)
         return true
     }
 
@@ -241,11 +257,12 @@ public enum TellomiScheduledMessageStore {
         guard store.hasValue(id, transaction: tx) else {
             return false
         }
+        let threadUniqueId = fetch(id: id, tx: tx)?.threadUniqueId
         store.removeValue(forKey: id, transaction: tx)
         tx.addSyncCompletion {
             deleteDirectory(id: id)
         }
-        postDidChange(tx: tx)
+        postDidChange(threadUniqueIds: threadUniqueId.map { [$0] }, tx: tx)
         return true
     }
 
@@ -271,7 +288,7 @@ public enum TellomiScheduledMessageStore {
                 owsFailDebug("Couldn't move a scheduled message: \(error)")
             }
         }
-        postDidChange(tx: tx)
+        postDidChange(threadUniqueIds: [fromThreadUniqueId, toThreadUniqueId], tx: tx)
     }
 
     /// 没有记录的目录（删记录后、删文件前崩了，或排定时写了文件、没写成记录）：启动时清掉。
@@ -309,9 +326,11 @@ public enum TellomiScheduledMessageStore {
         }
     }
 
-    private static func postDidChange(tx: DBWriteTransaction) {
+    /// `threadUniqueIds` 为 nil：不知道是哪个会话（读不出来的记录），所有人都当和自己有关。
+    private static func postDidChange(threadUniqueIds: Set<String>?, tx: DBWriteTransaction) {
         tx.addSyncCompletion {
-            NotificationCenter.default.postOnMainThread(name: didChange, object: nil)
+            let userInfo = threadUniqueIds.map { [changedThreadUniqueIdsKey: $0] }
+            NotificationCenter.default.postOnMainThread(name: didChange, object: nil, userInfo: userInfo)
         }
     }
 }

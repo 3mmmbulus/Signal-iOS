@@ -32,6 +32,9 @@ protocol TellomiPhotoPickerDelegate: AnyObject {
     /// 说明和会话输入框是同一段字（同上游的预览页）。
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?)
 
+    /// M-4（#1519）：这个会话还能排几条定时消息（0 = 排满了，选「定时发送」时先说，不弹选时间）。
+    func photoPickerScheduledMessageCapacity(_ picker: TellomiPhotoPickerViewController) -> Int
+
     /// Tellomi（#1115）：附件 Sheet 底部 dock 点了「相册」以外的格子（文件 / 位置 / 投票 / 联系人 / GIF）。接收方先收起 Sheet，再打开对应的页面。
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didSelectDockItem item: TellomiAttachmentDockItem)
 
@@ -1145,6 +1148,18 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     /// M-4：选时间；选好了照点这个发送键那样发，只是排成定时消息。网格的发送键直接发；上游预览 / 编辑页的发送键让那一页照常发
     /// （编辑画进去、选的画质、一次性查看），它交回来时带着时间（`tellomiApprovedScheduledAt`）。
     private func presentScheduleSheet(sendingWith button: UIButton?) {
+        var presenter: UIViewController = self
+        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
+            presenter = presented
+        }
+        // 排满了（一个会话 100 条，同 TG）：先说，不用选完时间、准备完附件才知道。
+        guard (delegate?.photoPickerScheduledMessageCapacity(self) ?? 0) > 0 else {
+            OWSActionSheets.showActionSheet(
+                message: TellomiScheduledMessageSender.ScheduleError.tooManyScheduled.localizedDescription,
+                fromViewController: presenter,
+            )
+            return
+        }
         let sheet = TellomiScheduleTimeSheet(isReminder: isNoteToSelf) { [weak self, weak button] date in
             guard let self else { return }
             if let button, button !== self.sendButton, let editingApproval = self.editingApproval {
@@ -1152,10 +1167,6 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             } else {
                 self.send(quality: self.defaultImageQuality, separately: false, scheduledAt: date)
             }
-        }
-        var presenter: UIViewController = self
-        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
-            presenter = presented
         }
         sheet.present(from: presenter)
     }

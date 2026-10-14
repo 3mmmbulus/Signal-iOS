@@ -194,12 +194,24 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
     ) {
         // 从上游预览页发的时候它盖在网格上面，提示与安全码确认都从最上面那一层弹。
         let fromViewController = picker.presentedViewController ?? picker
+        // M-4：排不排得下（一个会话最多 100 条，同 TG）。选时间之前已经粗查过（一条都排不下就不弹选时间）；这里按拆成几条精确查，
+        // 排不下就在选图页上说、一条都不排。
+        if scheduledAt != nil {
+            let needed = Self.tellomiScheduledMessageCount(for: approvedAttachments, separately: separately)
+            if needed > tellomiScheduledMessageCapacity() {
+                OWSActionSheets.showActionSheet(
+                    message: TellomiScheduledMessageSender.ScheduleError.tooManyScheduled.localizedDescription,
+                    fromViewController: fromViewController,
+                )
+                return
+            }
+        }
         let attachmentLimits = picker.attachmentLimits
         ModalActivityIndicatorViewController.present(
             fromViewController: fromViewController,
             title: CommonStrings.preparingModal,
             asyncBlock: { modal in
-                // M-4：拆成几条时可能排进去一部分就出错了：按「这次排进去了没有」提示，不按全部成没成。
+                // M-4：拆成几条时可能排进去一部分就出错了：按「这次排进去了没有」决定打不打开定时消息，不按全部成没成。
                 let startedAt = Date()
                 if separately {
                     // 说明只挂最后一条，「说明在上方」也只对它（没有说明的那几条不记）。
@@ -212,8 +224,9 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
                 let scheduledSome = scheduledAt != nil && self.tellomiHasScheduledMessages(since: startedAt)
                 modal.dismiss(completion: {
                     self.dismiss(animated: true) {
-                        if scheduledSome, let scheduledAt {
-                            self.tellomiShowScheduledToast(for: scheduledAt)
+                        // 同 Telegram 两端：排好了就打开这个会话的定时消息。
+                        if scheduledSome {
+                            self.tellomiOpenScheduledMessages()
                         }
                     }
                 })
@@ -229,17 +242,39 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
         }
     }
 
-    /// Tellomi（#1519 M-4）：排好了说一声什么时候发。Telegram 两端排好后打开「定时消息」页；那一页是 M-4 下一步，
-    /// 在那之前先用提示。
-    func tellomiShowScheduledToast(for date: Date) {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        formatter.doesRelativeDateFormatting = true
-        let format = thread.isNoteToSelf
-            ? OWSLocalizedString("TELLOMI_SCHEDULE_REMINDER_SET_TOAST_FORMAT", comment: "Toast after setting a reminder in Saved Messages (note to self). Embeds {{date and time, e.g. 'Today at 14:35'}}.")
-            : OWSLocalizedString("TELLOMI_SCHEDULE_MESSAGE_SCHEDULED_TOAST_FORMAT", comment: "Toast after scheduling a message to be sent later. Embeds {{date and time, e.g. 'Today at 14:35'}}.")
-        presentToastCVC(String.nonPluralLocalizedStringWithFormat(format, formatter.string(from: date)))
+    /// Tellomi（#1519 M-4）：这个会话的定时消息（输入框日历键、排好之后）。
+    func tellomiOpenScheduledMessages() {
+        dismissKeyBoard()
+        TellomiScheduledMessagesViewController.present(
+            threadUniqueId: thread.uniqueId,
+            isNoteToSelf: thread.isNoteToSelf,
+            bubbleColor: viewState.conversationStyle.bubbleChatColorOutgoing,
+            from: self,
+        )
+    }
+
+    func photoPickerScheduledMessageCapacity(_ picker: TellomiPhotoPickerViewController) -> Int {
+        tellomiScheduledMessageCapacity()
+    }
+
+    func tellomiScheduledMessagesButtonPressed() {
+        tellomiOpenScheduledMessages()
+    }
+
+    @objc
+    func tellomiScheduledMessagesDidChange(_ notification: Notification) {
+        guard SSKEnvironment.hasShared, TellomiScheduledMessageStore.didChange(notification, affect: thread.uniqueId) else { return }
+        tellomiRefreshScheduledMessagesButton(animated: true)
+    }
+
+    /// 打开会话时（建输入框）不带动画，之后带。
+    func tellomiRefreshScheduledMessagesButton(animated: Bool = false) {
+        guard let inputToolbar else { return }
+        let threadUniqueId = thread.uniqueId
+        let hasScheduledMessages = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            !TellomiScheduledMessageStore.fetchAll(threadUniqueId: threadUniqueId, tx: tx).isEmpty
+        }
+        inputToolbar.tellomiSetHasScheduledMessages(hasScheduledMessages, animated: animated)
     }
 
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?) {

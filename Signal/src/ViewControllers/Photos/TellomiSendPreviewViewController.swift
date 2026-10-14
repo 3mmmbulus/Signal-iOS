@@ -116,8 +116,20 @@ final class TellomiSendPreviewViewController: UIViewController {
 
     // MARK: - Lifecycle
 
+    /// 跟着键盘重新排（会话输入框里长按时键盘多半开着）：键盘上沿一动，就重新布局。
+    private let keyboardTracker = UIView()
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        keyboardTracker.isUserInteractionEnabled = false
+        keyboardTracker.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(keyboardTracker)
+        NSLayoutConstraint.activate([
+            keyboardTracker.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            keyboardTracker.widthAnchor.constraint(equalToConstant: 0),
+            keyboardTracker.heightAnchor.constraint(equalToConstant: 0),
+            keyboardTracker.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+        ])
         view.backgroundColor = .clear
         view.accessibilityViewIsModal = true
 
@@ -294,7 +306,14 @@ final class TellomiSendPreviewViewController: UIViewController {
 
     private func computeLayout() -> Layout {
         let bounds = view.bounds
-        let safe = bounds.inset(by: view.safeAreaInsets)
+        var safe = bounds.inset(by: view.safeAreaInsets)
+        // 键盘开着时，键盘上沿算底边（菜单不压在键盘下面）。
+        let keyboardTop = view.keyboardLayoutGuide.layoutFrame.minY
+        if keyboardTop > safe.minY, keyboardTop < safe.maxY {
+            safe.size.height = keyboardTop - safe.minY
+        }
+        // 从右往左的语言：发送键在左边，气泡和菜单在它右边（镜像）。
+        let isRightToLeft = view.effectiveUserInterfaceLayoutDirection == .rightToLeft
         let source: CGRect = {
             guard let sourceButton, sourceButton.window != nil else {
                 return CGRect(x: safe.maxX - 44, y: safe.maxY - 44, width: 44, height: 44)
@@ -302,7 +321,17 @@ final class TellomiSendPreviewViewController: UIViewController {
             return sourceButton.convert(sourceButton.bounds, to: view)
         }()
 
-        let bubbleWidth = max(120, min(Metrics.bubbleMaxWidth, source.minX - Metrics.buttonGap - safe.minX - Metrics.screenMargin))
+        let roomBesideButton = isRightToLeft
+            ? safe.maxX - Metrics.screenMargin - source.maxX - Metrics.buttonGap
+            : source.minX - Metrics.buttonGap - safe.minX - Metrics.screenMargin
+        let maxBubbleWidth = max(120, min(Metrics.bubbleMaxWidth, roomBesideButton))
+        // 只有文字（会话输入框里长按发送，#1519 M-4）：气泡贴着文字宽，同会话里的文字气泡。
+        let bubbleWidth: CGFloat = {
+            guard tiles.isEmpty, caption != nil else { return maxBubbleWidth }
+            let insets = Metrics.captionInsets
+            let fits = captionLabel.sizeThatFits(CGSize(width: maxBubbleWidth - insets.left - insets.right, height: .greatestFiniteMagnitude))
+            return min(maxBubbleWidth, max(60, ceil(fits.width) + insets.left + insets.right))
+        }()
         let tileFrames = Self.mosaicFrames(count: tiles.count, width: bubbleWidth, firstAspectRatio: tiles.first?.aspectRatio ?? 1)
         let mosaicHeight = tileFrames.map(\.maxY).max() ?? 0
         let captionSize: CGSize = caption == nil ? .zero : {
@@ -324,18 +353,22 @@ final class TellomiSendPreviewViewController: UIViewController {
 
         var sendButton = source
         var message = CGRect(
-            x: sendButton.minX - Metrics.buttonGap - bubbleSize.width,
+            x: isRightToLeft ? sendButton.maxX + Metrics.buttonGap : sendButton.minX - Metrics.buttonGap - bubbleSize.width,
             y: sendButton.maxY - Metrics.bubbleBottomOverButton - bubbleSize.height,
             width: bubbleSize.width,
             height: bubbleSize.height,
         )
         var menu = CGRect(
-            x: sendButton.minX - Metrics.buttonGap - menuWidth,
+            x: isRightToLeft ? sendButton.maxX + Metrics.buttonGap : sendButton.minX - Metrics.buttonGap - menuWidth,
             y: message.maxY + Metrics.menuSpacing,
             width: menuWidth,
             height: menuHeight,
         )
-        menu.origin.x = max(menu.minX, safe.minX + Metrics.screenMargin)
+        if isRightToLeft {
+            menu.origin.x = min(menu.minX, safe.maxX - Metrics.screenMargin - menuWidth)
+        } else {
+            menu.origin.x = max(menu.minX, safe.minX + Metrics.screenMargin)
+        }
 
         // 同 Telegram：菜单超出底部安全区，三样一起往上挪。
         let bottomOverflow = menu.maxY - (safe.maxY - Metrics.screenMargin)

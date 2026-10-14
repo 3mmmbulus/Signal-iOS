@@ -36,7 +36,13 @@ class ConversationInputTextView: BodyRangesTextView {
     private var textIsChanging = false
 
     var inFieldButtonsAreaWidth: CGFloat = 0 {
-        didSet { ensurePlaceholderConstraints() }
+        didSet {
+            // Tellomi（tellomi/tellomi#1519 M-4）：输入框里的按钮会变多变少（定时消息的日历键）：让出的宽度要进 inset，占位字才不压在按钮下面。
+            if oldValue != inFieldButtonsAreaWidth, placeholderView.superview != nil {
+                updateTextContainerInset()
+            }
+            ensurePlaceholderConstraints()
+        }
     }
 
     override init() {

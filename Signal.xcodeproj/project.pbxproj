@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE919897ADD76620F0C582CA /* ConversationViewController+TellomiScheduledSend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6215551A593A8FDB6CF26A44 /* ConversationViewController+TellomiScheduledSend.swift */; };
+		702A9D88C1648DF728E8DAC0 /* TellomiScheduledMessagesListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CAA216A60DE503F2434EE7 /* TellomiScheduledMessagesListTests.swift */; };
+		7546F6D0F041AA1342685B8E /* TellomiScheduledMessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5D6B329D8774229F91C2BB /* TellomiScheduledMessagesViewController.swift */; };
 		EE9DBA1D6EB11929E491BA2B /* TellomiScheduleTimeSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B288B9485831E699AC92BE8 /* TellomiScheduleTimeSheetTests.swift */; };
 		F00977AD4FAEC90AC057A9F9 /* TellomiScheduleTimeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93AAA7D8533518274946A1E /* TellomiScheduleTimeSheet.swift */; };
 		AEDC6C5429F6FDB3867841C4 /* TellomiScheduledMessageNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C8E426A816B9C163299D78 /* TellomiScheduledMessageNotificationTests.swift */; };
@@ -4445,6 +4448,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6215551A593A8FDB6CF26A44 /* ConversationViewController+TellomiScheduledSend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiScheduledSend.swift"; sourceTree = "<group>"; };
+		10CAA216A60DE503F2434EE7 /* TellomiScheduledMessagesListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessagesListTests.swift; sourceTree = "<group>"; };
+		EE5D6B329D8774229F91C2BB /* TellomiScheduledMessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessagesViewController.swift; sourceTree = "<group>"; };
 		5B288B9485831E699AC92BE8 /* TellomiScheduleTimeSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduleTimeSheetTests.swift; sourceTree = "<group>"; };
 		B93AAA7D8533518274946A1E /* TellomiScheduleTimeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduleTimeSheet.swift; sourceTree = "<group>"; };
 		C1C8E426A816B9C163299D78 /* TellomiScheduledMessageNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessageNotificationTests.swift; sourceTree = "<group>"; };
@@ -9502,6 +9508,8 @@
 				348815C5255346A500D4F4C4 /* CVNode.swift */,
 				D9170EE9290C57BF00CD813A /* CVViewState+Banners.swift */,
 				341D392825472F3B00996E7B /* CVViewState.swift */,
+				6215551A593A8FDB6CF26A44 /* ConversationViewController+TellomiScheduledSend.swift */,
+				EE5D6B329D8774229F91C2BB /* TellomiScheduledMessagesViewController.swift */,
 				E1CFAAA22C9DD2B1003145C3 /* LinkPreviewCallLink.swift */,
 				34A95517271B510400B05242 /* LinkPreviewGroupLink.swift */,
 				346EAA13250199A300E8AB6F /* MemberRequestView.swift */,
@@ -10102,6 +10110,7 @@
 				A700770A7A33416692237DF5 /* TellomiVideoLevelTests.swift */,
 				805CBB2A6487FD76D22DECAC /* TellomiMutedVideoTests.swift */,
 				D0B193FF5C16EE0F9436217B /* TellomiScheduledMessageTests.swift */,
+				10CAA216A60DE503F2434EE7 /* TellomiScheduledMessagesListTests.swift */,
 				5B288B9485831E699AC92BE8 /* TellomiScheduleTimeSheetTests.swift */,
 				C1C8E426A816B9C163299D78 /* TellomiScheduledMessageNotificationTests.swift */,
 				5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */,
@@ -19371,6 +19380,8 @@
 				3470C8822559B23F00F5847C /* CVUpdate.swift in Sources */,
 				D9170EEA290C57BF00CD813A /* CVViewState+Banners.swift in Sources */,
 				341D392925472F3B00996E7B /* CVViewState.swift in Sources */,
+				CE919897ADD76620F0C582CA /* ConversationViewController+TellomiScheduledSend.swift in Sources */,
+				7546F6D0F041AA1342685B8E /* TellomiScheduledMessagesViewController.swift in Sources */,
 				345772B6257E4E01001D7D44 /* CVViewStateSnapshot.swift in Sources */,
 				3420CF6F2638A01A00E7DCB0 /* CVWallpaperBlurView.swift in Sources */,
 				F9B652C128D8CB75006914CA /* DatabaseRecoveryViewController.swift in Sources */,
@@ -19981,6 +19992,7 @@
 				4675DBEFDCC84C3E01819C6E /* TellomiVideoLevelTests.swift in Sources */,
 				74A84450739B8C893E8E22A3 /* TellomiMutedVideoTests.swift in Sources */,
 				907A926689426E912880A57C /* TellomiScheduledMessageTests.swift in Sources */,
+				702A9D88C1648DF728E8DAC0 /* TellomiScheduledMessagesListTests.swift in Sources */,
 				EE9DBA1D6EB11929E491BA2B /* TellomiScheduleTimeSheetTests.swift in Sources */,
 				AEDC6C5429F6FDB3867841C4 /* TellomiScheduledMessageNotificationTests.swift in Sources */,
 				D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */,

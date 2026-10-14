@@ -67,6 +67,9 @@ protocol ConversationInputToolbarDelegate: AnyObject {
     func didSelectRecentPhoto(asset: PHAsset, attachment: PreviewableAttachment, attachmentLimits: OutgoingAttachmentLimits)
 
     func showUnblockConversationUI(completion: ((Bool) -> Void)?)
+
+    /// Tellomi（tellomi/tellomi#1519 M-4）：输入框里的「定时消息」键（这个会话有定时消息、输入框空着时才有）。
+    func tellomiScheduledMessagesButtonPressed()
 }
 
 public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
@@ -285,6 +288,22 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             )
         }
 
+        /// Tellomi（#1519 M-4）：照 Telegram 两端，输入框里一个日历键，打开这个会话的定时消息。
+        static func tellomiScheduledMessagesButton(
+            primaryAction: UIAction,
+            accessibilityIdentifier: String?,
+        ) -> UIButton {
+            return compactButton(
+                buttonImage: UIImage(systemName: "calendar.badge.clock") ?? UIImage(),
+                primaryAction: primaryAction,
+                accessibilityLabel: OWSLocalizedString(
+                    "TELLOMI_SCHEDULED_MESSAGES_TITLE",
+                    comment: "Title of the list of messages scheduled to be sent later in a chat.",
+                ),
+                accessibilityIdentifier: accessibilityIdentifier,
+            )
+        }
+
         static func keyboardButton(
             primaryAction: UIAction,
             accessibilityIdentifier: String?,
@@ -474,6 +493,55 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         },
         accessibilityIdentifier: UIView.accessibilityIdentifier(in: self, name: "stickerButton"),
     )
+
+    private lazy var tellomiScheduledMessagesButton = Buttons.tellomiScheduledMessagesButton(
+        primaryAction: UIAction { [weak self] _ in
+            self?.inputToolbarDelegate?.tellomiScheduledMessagesButtonPressed()
+        },
+        accessibilityIdentifier: UIView.accessibilityIdentifier(in: self, name: "tellomiScheduledMessagesButton"),
+    )
+
+    /// Tellomi（#1519 M-4）：这个会话有没有定时消息（会话页按记录变化设）。有、而且输入框空着时，输入框里出日历键（同 TG 两端：
+    /// iOS `isTextEmpty && hasScheduledMessages`，安卓 `scheduledMessagesCount > 0` 且没在打字）。
+    private(set) var tellomiHasScheduledMessages = false
+
+    /// 打开会话时不带动画（`animated: false`），之后记录变化时带动画（同别的输入框按钮缩放出现）。
+    func tellomiSetHasScheduledMessages(_ hasScheduledMessages: Bool, animated: Bool) {
+        guard hasScheduledMessages != tellomiHasScheduledMessages else { return }
+        tellomiHasScheduledMessages = hasScheduledMessages
+        ensureButtonVisibility(withAnimation: animated, doLayout: true)
+    }
+
+    /// 输入框右边给按钮留的宽度（不含日历键）。
+    private var tellomiBaseInFieldButtonsAreaWidth: CGFloat = 0
+
+    /// Tellomi（#1519 M-4）：发送键长按（会话页弹「发出去是什么样」的预览 +「定时发送」，同 Telegram 两端）；nil = 不挂。
+    /// 只在真能定时发送时启用（发送键亮着、不是改消息、不是语音）：别的时候按久了照常是按下没松开（松开就发）。
+    func tellomiSetSendLongPress(_ handler: ((UIButton) -> Void)?) {
+        guard let sendButton = tellomiSendButton else { return }
+        TellomiSendLongPressGestureRecognizer.install(on: sendButton, handler: handler)
+        tellomiHasSendLongPress = handler != nil
+        tellomiUpdateSendLongPressEnabled(rightEdgeControlsState: nil)
+    }
+
+    private var tellomiHasSendLongPress = false
+    private var tellomiSendLongPressAllowed = false
+
+    private func tellomiUpdateSendLongPressEnabled(rightEdgeControlsState: TrailingEdgeControlState?) {
+        if let rightEdgeControlsState {
+            tellomiSendLongPressAllowed = rightEdgeControlsState == .sendButton && !isShowingVoiceMemoUI && !isEditingMessage
+        }
+        guard let sendButton = tellomiSendButton else { return }
+        TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.isEnabled = tellomiHasSendLongPress && tellomiSendLongPressAllowed
+    }
+
+    /// 发送键（iOS 26 起它就是右边那个键；之前在右边那一组里）。
+    var tellomiSendButton: UIButton? {
+        if let button = trailingEdgeControl as? UIButton {
+            return button
+        }
+        return (trailingEdgeControl as? RightEdgeControlsView)?.sendButton
+    }
 
     private lazy var keyboardButton = Buttons.keyboardButton(
         primaryAction: UIAction { [weak self] _ in
@@ -785,6 +853,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         if iOS26Layout {
             inputTextView.inFieldButtonsAreaWidth = 3 * LayoutMetrics.initialTextBoxHeight
 
+            inputTextViewContainer.addSubview(tellomiScheduledMessagesButton)
             inputTextViewContainer.addSubview(stickerButton)
             inputTextViewContainer.addSubview(keyboardButton)
             inputTextViewContainer.addSubview(cameraButton)
@@ -806,9 +875,15 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
                 stickerButton.bottomAnchor.constraint(equalTo: inputTextViewContainer.bottomAnchor),
                 keyboardButton.bottomAnchor.constraint(equalTo: inputTextViewContainer.bottomAnchor),
             ])
+            tellomiScheduledMessagesButton.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                tellomiScheduledMessagesButton.trailingAnchor.constraint(equalTo: stickerButton.leadingAnchor),
+                tellomiScheduledMessagesButton.bottomAnchor.constraint(equalTo: inputTextViewContainer.bottomAnchor),
+            ])
         } else {
             inputTextView.inFieldButtonsAreaWidth = 1 * LayoutMetrics.initialTextBoxHeight
 
+            inputTextViewContainer.addSubview(tellomiScheduledMessagesButton)
             inputTextViewContainer.addSubview(stickerButton)
             inputTextViewContainer.addSubview(keyboardButton)
 
@@ -821,7 +896,16 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
                 stickerButton.trailingAnchor.constraint(equalTo: messageContentView.trailingAnchor, constant: -4),
                 keyboardButton.trailingAnchor.constraint(equalTo: messageContentView.trailingAnchor, constant: -4),
             ])
+            tellomiScheduledMessagesButton.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                tellomiScheduledMessagesButton.centerYAnchor.constraint(equalTo: inputTextViewContainer.centerYAnchor),
+                tellomiScheduledMessagesButton.trailingAnchor.constraint(equalTo: stickerButton.leadingAnchor),
+            ])
         }
+        tellomiBaseInFieldButtonsAreaWidth = inputTextView.inFieldButtonsAreaWidth
+        // 显隐同贴纸键，用透明度和缩放（`setView`）；一开始不出。
+        tellomiScheduledMessagesButton.alpha = 0
+        tellomiScheduledMessagesButton.transform = .scale(0.1)
 
         // 3. Configure horizontal layout: Attachment button, message components, Camera|VoiceNote|Send button.
         leadingEdgeControl.translatesAutoresizingMaskIntoConstraints = false
@@ -986,6 +1070,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         // On iOS 26 there are Camera and Voice Note buttons inside of the text input field:
         // those would be hidden to match pre-iOS 26 behavior.
         let hideAllTextFieldButtons = rightEdgeControlsState != .default || inputTextView.untrimmedText.rangeOfCharacter(from: .newlines) != nil
+        tellomiUpdateSendLongPressEnabled(rightEdgeControlsState: rightEdgeControlsState)
         // Sticker/keyboard buttons will also be hidden if there's whitespace-only input.
         let textFieldHasAnyInput = !inputTextView.untrimmedText.isEmpty
         let hideInputMethodButtons = hideAllTextFieldButtons || textFieldHasAnyInput || hasQuotedMessage
@@ -993,6 +1078,13 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         let hideKeyboardButton = hideInputMethodButtons || !hideStickerButton
         ConversationInputToolbar.setView(stickerButton, hidden: hideStickerButton, usingAnimator: animator)
         ConversationInputToolbar.setView(keyboardButton, hidden: hideKeyboardButton, usingAnimator: animator)
+        // Tellomi（#1519 M-4）：日历键和贴纸键同进退（有字、有引用、编辑时都不出），另外要这个会话有定时消息；出来时给它让出位置。
+        let hideTellomiScheduledButton = hideInputMethodButtons || isEditingMessage || !tellomiHasScheduledMessages
+        ConversationInputToolbar.setView(tellomiScheduledMessagesButton, hidden: hideTellomiScheduledButton, usingAnimator: animator)
+        let tellomiInFieldButtonsAreaWidth = tellomiBaseInFieldButtonsAreaWidth + (hideTellomiScheduledButton ? 0 : LayoutMetrics.initialTextBoxHeight)
+        if inputTextView.inFieldButtonsAreaWidth != tellomiInFieldButtonsAreaWidth {
+            inputTextView.inFieldButtonsAreaWidth = tellomiInFieldButtonsAreaWidth
+        }
         if iOS26Layout {
             ConversationInputToolbar.setView(cameraButton, hidden: hideAllTextFieldButtons, usingAnimator: animator)
             ConversationInputToolbar.setView(voiceNoteButton, hidden: hideAllTextFieldButtons, usingAnimator: animator)
