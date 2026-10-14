@@ -24,14 +24,18 @@ public class SignalApp {
         return conversationSplitViewController?.selectedThread != nil
     }
 
-    func showConversationSplitView() {
+    func showConversationSplitView(in window: UIWindow? = nil) {
         // Tellomi（ADR-0072 §4.1 第 3 步）：本机已退出登录时绝不进聊天界面。上游「被服务端登出」时照样进聊天列表
         // （顶上一条横幅），退出登录不能借这一点；所有要进聊天的地方（启动、注册完成、退出注册流程）都经过这里。
-        if showTellomiLoggedOutWelcomeIfNeeded() {
+        if showTellomiLoggedOutWelcomeIfNeeded(in: window) {
+            return
+        }
+        guard let window = window ?? CurrentAppContext().mainWindow else {
+            owsFailDebug("Missing window.")
             return
         }
         let splitViewController = ConversationSplitViewController()
-        UIApplication.shared.delegate?.window??.rootViewController = splitViewController
+        window.rootViewController = splitViewController
         self.conversationSplitViewController = splitViewController
     }
 
@@ -51,7 +55,7 @@ public class SignalApp {
 
     /// 已退出登录就回欢迎页（开屏轮播 +「上次登录」），返回 true；否则什么都不做，返回 false。
     @discardableResult
-    func showTellomiLoggedOutWelcomeIfNeeded() -> Bool {
+    func showTellomiLoggedOutWelcomeIfNeeded(in window: UIWindow? = nil) -> Bool {
         let tsAccountManager = DependenciesBridge.shared.tsAccountManager
         guard tsAccountManager.isTellomiLoggedOutWithMaybeSneakyTransaction else {
             return false
@@ -61,11 +65,11 @@ public class SignalApp {
         }
         let loader = RegistrationCoordinatorLoaderImpl(dependencies: .from(NSObject()))
         if let reLoginMode {
-            showRegistration(loader: loader, desiredMode: reLoginMode)
+            showRegistration(loader: loader, desiredMode: reLoginMode, in: window)
         } else {
             // 不应该发生（退出登录不动本机身份）。就算这样也不进聊天，当作新装的 App。
             owsFailDebug("Logged out without local identifiers")
-            showRegistration(loader: loader, desiredMode: .registering)
+            showRegistration(loader: loader, desiredMode: .registering, in: window)
         }
         return true
     }
@@ -104,7 +108,12 @@ public class SignalApp {
     }
 
     @MainActor
-    func showLaunchInterface(_ launchInterface: LaunchInterface, appReadiness: AppReadinessSetter, launchStartedAt: TimeInterval) {
+    func showLaunchInterface(
+        _ launchInterface: LaunchInterface,
+        in window: UIWindow,
+        appReadiness: AppReadinessSetter,
+        launchStartedAt: TimeInterval,
+    ) {
         owsPrecondition(appReadiness.isAppReady)
 
         let startupDuration = CACurrentMediaTime() - launchStartedAt
@@ -120,11 +129,11 @@ public class SignalApp {
 
         switch launchInterface {
         case .registration(let registrationLoader, let desiredMode):
-            showRegistration(loader: registrationLoader, desiredMode: desiredMode)
+            showRegistration(loader: registrationLoader, desiredMode: desiredMode, in: window)
         case .secondaryProvisioning:
             showSecondaryProvisioning(skipOnboarding: false)
         case .chatList:
-            showConversationSplitView()
+            showConversationSplitView(in: window)
         }
         appReadiness.setUIIsReady()
 
@@ -147,7 +156,12 @@ public class SignalApp {
     func showRegistration(
         loader: RegistrationCoordinatorLoader,
         desiredMode: RegistrationMode,
+        in window: UIWindow? = nil,
     ) {
+        guard let window = window ?? CurrentAppContext().mainWindow else {
+            owsFailDebug("Missing window.")
+            return
+        }
         let logger: PrefixedLogger
         switch desiredMode {
         case .registering:
@@ -168,7 +182,7 @@ public class SignalApp {
         }
         let navController = RegistrationNavigationController.withCoordinator(coordinator)
 
-        UIApplication.shared.delegate?.window??.rootViewController = navController
+        window.rootViewController = navController
 
         conversationSplitViewController = nil
     }
@@ -377,7 +391,7 @@ public class SignalApp {
 
         UserNotificationPresenter().clearAllNotifications()
         UIApplication.shared.applicationIconBadgeNumber = 0
-        AppDelegate.updateApplicationShortcutItems(isRegistered: false)
+        AppLifecycleManager.updateApplicationShortcutItems(isRegistered: false)
 
         DebugLogger.shared.wipeLogsAlways(appContext: CurrentAppContext() as! MainAppContext)
     }

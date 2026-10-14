@@ -37,32 +37,162 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         AssertIsOnMainThread()
     }
 
+    // MARK: Windows
+
+    /// The app's windows.
+    ///
+    /// Windows belong to a scene, so these can't exist until one has
+    /// connected. If the app launched into the background, that may not happen
+    /// until long after the launch finished, or at all — so anything that can
+    /// run before then has to cope with their absence.
+    private final class SceneWindows {
+
+        // UIWindow.Level.normal
+        let root: UIWindow
+
+        // UIWindow.Level._background if inactive,
+        // UIWindow.Level._screenBlocking() if active.
+        let screenBlocking: UIWindow
+
+        private var windowScene: UIWindowScene
+        private var createdWindows = [UIWindow]()
+
+        init(
+            root: UIWindow,
+            screenBlocking: UIWindow,
+            windowScene: UIWindowScene,
+        ) {
+            AssertIsOnMainThread()
+
+            self.root = root
+            self.screenBlocking = screenBlocking
+            self.windowScene = windowScene
+        }
+
+        // UIWindow.Level._returnToCall
+        lazy var returnToCall: UIWindow = {
+            let window = newWindow(level: ._returnToCall)
+            window.clipsToBounds = true
+            window.rootViewController = returnToCallViewController
+            return window
+        }()
+
+        lazy var returnToCallViewController = ReturnToCallViewController()
+
+        // UIWindow.Level._callView
+        lazy var callView: UIWindow = {
+            let window = newWindow(level: ._callView)
+            window.backgroundColor = .Signal.background
+            window.overrideUserInterfaceStyle = .dark
+            window.rootViewController = nil
+            return window
+        }()
+
+        // UIWindow.Level._clockSkewBlocking
+        lazy var clockSkewBlocking: UIWindow = {
+            let window = newWindow(level: ._clockSkewBlocking)
+            window.backgroundColor = Theme.launchScreenBackgroundColor
+            window.rootViewController = ClockSkewAppBlockingViewController(
+                onSubmitDebugLogs: { viewController in
+                    DebugLogs(dumper: .fromGlobals()).promptToSubmitLogs(
+                        from: viewController,
+                        supportTag: "ClockSkew",
+                    )
+                },
+            )
+            return window
+        }()
+
+        // UIWindow.Level._clockSkewBlocking（Tellomi #1133；两个挡板不会同时出现：没同意跨境就不联网，也就量不出时钟偏差）
+        lazy var crossBorderConsent: UIWindow = {
+            let window = newWindow(level: ._clockSkewBlocking)
+            window.backgroundColor = Theme.launchScreenBackgroundColor
+            window.rootViewController = WindowManager.makeCrossBorderConsentBlockingViewController()
+            return window
+        }()
+
+        /// Tellomi（#1139）：「必须更新」阻断页由 `WindowManager` 持有（页面信息随更新清单变），窗口在这里随场景走。
+        var makeUpdateRequiredBlockingViewController: (() -> UIViewController)?
+
+        // UIWindow.Level._updateRequiredBlocking（Tellomi，tellomi/tellomi#1139）
+        lazy var updateRequiredBlocking: UIWindow = {
+            let window = newWindow(level: ._updateRequiredBlocking)
+            window.backgroundColor = Theme.launchScreenBackgroundColor
+            window.rootViewController = makeUpdateRequiredBlockingViewController?()
+            return window
+        }()
+
+        private func newWindow(level: UIWindow.Level) -> OWSWindow {
+            AssertIsOnMainThread()
+
+            let window = OWSWindow(windowScene: windowScene)
+            window.frame = root.bounds
+            window.windowLevel = level
+            window.isHidden = true
+            window.isOpaque = true
+
+            createdWindows.append(window)
+            return window
+        }
+
+        /// Moves the windows that exist into `windowScene`.
+        func move(to windowScene: UIWindowScene) {
+            AssertIsOnMainThread()
+
+            self.windowScene = windowScene
+            for window in [root, screenBlocking] + createdWindows {
+                window.windowScene = windowScene
+            }
+        }
+    }
+
+    private var windows: SceneWindows?
+
+    /// The app's windows, for callers that only run once its UI is up.
+    private var connectedWindows: SceneWindows {
+        guard let windows else {
+            owsFail("No scene has connected!")
+        }
+        return windows
+    }
+
+    var rootWindow: UIWindow { connectedWindows.root }
+
+    var callViewWindow: UIWindow { connectedWindows.callView }
+
+    var captchaWindow: UIWindow {
+        return shouldShowCallView ? callViewWindow : rootWindow
+    }
+
     func setupWithRootWindow(_ rootWindow: UIWindow, screenBlockingWindow: UIWindow) {
         AssertIsOnMainThread()
-        owsAssertBeta(self.rootWindow == nil)
-        owsAssertBeta(self.screenBlockingWindow == nil)
+        owsAssertBeta(self.windows == nil)
+        guard let windowScene = rootWindow.windowScene else {
+            owsFail("Missing root window scene!")
+        }
+        Logger.info("")
 
-        self.rootWindow = rootWindow
-        self.screenBlockingWindow = screenBlockingWindow
+        let windows = SceneWindows(
+            root: rootWindow,
+            screenBlocking: screenBlockingWindow,
+            windowScene: windowScene,
+        )
+        // Tellomi（#1139）
+        windows.makeUpdateRequiredBlockingViewController = { [unowned self] in self.updateRequiredBlockingViewController }
+        self.windows = windows
+
+        // A call may have started before there was a window to show it in.
+        presentCallViewControllerIfNeeded()
 
         ensureWindowState()
     }
 
-    func isAppWindow(_ window: UIWindow) -> Bool {
-        return switch window {
-        case rootWindow: true
-        case returnToCallWindow: true
-        case callViewWindow: true
-        case clockSkewBlockingWindow: true
-        case crossBorderConsentWindow: true
-        case screenBlockingWindow: true
-        case updateRequiredBlockingWindow: true
-        default: false
-        }
-    }
+    /// Moves the app's windows into `windowScene`, for when the scene they
+    /// were in is replaced with a new one.
+    func moveWindows(to windowScene: UIWindowScene) {
+        AssertIsOnMainThread()
 
-    var captchaWindow: UIWindow {
-        return shouldShowCallView ? callViewWindow : rootWindow
+        windows?.move(to: windowScene)
     }
 
     /// Tellomi（tellomi/tellomi#1139）：为真时用「必须更新」阻断页盖住整个 App（由 `TellomiUpdateRequiredMonitoringManager` 设置）。
@@ -112,112 +242,18 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
     }
 
     func updateWindowFrames() {
+        guard let windows else { return }
+
         let desiredFrame = CurrentAppContext().frame
-        for window in [rootWindow!, callViewWindow, clockSkewBlockingWindow, crossBorderConsentWindow, screenBlockingWindow!] {
+        for window in [windows.root, windows.callView, windows.clockSkewBlocking, windows.crossBorderConsent, windows.screenBlocking] {
             guard window.frame != desiredFrame else { continue }
             window.frame = desiredFrame
         }
         // Tellomi（tellomi/tellomi#1139）
-        if updateRequiredBlockingWindow.frame != desiredFrame {
-            updateRequiredBlockingWindow.frame = desiredFrame
+        if windows.updateRequiredBlocking.frame != desiredFrame {
+            windows.updateRequiredBlocking.frame = desiredFrame
         }
     }
-
-    // MARK: Windows
-
-    // UIWindow.Level.normal
-    var rootWindow: UIWindow!
-
-    // UIWindow.Level._returnToCall
-    private lazy var returnToCallWindow: UIWindow = {
-        AssertIsOnMainThread()
-        guard let rootWindow else {
-            owsFail("rootWindow is nil")
-        }
-
-        let window = OWSWindow(frame: rootWindow.bounds)
-        window.windowLevel = ._returnToCall
-        window.isHidden = true
-        window.isOpaque = true
-        window.clipsToBounds = true
-        window.rootViewController = returnToCallViewController
-
-        return window
-    }()
-
-    private lazy var returnToCallViewController = ReturnToCallViewController()
-
-    // UIWindow.Level._callView
-    lazy var callViewWindow: UIWindow = {
-        AssertIsOnMainThread()
-        guard let rootWindow else {
-            owsFail("rootWindow is nil")
-        }
-
-        let window = OWSWindow(frame: rootWindow.bounds)
-        window.windowLevel = ._callView
-        window.isHidden = true
-        window.isOpaque = true
-        window.backgroundColor = .Signal.background
-        window.overrideUserInterfaceStyle = .dark
-        window.rootViewController = nil
-
-        return window
-
-    }()
-
-    private func newCallNavigationController() -> UINavigationController {
-        let viewController = WindowRootViewController()
-        viewController.view.backgroundColor = Theme.launchScreenBackgroundColor
-
-        // NOTE: Do not use OWSNavigationController for call window.
-        // It adjusts the size of the navigation bar to reflect the
-        // call window.  We don't want those adjustments made within
-        // the call window itself.
-        let navigationController = WindowRootNavigationViewController(rootViewController: viewController)
-        navigationController.isNavigationBarHidden = true
-        return navigationController
-    }
-
-    // UIWindow.Level._clockSkewBlocking
-    private lazy var clockSkewBlockingWindow: UIWindow = {
-        AssertIsOnMainThread()
-        guard let rootWindow else {
-            owsFail("rootWindow is nil")
-        }
-
-        let window = OWSWindow(frame: rootWindow.bounds)
-        window.windowLevel = ._clockSkewBlocking
-        window.isHidden = true
-        window.isOpaque = true
-        window.backgroundColor = Theme.launchScreenBackgroundColor
-        window.rootViewController = ClockSkewAppBlockingViewController(
-            onSubmitDebugLogs: { viewController in
-                DebugLogs(dumper: .fromGlobals()).promptToSubmitLogs(
-                    from: viewController,
-                    supportTag: "ClockSkew",
-                )
-            },
-        )
-
-        return window
-    }()
-
-    // UIWindow.Level._clockSkewBlocking（两个挡板不会同时出现：没同意跨境就不联网，也就量不出时钟偏差）
-    private lazy var crossBorderConsentWindow: UIWindow = {
-        AssertIsOnMainThread()
-        guard let rootWindow else {
-            owsFail("rootWindow is nil")
-        }
-
-        let window = OWSWindow(frame: rootWindow.bounds)
-        window.windowLevel = ._clockSkewBlocking
-        window.isHidden = true
-        window.isOpaque = true
-        window.backgroundColor = Theme.launchScreenBackgroundColor
-        window.rootViewController = Self.makeCrossBorderConsentBlockingViewController()
-        return window
-    }()
 
     /// Tellomi（tellomi/tellomi#1338）：已注册设备升级后的盖页 = 完整同意 + 最上面「《隐私政策》已更新至 2.0.0 版。」（需求第六节法务项 c）；
     /// 6.6 起是品牌底色空白盖页上的小弹窗，关不掉。
@@ -225,10 +261,6 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
     static func makeCrossBorderConsentBlockingViewController() -> TellomiCrossBorderNoticeViewController {
         return TellomiCrossBorderNoticeViewController(mode: .consentAfterPolicyUpdate, onAgree: {})
     }
-
-    // UIWindow.Level._background if inactive,
-    // UIWindow.Level._screenBlocking() if active.
-    private var screenBlockingWindow: UIWindow!
 
     // UIWindow.Level._updateRequiredBlocking（Tellomi，tellomi/tellomi#1139）
     private lazy var updateRequiredBlockingViewController = Self.makeUpdateRequiredBlockingViewController(host: self)
@@ -253,26 +285,16 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         return viewController
     }
 
-    private lazy var updateRequiredBlockingWindow: UIWindow = {
-        AssertIsOnMainThread()
-        guard let rootWindow else {
-            owsFail("rootWindow is nil")
-        }
-
-        let window = OWSWindow(frame: rootWindow.bounds)
-        window.windowLevel = ._updateRequiredBlocking
-        window.isHidden = true
-        window.isOpaque = true
-        window.backgroundColor = Theme.launchScreenBackgroundColor
-        window.rootViewController = updateRequiredBlockingViewController
-
-        return window
-    }()
-
     // MARK: Window State
 
     private func ensureWindowState() {
         AssertIsOnMainThread()
+
+        guard let windows else {
+            // This runs again when a scene connects.
+            Logger.info("Ignoring window state change; no scene has connected.")
+            return
+        }
 
         // To avoid bad frames, we never want to hide the blocking window, so we manipulate
         // its window level to "hide" it behind other windows.  The other windows have fixed
@@ -286,121 +308,122 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         // 通话中先不盖（上游的时钟偏差页也排在通话后面），挂断后 ensureWindowState 会再盖上。
         if isUpdateRequiredBlockActive, !hasCall {
             if isScreenBlockActive {
-                ensureScreenBlockWindowShown()
+                ensureScreenBlockWindowShown(windows)
             } else {
-                ensureScreenBlockWindowHidden()
+                ensureScreenBlockWindowHidden(windows)
             }
-            ensureRootWindowHidden()
-            ensureReturnToCallWindowHidden()
-            ensureCallViewWindowHidden()
-            ensureClockSkewBlockWindowHidden()
-            ensureUpdateRequiredBlockWindowShown()
+            ensureRootWindowHidden(windows)
+            ensureReturnToCallWindowHidden(windows)
+            ensureCallViewWindowHidden(windows)
+            ensureClockSkewBlockWindowHidden(windows)
+            ensureCrossBorderConsentWindowHidden(windows)
+            ensureUpdateRequiredBlockWindowShown(windows)
             return
         }
-        ensureUpdateRequiredBlockWindowHidden()
+        ensureUpdateRequiredBlockWindowHidden(windows)
 
         if isScreenBlockActive {
-            ensureScreenBlockWindowShown()
-            ensureRootWindowHidden()
-            ensureReturnToCallWindowHidden()
-            ensureCallViewWindowHidden()
-            ensureClockSkewBlockWindowHidden()
-            ensureCrossBorderConsentWindowHidden()
+            ensureScreenBlockWindowShown(windows)
+            ensureRootWindowHidden(windows)
+            ensureReturnToCallWindowHidden(windows)
+            ensureCallViewWindowHidden(windows)
+            ensureClockSkewBlockWindowHidden(windows)
+            ensureCrossBorderConsentWindowHidden(windows)
         }
         // Show Call View
         else if shouldShowCallView, callViewController != nil {
-            ensureCallViewWindowShown()
-            ensureRootWindowHidden()
-            ensureReturnToCallWindowHidden()
-            ensureScreenBlockWindowHidden()
-            ensureClockSkewBlockWindowHidden()
-            ensureCrossBorderConsentWindowHidden()
+            ensureCallViewWindowShown(windows)
+            ensureRootWindowHidden(windows)
+            ensureReturnToCallWindowHidden(windows)
+            ensureScreenBlockWindowHidden(windows)
+            ensureClockSkewBlockWindowHidden(windows)
+            ensureCrossBorderConsentWindowHidden(windows)
         }
         // Tellomi: Show Cross-Border Consent Block (tellomi/tellomi#1133)
         else if isCrossBorderConsentBlockActive {
-            ensureCrossBorderConsentWindowShown()
-            ensureRootWindowHidden()
-            ensureReturnToCallWindowHidden()
-            ensureCallViewWindowHidden()
-            ensureScreenBlockWindowHidden()
-            ensureClockSkewBlockWindowHidden()
+            ensureCrossBorderConsentWindowShown(windows)
+            ensureRootWindowHidden(windows)
+            ensureReturnToCallWindowHidden(windows)
+            ensureCallViewWindowHidden(windows)
+            ensureScreenBlockWindowHidden(windows)
+            ensureClockSkewBlockWindowHidden(windows)
         }
         // Show Clock Skew Block
         else if isClockSkewBlockActive {
-            ensureClockSkewBlockWindowShown()
-            ensureRootWindowHidden()
-            ensureReturnToCallWindowHidden()
-            ensureCallViewWindowHidden()
-            ensureScreenBlockWindowHidden()
-            ensureCrossBorderConsentWindowHidden()
+            ensureClockSkewBlockWindowShown(windows)
+            ensureRootWindowHidden(windows)
+            ensureReturnToCallWindowHidden(windows)
+            ensureCallViewWindowHidden(windows)
+            ensureScreenBlockWindowHidden(windows)
+            ensureCrossBorderConsentWindowHidden(windows)
         }
         // Show Root Window
         else {
-            ensureRootWindowShown()
-            ensureScreenBlockWindowHidden()
-            ensureClockSkewBlockWindowHidden()
-            ensureCrossBorderConsentWindowHidden()
+            ensureRootWindowShown(windows)
+            ensureScreenBlockWindowHidden(windows)
+            ensureClockSkewBlockWindowHidden(windows)
+            ensureCrossBorderConsentWindowHidden(windows)
 
             // Add "Return to Call" banner
             if callViewController != nil {
-                ensureReturnToCallWindowShown()
+                ensureReturnToCallWindowShown(windows)
             } else {
-                ensureReturnToCallWindowHidden()
+                ensureReturnToCallWindowHidden(windows)
             }
 
-            ensureCallViewWindowHidden()
+            ensureCallViewWindowHidden(windows)
         }
     }
 
-    private func ensureUpdateRequiredBlockWindowShown() {
+    private func ensureUpdateRequiredBlockWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        if updateRequiredBlockingWindow.isHidden {
+        if windows.updateRequiredBlocking.isHidden {
             Logger.info("showing update required window.")
         }
 
-        updateRequiredBlockingWindow.makeKeyAndVisible()
+        windows.updateRequiredBlocking.makeKeyAndVisible()
     }
 
-    private func ensureUpdateRequiredBlockWindowHidden() {
+    private func ensureUpdateRequiredBlockWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard !updateRequiredBlockingWindow.isHidden else { return }
+        guard !windows.updateRequiredBlocking.isHidden else { return }
 
         Logger.info("hiding update required window.")
-        updateRequiredBlockingWindow.isHidden = true
+        windows.updateRequiredBlocking.isHidden = true
     }
 
-    private func ensureRootWindowShown() {
+    private func ensureRootWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        if rootWindow.isHidden {
+        if windows.root.isHidden {
             Logger.info("showing root window.")
         }
 
         // By calling makeKeyAndVisible we ensure the rootViewController becomes first responder.
         // In the normal case, that means the SignalViewController will call `becomeFirstResponder`
         // on the vc on top of its navigation stack.
-        if !rootWindow.isKeyWindow || rootWindow.isHidden {
-            rootWindow.makeKeyAndVisible()
+        if !windows.root.isKeyWindow || windows.root.isHidden {
+            windows.root.makeKeyAndVisible()
         }
 
-        workAroundRotationIssue(rootWindow)
+        workAroundRotationIssue(windows.root)
     }
 
-    private func ensureRootWindowHidden() {
+    private func ensureRootWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard !rootWindow.isHidden else { return }
+        guard !windows.root.isHidden else { return }
 
         Logger.info("hiding root window.")
-        rootWindow.isHidden = true
+        windows.root.isHidden = true
     }
 
-    private func ensureReturnToCallWindowShown() {
+    private func ensureReturnToCallWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard returnToCallWindow.isHidden else { return }
+        guard windows.returnToCall.isHidden else { return }
 
         guard let callViewController else {
             owsFailBeta("callViewController is nil")
@@ -408,98 +431,98 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         }
 
         Logger.info("showing 'return to call' window.")
-        returnToCallWindow.isHidden = false
-        returnToCallViewController.displayForCallViewController(callViewController)
+        windows.returnToCall.isHidden = false
+        windows.returnToCallViewController.displayForCallViewController(callViewController)
     }
 
-    private func ensureReturnToCallWindowHidden() {
+    private func ensureReturnToCallWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard !returnToCallWindow.isHidden else { return }
+        guard !windows.returnToCall.isHidden else { return }
 
         Logger.info("hiding 'return to call' window.")
-        returnToCallWindow.isHidden = true
+        windows.returnToCall.isHidden = true
     }
 
-    private func ensureCallViewWindowShown() {
+    private func ensureCallViewWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        if callViewWindow.isHidden {
+        if windows.callView.isHidden {
             Logger.info("showing call window.")
         }
 
-        callViewWindow.makeKeyAndVisible()
+        windows.callView.makeKeyAndVisible()
     }
 
-    private func ensureCallViewWindowHidden() {
+    private func ensureCallViewWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard !callViewWindow.isHidden else { return }
+        guard !windows.callView.isHidden else { return }
 
         Logger.info("hiding call window.")
-        callViewWindow.isHidden = true
+        windows.callView.isHidden = true
     }
 
-    private func ensureClockSkewBlockWindowShown() {
+    private func ensureClockSkewBlockWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        if clockSkewBlockingWindow.isHidden {
+        if windows.clockSkewBlocking.isHidden {
             Logger.info("showing clock skew window.")
         }
 
-        clockSkewBlockingWindow.makeKeyAndVisible()
+        windows.clockSkewBlocking.makeKeyAndVisible()
     }
 
-    private func ensureClockSkewBlockWindowHidden() {
+    private func ensureClockSkewBlockWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard !clockSkewBlockingWindow.isHidden else { return }
+        guard !windows.clockSkewBlocking.isHidden else { return }
 
         Logger.info("hiding clock skew window.")
-        clockSkewBlockingWindow.isHidden = true
+        windows.clockSkewBlocking.isHidden = true
     }
 
-    private func ensureCrossBorderConsentWindowShown() {
+    private func ensureCrossBorderConsentWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        if crossBorderConsentWindow.isHidden {
+        if windows.crossBorderConsent.isHidden {
             Logger.info("showing cross-border consent window.")
         }
 
-        crossBorderConsentWindow.makeKeyAndVisible()
+        windows.crossBorderConsent.makeKeyAndVisible()
     }
 
-    private func ensureCrossBorderConsentWindowHidden() {
+    private func ensureCrossBorderConsentWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard !crossBorderConsentWindow.isHidden else { return }
+        guard !windows.crossBorderConsent.isHidden else { return }
 
         Logger.info("hiding cross-border consent window.")
-        crossBorderConsentWindow.isHidden = true
+        windows.crossBorderConsent.isHidden = true
     }
 
-    private func ensureScreenBlockWindowShown() {
+    private func ensureScreenBlockWindowShown(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        if screenBlockingWindow.windowLevel != ._screenBlocking {
+        if windows.screenBlocking.windowLevel != ._screenBlocking {
             Logger.info("showing block window.")
         }
 
-        screenBlockingWindow.windowLevel = ._screenBlocking
-        screenBlockingWindow.makeKeyAndVisible()
+        windows.screenBlocking.windowLevel = ._screenBlocking
+        windows.screenBlocking.makeKeyAndVisible()
     }
 
-    private func ensureScreenBlockWindowHidden() {
+    private func ensureScreenBlockWindowHidden(_ windows: SceneWindows) {
         AssertIsOnMainThread()
 
-        guard screenBlockingWindow.windowLevel != ._background else { return }
+        guard windows.screenBlocking.windowLevel != ._background else { return }
 
         Logger.info("hiding block window.")
 
         // Never hide the blocking window (that can lead to bad frames).
         // Instead, manipulate its window level to move it in front of
         // or behind the root window.
-        screenBlockingWindow.windowLevel = ._background
+        windows.screenBlocking.windowLevel = ._background
     }
 
     // MARK: Calls
@@ -511,7 +534,7 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         return callViewController != nil
     }
 
-    private var callViewController: CallViewControllerWindowReference?
+    private var callViewController: (UIViewController & CallViewControllerWindowReference)?
 
     func startCall<T: UIViewController & CallViewControllerWindowReference>(viewController: T) {
         AssertIsOnMainThread()
@@ -519,10 +542,7 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
 
         callViewController = viewController
 
-        // Attach callViewController to window.
-        let callNavigationController = self.newCallNavigationController()
-        self.callViewWindow.rootViewController = callNavigationController
-        callNavigationController.pushViewController(viewController, animated: false)
+        presentCallViewControllerIfNeeded()
 
         shouldShowCallView = true
 
@@ -535,6 +555,39 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         ensureWindowState()
     }
 
+    /// Attaches the call view controller to the call window, if there's a
+    /// scene to show it in. If there isn't, this runs again when one connects.
+    private func presentCallViewControllerIfNeeded() {
+        AssertIsOnMainThread()
+
+        guard let callViewController else {
+            return
+        }
+        guard let windows else {
+            Logger.warn("Waiting for a scene to show the call view in.")
+            return
+        }
+        guard windows.callView.rootViewController == nil else {
+            // It's already showing.
+            return
+        }
+        Logger.info("Showing the call view.")
+
+        let callNavigationController: UINavigationController = {
+            let viewController = WindowRootViewController()
+            viewController.view.backgroundColor = Theme.launchScreenBackgroundColor
+
+            // We don't use OWSNavigationController for the call window, since
+            // it adjusts the size of the nav bar to reflect the call window. We
+            // don't want those adjustments made within the call window itself.
+            let navigationController = WindowRootNavigationViewController(rootViewController: viewController)
+            navigationController.isNavigationBarHidden = true
+            return navigationController
+        }()
+        windows.callView.rootViewController = callNavigationController
+        callNavigationController.pushViewController(callViewController, animated: false)
+    }
+
     func endCall<T: UIViewController & CallViewControllerWindowReference>(viewController: T) {
         AssertIsOnMainThread()
 
@@ -542,12 +595,12 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
             Logger.warn("Ignoring end call request from obsolete call view controller.")
             return
         }
+        Logger.info("")
 
-        callViewWindow.rootViewController = nil
+        windows?.callView.rootViewController = nil
         callViewController = nil
 
         shouldShowCallView = false
-
         ensureWindowState()
     }
 
@@ -566,7 +619,7 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
         }
         owsAssertBeta(shouldShowCallView)
 
-        callViewController.willMoveToPip(pipWindow: returnToCallWindow)
+        callViewController.willMoveToPip(pipWindow: connectedWindows.returnToCall)
 
         shouldShowCallView = false
         ensureWindowState()
@@ -586,14 +639,14 @@ class WindowManager: TellomiUpdateRequiredBlockHost {
 
         shouldShowCallView = true
 
-        returnToCallViewController.resignCall()
-        callViewController.returnFromPip(pipWindow: returnToCallWindow)
+        connectedWindows.returnToCallViewController.resignCall()
+        callViewController.returnFromPip(pipWindow: connectedWindows.returnToCall)
 
         ensureWindowState()
     }
 
     var isCallInPip: Bool {
-        return returnToCallViewController.isCallInPip
+        return connectedWindows.returnToCallViewController.isCallInPip
     }
 }
 
