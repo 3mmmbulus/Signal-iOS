@@ -62,6 +62,9 @@ class ImageEditorModel {
     /// Tellomi（tellomi/tellomi#1522 E-2）：橡皮用原图搭底图，每动一下都要重搭；原图解码一次留在模型上，跟着模型一起释放。
     var tellomiDecodedSrcImage: UIImage?
 
+    /// Tellomi（tellomi/tellomi#1592 E5-2）：调色后的底图缓存（预览、发出、打码各一份），见 `ImageEditorCanvasView+TellomiAdjustments.swift`。
+    var tellomiAdjustedImages = TellomiAdjustedImageCache()
+
     var color = ColorPickerBarColor.defaultColor
 
     init(normalizedImage: NormalizedImage) throws {

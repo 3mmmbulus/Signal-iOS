@@ -242,6 +242,9 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
 
     private var imageLayer = CALayer()
 
+    /// Tellomi（tellomi/tellomi#1592 E5-2）：原图；调色调回默认时换回它。
+    private var tellomiOriginalImage: CGImage?
+
     func setCornerRadius(_ cornerRadius: CGFloat, animationDuration: TimeInterval = 0) {
         guard cornerRadius != clipView.layer.cornerRadius else { return }
 
@@ -268,7 +271,9 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         if let srcImage = loadSrcImage() {
             imageLayer.contents = srcImage.cgImage
             imageLayer.contentsScale = srcImage.scale
+            tellomiOriginalImage = srcImage.cgImage
         }
+        tellomiUpdateBaseImage()
         imageLayerView.isOpaque = false
         imageLayerView.layer.addSublayer(imageLayer)
         imageLayerView.layoutCallback = { [weak self] _ in
@@ -348,6 +353,15 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
 
     private func loadSrcImage() -> UIImage? {
         return Self.loadSrcImage(model: model)
+    }
+
+    /// Tellomi（tellomi/tellomi#1592 E5-2）：画布底图跟着调色换（调过色是调色后的预览图，没调色是原图）。
+    private func tellomiUpdateBaseImage() {
+        if let adjusted = Self.tellomiPreviewBaseImage(model: model) {
+            imageLayer.contents = adjusted
+        } else if let tellomiOriginalImage {
+            imageLayer.contents = tellomiOriginalImage
+        }
     }
 
     class func loadSrcImage(model: ImageEditorModel) -> UIImage? {
@@ -697,7 +711,8 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
             return nil
         }
         let imageLayer = CALayer()
-        imageLayer.contents = srcImage.cgImage
+        // Tellomi（tellomi/tellomi#1592 E5-2）：调过色就画原尺寸的调色图。
+        imageLayer.contents = tellomiFullBaseImage(model: model, srcImage: srcImage) ?? srcImage.cgImage
         imageLayer.contentsScale = srcImage.scale
         updateImageLayer(
             imageLayer: imageLayer,
@@ -1051,7 +1066,8 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
             srcImage = loaded
         }
         let imageLayer = CALayer()
-        imageLayer.contents = srcImage.cgImage
+        // Tellomi（tellomi/tellomi#1592 E5-2）：橡皮露出来的是调色后的照片。
+        imageLayer.contents = tellomiEraserBaseImage(model: model) ?? srcImage.cgImage
         imageLayer.contentsScale = srcImage.scale
         updateImageLayer(imageLayer: imageLayer, viewSize: viewSize, imageSize: model.srcImageSizePixels, transform: transform)
         return imageLayer
@@ -1488,7 +1504,8 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         transform: ImageEditorTransform,
         viewSize: CGSize,
     ) -> CALayer? {
-        guard let blurredSourceImage = model.blurredSourceImage else {
+        // Tellomi（tellomi/tellomi#1592 E5-2）：打码从调色后的底图取样。
+        guard let blurredSourceImage = tellomiBlurredBaseImage(model: model) else {
             // If we fail to generate the blur image, or it's not ready yet, use a black mask
             let layer = CALayer()
             layer.frame = imageFrame(forViewSize: viewSize, imageSize: model.srcImageSizePixels, transform: transform)
@@ -1525,6 +1542,9 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
     class func renderForOutput(model: ImageEditorModel, transform: ImageEditorTransform) -> UIImage? {
         // TODO: Do we want to render off the main thread?
         AssertIsOnMainThread()
+
+        // Tellomi（tellomi/tellomi#1592 E5-2）：原尺寸调色图只在这一次渲染里留着（底图、橡皮共用），渲染完放掉。
+        defer { model.tellomiAdjustedImages.full = nil }
 
         // Render output at same size as source image.
         let dstSizePixels = transform.outputSizePixels
@@ -1650,6 +1670,9 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
     // MARK: - ImageEditorModelObserver
 
     func imageEditorModelDidChange(before: ImageEditorContents, after: ImageEditorContents) {
+        if before.adjustments != after.adjustments {
+            tellomiUpdateBaseImage()
+        }
         updateAllContent()
         updateLayout()
     }
