@@ -812,6 +812,17 @@ class ImageEditorCropViewController: OWSViewController {
             break
         }
 
+        if let lockedAspectRatio {
+            cropRectangleNow = Self.lockedCropRect(
+                start: cropRectangleStart,
+                proposed: cropRectangleNow,
+                region: panCropRegion,
+                translation: locationDelta,
+                widthToHeight: lockedAspectRatio,
+                minimumSize: CGSize(width: cropView.cornerSize.width * 2, height: cropView.cornerSize.height * 2),
+            )
+        }
+
         setCropFrameInsets(fromClipViewRect: cropRectangleNow)
 
         switch gestureRecognizer.state {
@@ -962,52 +973,131 @@ class ImageEditorCropViewController: OWSViewController {
 
     // MARK: - Aspect Ratio
 
+    /// Tellomi（tellomi/tellomi#1522 E-1）：比例预设照 Telegram 两端（iOS `TGPhotoCropController aspectRatioButtonPressedWithSourceView:`、
+    /// 安卓 `CropView.showAspectRatioDialog`）：原始、正方形，再加 3:2、5:3、4:3、5:4、7:5、16:9 六种，一共 8 项；
+    /// 裁剪框现在是横的就按「长:短」，竖的就倒过来（3:2 写成 2:3、也按 2:3 裁）。上游原来只有 4:3、16:9 两种（竖的时候 3:4、9:16）。
     enum AspectRatio: CaseIterable {
         case original
         case square
+        case threeByTwo
+        case fiveByThree
         case fourByThree
-        case threeByFour
+        case fiveByFour
+        case sevenByFive
         case sixteenByNine
-        case nineBySixteen
+
+        /// 长边 : 短边；原始和正方形没有。
+        private var sides: (long: Int, short: Int)? {
+            switch self {
+            case .original, .square: return nil
+            case .threeByTwo: return (3, 2)
+            case .fiveByThree: return (5, 3)
+            case .fourByThree: return (4, 3)
+            case .fiveByFour: return (5, 4)
+            case .sevenByFive: return (7, 5)
+            case .sixteenByNine: return (16, 9)
+            }
+        }
 
         private static func aspectRatioXByYFormatString() -> String {
             return OWSLocalizedString("ASPECT_RATIO_X_BY_Y", comment: "Variable aspect ratio, eg 3:4. %1$@ and %2$@ are numbers.")
         }
 
-        func localizedTitle() -> String {
+        func localizedTitle(isPortrait: Bool) -> String {
             switch self {
             case .original:
                 return OWSLocalizedString("ASPECT_RATIO_ORIGINAL", comment: "One of the choices for pre-defined aspect ratio of a photo in media editor.")
             case .square:
                 return OWSLocalizedString("ASPECT_RATIO_SQUARE", comment: "One of the choices for pre-defined aspect ratio of a photo in media editor.")
-            case .fourByThree:
-                return String.nonPluralLocalizedStringWithFormat(AspectRatio.aspectRatioXByYFormatString(), OWSFormat.formatInt(4), OWSFormat.formatInt(3))
-            case .threeByFour:
-                return String.nonPluralLocalizedStringWithFormat(AspectRatio.aspectRatioXByYFormatString(), OWSFormat.formatInt(3), OWSFormat.formatInt(4))
-            case .sixteenByNine:
-                return String.nonPluralLocalizedStringWithFormat(AspectRatio.aspectRatioXByYFormatString(), OWSFormat.formatInt(16), OWSFormat.formatInt(9))
-            case .nineBySixteen:
-                return String.nonPluralLocalizedStringWithFormat(AspectRatio.aspectRatioXByYFormatString(), OWSFormat.formatInt(9), OWSFormat.formatInt(16))
+            default:
+                guard let sides else { return "" }
+                let (width, height) = isPortrait ? (sides.short, sides.long) : (sides.long, sides.short)
+                return String.nonPluralLocalizedStringWithFormat(AspectRatio.aspectRatioXByYFormatString(), OWSFormat.formatInt(width), OWSFormat.formatInt(height))
+            }
+        }
+
+        /// 宽 / 高。`originalWidthToHeight` 是原图在现在这个方向上的宽高比（转过 90° 的要倒过来）。
+        func widthToHeight(originalWidthToHeight: CGFloat, isPortrait: Bool) -> CGFloat {
+            switch self {
+            case .original:
+                return originalWidthToHeight
+            case .square:
+                return 1
+            default:
+                guard let sides else { return 1 }
+                return isPortrait ? CGFloat(sides.short) / CGFloat(sides.long) : CGFloat(sides.long) / CGFloat(sides.short)
             }
         }
     }
 
-    private func isCurrentImageCompatibleWith(aspectRatio: AspectRatio) -> Bool {
-        let currentAspectRatio = transform.outputSizePixels
+    /// 裁剪框现在是不是竖的（高大于宽）；横的和正方形按横的算（同 Telegram `croppedImageSize.width >= height`）。
+    private var isCropPortrait: Bool {
+        transform.outputSizePixels.height > transform.outputSizePixels.width
+    }
 
-        switch aspectRatio {
-        case .original, .square:
-            return true
-        case .fourByThree, .sixteenByNine:
-            return currentAspectRatio.width >= currentAspectRatio.height
-        case .threeByFour, .nineBySixteen:
-            return currentAspectRatio.height >= currentAspectRatio.width
+    /// 原图在现在这个方向上的宽高比：转了奇数个 90° 就倒过来。
+    private var orientedImageAspectRatio: CGFloat {
+        let imageSize = model.srcImageSizePixels
+        let quarterTurns = Int((transform.rotationRadians / (.pi / 2)).rounded())
+        return quarterTurns.isMultiple(of: 2) ? imageSize.width / imageSize.height : imageSize.height / imageSize.width
+    }
+
+    /// 锁住的宽高比（宽 / 高）；nil = 自由裁剪。选了比例就锁住，比例键显示成选中；锁着时再点比例键解锁（照 Telegram：
+    /// `TGPhotoCropView setLockedAspectRatio:` / `unlockAspectRatio`，安卓 `CropView.setLockedAspectRatio`）。
+    private var lockedAspectRatio: CGFloat? {
+        didSet {
+            toolbar.selectedToolButton = lockedAspectRatio == nil ? nil : .aspectRatio
         }
     }
 
+    /// 锁住比例时拖边、拖角之后的裁剪框（照 Telegram `TGPhotoCropAreaView` 锁比例的规则：拖角时看手指横向、竖向哪个挪得多，就按那一边
+    /// 算另一边；拖左右边按宽算高，拖上下边按高算宽）。上游的框只能往里收：拖角时对角不动；拖边时另一个方向以原来的中线为准两头一起收。
+    /// 不小于 `minimumSize`，也不超出原来的框。
+    static func lockedCropRect(
+        start: CGRect,
+        proposed: CGRect,
+        region: CropRegion,
+        translation: CGPoint,
+        widthToHeight ratio: CGFloat,
+        minimumSize: CGSize,
+    ) -> CGRect {
+        guard ratio > 0, proposed.width > 0, proposed.height > 0 else { return proposed }
+        let widthDriven: Bool
+        switch region {
+        case .left, .right:
+            widthDriven = true
+        case .top, .bottom:
+            widthDriven = false
+        case .topLeft, .topRight, .bottomLeft, .bottomRight:
+            widthDriven = abs(translation.x) >= abs(translation.y)
+        }
+        var size = widthDriven
+            ? CGSize(width: proposed.width, height: proposed.width / ratio)
+            : CGSize(width: proposed.height * ratio, height: proposed.height)
+        let grow = max(1, minimumSize.width / size.width, minimumSize.height / size.height)
+        size = CGSize(width: size.width * grow, height: size.height * grow)
+        let shrink = min(1, start.width / size.width, start.height / size.height)
+        size = CGSize(width: size.width * shrink, height: size.height * shrink)
+
+        let x: CGFloat
+        switch region {
+        case .left, .topLeft, .bottomLeft: x = start.maxX - size.width
+        case .right, .topRight, .bottomRight: x = start.minX
+        case .top, .bottom: x = start.midX - size.width / 2
+        }
+        let y: CGFloat
+        switch region {
+        case .top, .topLeft, .topRight: y = start.maxY - size.height
+        case .bottom, .bottomLeft, .bottomRight: y = start.minY
+        case .left, .right: y = start.midY - size.height / 2
+        }
+        return CGRect(origin: CGPoint(x: x, y: y), size: size)
+    }
+
     private func cropTo(aspectRatio: AspectRatio) {
-        let imageSize = model.srcImageSizePixels
-        let imageAspectRatio = imageSize.width / imageSize.height
+        let imageAspectRatio = orientedImageAspectRatio
+        let newAspectRatio = aspectRatio.widthToHeight(originalWidthToHeight: imageAspectRatio, isPortrait: isCropPortrait)
+        lockedAspectRatio = newAspectRatio
 
         var currentCropRect = clipView.bounds
         var currentAspectRatio = currentCropRect.width / currentCropRect.height
@@ -1029,27 +1119,6 @@ class ImageEditorCropViewController: OWSViewController {
 
         // Now resize the "source" cropping rectangle, which might be larger than
         // what actually is seen on the screen, to the new aspect ratio.
-        let newAspectRatio: CGFloat = {
-            switch aspectRatio {
-            case .original:
-                return imageAspectRatio
-
-            case .square:
-                return 1
-
-            case .fourByThree:
-                return 4 / 3
-
-            case .threeByFour:
-                return 3 / 4
-
-            case .sixteenByNine:
-                return 16 / 9
-
-            case .nineBySixteen:
-                return 9 / 16
-            }
-        }()
         var newCropRect: CGRect
         if newAspectRatio - currentAspectRatio > aspectRatioEpsilon {
             let heightDiff = currentCropRect.height - currentCropRect.width / newAspectRatio
@@ -1092,6 +1161,10 @@ class ImageEditorCropViewController: OWSViewController {
     }
 
     private func didTapRotateImage() {
+        // 转 90° 以后框也转了，锁住的宽高比跟着倒过来。
+        if let lockedAspectRatio {
+            self.lockedAspectRatio = 1 / lockedAspectRatio
+        }
         let outputSizePixels = CGSize(width: transform.outputSizePixels.height, height: transform.outputSizePixels.width)
         let rotationRadians = transform.rotationRadians - CGFloat.pi / 2
         let newTransform = ImageEditorTransform(
@@ -1116,20 +1189,26 @@ class ImageEditorCropViewController: OWSViewController {
     }
 
     private func didTapReset() {
+        lockedAspectRatio = nil
         let newTransform = ImageEditorTransform.defaultTransform(srcImageSizePixels: model.srcImageSizePixels)
         applyTransformWithAnimation(newTransform)
     }
 
     private func didTapAspectRatio() {
+        // 锁着比例时比例键是「解锁」（照 Telegram `aspectRatioButtonPressedWithSourceView:` 的 `isAspectRatioLocked` 分支）。
+        if lockedAspectRatio != nil {
+            lockedAspectRatio = nil
+            return
+        }
         let actionSheet = ActionSheetController()
         if Theme.forceDarkThemeForMedia {
             actionSheet.overrideUserInterfaceStyle = .dark
         }
+        let isPortrait = isCropPortrait
         for aspectRatio in AspectRatio.allCases {
-            guard isCurrentImageCompatibleWith(aspectRatio: aspectRatio) else { continue }
             actionSheet.addAction(
                 ActionSheetAction(
-                    title: aspectRatio.localizedTitle(),
+                    title: aspectRatio.localizedTitle(isPortrait: isPortrait),
                     style: .default,
                     handler: { [weak self] _ in
                         guard let self else { return }

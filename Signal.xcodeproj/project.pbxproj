@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A92D05A6548625913B79CEA /* TellomiImageEditorCropAspectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B8D2DFEFED854BC41142080 /* TellomiImageEditorCropAspectTests.swift */; };
 		D05B5DA804E799FAF4A8F706 /* TellomiCameraModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */; };
 		E4DBE237FB1F34D42369789E /* TellomiCameraFlashTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1DF4F792CA5A5ED910E432 /* TellomiCameraFlashTests.swift */; };
 		1486A43C609ED88D791AE53D /* TellomiCaptureLockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4BD449DE6812A48D2CAACBA /* TellomiCaptureLockTests.swift */; };
@@ -4429,6 +4430,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8B8D2DFEFED854BC41142080 /* TellomiImageEditorCropAspectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorCropAspectTests.swift; sourceTree = "<group>"; };
 		147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCameraModeTests.swift; sourceTree = "<group>"; };
 		1A1DF4F792CA5A5ED910E432 /* TellomiCameraFlashTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCameraFlashTests.swift; sourceTree = "<group>"; };
 		C4BD449DE6812A48D2CAACBA /* TellomiCaptureLockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptureLockTests.swift; sourceTree = "<group>"; };
@@ -10061,6 +10063,7 @@
 				5DB3B510E4008B5839D18B7C /* TellomiLinkCardAcceptanceTests.swift */,
 				57FAA2A48068A96186BF4F12 /* TellomiLinkOpenLauncherTest.swift */,
 				7395A91DCF7C0E057F379F3B /* TellomiPhotoPickerTests.swift */,
+				8B8D2DFEFED854BC41142080 /* TellomiImageEditorCropAspectTests.swift */,
 				5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */,
 				C4BD449DE6812A48D2CAACBA /* TellomiCaptureLockTests.swift */,
 				147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */,
@@ -19921,6 +19924,7 @@
 				35D325E771F5E4028ED56D1E /* TellomiLinkCardAcceptanceTests.swift in Sources */,
 				DA819E1E08EE3A282CE9BE67 /* TellomiLinkOpenLauncherTest.swift in Sources */,
 				3127CA830877399B6F32FAA9 /* TellomiPhotoPickerTests.swift in Sources */,
+				5A92D05A6548625913B79CEA /* TellomiImageEditorCropAspectTests.swift in Sources */,
 				D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */,
 				1486A43C609ED88D791AE53D /* TellomiCaptureLockTests.swift in Sources */,
 				D05B5DA804E799FAF4A8F706 /* TellomiCameraModeTests.swift in Sources */,
