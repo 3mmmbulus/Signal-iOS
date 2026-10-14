@@ -60,6 +60,10 @@ enum ImageEditorToolButton {
     case sticker
     case blur
 
+    /// Tellomi（tellomi/tellomi#1596 E5-6）：调色页的两个页签（照 Telegram iOS 调整页：工具、色调；模糊、曲线等做了再加）。
+    case tellomiAdjustTools
+    case tellomiAdjustTint
+
     private var buttonImage: UIImage {
         switch self {
         case .rotate:
@@ -76,6 +80,10 @@ enum ImageEditorToolButton {
             UIImage(imageLiteralResourceName: "sticker")
         case .blur:
             UIImage(imageLiteralResourceName: "blur")
+        case .tellomiAdjustTools:
+            TellomiImageAdjustViewController.toolIcon
+        case .tellomiAdjustTint:
+            UIImage(systemName: "paintpalette", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .medium))!
         }
     }
 
@@ -135,6 +143,11 @@ class ImageEditorToolbar: UIView {
             return
         }
         button.addAction(action, for: .primaryActionTriggered)
+    }
+
+    /// Tellomi（tellomi/tellomi#1596 E5-6）：给某个工具按钮配读屏文字。
+    func setAccessibilityLabel(_ label: String, for toolButton: ImageEditorToolButton) {
+        toolButtons.first(where: { $0.tool == toolButton })?.button.accessibilityLabel = label
     }
 
     private let contentLayoutGuide = UILayoutGuide()

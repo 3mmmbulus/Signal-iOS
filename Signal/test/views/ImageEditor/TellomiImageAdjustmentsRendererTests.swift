@@ -94,6 +94,10 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
             (SIMD3(0.8, 0.8, 0.8), adjustments(highlights: 100), SIMD3(0.93593, 0.93593, 0.93593)),
             (SIMD3(0.8, 0.8, 0.8), adjustments(highlights: -100), SIMD3(0.72233, 0.72233, 0.72233)),
             (SIMD3(0.3, 0.5, 0.7), adjustments(exposure: 10, fade: 40, highlights: -50, shadows: 60), SIMD3(0.35348, 0.52817, 0.70425)),
+            // E5-6
+            (SIMD3(0.2, 0.2, 0.2), adjustments(tintShadows: 0xD14B3F), SIMD3(0.2801, 0.1792, 0.17017)),
+            (SIMD3(0.8, 0.8, 0.8), adjustments(tintHighlights: 0x8CB4FF), SIMD3(0.77221, 0.80233, 0.8588)),
+            (SIMD3(0.3, 0.5, 0.7), adjustments(warmth: 20, tintShadows: 0x2E8FA8, tintHighlights: 0xFFB870), SIMD3(0.3001, 0.50469, 0.67501)),
         ]
         for (input, adjustments, expected) in cases {
             let output = Renderer.adjust(input, adjustments)
@@ -118,6 +122,22 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
             XCTAssertGreaterThanOrEqual(output, previous - 1e-6, "step \(step)")
             previous = output
         }
+    }
+
+    /// 色调：暗部色只动暗部、亮部色只动亮部，往那个颜色的色相偏；两个色板各 8 个，第一个是「不加」，色值和安卓一样。
+    func testTint() {
+        XCTAssertEqual(TellomiImageAdjustments.TintColor.shadowsPalette.count, 8)
+        XCTAssertEqual(TellomiImageAdjustments.TintColor.highlightsPalette.count, 8)
+        XCTAssertNil(TellomiImageAdjustments.TintColor.shadowsPalette[0])
+        XCTAssertEqual(TellomiImageAdjustments.TintColor.shadowsPalette[1], TellomiImageAdjustments.TintColor(rgb: 0xD14B3F))
+
+        let darkened = Renderer.adjust(SIMD3(repeating: 0.15), adjustments(tintShadows: 0xD14B3F))
+        XCTAssertGreaterThan(darkened.x, darkened.z, "暗部偏红")
+        XCTAssertEqual(Renderer.adjust(SIMD3(repeating: 1), adjustments(tintShadows: 0xD14B3F)), SIMD3(repeating: 1))
+
+        let brightened = Renderer.adjust(SIMD3(repeating: 0.85), adjustments(tintHighlights: 0x8CB4FF))
+        XCTAssertGreaterThan(brightened.z, brightened.x, "亮部偏蓝")
+        XCTAssertEqual(Renderer.adjust(SIMD3(repeating: 0), adjustments(tintHighlights: 0x8CB4FF)), SIMD3(repeating: 0))
     }
 
     // MARK: - Image pipeline
@@ -217,6 +237,8 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         fade: Float = 0,
         highlights: Float = 0,
         shadows: Float = 0,
+        tintShadows: UInt32? = nil,
+        tintHighlights: UInt32? = nil,
     ) -> TellomiImageAdjustments {
         var adjustments = TellomiImageAdjustments.default
         adjustments.exposure = exposure
@@ -226,6 +248,8 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         adjustments.fade = fade
         adjustments.highlights = highlights
         adjustments.shadows = shadows
+        adjustments.tintShadows = tintShadows.map { TellomiImageAdjustments.TintColor(rgb: $0) }
+        adjustments.tintHighlights = tintHighlights.map { TellomiImageAdjustments.TintColor(rgb: $0) }
         return adjustments
     }
 

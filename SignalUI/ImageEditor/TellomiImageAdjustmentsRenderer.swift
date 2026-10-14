@@ -9,11 +9,11 @@ import SignalServiceKit
 import simd
 import UIKit
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4，Epic #1523）：把调色画进图里。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1596 E5-6，Epic #1523）：把调色画进图里。
 ///
-/// 逐像素的几项（曝光、对比度、高光、阴影、饱和度、色温、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
+/// 逐像素的几项（曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
 /// 在图自己的颜色空间（sRGB / Display P3 的编码值）里查——预览图和发出的原尺寸图走同一张表，所以两边一致。
-/// 后面的逐像素工具（色调、曲线）往 `adjust(_:_:)` 里加；暗角、颗粒、锐化、模糊这些和位置有关的另走滤镜。
+/// 后面的逐像素工具（曲线）往 `adjust(_:_:)` 里加；暗角、颗粒、锐化、模糊这些和位置有关的另走滤镜。
 ///
 /// 每一项的数学是自己定的（Telegram 只用来对照工具、范围和方向，它的着色器一行不搬，见 `docs/product/specs/media-editor-adjustments-e5.md`）：
 /// - 曝光：线性光里乘增益，+100 = +2 档、−100 = −1.5 档；调亮时用一个让原来的白仍落在白上的肩，亮部不会一下顶死。
@@ -22,6 +22,8 @@ import UIKit
 /// - 色温：线性光里红、蓝反向增益（暖 = 红多蓝少），再把亮度拉回原来。
 /// - 高光 / 阴影：只改亮度（按比例缩放三个通道，色相不变）；阴影在亮度 0.25 附近、高光在 0.75 附近各一个鼓包，
 ///   y' = y + k·(值/100)·b(y)，b_阴影(y) = y(1−y)³·256/27，b_高光(y) = b_阴影(1−y)；k = 0.08，提亮高光时 0.14（TG 提亮高光推向白更狠）。
+/// - 色调：暗部 / 亮部各一个颜色，往那个颜色的色相偏（加上「颜色 − 它自己的亮度」，亮度不变），暗部按 (1−y)²、亮部按 y² 加权，
+///   强度固定 50%（O8），c' = c + (T − luma(T))·0.6·(强度/100)·w。
 /// - 褪色：往一条「哑光」曲线 t(c) = 0.24 + 0.42c + 0.24c² 混（黑抬到 0.24、白压到 0.9、中灰几乎不动），混的比例 = 值/100。
 @MainActor
 enum TellomiImageAdjustmentsRenderer {
@@ -95,7 +97,7 @@ enum TellomiImageAdjustmentsRenderer {
     /// Rec. 709 / sRGB 的亮度权重。
     private static let luma = SIMD3<Float>(0.2126, 0.7152, 0.0722)
 
-    /// 一个编码值（0…1）的颜色调色后的样子。顺序：曝光 → 对比度 → 高光 / 阴影 → 饱和度 → 色温 → 褪色，每一步后夹回 0…1。
+    /// 一个编码值（0…1）的颜色调色后的样子。顺序：曝光 → 对比度 → 高光 / 阴影 → 饱和度 → 色温 → 色调 → 褪色，每一步后夹回 0…1。
     static func adjust(_ input: SIMD3<Float>, _ adjustments: TellomiImageAdjustments) -> SIMD3<Float> {
         var color = input
 
@@ -145,6 +147,17 @@ enum TellomiImageAdjustmentsRenderer {
             color = clamp01(toEncoded(clamp01(linear)))
         }
 
+        if adjustments.tintShadows != nil || adjustments.tintHighlights != nil {
+            let y = simd_dot(color, luma)
+            let strength = TellomiImageAdjustments.tintIntensity / 100 * 0.6
+            if let shadows = adjustments.tintShadows {
+                color = tint(color, toward: shadows, weight: strength * (1 - y) * (1 - y))
+            }
+            if let highlights = adjustments.tintHighlights {
+                color = tint(color, toward: highlights, weight: strength * y * y)
+            }
+        }
+
         if adjustments.fade != 0 {
             let amount = adjustments.fade / 100
             let matte = 0.24 + 0.42 * color + 0.24 * color * color
@@ -152,6 +165,12 @@ enum TellomiImageAdjustmentsRenderer {
         }
 
         return color
+    }
+
+    /// 往 `tintColor` 的色相偏 `weight`：加上「颜色 − 它自己的亮度」，所以亮度基本不变。
+    private static func tint(_ color: SIMD3<Float>, toward tintColor: TellomiImageAdjustments.TintColor, weight: Float) -> SIMD3<Float> {
+        let target = SIMD3(tintColor.red, tintColor.green, tintColor.blue)
+        return clamp01(color + (target - simd_dot(target, luma)) * weight)
     }
 
     /// 在亮度 0.25 处最高（= 1）的鼓包，0 和 1 处为 0。

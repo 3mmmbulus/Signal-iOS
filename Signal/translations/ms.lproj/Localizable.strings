@@ -5062,6 +5062,12 @@
 /* Image editor, adjustments: name of the tool that smooths skin. */
 "IMAGE_EDITOR_TELLOMI_ADJUST_SKIN" = "Licinkan kulit";
 
+/* Image editor, adjustments: the tint tab (colours for shadows and highlights). */
+"IMAGE_EDITOR_TELLOMI_ADJUST_TINT" = "Rona";
+
+/* Image editor, adjustments, tint: the swatch that removes the tint. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_TINT_NONE" = "Tiada";
+
 /* Image editor, adjustments: name of the vignette tool. */
 "IMAGE_EDITOR_TELLOMI_ADJUST_VIGNETTE" = "Vignet";
 

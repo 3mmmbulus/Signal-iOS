@@ -151,6 +151,18 @@ public struct TellomiImageAdjustments: Equatable, Codable {
             self.green = green
             self.blue = blue
         }
+
+        /// 0xRRGGBB。
+        public init(rgb: UInt32) {
+            self.init(red: Float((rgb >> 16) & 0xFF) / 255, green: Float((rgb >> 8) & 0xFF) / 255, blue: Float(rgb & 0xFF) / 255)
+        }
+
+        /// Tellomi（tellomi/tellomi#1596 E5-6）：暗部色调的色板，第一个（nil）是「不加」。颜色是自己挑的（偏深），个数和 Telegram 两端一样
+        /// （8 个）；安卓 `ImageAdjustments.TINT_SHADOWS_PALETTE` 是同一组。
+        public static let shadowsPalette: [TintColor?] = [nil] + [0xD14B3F, 0xD9822B, 0xC9A227, 0x3F9E5B, 0x2E8FA8, 0x2F5FD0, 0x7A45C2].map { TintColor(rgb: $0) }
+
+        /// 亮部色调的色板（偏浅），同上。
+        public static let highlightsPalette: [TintColor?] = [nil] + [0xFF8A80, 0xFFB870, 0xFFE27A, 0x9EE6A8, 0x8EDDF0, 0x8CB4FF, 0xC9A2FF].map { TintColor(rgb: $0) }
     }
 
     /// 一条曲线的 5 个控制点（输出值 0…100；输入固定在 0 / 25 / 50 / 75 / 100）。

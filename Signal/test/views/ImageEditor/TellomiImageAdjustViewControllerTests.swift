@@ -75,6 +75,32 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         XCTAssertFalse(model.canUndo)
     }
 
+    /// 色调页签：切过去显示阴影 / 高光两组色块；点色块改预览，完成时整段算一步撤销；「不加」把色调去掉。
+    func testTintTab() throws {
+        let (viewController, model) = try makeViewController()
+        XCTAssertFalse(viewController.isTintTabShownForTesting)
+        viewController.showTintTabForTesting(true)
+        XCTAssertTrue(viewController.isTintTabShownForTesting)
+
+        let panel = viewController.tintPanelForTesting
+        XCTAssertTrue(panel.editsShadows)
+        XCTAssertEqual(panel.swatches.count, 8)
+        XCTAssertTrue(panel.swatches[0].isSelected, "一开始是「不加」")
+        panel.swatches[2].sendActions(for: .touchUpInside)
+        XCTAssertEqual(model.adjustments.tintShadows, TellomiImageAdjustments.TintColor.shadowsPalette[2])
+        XCTAssertTrue(panel.swatches[2].isSelected)
+
+        panel.setEditsShadows(false)
+        XCTAssertTrue(panel.swatches[0].isSelected, "高光还没选")
+        panel.swatches[6].sendActions(for: .touchUpInside)
+        XCTAssertEqual(model.adjustments.tintHighlights, TellomiImageAdjustments.TintColor.highlightsPalette[6])
+        XCTAssertFalse(model.canUndo, "选色块时不记撤销")
+
+        viewController.finish(done: true)
+        model.undo()
+        XCTAssertTrue(model.adjustments.isDefault)
+    }
+
     /// 按住照片：画布临时换回原图、提示「原图」；松手回到调色后的样子。模型一直不动。
     func testHoldingShowsTheOriginal() throws {
         let (viewController, model) = try makeViewController()
@@ -125,6 +151,13 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         window.layoutIfNeeded()
         try await Task.sleep(nanoseconds: 300_000_000)
         try save(window, as: "adjust-hold-original", in: directory)
+        viewController.setShowsOriginal(false)
+
+        viewController.showTintTabForTesting(true)
+        viewController.tintPanelForTesting.swatches[5].sendActions(for: .touchUpInside)
+        window.layoutIfNeeded()
+        try await Task.sleep(nanoseconds: 300_000_000)
+        try save(window, as: "adjust-tint", in: directory)
     }
 
     // MARK: - Helpers
