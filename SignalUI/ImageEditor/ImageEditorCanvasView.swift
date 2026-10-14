@@ -357,11 +357,23 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
 
     /// Tellomi（tellomi/tellomi#1592 E5-2）：画布底图跟着调色换（调过色是调色后的预览图，没调色是原图）。
     private func tellomiUpdateBaseImage() {
-        if let adjusted = Self.tellomiPreviewBaseImage(model: model) {
+        if !tellomiShowsOriginal, let adjusted = Self.tellomiPreviewBaseImage(model: model) {
             imageLayer.contents = adjusted
         } else if let tellomiOriginalImage {
             imageLayer.contents = tellomiOriginalImage
         }
+    }
+
+    /// Tellomi（tellomi/tellomi#1593 E5-3）：按住看原图——底图临时换回原图，模型不动（照 Telegram 两端调整页按住画面）。
+    var tellomiShowsOriginal = false {
+        didSet {
+            guard tellomiShowsOriginal != oldValue else { return }
+            tellomiUpdateBaseImage()
+        }
+    }
+
+    var tellomiDisplayedBaseImageForTesting: CGImage? {
+        imageLayer.contents.map { $0 as! CGImage }
     }
 
     class func loadSrcImage(model: ImageEditorModel) -> UIImage? {

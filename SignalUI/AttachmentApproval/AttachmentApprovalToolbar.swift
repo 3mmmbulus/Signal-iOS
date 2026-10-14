@@ -352,6 +352,7 @@ class AttachmentApprovalToolbar: UIView, MediaCaptionToolbarDelegate {
             case .image:
                 buttons.insert(.pen)
                 buttons.insert(.crop)
+                buttons.insert(.adjust)
 
             default:
                 break
@@ -526,6 +527,16 @@ class AttachmentApprovalToolbar: UIView, MediaCaptionToolbarDelegate {
         return penToolButton
     }
 
+    /// Tellomi（tellomi/tellomi#1593 E5-3）：调色（照 Telegram iOS 编辑底栏 `TGPhotoToolbarView` 的次序：裁剪、画笔、调整）。
+    var buttonAdjustTool: UIButton {
+        let adjustButton = mediaToolbar.adjustToolButton
+        adjustButton.accessibilityLabel = OWSLocalizedString(
+            "IMAGE_EDITOR_TELLOMI_ADJUST",
+            comment: "Image editor: name of the tool that adjusts exposure, contrast, colour and so on. Also its button's accessibility label.",
+        )
+        return adjustButton
+    }
+
     var buttonCropTool: UIButton {
         let cropButton = mediaToolbar.cropToolButton
         cropButton.accessibilityLabel = OWSLocalizedString(
@@ -574,13 +585,15 @@ private class MediaToolbar: UIView {
         static let save = AvailableButtons(rawValue: 1 << 3)
         static let addMedia = AvailableButtons(rawValue: 1 << 4)
         static let muteVideo = AvailableButtons(rawValue: 1 << 5)
+        static let adjust = AvailableButtons(rawValue: 1 << 6)
 
-        static let all: AvailableButtons = [.pen, .crop, .mediaQuality, .save, .addMedia]
+        static let all: AvailableButtons = [.pen, .crop, .adjust, .mediaQuality, .save, .addMedia]
     }
 
     func set(availableButtons: AvailableButtons, using animator: UIViewPropertyAnimator? = nil) {
         penToolButton.setIsHidden(!availableButtons.contains(.pen), using: animator)
         cropToolButton.setIsHidden(!availableButtons.contains(.crop), using: animator)
+        adjustToolButton.setIsHidden(!availableButtons.contains(.adjust), using: animator)
         mediaQualityButton.setIsHidden(!availableButtons.contains(.mediaQuality), using: animator)
         saveMediaButton.setIsHidden(!availableButtons.contains(.save), using: animator)
         addMediaButton.setIsHidden(!availableButtons.contains(.addMedia), using: animator)
@@ -595,6 +608,7 @@ private class MediaToolbar: UIView {
         let stackView = UIStackView(arrangedSubviews: [
             cropToolButton,
             penToolButton,
+            adjustToolButton,
             mediaQualityButton,
             muteVideoButton,
             saveMediaButton,
@@ -670,6 +684,10 @@ private class MediaToolbar: UIView {
     ))
     lazy var cropToolButton = UIButton(configuration: Self.buttonConfiguration(
         image: UIImage(imageLiteralResourceName: "crop-rotate"),
+    ))
+    /// Tellomi（tellomi/tellomi#1593 E5-3）：调色。Signal 的图标里没有合适的，用系统的 SF Symbol。
+    lazy var adjustToolButton = UIButton(configuration: Self.buttonConfiguration(
+        image: TellomiImageAdjustViewController.toolIcon,
     ))
     lazy var mediaQualityButton = UIButton(configuration: Self.buttonConfiguration(
         image: MediaToolbar.iconMediaQualityStandard,

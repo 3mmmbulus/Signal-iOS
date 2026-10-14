@@ -381,6 +381,11 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
             UIAction { [weak self] _ in self?.didTapCropTool() },
             for: .primaryActionTriggered,
         )
+        // Tellomi（tellomi/tellomi#1593 E5-3）：调色。
+        bottomToolView.buttonAdjustTool.addAction(
+            UIAction { [weak self] _ in self?.currentPageViewController?.activateAdjustTool() },
+            for: .primaryActionTriggered,
+        )
         bottomToolView.buttonMediaQuality.showsMenuAsPrimaryAction = true
         bottomToolView.buttonSaveMedia.addAction(
             UIAction { [weak self] _ in self?.didTapSave() },

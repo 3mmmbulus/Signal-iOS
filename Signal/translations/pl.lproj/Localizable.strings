@@ -5026,6 +5026,48 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "Rysuj, aby rozmyć dodatkowe twarze lub obszary";
 
+/* Image editor: name of the tool that adjusts exposure, contrast, colour and so on. Also its button's accessibility label. */
+"IMAGE_EDITOR_TELLOMI_ADJUST" = "Dostosuj";
+
+/* Image editor, adjustments: name of the contrast tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CONTRAST" = "Kontrast";
+
+/* Image editor, adjustments: name of the tool that automatically enhances the photo. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_ENHANCE" = "Popraw";
+
+/* Image editor, adjustments: name of the exposure (brightness) tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_EXPOSURE" = "Ekspozycja";
+
+/* Image editor, adjustments: name of the fade tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_FADE" = "Wyblaknięcie";
+
+/* Image editor, adjustments: name of the film grain tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_GRAIN" = "Ziarno";
+
+/* Image editor, adjustments: name of the highlights tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_HIGHLIGHTS" = "Światła";
+
+/* Image editor, adjustments: label shown while the user presses and holds the photo to compare it with the original. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_ORIGINAL" = "Oryginał";
+
+/* Image editor, adjustments: name of the saturation tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SATURATION" = "Nasycenie";
+
+/* Image editor, adjustments: name of the shadows tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SHADOWS" = "Cienie";
+
+/* Image editor, adjustments: name of the sharpen tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SHARPEN" = "Wyostrz";
+
+/* Image editor, adjustments: name of the tool that smooths skin. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SKIN" = "Wygładzanie skóry";
+
+/* Image editor, adjustments: name of the vignette tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_VIGNETTE" = "Winieta";
+
+/* Image editor, adjustments: name of the warmth (colour temperature) tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_WARMTH" = "Ciepło";
+
 /* Image editor brush menu: a pen that ends in an arrow head. */
 "IMAGE_EDITOR_TELLOMI_BRUSH_ARROW" = "Arrow";
 

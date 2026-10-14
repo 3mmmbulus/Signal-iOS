@@ -5026,6 +5026,48 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "צייר כדי לטשטש פרצופים נוספים או אזורים נוספים";
 
+/* Image editor: name of the tool that adjusts exposure, contrast, colour and so on. Also its button's accessibility label. */
+"IMAGE_EDITOR_TELLOMI_ADJUST" = "התאמה";
+
+/* Image editor, adjustments: name of the contrast tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CONTRAST" = "ניגודיות";
+
+/* Image editor, adjustments: name of the tool that automatically enhances the photo. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_ENHANCE" = "שיפור";
+
+/* Image editor, adjustments: name of the exposure (brightness) tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_EXPOSURE" = "חשיפה";
+
+/* Image editor, adjustments: name of the fade tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_FADE" = "דהייה";
+
+/* Image editor, adjustments: name of the film grain tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_GRAIN" = "גרעיניות";
+
+/* Image editor, adjustments: name of the highlights tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_HIGHLIGHTS" = "הדגשות";
+
+/* Image editor, adjustments: label shown while the user presses and holds the photo to compare it with the original. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_ORIGINAL" = "מקור";
+
+/* Image editor, adjustments: name of the saturation tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SATURATION" = "רוויה";
+
+/* Image editor, adjustments: name of the shadows tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SHADOWS" = "צללים";
+
+/* Image editor, adjustments: name of the sharpen tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SHARPEN" = "חידוד";
+
+/* Image editor, adjustments: name of the tool that smooths skin. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SKIN" = "החלקת עור";
+
+/* Image editor, adjustments: name of the vignette tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_VIGNETTE" = "הצללת שוליים";
+
+/* Image editor, adjustments: name of the warmth (colour temperature) tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_WARMTH" = "חמימות";
+
 /* Image editor brush menu: a pen that ends in an arrow head. */
 "IMAGE_EDITOR_TELLOMI_BRUSH_ARROW" = "Arrow";
 

@@ -287,6 +287,9 @@ public class AttachmentPrepViewController: OWSViewController, UIScrollViewDelega
 
     func activateCropTool() { }
 
+    /// Tellomi（tellomi/tellomi#1593 E5-3）：调色页。
+    func activateAdjustTool() { }
+
     // MARK: - UIScrollViewDelegate
 
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? {

@@ -116,6 +116,16 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         tool: .crop,
     )
 
+    /// tellomi/tellomi#1593 E5-3：调色（照 Telegram iOS 编辑底栏 `TGPhotoToolbarView` 的次序：裁剪、画笔、调整）。
+    private lazy var adjustButton = makeToolButton(
+        image: TellomiImageAdjustViewController.toolIcon,
+        accessibilityLabel: OWSLocalizedString(
+            "IMAGE_EDITOR_TELLOMI_ADJUST",
+            comment: "Image editor: name of the tool that adjusts exposure, contrast, colour and so on. Also its button's accessibility label.",
+        ),
+        tool: .adjust,
+    )
+
     private lazy var penButton = makeToolButton(
         image: UIImage(imageLiteralResourceName: "brush-pen"),
         accessibilityLabel: OWSLocalizedString(
@@ -136,7 +146,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     }()
 
     private lazy var toolsStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [cropButton, penButton])
+        let stack = UIStackView(arrangedSubviews: [cropButton, penButton, adjustButton])
         stack.axis = .horizontal
         stack.alignment = .center
         stack.spacing = 12
@@ -266,6 +276,8 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             cropButton.heightAnchor.constraint(equalToConstant: 44),
             penButton.widthAnchor.constraint(equalToConstant: 44),
             penButton.heightAnchor.constraint(equalToConstant: 44),
+            adjustButton.widthAnchor.constraint(equalToConstant: 44),
+            adjustButton.heightAnchor.constraint(equalToConstant: 44),
 
             editButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             editButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
@@ -821,6 +833,7 @@ extension TellomiPhotoPickerAlbumViewer {
 
     var isCropShownForTesting: Bool { !toolsStack.isHidden && !cropButton.isHidden }
     var isPenShownForTesting: Bool { !toolsStack.isHidden && !penButton.isHidden }
+    var isAdjustShownForTesting: Bool { !toolsStack.isHidden && !adjustButton.isHidden }
     var isEditShownForTesting: Bool { !editButton.isHidden }
     var isFileBarShownForTesting: Bool { fileBar.superview != nil }
     var fileNameTextForTesting: String? { fileNameLabel.isHidden ? nil : fileNameLabel.text }

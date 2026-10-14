@@ -5026,6 +5026,48 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "다른 얼굴 또는 영역을 그려서 흐림 처리하세요";
 
+/* Image editor: name of the tool that adjusts exposure, contrast, colour and so on. Also its button's accessibility label. */
+"IMAGE_EDITOR_TELLOMI_ADJUST" = "조절";
+
+/* Image editor, adjustments: name of the contrast tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CONTRAST" = "대비";
+
+/* Image editor, adjustments: name of the tool that automatically enhances the photo. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_ENHANCE" = "향상";
+
+/* Image editor, adjustments: name of the exposure (brightness) tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_EXPOSURE" = "노출";
+
+/* Image editor, adjustments: name of the fade tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_FADE" = "페이드";
+
+/* Image editor, adjustments: name of the film grain tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_GRAIN" = "그레인";
+
+/* Image editor, adjustments: name of the highlights tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_HIGHLIGHTS" = "하이라이트";
+
+/* Image editor, adjustments: label shown while the user presses and holds the photo to compare it with the original. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_ORIGINAL" = "원본";
+
+/* Image editor, adjustments: name of the saturation tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SATURATION" = "채도";
+
+/* Image editor, adjustments: name of the shadows tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SHADOWS" = "그림자";
+
+/* Image editor, adjustments: name of the sharpen tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SHARPEN" = "선명하게";
+
+/* Image editor, adjustments: name of the tool that smooths skin. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_SKIN" = "피부 보정";
+
+/* Image editor, adjustments: name of the vignette tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_VIGNETTE" = "비네트";
+
+/* Image editor, adjustments: name of the warmth (colour temperature) tool. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_WARMTH" = "따뜻함";
+
 /* Image editor brush menu: a pen that ends in an arrow head. */
 "IMAGE_EDITOR_TELLOMI_BRUSH_ARROW" = "Arrow";
 

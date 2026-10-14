@@ -67,6 +67,8 @@ extension AttachmentApprovalViewController {
             currentPageViewController?.activatePenTool()
         case .crop:
             currentPageViewController?.activateCropTool()
+        case .adjust:
+            currentPageViewController?.activateAdjustTool()
         }
     }
 }
@@ -74,6 +76,8 @@ extension AttachmentApprovalViewController {
 public enum TellomiApprovalEditTool {
     case pen
     case crop
+    /// tellomi/tellomi#1593 E5-3：调色。
+    case adjust
 }
 
 /// tellomi/tellomi#1519 M-5：发送键的长按（照 Telegram：长按发送键弹预览和菜单，松手不发）。一个按钮上只挂一个，换处理就地换。

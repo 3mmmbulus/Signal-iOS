@@ -84,6 +84,12 @@ class ImageAttachmentPrepViewController: AttachmentPrepViewController, ImageEdit
         presentMediaTool(viewController: cropTool)
     }
 
+    /// Tellomi（tellomi/tellomi#1593 E5-3）：调色页（照 Telegram iOS 的「调整」页签）。
+    override func activateAdjustTool() {
+        let adjustTool = TellomiImageAdjustViewController(model: model)
+        presentMediaTool(viewController: adjustTool)
+    }
+
     // MARK: - ImageEditorViewDelegate
 
     private func openTextTool(with textItem: ImageEditorTextItem, isNewItem: Bool, editText: Bool) {

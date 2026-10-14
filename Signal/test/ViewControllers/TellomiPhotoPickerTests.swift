@@ -937,6 +937,22 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let cropApproval = try XCTUnwrap(approvalViewController(over: picker))
         let cropToolOnScreen = await waitUntil { cropApproval.currentPageViewController?.presentedViewController is ImageEditorCropViewController }
         XCTAssertTrue(cropToolOnScreen, "直接打开了上游的裁剪工具")
+
+        // tellomi/tellomi#1593 E5-3：「调整」在绘制后面（照 Telegram iOS 编辑底栏），直接打开调色页。
+        picker.attachmentApprovalDidCancel()
+        let cropClosed = await waitUntil { picker.presentedViewController == nil }
+        XCTAssertTrue(cropClosed)
+        picker.tapItemForTesting(itemIndex: 4)
+        let viewedAgain = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewedAgain)
+        let adjustViewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertTrue(adjustViewer.isAdjustShownForTesting, "图片上有「调整」")
+        adjustViewer.tapToolForTesting(.adjust)
+        let adjustOpened = await waitUntil { self.approvalViewController(over: picker) != nil }
+        XCTAssertTrue(adjustOpened)
+        let adjustApproval = try XCTUnwrap(approvalViewController(over: picker))
+        let adjustToolOnScreen = await waitUntil { adjustApproval.currentPageViewController?.presentedViewController is TellomiImageAdjustViewController }
+        XCTAssertTrue(adjustToolOnScreen, "直接打开了调色页")
     }
 
     /// 视频没有「裁剪」「绘制」（上游对视频没有这两个工具），底部只剩「编辑」。
@@ -952,6 +968,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let viewer = try XCTUnwrap(albumViewer(over: picker))
         XCTAssertFalse(viewer.isCropShownForTesting, "视频不显示「裁剪」")
         XCTAssertFalse(viewer.isPenShownForTesting, "视频不显示「绘制」")
+        XCTAssertFalse(viewer.isAdjustShownForTesting, "视频不显示「调整」")
     }
 
     /// 动图（GIF）：上游预览页不支持裁剪 / 绘制，底部和视频一样只剩「编辑」。
