@@ -142,8 +142,29 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         let live = try XCTUnwrap(picker.cellForTesting(itemIndex: 2))
         XCTAssertTrue(live.isShowingLivePhotoBadgeForTesting)
+        XCTAssertEqual(live.typeBadgeSymbol, "livephoto")
         XCTAssertEqual(live.livePhotoBadgeFrameForTesting.origin, CGPoint(x: 6, y: 6))
         XCTAssertFalse(try XCTUnwrap(picker.cellForTesting(itemIndex: 0)).isShowingLivePhotoBadgeForTesting)
+
+        // G-4：视频左上角也有种类图标（照 Telegram iOS `MediaPickerGridItem` typeIconNode）。
+        let video = try XCTUnwrap(picker.cellForTesting(itemIndex: 1))
+        XCTAssertTrue(video.isShowingLivePhotoBadgeForTesting)
+        XCTAssertEqual(video.typeBadgeSymbol, "video.fill")
+    }
+
+    /// G-4：慢动作、延时摄影用各自的图标（`PHAssetMediaSubtype.videoHighFrameRate` / `.videoTimelapse`）。
+    func testVideoKindBadgeSymbols() {
+        func item(_ kind: TellomiPhotoPickerItem.VideoKind, isVideo: Bool = true, isLivePhoto: Bool = false) -> TellomiPhotoPickerItem {
+            TellomiPhotoPickerItem(id: "x", isVideo: isVideo, duration: 3, isLivePhoto: isLivePhoto, isAnimatedImage: false, pixelSize: .zero, asset: nil, videoKind: kind)
+        }
+        XCTAssertEqual(TellomiPhotoPickerCell.typeBadgeSymbol(for: item(.normal)), "video.fill")
+        XCTAssertEqual(TellomiPhotoPickerCell.typeBadgeSymbol(for: item(.slowMotion)), "slowmo")
+        XCTAssertEqual(TellomiPhotoPickerCell.typeBadgeSymbol(for: item(.timelapse)), "timelapse")
+        XCTAssertEqual(TellomiPhotoPickerCell.typeBadgeSymbol(for: item(.normal, isVideo: false, isLivePhoto: true)), "livephoto")
+        XCTAssertNil(TellomiPhotoPickerCell.typeBadgeSymbol(for: item(.normal, isVideo: false)))
+        for name in ["video.fill", "slowmo", "timelapse", "livephoto"] {
+            XCTAssertNotNil(UIImage(systemName: name), name)
+        }
     }
 
     /// 横着滑过格子连续多选：起手那格没选就一路选上，已选就一路取消；先竖着动超过 5 就让给滚动；滑动期间网格不滚。
@@ -1621,6 +1642,29 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertFalse(picker.isSendBarShownForTesting)
     }
 
+    /// G-6（照 Telegram `AttachmentPanel.update`）：选上第一张时 dock 淡出缩小（截图在动）、说明栏淡入；全部取消时 dock 淡入、说明栏淡出。
+    @MainActor
+    func testDockAndSendBarSwapIsAnimated() async throws {
+        let hosted = host(dockItems: TellomiAttachmentDockItem.attachmentSheetItems)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        // 截图要画过一次的视图（在 App 里 dock 一直在屏幕上）。
+        try await settle()
+        XCTAssertEqual(picker.bottomBarFadingOutCountForTesting, 0)
+
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertFalse(picker.isDockShownForTesting)
+        XCTAssertEqual(picker.bottomBarFadingOutCountForTesting, 1, "dock 的截图在淡出")
+        XCTAssertTrue(picker.isSendBarFadingInForTesting, "说明栏在淡入")
+
+        try await settle()
+        XCTAssertEqual(picker.bottomBarFadingOutCountForTesting, 0, "淡出完了截图拿掉")
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertTrue(picker.isDockShownForTesting)
+        XCTAssertTrue(picker.isDockFadingInForTesting, "dock 在淡入")
+        XCTAssertGreaterThanOrEqual(picker.bottomBarFadingOutCountForTesting, 1, "说明栏的截图在淡出")
+    }
+
     /// GIF 关着（上游开关 `global.gifSearch` 关了，或者这个部署没有 GIF 源 `global.gif.provider = none`，大陆包）：dock 里没有 GIF，
     /// 同上游附件面板（`AttachmentFormatPickerView`，#1078 `isGifAvailable`）——入口一起关，包里才不会有连境外内容代理的地方。
     @MainActor
@@ -1685,6 +1729,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         try await settle()
         let picker = hosted.picker
         XCTAssertTrue(picker.isNoAccessHintShownForTesting)
+        XCTAssertTrue(picker.isNoAccessIllustrationShownForTesting, "说明上面有插画（G-1，照 Telegram 两端的占位）")
         XCTAssertEqual(picker.noAccessHintTextForTesting, OWSLocalizedString("ATTACHMENT_KEYBOARD_NO_PHOTO_ACCESS", comment: ""))
         XCTAssertEqual(picker.noAccessButtonTitlesForTesting, [photos, CommonStrings.openSystemSettingsButton, OWSLocalizedString("CAMERA_BUTTON_LABEL", comment: "")])
         XCTAssertNil(picker.cameraFrameForTesting, "相机格不在网格里")

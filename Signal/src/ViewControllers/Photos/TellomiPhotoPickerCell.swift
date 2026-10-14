@@ -22,7 +22,9 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
 
     private let imageView = UIImageView()
     private let durationLabel = UILabel()
-    private let livePhotoBadge = UIImageView(image: UIImage(systemName: "livephoto"))
+    /// 左上角的种类图标：实况照片；视频（普通 / 慢动作 / 延时摄影，tellomi/tellomi#1521 G-4，照 Telegram iOS
+    /// `MediaPickerGridItem` 的 typeIconNode）。图标是系统的 SF Symbols。
+    private let livePhotoBadge = UIImageView()
     private let check = TellomiNumberedCheck()
 
     /// 点了右上角的勾。
@@ -104,7 +106,9 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
     ) {
         itemId = item.id
         durationLabel.isHidden = !item.isVideo
-        livePhotoBadge.isHidden = !item.isLivePhoto
+        typeBadgeSymbol = Self.typeBadgeSymbol(for: item)
+        livePhotoBadge.image = typeBadgeSymbol.flatMap { UIImage(systemName: $0) }
+        livePhotoBadge.isHidden = typeBadgeSymbol == nil
         durationLabel.text = item.isVideo ? Self.formatDuration(item.duration) : nil
         setSelectionNumber(selectionNumber, accentColor: accentColor, animated: false)
 
@@ -126,6 +130,19 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
             }
         }
         setNeedsLayout()
+    }
+
+    private(set) var typeBadgeSymbol: String?
+
+    static func typeBadgeSymbol(for item: TellomiPhotoPickerItem) -> String? {
+        if item.isVideo {
+            switch item.videoKind {
+            case .normal: return "video.fill"
+            case .slowMotion: return "slowmo"
+            case .timelapse: return "timelapse"
+            }
+        }
+        return item.isLivePhoto ? "livephoto" : nil
     }
 
     func setSelectionNumber(_ number: Int?, accentColor: UIColor, animated: Bool) {

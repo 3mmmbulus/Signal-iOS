@@ -21,6 +21,16 @@ struct TellomiPhotoPickerItem: Hashable {
     /// 原图像素尺寸：「只看已选」按原比例排卡片（P-3）。
     let pixelSize: CGSize
     let asset: PHAsset?
+
+    /// Tellomi（tellomi/tellomi#1521 G-4）：视频是哪一种，格子左上角的图标跟着变（照 Telegram iOS `MediaPickerGridItem`：
+    /// `.videoHighFrameRate` 慢动作、`.videoTimelapse` 延时摄影，其余是普通视频）。
+    enum VideoKind: Hashable {
+        case normal
+        case slowMotion
+        case timelapse
+    }
+
+    var videoKind: VideoKind = .normal
 }
 
 /// Tellomi（#1261 P-1）：顶栏「最近 ⌄」里的一个相册。第一个永远是「最近」。
@@ -192,6 +202,9 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
             isAnimatedImage: asset.playbackStyle == .imageAnimated,
             pixelSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight),
             asset: asset,
+            videoKind: asset.mediaSubtypes.contains(.videoHighFrameRate)
+                ? .slowMotion
+                : asset.mediaSubtypes.contains(.videoTimelapse) ? .timelapse : .normal,
         )
     }
 

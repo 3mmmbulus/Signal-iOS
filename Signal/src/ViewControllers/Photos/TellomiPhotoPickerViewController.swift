@@ -370,6 +370,10 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     }
 
     override func viewDidLayoutSubviews() {
+        let showsIllustration = view.bounds.width < view.bounds.height
+        if noAccessIllustration.isHidden == showsIllustration {
+            noAccessIllustration.isHidden = !showsIllustration
+        }
         super.viewDidLayoutSubviews()
         updateItemSize()
         // 说明框的高度要按排好之后的真实宽度算（一开始宽度是 0）。
@@ -467,6 +471,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         return UIButton(configuration: configuration, primaryAction: UIAction { _ in action() })
     }
 
+    /// G-1（tellomi/tellomi#1521）：说明上面一张插画（照 Telegram iOS `MediaPickerPlaceholderNode` / 安卓 `GalleryEmptyView` 的贴纸位置；
+    /// 画是 Signal 安卓自己的 `permission_gallery`，和 Tellomi 安卓同一张）。横屏放不下时不显示（同 Telegram iOS：宽大于高时没有图）。
+    private let noAccessIllustration: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "tellomi-permission-gallery"))
+        imageView.contentMode = .scaleAspectFit
+        imageView.isAccessibilityElement = false
+        return imageView
+    }()
+
     private lazy var noAccessView: UIView = {
         let label = UILabel()
         label.text = OWSLocalizedString("ATTACHMENT_KEYBOARD_NO_PHOTO_ACCESS", comment: "Text in the attachment keyboard when the user has not granted access to photos.")
@@ -479,10 +492,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         buttons.axis = .horizontal
         buttons.spacing = 12
 
-        let stack = UIStackView(arrangedSubviews: [label, buttons])
+        let stack = UIStackView(arrangedSubviews: [noAccessIllustration, label, buttons])
         stack.axis = .vertical
         stack.alignment = .center
         stack.spacing = 12
+        stack.setCustomSpacing(20, after: noAccessIllustration)
         stack.isHidden = true
         return stack
     }()
@@ -831,6 +845,42 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         ToastController(text: text).presentToastView(from: .bottom, of: host, inset: view.safeAreaInsets.bottom + 80)
     }
 
+    /// G-6（tellomi/tellomi#1521）：dock 和说明栏占同一个位置，换的时候照 Telegram `AttachmentPanel.update`：
+    /// 选上第一张时 dock 0.1 s 淡出、0.25 s 缩到 0.85，说明栏 0.25 s 淡入、从下面 44 pt 升上来；全部取消时反过来（淡入 / 淡出都是 0.25 s）。
+    /// 消失的那一个用截图做动画，本身照旧立刻隐藏，显隐状态和网格的让位不跟着动画走。
+    private func animateBottomBarSwap(_ bar: UIView, wasShown: Bool, snapshot: UIView?, fadeOutDuration: TimeInterval, hiddenTransform: CGAffineTransform) {
+        let isShown = !bar.isHidden
+        guard isShown != wasShown else { return }
+        if isShown {
+            bar.layer.removeAllAnimations()
+            bar.alpha = 0
+            bar.transform = hiddenTransform
+            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut, .beginFromCurrentState]) {
+                bar.alpha = 1
+                bar.transform = .identity
+            }
+        } else if let snapshot {
+            bar.alpha = 1
+            bar.transform = .identity
+            snapshot.frame = bar.frame
+            snapshot.isUserInteractionEnabled = false
+            view.insertSubview(snapshot, aboveSubview: bar)
+            bottomBarSnapshots.append(snapshot)
+            UIView.animate(withDuration: fadeOutDuration, delay: 0, options: .curveEaseInOut) {
+                snapshot.alpha = 0
+            }
+            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseInOut) {
+                snapshot.transform = hiddenTransform
+            } completion: { [weak self] _ in
+                snapshot.removeFromSuperview()
+                self?.bottomBarSnapshots.removeAll { $0 === snapshot }
+            }
+        }
+    }
+
+    /// 正在淡出的 dock / 说明栏截图（G-6）。
+    private var bottomBarSnapshots = [UIView]()
+
     /// 「✓N」「···」、底部说明栏跟着选中的数量出现 / 收起。
     private func updateSelectionChrome(animated: Bool) {
         let count = selectedIds.count
@@ -849,6 +899,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let showMore = hasSelection && !moreMenuItems().isEmpty
         let showPill = hasSelection && displayMode == .all
         let pillAppears = showPill && countPill.isHidden
+        // G-6：dock 与说明栏换位前记下谁在，要消失的那一个先截图（隐藏以后就截不到了）。
+        let dockWasShown = dock.map { !$0.isHidden } ?? false
+        let sendBarWasShown = !sendBar.isHidden
+        let dockSnapshot = animated && dockWasShown && !isDockVisible ? dock?.snapshotView(afterScreenUpdates: false) : nil
+        let sendBarSnapshot = animated && sendBarWasShown && !hasSelection ? sendBar.snapshotView(afterScreenUpdates: false) : nil
         let changes = {
             self.countPill.isHidden = !showPill
             self.moreButton.isHidden = !showMore
@@ -868,6 +923,12 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         }
 
         view.layoutIfNeeded()
+        if animated {
+            if let dock {
+                animateBottomBarSwap(dock, wasShown: dockWasShown, snapshot: dockSnapshot, fadeOutDuration: 0.1, hiddenTransform: CGAffineTransform(scaleX: 0.85, y: 0.85))
+            }
+            animateBottomBarSwap(sendBar, wasShown: sendBarWasShown, snapshot: sendBarSnapshot, fadeOutDuration: 0.25, hiddenTransform: CGAffineTransform(translationX: 0, y: 44))
+        }
         // 网格本来就会让出底部安全区，这里只补说明栏高出安全区的那一截；有 dock 时让出 dock（#1115）。
         let dockInset = isDockVisible ? TellomiAttachmentDock.height + TellomiAttachmentDock.bottomMargin : 0
         let bottomInset = hasSelection ? max(0, sendBar.frame.height - view.safeAreaInsets.bottom) : dockInset
@@ -1883,9 +1944,14 @@ extension TellomiPhotoPickerViewController {
     var countPillFrameForTesting: CGRect { countPill.convert(countPill.bounds, to: view) }
     var isMoreButtonShownForTesting: Bool { !moreButton.isHidden }
     var isSendBarShownForTesting: Bool { !sendBar.isHidden }
+    /// G-6：正在淡出的截图数；dock / 说明栏身上有没有淡入动画。
+    var bottomBarFadingOutCountForTesting: Int { bottomBarSnapshots.count }
+    var isSendBarFadingInForTesting: Bool { sendBar.layer.animationKeys()?.isEmpty == false }
+    var isDockFadingInForTesting: Bool { dock?.layer.animationKeys()?.isEmpty == false }
     var dockForTesting: TellomiAttachmentDock? { dock }
     var isDockShownForTesting: Bool { dock.map { !$0.isHidden } ?? false }
     var isNoAccessHintShownForTesting: Bool { !noAccessView.isHidden }
+    var isNoAccessIllustrationShownForTesting: Bool { !noAccessView.isHidden && !noAccessIllustration.isHidden && noAccessIllustration.image != nil }
     var noAccessHintTextForTesting: String? { (noAccessView as? UIStackView)?.arrangedSubviews.compactMap { ($0 as? UILabel)?.text }.first }
     /// 占位里露着的按钮，按排列的先后。
     private var noAccessButtonsForTesting: [UIButton] {
