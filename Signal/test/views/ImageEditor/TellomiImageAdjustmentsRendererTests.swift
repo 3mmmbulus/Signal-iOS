@@ -10,7 +10,7 @@ import XCTest
 @testable import SignalServiceKit
 @testable import SignalUI
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7、#1598 E5-8）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
 @MainActor
 final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
 
@@ -196,6 +196,78 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
             worst = max(worst, simd_reduce_max(simd_abs(Renderer.adjust(input, adjusted) - output)))
         }
         XCTAssertLessThanOrEqual(worst, 2 / 255, "最大误差 \(worst * 255)/255")
+    }
+
+    // MARK: - E5-8 blur
+
+    /// 两端同一套：小图方框模糊的半径、三遍方框模糊、遮罩。和安卓 `ImageAdjustmentsDetailTest.blurMatchesTheSharedReferenceValues` 同一组。
+    func testBlurMatchesTheSharedReferenceValues() {
+        XCTAssertEqual(Renderer.blurRadius(forLongSide: 512), 6)
+        XCTAssertEqual(Renderer.blurRadius(forLongSide: 300), 3)
+        XCTAssertEqual(Renderer.blurRadius(forLongSide: 64), 1)
+
+        var impulse = [Int](repeating: 0, count: 21)
+        impulse[10] = 255
+        var row = impulse
+        for _ in 0..<3 { row = Renderer.boxBlurPass(row, radius: 2) }
+        XCTAssertEqual(row, [0, 0, 0, 0, 2, 6, 12, 20, 31, 37, 39, 37, 31, 20, 12, 6, 2, 0, 0, 0, 0])
+        var edges = [10, 200, 30, 40, 250, 60, 70]
+        for _ in 0..<3 { edges = Renderer.boxBlurPass(edges, radius: 1) }
+        XCTAssertEqual(edges, [77, 83, 93, 105, 109, 103, 93])
+
+        let size = SIMD2<Float>(400, 300)
+        var radial = TellomiImageAdjustments.Blur()
+        radial.kind = .radial
+        radial.falloff = 0.12
+        radial.size = 0.24
+        XCTAssertEqual(Renderer.blurMask(radial, at: SIMD2(0.5, 0.5), imageSize: size), 0, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.blurMask(radial, at: SIMD2(0.5 + 0.18 * 300 / 400, 0.5), imageSize: size), 0.5, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.blurMask(radial, at: SIMD2(0.9, 0.5), imageSize: size), 1, accuracy: 1e-5)
+
+        var linear = TellomiImageAdjustments.Blur()
+        linear.kind = .linear
+        linear.falloff = 0.15
+        linear.size = 0.35
+        XCTAssertEqual(Renderer.blurMask(linear, at: SIMD2(0.1, 0.75), imageSize: size), 0.5, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.blurMask(linear, at: SIMD2(0.9, 0.5), imageSize: size), 0, accuracy: 1e-5)
+        linear.centerX = 0.4
+        linear.centerY = 0.6
+        linear.falloff = 0.1
+        linear.size = 0.3
+        linear.angle = .pi / 6
+        XCTAssertEqual(Renderer.blurMask(linear, at: SIMD2(0.4, 0.8), imageSize: size), 0.30385, accuracy: 1e-4)
+    }
+
+    /// 径向：中心那块原样清楚（细条纹还在），外面糊成平均色；同一张图两次画一样（小图缓存）。
+    func testRadialBlurKeepsTheCenterSharp() throws {
+        let stripes = try makeImage(width: 400, height: 300) { x, _ in SIMD3(repeating: x % 2 == 0 ? 0.2 : 0.8) }
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.blur.kind = .radial
+        adjustments.blur.falloff = 0.12
+        adjustments.blur.size = 0.24
+        let output = try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: stripes)))
+        func at(_ x: Int, _ y: Int) -> Float { output[y * 400 + x].x }
+        XCTAssertGreaterThan(abs(at(200, 150) - at(201, 150)), 0.5, "中心清楚")
+        XCTAssertLessThan(abs(at(10, 10) - at(11, 10)), 0.05, "角上糊了")
+        XCTAssertEqual(at(10, 10), 0.5, accuracy: 0.05)
+        XCTAssertEqual(try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: stripes))), output)
+    }
+
+    /// 线性（横带）：中间那一横条清楚，上下糊；转 90° 之后变成竖带。
+    func testLinearBlurBand() throws {
+        let stripes = try makeImage(width: 400, height: 300) { x, _ in SIMD3(repeating: x % 2 == 0 ? 0.2 : 0.8) }
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.blur.kind = .linear
+        adjustments.blur.falloff = 0.1
+        adjustments.blur.size = 0.2
+        let horizontal = try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: stripes)))
+        XCTAssertGreaterThan(abs(horizontal[150 * 400 + 20].x - horizontal[150 * 400 + 21].x), 0.5, "横带中间清楚")
+        XCTAssertLessThan(abs(horizontal[5 * 400 + 200].x - horizontal[5 * 400 + 201].x), 0.05, "上面糊了")
+
+        adjustments.blur.angle = .pi / 2
+        let vertical = try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: stripes)))
+        XCTAssertGreaterThan(abs(vertical[5 * 400 + 200].x - vertical[5 * 400 + 201].x), 0.5, "转成竖带，中间一竖条清楚")
+        XCTAssertLessThan(abs(vertical[150 * 400 + 20].x - vertical[150 * 400 + 21].x), 0.05, "左边糊了")
     }
 
     private func assertClose(_ actual: SIMD3<Float>, _ expected: SIMD3<Float>, line: UInt = #line) {

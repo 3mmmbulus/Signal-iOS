@@ -9,12 +9,12 @@ import SignalServiceKit
 import simd
 import UIKit
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6、#1597 E5-7，Epic #1523）：把调色画进图里。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6、#1597 E5-7、#1598 E5-8，Epic #1523）：把调色画进图里。
 ///
 /// 逐像素的几项（曲线、曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
 /// 在图自己的颜色空间（sRGB / Display P3 的编码值）里查——预览图和发出的原尺寸图走同一张表，所以两边一致。
 /// 和位置有关的三项（锐化、颗粒、暗角）是自己写的 CoreImage 内核
-/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序照两端 Telegram：锐化 → 查找表 → 颗粒 → 暗角。
+/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序照两端 Telegram：锐化 → 查找表 → 颗粒 → 暗角 → 模糊。
 ///
 /// 每一项的数学是自己定的（Telegram 只用来对照工具、范围和方向，它的着色器一行不搬，见 `docs/product/specs/media-editor-adjustments-e5.md`）：
 /// - 曲线：每条 5 个点（输入 0 / 0.25 / 0.5 / 0.75 / 1，输出 = 值/100），单调三次插值（Fritsch–Carlson，不会冲过相邻两点）；
@@ -36,6 +36,10 @@ import UIKit
 ///   c' = c + 0.06·(值/100)·w(y)·n，w(y) = 1 − |2y − 1|³（中间调最多，纯黑纯白不加），单色。只用于照片。
 /// - 暗角：跟着画框（裁剪后的输出范围）走，不跟着整张原图；d 是画框坐标（中心 0，四边 ±1），ρ = min(|d|/√2, 1)，
 ///   k = (值/100)·ρ³，c' = c^(1 + 1.2k)·(1 − 0.35k)：角上中灰 0.5 → 0.141、白 → 0.65（TG ≈ 0.141 / 0.685，暗部比亮部压得多）。
+/// - 模糊（移轴，E5-8）：原图缩到长边 ≤ 512，三遍方框模糊（半径 = 长边的 1.1%，四舍五入；三遍方框约等于 σ ≈ 1.3% 长边的高斯），
+///   查同一张表、压同样的暗角，再放大回去；遮罩 m = smoothstep(内半径, 外半径, d)，d 在「短边 = 1」的单位里量：径向是到中心的距离，
+///   线性是到过中心那条线的距离；这个像素 = mix(清楚的, 模糊的, m)。内半径 = `falloff`、外半径 = `size`（照两端 TG 的控件）。
+///   iOS 的角度是那条线的方向（0 = 横），法线 (−sin, cos)；安卓照 TG 安卓存的是法线方向（π/2 = 横）。
 @MainActor
 enum TellomiImageAdjustmentsRenderer {
 
@@ -86,7 +90,26 @@ enum TellomiImageAdjustmentsRenderer {
         }
 
         let grain = detail ? adjustments.grain : 0
-        if grain > 0 || adjustments.vignette > 0 {
+        let blur = detail ? adjustments.blur : TellomiImageAdjustments.default.blur
+        var blurImage: CIImage?
+        if blur.kind != .off {
+            guard let small = blurredSmallImage(image, colorSpace: colorSpace) else { return nil }
+            var blurred = CIImage(cgImage: small)
+            if colorTools != .default {
+                let filter = CIFilter.colorCubeWithColorSpace()
+                filter.inputImage = blurred
+                filter.cubeDimension = Float(cubeDimension)
+                filter.cubeData = cubeData(for: colorTools)
+                filter.colorSpace = colorSpace
+                guard let cubed = filter.outputImage else { return nil }
+                blurred = cubed
+            }
+            blurImage = blurred
+                .clampedToExtent()
+                .transformed(by: CGAffineTransform(scaleX: extent.width / CGFloat(small.width), y: extent.height / CGFloat(small.height)))
+                .cropped(to: extent)
+        }
+        if grain > 0 || adjustments.vignette > 0 || blurImage != nil {
             guard
                 let finished = grainAndVignette(
                     output,
@@ -94,6 +117,7 @@ enum TellomiImageAdjustmentsRenderer {
                     grainCell: 2 * unit,
                     vignette: adjustments.vignette / 100,
                     frame: frame,
+                    blur: blurImage.map { ($0, blur) },
                     colorSpace: colorSpace,
                 )
             else { return nil }
@@ -207,26 +231,133 @@ enum TellomiImageAdjustmentsRenderer {
         grainCell: CGFloat,
         vignette: Float,
         frame: CGAffineTransform,
+        blur: (image: CIImage, value: TellomiImageAdjustments.Blur)?,
         colorSpace: CGColorSpace,
     ) -> CIImage? {
         guard let kernel = kernels?.grainVignette, let encoded = image.matchedFromWorkingSpace(to: colorSpace) else { return nil }
         let extent = image.extent
         let noise = noiseImage
+        let blurEncoded = blur.flatMap { $0.image.matchedFromWorkingSpace(to: colorSpace) } ?? encoded
+        let value = blur?.value ?? TellomiImageAdjustments.default.blur
+        let kind: Float = blur == nil ? 0 : (value.kind == .radial ? 1 : 2)
+        let radii = blurRadii(value)
+        let normal = blurNormal(value)
         let output = kernel.apply(
             extent: extent,
-            roiCallback: { index, rect in index == 0 ? rect : noise.extent },
+            roiCallback: { index, rect in index == 1 ? noise.extent : rect },
             arguments: [
                 encoded,
                 noise,
+                blurEncoded,
                 grain,
                 Float(grainCell),
                 vignette,
                 CIVector(x: extent.width, y: extent.height),
                 CIVector(x: frame.a, y: frame.c, z: frame.tx),
                 CIVector(x: frame.b, y: frame.d, z: frame.ty),
+                kind,
+                CIVector(x: CGFloat(value.centerX), y: CGFloat(value.centerY)),
+                CIVector(x: CGFloat(radii.inner), y: CGFloat(radii.outer)),
+                CIVector(x: CGFloat(normal.x), y: CGFloat(normal.y)),
             ],
         )
         return output?.matchedToWorkingSpace(from: colorSpace)
+    }
+
+    // MARK: - Blur (E5-8)
+
+    /// 模糊用的小图长边上限。
+    static let blurSmallLongSide = 512
+
+    /// 小图上三遍方框模糊的半径：长边的 1.1%，四舍五入，至少 1（512 上是 6）。安卓 `ImageAdjustmentsDetail.blurRadius` 一样。
+    static func blurRadius(forLongSide longSide: Int) -> Int {
+        max(1, Int((0.011 * Float(longSide)).rounded()))
+    }
+
+    /// 一行（或一列）方框模糊一遍：每个值换成前后各 `radius` 个（图边外取最靠边的）的平均，整数四舍五入。安卓同一算法。
+    static func boxBlurPass(_ line: [Int], radius: Int) -> [Int] {
+        let count = line.count
+        guard count > 0 else { return line }
+        let width = 2 * radius + 1
+        var sum = 0
+        for offset in -radius...radius {
+            sum += line[min(max(offset, 0), count - 1)]
+        }
+        var output = [Int](repeating: 0, count: count)
+        for index in 0..<count {
+            output[index] = (sum + width / 2) / width
+            sum += line[min(index + radius + 1, count - 1)] - line[max(index - radius, 0)]
+        }
+        return output
+    }
+
+    /// 内、外半径（短边 = 1）：内 = `falloff`、外 = `size`，外至少比内大一点（smoothstep 两端不能重合）。
+    static func blurRadii(_ blur: TellomiImageAdjustments.Blur) -> (inner: Float, outer: Float) {
+        let inner = max(blur.falloff, 0)
+        return (inner, max(blur.size, inner + 0.001))
+    }
+
+    /// 线性模糊的法线：iOS 存的角度是那条线的方向（0 = 横线），法线 = (−sin, cos)。
+    static func blurNormal(_ blur: TellomiImageAdjustments.Blur) -> SIMD2<Float> {
+        SIMD2(-sin(blur.angle), cos(blur.angle))
+    }
+
+    /// 单位坐标 `unit`（左上为原点）处模糊的遮罩：0 = 清楚、1 = 全模糊。
+    static func blurMask(_ blur: TellomiImageAdjustments.Blur, at unit: SIMD2<Float>, imageSize: SIMD2<Float>) -> Float {
+        guard blur.kind != .off else { return 0 }
+        let q = (unit - SIMD2(blur.centerX, blur.centerY)) * imageSize / min(imageSize.x, imageSize.y)
+        let d = blur.kind == .radial ? simd_length(q) : abs(simd_dot(q, blurNormal(blur)))
+        let radii = blurRadii(blur)
+        let t = min(max((d - radii.inner) / (radii.outer - radii.inner), 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+
+    private static var blurCache: (source: CGImage, blurred: CGImage)?
+
+    /// 模糊用的小图：缩到长边 ≤ 512，每个通道横、竖各三遍方框模糊。同一张原图只算一次（拖滑杆时不重算）。
+    static func blurredSmallImage(_ image: CGImage, colorSpace: CGColorSpace) -> CGImage? {
+        if let blurCache, blurCache.source === image {
+            return blurCache.blurred
+        }
+        let longSide = max(image.width, image.height)
+        let scale = min(1, CGFloat(blurSmallLongSide) / CGFloat(longSide))
+        let width = max(1, Int((CGFloat(image.width) * scale).rounded()))
+        let height = max(1, Int((CGFloat(image.height) * scale).rounded()))
+        guard
+            let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+            )
+        else { return nil }
+        context.interpolationQuality = .high
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let data = context.data?.bindMemory(to: UInt8.self, capacity: width * height * 4) else { return nil }
+
+        let radius = blurRadius(forLongSide: max(width, height))
+        for channel in 0..<4 {
+            for _ in 0..<3 {
+                for y in 0..<height {
+                    let row = (0..<width).map { Int(data[(y * width + $0) * 4 + channel]) }
+                    for (x, value) in boxBlurPass(row, radius: radius).enumerated() {
+                        data[(y * width + x) * 4 + channel] = UInt8(value)
+                    }
+                }
+                for x in 0..<width {
+                    let column = (0..<height).map { Int(data[($0 * width + x) * 4 + channel]) }
+                    for (y, value) in boxBlurPass(column, radius: radius).enumerated() {
+                        data[(y * width + x) * 4 + channel] = UInt8(value)
+                    }
+                }
+            }
+        }
+        guard let blurred = context.makeImage() else { return nil }
+        blurCache = (image, blurred)
+        return blurred
     }
 
     // MARK: - Lookup table

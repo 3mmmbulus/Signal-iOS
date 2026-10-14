@@ -5029,6 +5029,18 @@
 /* Image editor: name of the tool that adjusts exposure, contrast, colour and so on. Also its button's accessibility label. */
 "IMAGE_EDITOR_TELLOMI_ADJUST" = "समायोजित करें";
 
+/* Image editor, adjustments: the blur tab (tilt-shift: blur outside a circle or a band). */
+"IMAGE_EDITOR_TELLOMI_ADJUST_BLUR" = "धुंधला";
+
+/* Image editor, adjustments, blur: blur everything outside a band. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_BLUR_LINEAR" = "रैखिक";
+
+/* Image editor, adjustments, blur: no blur. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_BLUR_OFF" = "बंद";
+
+/* Image editor, adjustments, blur: blur everything outside a circle. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_BLUR_RADIAL" = "रेडियल";
+
 /* Image editor, adjustments: name of the contrast tool. */
 "IMAGE_EDITOR_TELLOMI_ADJUST_CONTRAST" = "कंट्रास्ट";
 

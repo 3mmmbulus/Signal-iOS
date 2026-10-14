@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DE61BB8F95628C152382BE2A /* TellomiImageAdjustBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */; };
 		CFAA904E14BBEC8464B0F491 /* TellomiImageAdjustCurves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */; };
 		3892E5CA45F76A4E5CC2DCEF /* TellomiImageAdjustments.metal in Sources */ = {isa = PBXBuildFile; fileRef = B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */; };
 		AC0321167F1B63C3997210D4 /* TellomiImageAdjustViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DF55C96AD35AE5265F7B /* TellomiImageAdjustViewControllerTests.swift */; };
@@ -4461,6 +4462,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustBlur.swift; sourceTree = "<group>"; };
 		8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustCurves.swift; sourceTree = "<group>"; };
 		B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = TellomiImageAdjustments.metal; sourceTree = "<group>"; };
 		3675DF55C96AD35AE5265F7B /* TellomiImageAdjustViewControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustViewControllerTests.swift; sourceTree = "<group>"; };
@@ -9932,6 +9934,7 @@
 				34A9555F271B510400B05242 /* ImageEditorContents.swift */,
 				7E2B3D1A59AE11F871DDD6D7 /* TellomiImageAdjustments.swift */,
 				C2C2A7A48A7A1E314AAC61CA /* TellomiImageAdjustViewController.swift */,
+				25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */,
 				8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */,
 				46FA69BBAE9AC62B12AE90B6 /* TellomiAdjustmentSlider.swift */,
 				671DB4204E85E0036EB88B4A /* ImageEditorCanvasView+TellomiAdjustments.swift */,
@@ -18846,6 +18849,7 @@
 				3402AA7D271D9E180084CBAE /* ImageEditorContents.swift in Sources */,
 				EBFEE3193C6F1A3D1A995D03 /* TellomiImageAdjustments.swift in Sources */,
 				D41529141EFD1714CF27BB44 /* TellomiImageAdjustViewController.swift in Sources */,
+				DE61BB8F95628C152382BE2A /* TellomiImageAdjustBlur.swift in Sources */,
 				CFAA904E14BBEC8464B0F491 /* TellomiImageAdjustCurves.swift in Sources */,
 				9948927ED4C905209CEAA345 /* TellomiAdjustmentSlider.swift in Sources */,
 				897C8B5DB1CDC2E4327B8367 /* ImageEditorCanvasView+TellomiAdjustments.swift in Sources */,

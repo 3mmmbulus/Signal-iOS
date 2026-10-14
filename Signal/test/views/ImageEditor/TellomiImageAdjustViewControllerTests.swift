@@ -167,7 +167,63 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         XCTAssertTrue(model.adjustments.curves.isDefault, "一步撤销回到打开前")
     }
 
-    /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），按住看原图，色调页，暗角 / 颗粒 / 锐化和发出的图，曲线页签。
+    /// 模糊页签（E5-8）：选径向 / 线性 / 关；照片上按中心拖挪中心、按外圈拖改外半径、两指捏一起缩放、线性时在外面拖转角度；
+    /// 完成算一步撤销。
+    func testBlurTab() throws {
+        let (viewController, model) = try makeViewController()
+        let window = try makeWindow()
+        window.rootViewController = viewController
+        window.isHidden = false
+        defer { window.isHidden = true }
+        window.layoutIfNeeded()
+
+        viewController.showTabForTesting(.blur)
+        let overlay = viewController.blurOverlayForTesting
+        XCTAssertFalse(overlay.isHidden)
+        XCTAssertTrue(try XCTUnwrap(viewController.blurPanelForTesting.buttons[.off]).isSelected)
+        try XCTUnwrap(viewController.blurPanelForTesting.buttons[.radial]).sendActions(for: .touchUpInside)
+        XCTAssertEqual(model.adjustments.blur.kind, .radial)
+        XCTAssertTrue(try XCTUnwrap(viewController.blurPanelForTesting.buttons[.radial]).isSelected)
+
+        let mapping = try XCTUnwrap(overlay.mappingProvider?(overlay.bounds.size))
+        let center = mapping.view(fromUnit: SIMD2(0.5, 0.5))
+        XCTAssertEqual(overlay.control(at: center), .center)
+        let outerPoint = CGPoint(x: center.x + CGFloat(model.adjustments.blur.size) * mapping.shortSideInView, y: center.y)
+        XCTAssertEqual(overlay.control(at: outerPoint), .outer)
+        XCTAssertNil(overlay.control(at: CGPoint(x: 2, y: 2)), "径向时别处不动")
+
+        overlay.drag(.center, from: center, to: CGPoint(x: center.x + 40, y: center.y), startBlur: model.adjustments.blur, mapping: mapping)
+        XCTAssertGreaterThan(model.adjustments.blur.centerX, 0.5)
+        XCTAssertEqual(model.adjustments.blur.centerY, 0.5, accuracy: 1e-4)
+
+        let before = model.adjustments.blur
+        overlay.drag(.outer, from: outerPoint, to: CGPoint(x: outerPoint.x + 30, y: outerPoint.y), startBlur: before, mapping: mapping)
+        XCTAssertGreaterThan(model.adjustments.blur.size, before.size)
+        XCTAssertEqual(model.adjustments.blur.falloff, before.falloff)
+
+        let pinched = model.adjustments.blur
+        overlay.pinch(scale: 0.5, startBlur: pinched)
+        XCTAssertEqual(model.adjustments.blur.falloff, pinched.falloff * 0.5, accuracy: 1e-5)
+        XCTAssertEqual(model.adjustments.blur.size, pinched.size * 0.5, accuracy: 1e-5)
+
+        try XCTUnwrap(viewController.blurPanelForTesting.buttons[.linear]).sendActions(for: .touchUpInside)
+        let linear = model.adjustments.blur
+        XCTAssertEqual(linear.kind, .linear)
+        let linearCenter = mapping.view(fromUnit: SIMD2(linear.centerX, linear.centerY))
+        // 横带：正下方离那条线远（在外圈外面）的地方按住拖 = 转。
+        let far = CGPoint(x: linearCenter.x, y: linearCenter.y + 200)
+        XCTAssertEqual(overlay.control(at: far), .rotation)
+        overlay.drag(.rotation, from: far, to: CGPoint(x: linearCenter.x + 200, y: linearCenter.y + 50), startBlur: linear, mapping: mapping)
+        XCTAssertNotEqual(model.adjustments.blur.angle, linear.angle)
+
+        XCTAssertFalse(model.canUndo, "拖的时候不记撤销")
+        viewController.finish(done: true)
+        XCTAssertTrue(model.canUndo)
+        model.undo()
+        XCTAssertEqual(model.adjustments.blur.kind, .off, "一步撤销回到打开前")
+    }
+
+    /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），按住看原图，色调页，暗角 / 颗粒 / 锐化和发出的图，曲线页签，模糊页签。
     func testScreenshots() async throws {
         let environment = ProcessInfo.processInfo.environment
         try XCTSkipUnless(environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
@@ -230,6 +286,27 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         window.layoutIfNeeded()
         try await Task.sleep(nanoseconds: 500_000_000)
         try save(window, as: "adjust-curves", in: directory)
+
+        // E5-8：模糊页签，径向挪到红太阳上，再存一张线性的。
+        viewController.showTabForTesting(.blur)
+        try XCTUnwrap(viewController.blurPanelForTesting.buttons[.radial]).sendActions(for: .touchUpInside)
+        let blurOverlay = viewController.blurOverlayForTesting
+        window.layoutIfNeeded()
+        let mapping = try XCTUnwrap(blurOverlay.mappingProvider?(blurOverlay.bounds.size))
+        blurOverlay.drag(
+            .center,
+            from: mapping.view(fromUnit: SIMD2(0.5, 0.5)),
+            to: mapping.view(fromUnit: SIMD2(890 / 1200, 550 / 900)),
+            startBlur: model.adjustments.blur,
+            mapping: mapping,
+        )
+        window.layoutIfNeeded()
+        try await Task.sleep(nanoseconds: 500_000_000)
+        try save(window, as: "adjust-blur-radial", in: directory)
+        try XCTUnwrap(viewController.blurPanelForTesting.buttons[.linear]).sendActions(for: .touchUpInside)
+        window.layoutIfNeeded()
+        try await Task.sleep(nanoseconds: 500_000_000)
+        try save(window, as: "adjust-blur-linear", in: directory)
     }
 
     // MARK: - Helpers

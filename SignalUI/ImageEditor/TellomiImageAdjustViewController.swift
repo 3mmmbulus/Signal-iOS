@@ -15,8 +15,7 @@ import UIKit
 /// - 按住照片看原图，提示条显示「原图」；
 /// - 下面取消 / 完成：取消回到打开时的样子，完成算一步撤销。
 ///
-/// 只列已经能画出来的工具（`availableTools`），后面的子 Issue 做好一项加一项；色调、曲线是单独的页签（E5-6、E5-7），
-/// 模糊做了再加。数值的写法照 Telegram iOS：值 ÷ 最大值，两位小数，带正负号（+0.35）。
+/// 只列已经能画出来的工具（`availableTools`），后面的子 Issue 做好一项加一项；色调、模糊、曲线是单独的页签（E5-6、E5-8、E5-7）。数值的写法照 Telegram iOS：值 ÷ 最大值，两位小数，带正负号（+0.35）。
 public final class TellomiImageAdjustViewController: OWSViewController {
 
     /// 入口按钮的图标：Signal 的图标里没有调色这一类，用系统的 SF Symbol（Telegram 的图标不能拿）。
@@ -38,8 +37,10 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     /// 照 Telegram iOS：工具列表区高度固定（约四行半），工具多了在里面上下滚，不往上盖住照片。
     private let rowsScrollView = UIScrollView()
     private static let maxRowsHeight: CGFloat = 52 * 4.5
-    /// 页签：工具、色调、曲线（照 Telegram iOS 调整页；模糊做了再加）。
-    private let bottomBar = ImageEditorToolbar(tools: [.tellomiAdjustTools, .tellomiAdjustTint, .tellomiAdjustCurves])
+    /// 页签：工具、色调、模糊、曲线（照 Telegram iOS 调整页）。
+    private let bottomBar = ImageEditorToolbar(tools: [.tellomiAdjustTools, .tellomiAdjustTint, .tellomiAdjustBlur, .tellomiAdjustCurves])
+    private let blurPanel = TellomiBlurPanelView()
+    private let blurOverlay = TellomiBlurOverlayView()
     private let tintPanel = TintPanelView()
     private let curvesPanel = TellomiCurvesPanelView()
     private let curvesOverlay = TellomiCurvesOverlayView()
@@ -48,6 +49,7 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     enum Tab {
         case tools
         case tint
+        case blur
         case curves
     }
 
@@ -133,6 +135,11 @@ public final class TellomiImageAdjustViewController: OWSViewController {
         bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.tools) }, for: .tellomiAdjustTools)
         bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.tint) }, for: .tellomiAdjustTint)
         bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.curves) }, for: .tellomiAdjustCurves)
+        bottomBar.setAccessibilityLabel(
+            OWSLocalizedString("IMAGE_EDITOR_TELLOMI_ADJUST_BLUR", comment: "Image editor, adjustments: the blur tab (tilt-shift: blur outside a circle or a band)."),
+            for: .tellomiAdjustBlur,
+        )
+        bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.blur) }, for: .tellomiAdjustBlur)
 
         tintPanel.translatesAutoresizingMaskIntoConstraints = false
         tintPanel.isHidden = true
@@ -157,6 +164,26 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             self?.curvePointChanged(channel: channel, index: index, value: value)
         }
         view.addSubview(curvesOverlay)
+
+        blurPanel.translatesAutoresizingMaskIntoConstraints = false
+        blurPanel.isHidden = true
+        blurPanel.select(adjustments.blur.kind)
+        blurPanel.onSelect = { [weak self] kind in
+            self?.blurKindSelected(kind)
+        }
+        panelView.addSubview(blurPanel)
+
+        blurOverlay.translatesAutoresizingMaskIntoConstraints = false
+        blurOverlay.isHidden = true
+        blurOverlay.update(blur: adjustments.blur)
+        blurOverlay.mappingProvider = { [weak self] size in
+            guard let self else { return nil }
+            return TellomiImageUnitMapping(viewSize: size, imageSize: self.model.srcImageSizePixels, transform: self.model.currentTransform())
+        }
+        blurOverlay.onChange = { [weak self] blur in
+            self?.blurChanged(blur)
+        }
+        view.addSubview(blurOverlay)
         bottomBar.doneButton.addAction(UIAction { [weak self] _ in self?.finish(done: true) }, for: .primaryActionTriggered)
 
         hudLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -204,6 +231,15 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             curvesPanel.trailingAnchor.constraint(equalTo: panelView.trailingAnchor, constant: -16),
             curvesPanel.centerYAnchor.constraint(equalTo: panelView.centerYAnchor),
 
+            blurPanel.leadingAnchor.constraint(equalTo: panelView.leadingAnchor, constant: 16),
+            blurPanel.trailingAnchor.constraint(equalTo: panelView.trailingAnchor, constant: -16),
+            blurPanel.centerYAnchor.constraint(equalTo: panelView.centerYAnchor),
+
+            blurOverlay.topAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.topAnchor),
+            blurOverlay.leadingAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.leadingAnchor),
+            blurOverlay.trailingAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.trailingAnchor),
+            blurOverlay.bottomAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.bottomAnchor),
+
             curvesOverlay.topAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.topAnchor),
             curvesOverlay.leadingAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.leadingAnchor),
             curvesOverlay.trailingAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.trailingAnchor),
@@ -236,14 +272,33 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             bottomBar.selectedToolButton = .tellomiAdjustTools
         case .tint:
             bottomBar.selectedToolButton = .tellomiAdjustTint
+        case .blur:
+            bottomBar.selectedToolButton = .tellomiAdjustBlur
         case .curves:
             bottomBar.selectedToolButton = .tellomiAdjustCurves
         }
         rowsScrollView.isHidden = tab != .tools
         tintPanel.isHidden = tab != .tint
         curvesPanel.isHidden = tab != .curves
-        // 曲线页签里照片上的手势都给曲线层（照 TG：这时按住照片不看原图）。
+        blurPanel.isHidden = tab != .blur
+        // 曲线、模糊页签里照片上的手势都给那一层（照 TG：这时按住照片不看原图）。
         curvesOverlay.isHidden = tab != .curves
+        blurOverlay.isHidden = tab != .blur
+    }
+
+    /// 选「关 / 径向 / 线性」：中心、半径、角度留着上次的。
+    private func blurKindSelected(_ kind: TellomiImageAdjustments.Blur.Kind) {
+        var blur = adjustments.blur
+        blur.kind = kind
+        blurChanged(blur)
+        blurPanel.select(kind)
+    }
+
+    /// 模糊变了：和拖滑杆一样只改预览，完成时整段算一步撤销。
+    private func blurChanged(_ blur: TellomiImageAdjustments.Blur) {
+        adjustments.blur = blur
+        model.replace(adjustments: adjustments, suppressUndo: true)
+        blurOverlay.update(blur: blur)
     }
 
     private func selectCurveChannel(_ channel: TellomiCurveChannel) {
@@ -386,6 +441,14 @@ public final class TellomiImageAdjustViewController: OWSViewController {
 
     var curvesPanelForTesting: TellomiCurvesPanelView {
         curvesPanel
+    }
+
+    var blurOverlayForTesting: TellomiBlurOverlayView {
+        blurOverlay
+    }
+
+    var blurPanelForTesting: TellomiBlurPanelView {
+        blurPanel
     }
 
     var isTintTabShownForTesting: Bool {

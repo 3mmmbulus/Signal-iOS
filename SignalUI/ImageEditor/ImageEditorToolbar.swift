@@ -60,9 +60,10 @@ enum ImageEditorToolButton {
     case sticker
     case blur
 
-    /// Tellomi（tellomi/tellomi#1596 E5-6、#1597 E5-7）：调色页的页签（照 Telegram iOS 调整页：工具、色调、曲线；模糊做了再加）。
+    /// Tellomi（tellomi/tellomi#1596 E5-6、#1597 E5-7、#1598 E5-8）：调色页的页签（照 Telegram iOS 调整页：工具、色调、模糊、曲线）。
     case tellomiAdjustTools
     case tellomiAdjustTint
+    case tellomiAdjustBlur
     case tellomiAdjustCurves
 
     private var buttonImage: UIImage {
@@ -85,6 +86,8 @@ enum ImageEditorToolButton {
             TellomiImageAdjustViewController.toolIcon
         case .tellomiAdjustTint:
             UIImage(systemName: "paintpalette", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .medium))!
+        case .tellomiAdjustBlur:
+            UIImage(systemName: "drop", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .medium))!
         case .tellomiAdjustCurves:
             TellomiCurvesOverlayView.tabIcon
         }
