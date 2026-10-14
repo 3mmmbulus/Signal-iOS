@@ -9,14 +9,16 @@ import SignalServiceKit
 import simd
 import UIKit
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6，Epic #1523）：把调色画进图里。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6、#1597 E5-7，Epic #1523）：把调色画进图里。
 ///
-/// 逐像素的几项（曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
+/// 逐像素的几项（曲线、曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
 /// 在图自己的颜色空间（sRGB / Display P3 的编码值）里查——预览图和发出的原尺寸图走同一张表，所以两边一致。
-/// 后面的逐像素工具（曲线）往 `adjust(_:_:)` 里加。和位置有关的三项（锐化、颗粒、暗角）是自己写的 CoreImage 内核
+/// 和位置有关的三项（锐化、颗粒、暗角）是自己写的 CoreImage 内核
 /// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序照两端 Telegram：锐化 → 查找表 → 颗粒 → 暗角。
 ///
 /// 每一项的数学是自己定的（Telegram 只用来对照工具、范围和方向，它的着色器一行不搬，见 `docs/product/specs/media-editor-adjustments-e5.md`）：
+/// - 曲线：每条 5 个点（输入 0 / 0.25 / 0.5 / 0.75 / 1，输出 = 值/100），单调三次插值（Fritsch–Carlson，不会冲过相邻两点）；
+///   「全部」三个通道各过一遍，然后红、绿、蓝各过自己那条。最先做（照两端 TG，曲线在工具着色器的最前面）。
 /// - 曝光：线性光里乘增益，+100 = +2 档、−100 = −1.5 档；调亮时用一个让原来的白仍落在白上的肩，亮部不会一下顶死。
 /// - 对比度：绕中灰拉开 / 收拢，系数 1.4^(值/100)。
 /// - 饱和度：和同亮度的灰按比例混（Rec. 709 亮度），0…2 倍。
@@ -237,11 +239,12 @@ enum TellomiImageAdjustmentsRenderer {
         let n = cubeDimension
         var values = [Float](repeating: 0, count: n * n * n * 4)
         let scale = 1 / Float(n - 1)
+        let splines = CurveSplines(adjustments.curves)
         var index = 0
         for blue in 0..<n {
             for green in 0..<n {
                 for red in 0..<n {
-                    let color = adjust(SIMD3(Float(red) * scale, Float(green) * scale, Float(blue) * scale), adjustments)
+                    let color = adjust(SIMD3(Float(red) * scale, Float(green) * scale, Float(blue) * scale), adjustments, splines: splines)
                     values[index] = color.x
                     values[index + 1] = color.y
                     values[index + 2] = color.z
@@ -260,9 +263,26 @@ enum TellomiImageAdjustmentsRenderer {
     /// Rec. 709 / sRGB 的亮度权重。
     private static let luma = SIMD3<Float>(0.2126, 0.7152, 0.0722)
 
-    /// 一个编码值（0…1）的颜色调色后的样子。顺序：曝光 → 对比度 → 高光 / 阴影 → 饱和度 → 色温 → 色调 → 褪色，每一步后夹回 0…1。
-    static func adjust(_ input: SIMD3<Float>, _ adjustments: TellomiImageAdjustments) -> SIMD3<Float> {
+    /// 一个编码值（0…1）的颜色调色后的样子。顺序：曲线 → 曝光 → 对比度 → 高光 / 阴影 → 饱和度 → 色温 → 色调 → 褪色，每一步后夹回 0…1。
+    /// `splines` 是建查找表时先算好的四条曲线（不传就当场算）。
+    static func adjust(_ input: SIMD3<Float>, _ adjustments: TellomiImageAdjustments, splines: CurveSplines? = nil) -> SIMD3<Float> {
         var color = input
+
+        if !adjustments.curves.isDefault {
+            let splines = splines ?? CurveSplines(adjustments.curves)
+            if let all = splines.all {
+                color = SIMD3(all.value(at: color.x), all.value(at: color.y), all.value(at: color.z))
+            }
+            if let red = splines.red {
+                color.x = red.value(at: color.x)
+            }
+            if let green = splines.green {
+                color.y = green.value(at: color.y)
+            }
+            if let blue = splines.blue {
+                color.z = blue.value(at: color.z)
+            }
+        }
 
         if adjustments.exposure != 0 {
             let amount = adjustments.exposure / 100
@@ -328,6 +348,76 @@ enum TellomiImageAdjustmentsRenderer {
         }
 
         return color
+    }
+
+    /// 一条曲线在 `x`（0…1）处的值，见 `CurveSpline`。
+    static func curveValue(_ points: TellomiImageAdjustments.CurvePoints, at x: Float) -> Float {
+        CurveSpline(points).value(at: x)
+    }
+
+    /// 一条曲线：5 个点之间单调三次插值（Fritsch–Carlson：切线先取两边斜率的平均、两边异号或有一边平就取 0，
+    /// 再按 α² + β² ≤ 9 缩小，曲线不会冲过相邻两点），结果夹在 0…1。安卓 `ImageAdjustmentsColor.CurveSpline` 一样。
+    /// 建查找表时每条曲线只算一次切线（`CurveSplines`）。
+    struct CurveSpline {
+        private var y = [Float](repeating: 0, count: 5)
+        private var tangents = [Float](repeating: 0, count: 5)
+
+        init(_ points: TellomiImageAdjustments.CurvePoints) {
+            y = points.values.map { $0 / 100 }
+            var slopes = [Float](repeating: 0, count: 4)
+            for k in 0..<4 {
+                slopes[k] = (y[k + 1] - y[k]) / Self.step
+            }
+            tangents[0] = slopes[0]
+            tangents[4] = slopes[3]
+            for k in 1..<4 {
+                tangents[k] = slopes[k - 1] * slopes[k] <= 0 ? 0 : (slopes[k - 1] + slopes[k]) / 2
+            }
+            for k in 0..<4 {
+                if slopes[k] == 0 {
+                    tangents[k] = 0
+                    tangents[k + 1] = 0
+                } else {
+                    let alpha = tangents[k] / slopes[k]
+                    let beta = tangents[k + 1] / slopes[k]
+                    let sum = alpha * alpha + beta * beta
+                    if sum > 9 {
+                        let tau = 3 / sum.squareRoot()
+                        tangents[k] = tau * alpha * slopes[k]
+                        tangents[k + 1] = tau * beta * slopes[k]
+                    }
+                }
+            }
+        }
+
+        private static let step: Float = 0.25
+
+        func value(at x: Float) -> Float {
+            let h = Self.step
+            let clampedX = min(max(x, 0), 1)
+            let k = min(Int(clampedX / h), 3)
+            let t = (clampedX - Float(k) * h) / h
+            let t2 = t * t
+            let t3 = t2 * t
+            let value = (2 * t3 - 3 * t2 + 1) * y[k] + (t3 - 2 * t2 + t) * h * tangents[k]
+                + (-2 * t3 + 3 * t2) * y[k + 1] + (t3 - t2) * h * tangents[k + 1]
+            return min(max(value, 0), 1)
+        }
+    }
+
+    /// 四条曲线（在默认值的为 nil，不过）。
+    struct CurveSplines {
+        let all: CurveSpline?
+        let red: CurveSpline?
+        let green: CurveSpline?
+        let blue: CurveSpline?
+
+        init(_ curves: TellomiImageAdjustments.Curves) {
+            all = curves.all.isDefault ? nil : CurveSpline(curves.all)
+            red = curves.red.isDefault ? nil : CurveSpline(curves.red)
+            green = curves.green.isDefault ? nil : CurveSpline(curves.green)
+            blue = curves.blue.isDefault ? nil : CurveSpline(curves.blue)
+        }
     }
 
     /// 往 `tintColor` 的色相偏 `weight`：加上「颜色 − 它自己的亮度」，所以亮度基本不变。

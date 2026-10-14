@@ -15,8 +15,8 @@ import UIKit
 /// - 按住照片看原图，提示条显示「原图」；
 /// - 下面取消 / 完成：取消回到打开时的样子，完成算一步撤销。
 ///
-/// 只列已经能画出来的工具（`availableTools`），后面的子 Issue 做好一项加一项；色调 / 模糊 / 曲线是 Telegram 的单独页签，
-/// 等那几项做了再加页签。数值的写法照 Telegram iOS：值 ÷ 最大值，两位小数，带正负号（+0.35）。
+/// 只列已经能画出来的工具（`availableTools`），后面的子 Issue 做好一项加一项；色调、曲线是单独的页签（E5-6、E5-7），
+/// 模糊做了再加。数值的写法照 Telegram iOS：值 ÷ 最大值，两位小数，带正负号（+0.35）。
 public final class TellomiImageAdjustViewController: OWSViewController {
 
     /// 入口按钮的图标：Signal 的图标里没有调色这一类，用系统的 SF Symbol（Telegram 的图标不能拿）。
@@ -38,9 +38,20 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     /// 照 Telegram iOS：工具列表区高度固定（约四行半），工具多了在里面上下滚，不往上盖住照片。
     private let rowsScrollView = UIScrollView()
     private static let maxRowsHeight: CGFloat = 52 * 4.5
-    /// 页签：工具、色调（照 Telegram iOS 调整页的 Tools / Tint 页签；模糊、曲线做了再加）。
-    private let bottomBar = ImageEditorToolbar(tools: [.tellomiAdjustTools, .tellomiAdjustTint])
+    /// 页签：工具、色调、曲线（照 Telegram iOS 调整页；模糊做了再加）。
+    private let bottomBar = ImageEditorToolbar(tools: [.tellomiAdjustTools, .tellomiAdjustTint, .tellomiAdjustCurves])
     private let tintPanel = TintPanelView()
+    private let curvesPanel = TellomiCurvesPanelView()
+    private let curvesOverlay = TellomiCurvesOverlayView()
+    private var curveChannel: TellomiCurveChannel = .all
+
+    enum Tab {
+        case tools
+        case tint
+        case curves
+    }
+
+    private(set) var currentTab: Tab = .tools
     private let hudLabel = HUDLabel()
     private var rows: [TellomiImageAdjustments.Tool: RowView] = [:]
 
@@ -115,8 +126,13 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             OWSLocalizedString("IMAGE_EDITOR_TELLOMI_ADJUST_TINT", comment: "Image editor, adjustments: the tint tab (colours for shadows and highlights)."),
             for: .tellomiAdjustTint,
         )
-        bottomBar.addAction(UIAction { [weak self] _ in self?.showTintTab(false) }, for: .tellomiAdjustTools)
-        bottomBar.addAction(UIAction { [weak self] _ in self?.showTintTab(true) }, for: .tellomiAdjustTint)
+        bottomBar.setAccessibilityLabel(
+            OWSLocalizedString("IMAGE_EDITOR_TELLOMI_ADJUST_CURVES", comment: "Image editor, adjustments: the curves tab (tone curves for all channels, red, green and blue)."),
+            for: .tellomiAdjustCurves,
+        )
+        bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.tools) }, for: .tellomiAdjustTools)
+        bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.tint) }, for: .tellomiAdjustTint)
+        bottomBar.addAction(UIAction { [weak self] _ in self?.showTab(.curves) }, for: .tellomiAdjustCurves)
 
         tintPanel.translatesAutoresizingMaskIntoConstraints = false
         tintPanel.isHidden = true
@@ -125,6 +141,22 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             self?.tintSelected(shadows: shadows, color: color)
         }
         panelView.addSubview(tintPanel)
+
+        curvesPanel.translatesAutoresizingMaskIntoConstraints = false
+        curvesPanel.isHidden = true
+        curvesPanel.onSelect = { [weak self] channel in
+            self?.selectCurveChannel(channel)
+        }
+        panelView.addSubview(curvesPanel)
+
+        // 曲线层盖在照片看得见的那块上（画布的裁剪框），和照片一起缩放。
+        curvesOverlay.translatesAutoresizingMaskIntoConstraints = false
+        curvesOverlay.isHidden = true
+        curvesOverlay.update(curves: adjustments.curves, channel: curveChannel)
+        curvesOverlay.onChange = { [weak self] channel, index, value in
+            self?.curvePointChanged(channel: channel, index: index, value: value)
+        }
+        view.addSubview(curvesOverlay)
         bottomBar.doneButton.addAction(UIAction { [weak self] _ in self?.finish(done: true) }, for: .primaryActionTriggered)
 
         hudLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -168,6 +200,15 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             tintPanel.centerYAnchor.constraint(equalTo: panelView.centerYAnchor),
             tintPanel.topAnchor.constraint(greaterThanOrEqualTo: panelView.topAnchor, constant: 4),
 
+            curvesPanel.leadingAnchor.constraint(equalTo: panelView.leadingAnchor, constant: 16),
+            curvesPanel.trailingAnchor.constraint(equalTo: panelView.trailingAnchor, constant: -16),
+            curvesPanel.centerYAnchor.constraint(equalTo: panelView.centerYAnchor),
+
+            curvesOverlay.topAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.topAnchor),
+            curvesOverlay.leadingAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.leadingAnchor),
+            curvesOverlay.trailingAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.trailingAnchor),
+            curvesOverlay.bottomAnchor.constraint(equalTo: imageEditorView.gestureReferenceView.bottomAnchor),
+
             imageEditorView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             imageEditorView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             imageEditorView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
@@ -188,10 +229,34 @@ public final class TellomiImageAdjustViewController: OWSViewController {
         showHUD(Self.hudText(tool: tool, value: adjustments[tool]))
     }
 
-    private func showTintTab(_ showsTint: Bool) {
-        bottomBar.selectedToolButton = showsTint ? .tellomiAdjustTint : .tellomiAdjustTools
-        rowsScrollView.isHidden = showsTint
-        tintPanel.isHidden = !showsTint
+    private func showTab(_ tab: Tab) {
+        currentTab = tab
+        switch tab {
+        case .tools:
+            bottomBar.selectedToolButton = .tellomiAdjustTools
+        case .tint:
+            bottomBar.selectedToolButton = .tellomiAdjustTint
+        case .curves:
+            bottomBar.selectedToolButton = .tellomiAdjustCurves
+        }
+        rowsScrollView.isHidden = tab != .tools
+        tintPanel.isHidden = tab != .tint
+        curvesPanel.isHidden = tab != .curves
+        // 曲线页签里照片上的手势都给曲线层（照 TG：这时按住照片不看原图）。
+        curvesOverlay.isHidden = tab != .curves
+    }
+
+    private func selectCurveChannel(_ channel: TellomiCurveChannel) {
+        curveChannel = channel
+        curvesPanel.select(channel)
+        curvesOverlay.update(curves: adjustments.curves, channel: channel)
+    }
+
+    /// 拖曲线的点：和拖滑杆一样只改预览，完成时整段算一步撤销。
+    private func curvePointChanged(channel: TellomiCurveChannel, index: Int, value: Float) {
+        adjustments.curves[keyPath: channel.keyPath][index] = value
+        model.replace(adjustments: adjustments, suppressUndo: true)
+        curvesOverlay.update(curves: adjustments.curves, channel: curveChannel)
     }
 
     /// 点色块：和拖滑杆一样只改预览，完成时整段算一步撤销。
@@ -308,7 +373,19 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     }
 
     func showTintTabForTesting(_ showsTint: Bool) {
-        showTintTab(showsTint)
+        showTab(showsTint ? .tint : .tools)
+    }
+
+    func showTabForTesting(_ tab: Tab) {
+        showTab(tab)
+    }
+
+    var curvesOverlayForTesting: TellomiCurvesOverlayView {
+        curvesOverlay
+    }
+
+    var curvesPanelForTesting: TellomiCurvesPanelView {
+        curvesPanel
     }
 
     var isTintTabShownForTesting: Bool {

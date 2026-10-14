@@ -125,7 +125,49 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         XCTAssertNil(viewController.hudTextForTesting)
     }
 
-    /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），按住看原图，色调页，暗角 / 颗粒 / 锐化和发出的图。
+    /// 曲线页签（E5-7）：照片上盖曲线层、面板换成「全部 / 红 / 绿 / 蓝」；在哪一段拖就改哪个点（点跟着手指，拖过整个高度 = 100），
+    /// 换通道改的是那条；完成算一步撤销，取消回到打开时的样子。
+    func testCurvesTab() throws {
+        let (viewController, model) = try makeViewController()
+        let window = try makeWindow()
+        window.rootViewController = viewController
+        window.isHidden = false
+        defer { window.isHidden = true }
+        window.layoutIfNeeded()
+
+        let overlay = viewController.curvesOverlayForTesting
+        XCTAssertTrue(overlay.isHidden)
+        viewController.showTabForTesting(.curves)
+        XCTAssertFalse(overlay.isHidden)
+        XCTAssertFalse(viewController.curvesPanelForTesting.isHidden)
+        XCTAssertTrue(try XCTUnwrap(viewController.curvesPanelForTesting.buttons[.all]).isSelected)
+        XCTAssertEqual(overlay.frame.size, viewController.canvasViewForTesting.gestureReferenceView.bounds.size, "曲线层和照片一样大")
+
+        XCTAssertEqual(TellomiCurvesOverlayView.segment(at: 0, width: 500), 0)
+        XCTAssertEqual(TellomiCurvesOverlayView.segment(at: 250, width: 500), 2)
+        XCTAssertEqual(TellomiCurvesOverlayView.segment(at: 499, width: 500), 4)
+        XCTAssertEqual(TellomiCurvesOverlayView.segment(at: 600, width: 500), 4)
+
+        overlay.drag(segment: 2, by: 20)
+        XCTAssertEqual(model.adjustments.curves.all.midtones, 70)
+        overlay.drag(segment: 4, by: 30)
+        XCTAssertEqual(model.adjustments.curves.all.whites, 100, "夹在 0…100")
+
+        try XCTUnwrap(viewController.curvesPanelForTesting.buttons[.red]).sendActions(for: .touchUpInside)
+        XCTAssertEqual(overlay.channel, .red)
+        overlay.drag(segment: 0, by: 12)
+        XCTAssertEqual(model.adjustments.curves.red.blacks, 12)
+        XCTAssertEqual(model.adjustments.curves.all.midtones, 70, "别的通道不动")
+        XCTAssertEqual(TellomiCurvesOverlayView.valueText(model.adjustments.curves.red.blacks), "0.12")
+
+        XCTAssertFalse(model.canUndo, "拖的时候不记撤销")
+        viewController.finish(done: true)
+        XCTAssertTrue(model.canUndo)
+        model.undo()
+        XCTAssertTrue(model.adjustments.curves.isDefault, "一步撤销回到打开前")
+    }
+
+    /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），按住看原图，色调页，暗角 / 颗粒 / 锐化和发出的图，曲线页签。
     func testScreenshots() async throws {
         let environment = ProcessInfo.processInfo.environment
         try XCTSkipUnless(environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
@@ -177,6 +219,17 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         try save(window, as: "adjust-detail", in: directory)
         let output = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: model, transform: model.currentTransform()))
         try XCTUnwrap(output.pngData()).write(to: directory.appendingPathComponent("\(Int(window.bounds.size.width))/adjust-detail-output.png"))
+
+        // E5-7：曲线页签，「全部」拉成 S 形，再切到红色抬一点暗部。
+        viewController.showTabForTesting(.curves)
+        let overlay = viewController.curvesOverlayForTesting
+        overlay.drag(segment: 1, by: -10)
+        overlay.drag(segment: 3, by: 10)
+        try XCTUnwrap(viewController.curvesPanelForTesting.buttons[.red]).sendActions(for: .touchUpInside)
+        overlay.drag(segment: 1, by: 12)
+        window.layoutIfNeeded()
+        try await Task.sleep(nanoseconds: 500_000_000)
+        try save(window, as: "adjust-curves", in: directory)
     }
 
     // MARK: - Helpers

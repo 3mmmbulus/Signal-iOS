@@ -10,7 +10,7 @@ import XCTest
 @testable import SignalServiceKit
 @testable import SignalUI
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
 @MainActor
 final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
 
@@ -138,6 +138,78 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         let brightened = Renderer.adjust(SIMD3(repeating: 0.85), adjustments(tintHighlights: 0x8CB4FF))
         XCTAssertGreaterThan(brightened.z, brightened.x, "亮部偏蓝")
         XCTAssertEqual(Renderer.adjust(SIMD3(repeating: 0), adjustments(tintHighlights: 0x8CB4FF)), SIMD3(repeating: 0))
+    }
+
+    /// 曲线：单调三次插值，和安卓 `ImageAdjustmentsColorTest.curvesMatchTheSharedReferenceValues` 同一组参考值
+    /// （默认 / S 形 / 抬黑压白 / 中间平 / 反相 / 不单调）；不会冲过相邻两点。
+    func testCurvesMatchTheSharedReferenceValues() {
+        let cases: [([Float], [(Float, Float)])] = [
+            ([0, 25, 50, 75, 100], [(0.1, 0.1), (0.33, 0.33), (0.5, 0.5), (0.9, 0.9)]),
+            ([0, 15, 50, 85, 100], [(0.1, 0.0504), (0.2, 0.1072), (0.33, 0.2472), (0.6, 0.6496), (0.9, 0.9496)]),
+            ([20, 40, 60, 80, 90], [(0, 0.2), (0.1, 0.28), (0.37, 0.496), (0.5, 0.6), (1, 0.9)]),
+            ([0, 50, 50, 50, 100], [(0.1, 0.248), (0.3, 0.5), (0.6, 0.5), (0.8, 0.536)]),
+            ([100, 75, 50, 25, 0], [(0.1, 0.9), (0.5, 0.5), (0.8, 0.2)]),
+            ([0, 40, 30, 80, 100], [(0.2, 0.3712), (0.3, 0.3896), (0.45, 0.3104), (0.6, 0.4424)]),
+        ]
+        for (levels, samples) in cases {
+            let points = curvePoints(levels)
+            for (x, expected) in samples {
+                XCTAssertEqual(Renderer.curveValue(points, at: x), expected, accuracy: 1e-4, "\(levels) at \(x)")
+            }
+        }
+
+        // 中间平的那段（0.25…0.75 都是 0.5）一点不冲出去。
+        for step in 25...75 {
+            XCTAssertEqual(Renderer.curveValue(curvePoints([0, 50, 50, 50, 100]), at: Float(step) / 100), 0.5, accuracy: 1e-6)
+        }
+    }
+
+    /// 曲线在调色的最前面：「全部」三个通道都过，红 / 绿 / 蓝只动自己那个通道；默认曲线不动颜色。
+    func testCurvesApplyPerChannel() {
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.curves.all = curvePoints([0, 15, 50, 85, 100])
+        assertClose(Renderer.adjust(SIMD3(0.2, 0.33, 0.6), adjustments), SIMD3(0.1072, 0.2472, 0.6496))
+
+        var red = TellomiImageAdjustments.default
+        red.curves.red = curvePoints([20, 40, 60, 80, 90])
+        assertClose(Renderer.adjust(SIMD3(0.5, 0.5, 0.5), red), SIMD3(0.6, 0.5, 0.5))
+
+        var both = red
+        both.curves.all = curvePoints([0, 15, 50, 85, 100])
+        both.curves.blue = curvePoints([100, 75, 50, 25, 0])
+        let expected = SIMD3<Float>(Renderer.curveValue(both.curves.red, at: 0.1072), 0.2472, 1 - 0.6496)
+        assertClose(Renderer.adjust(SIMD3(0.2, 0.33, 0.6), both), expected)
+    }
+
+    /// 查找表里的曲线和直接算的数学差不过 2/255。
+    func testLookupTableMatchesTheMathWithCurves() throws {
+        let size = 32
+        let image = try makeImage(width: size, height: size) { x, y in
+            SIMD3(Float(x) / Float(size - 1), Float(y) / Float(size - 1), Float((x + y) % size) / Float(size - 1))
+        }
+        var adjusted = adjustments(exposure: 10, contrast: 10)
+        adjusted.curves.all = curvePoints([0, 15, 50, 85, 100])
+        adjusted.curves.green = curvePoints([10, 35, 55, 70, 95])
+        let output = try XCTUnwrap(Renderer.apply(adjusted, to: image))
+        var worst: Float = 0
+        for (input, output) in zip(try pixels(of: image), try pixels(of: output)) {
+            worst = max(worst, simd_reduce_max(simd_abs(Renderer.adjust(input, adjusted) - output)))
+        }
+        XCTAssertLessThanOrEqual(worst, 2 / 255, "最大误差 \(worst * 255)/255")
+    }
+
+    private func assertClose(_ actual: SIMD3<Float>, _ expected: SIMD3<Float>, line: UInt = #line) {
+        XCTAssertLessThanOrEqual(simd_reduce_max(simd_abs(actual - expected)), 1e-4, "\(actual) vs \(expected)", line: line)
+    }
+
+    private func curvePoints(_ levels: [Float]) -> TellomiImageAdjustments.CurvePoints {
+        var points = TellomiImageAdjustments.CurvePoints()
+        points.blacks = levels[0]
+        points.shadows = levels[1]
+        points.midtones = levels[2]
+        points.highlights = levels[3]
+        points.whites = levels[4]
+        return points
     }
 
     // MARK: - Image pipeline

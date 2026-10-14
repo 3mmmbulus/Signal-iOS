@@ -5032,6 +5032,21 @@
 /* Image editor, adjustments: name of the contrast tool. */
 "IMAGE_EDITOR_TELLOMI_ADJUST_CONTRAST" = "કોન્ટ્રાસ્ટ";
 
+/* Image editor, adjustments: the curves tab (tone curves for all channels, red, green and blue). */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CURVES" = "વળાંકો";
+
+/* Image editor, adjustments, curves: the curve that changes all three colour channels. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CURVES_ALL" = "બધા";
+
+/* Image editor, adjustments, curves: the blue channel's curve. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CURVES_BLUE" = "વાદળી";
+
+/* Image editor, adjustments, curves: the green channel's curve. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CURVES_GREEN" = "લીલો";
+
+/* Image editor, adjustments, curves: the red channel's curve. */
+"IMAGE_EDITOR_TELLOMI_ADJUST_CURVES_RED" = "લાલ";
+
 /* Image editor, adjustments: name of the tool that automatically enhances the photo. */
 "IMAGE_EDITOR_TELLOMI_ADJUST_ENHANCE" = "સુધારો";
 
