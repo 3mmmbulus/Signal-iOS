@@ -367,8 +367,17 @@
 /* Title for the attachment approval media quality sheet */
 "ATTACHMENT_APPROVAL_MEDIA_QUALITY_TITLE" = "Medienqualität";
 
+/* Accessibility label of the button that mutes a video before sending, which sends it like a GIF. */
+"ATTACHMENT_APPROVAL_TELLOMI_MUTE_VIDEO" = "Mute video";
+
+/* Accessibility label of the button that turns a muted video's sound back on before sending. */
+"ATTACHMENT_APPROVAL_TELLOMI_UNMUTE_VIDEO" = "Turn sound on";
+
 /* Title of the menu that picks the quality level of the one video being previewed before sending. */
 "ATTACHMENT_APPROVAL_TELLOMI_VIDEO_QUALITY_TITLE" = "Video quality";
+
+/* Toast shown when a video is muted before sending: it will be sent like a GIF, playing on a loop without sound. */
+"ATTACHMENT_APPROVAL_TELLOMI_VIDEO_SENT_AS_GIF" = "Sound off. The video will be sent like a GIF and play on a loop.";
 
 /* Notification body shown when media sync to a linked device is complete. */
 "ATTACHMENT_BACKFILL_FINISHED_NOTIFICATION" = "Die Synchronisierung mit Tellomi auf deinem gekoppelten Gerät ist abgeschlossen";

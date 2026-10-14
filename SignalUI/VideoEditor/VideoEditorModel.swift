@@ -49,6 +49,20 @@ class VideoEditorModel: NSObject {
         }
     }
 
+    /// Tellomi（tellomi/tellomi#1518 V-6，owner 2026-10-14 照 TG 两端）：静音 = 当 GIF 发——去音轨、压到 540p 框（TG iOS 848、安卓 854，
+    /// 系统预设里最近的是 960×540）、自动播放循环；静音时不能选档，选过的档作废。
+    var tellomiIsMuted = false {
+        didSet {
+            guard tellomiIsMuted != oldValue else { return }
+            if tellomiIsMuted {
+                tellomiLevel = nil
+            }
+            fireModelDidChange()
+        }
+    }
+
+    static let tellomiMutedExportPreset = AVAssetExportPreset960x540
+
     /// 原件能选的档；不到两档就不给选。
     var tellomiAvailableLevels: [TellomiVideoLevel] {
         guard let tellomiSource else { return [] }
@@ -233,7 +247,7 @@ class VideoEditorModel: NSObject {
 
     // MARK: - Rendering
 
-    var needsRender: Bool { isTrimmed || tellomiExportLevel != nil }
+    var needsRender: Bool { isTrimmed || tellomiExportLevel != nil || tellomiIsMuted }
 
     /// 发送时要按哪一档从原件重新导出：选了比上游默认高的档、并且有原件。选回 360p 就照上游（用选图时压好的那份）。
     private var tellomiExportLevel: TellomiVideoLevel? {
@@ -245,6 +259,9 @@ class VideoEditorModel: NSObject {
     func render() async throws -> URL {
         owsPrecondition(self.needsRender)
 
+        if tellomiIsMuted {
+            return try await tellomiRenderMuted()
+        }
         if let tellomiExportLevel, let tellomiSource {
             return try await tellomiRender(level: tellomiExportLevel, source: tellomiSource)
         }
@@ -308,6 +325,50 @@ class VideoEditorModel: NSObject {
 
         let formattedDuration = OWSOperation.formattedNs((MonotonicDate() - startTime).nanoseconds)
         Logger.info("exported video at \(level.label) in \(formattedDuration)s")
+
+        switch session.status {
+        case .completed:
+            return exportUrl
+        case .cancelled:
+            throw CancellationError()
+        default:
+            throw session.error ?? OWSAssertionError("status \(session.status)")
+        }
+    }
+
+    /// 静音当 GIF 发：只取画面轨（剪了就只取剪的那段），有原件就从原件取，压到 540p 框。
+    @MainActor
+    private func tellomiRenderMuted() async throws -> URL {
+        let startTime = MonotonicDate()
+        let asset: AVAsset
+        if let tellomiSource {
+            asset = try await tellomiResolvedSourceAsset(tellomiSource)
+        } else {
+            asset = AVURLAsset(url: URL(fileURLWithPath: srcVideoPath))
+        }
+        guard let sourceTrack = try await asset.loadTracks(withMediaType: .video).first else {
+            throw OWSAssertionError("Missing video track.")
+        }
+        let duration = try await asset.load(.duration)
+        let range = isTrimmed ? trimmedTimeRange : CMTimeRange(start: .zero, duration: duration)
+
+        let composition = AVMutableComposition()
+        guard let track = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+            throw OWSAssertionError("couldn't add a video track")
+        }
+        try track.insertTimeRange(range, of: sourceTrack, at: .zero)
+        track.preferredTransform = try await sourceTrack.load(.preferredTransform)
+
+        guard let session = AVAssetExportSession(asset: composition, presetName: Self.tellomiMutedExportPreset) else {
+            throw OWSAssertionError("couldn't create export session")
+        }
+        session.shouldOptimizeForNetworkUse = true
+
+        let exportUrl = OWSFileSystem.temporaryFileUrl(fileExtension: "mp4", isAvailableWhileDeviceLocked: false)
+        try await session.exportAsync(to: exportUrl, as: .mp4)
+
+        let formattedDuration = OWSOperation.formattedNs((MonotonicDate() - startTime).nanoseconds)
+        Logger.info("exported muted video in \(formattedDuration)s")
 
         switch session.status {
         case .completed:

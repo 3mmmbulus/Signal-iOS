@@ -381,6 +381,10 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
             UIAction { [weak self] _ in self?.didTapSave() },
             for: .primaryActionTriggered,
         )
+        bottomToolView.buttonMuteVideo.addAction(
+            UIAction { [weak self] _ in self?.tellomiDidTapMuteVideo() },
+            for: .primaryActionTriggered,
+        )
         bottomToolView.buttonAddMedia.addAction(
             UIAction { [weak self] _ in self?.didTapAddMedia() },
             for: .primaryActionTriggered,
@@ -523,8 +527,10 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
             isMediaHighQualityEnabled: tellomiCurrentVideoLevelModel.map { ($0.tellomiLevel ?? TellomiVideoLevel.upstreamDefault).isHighDefinition } ?? (outputImageQuality == .high),
             isViewOnceOn: isViewOnceEnabled,
             canToggleViewOnce: options.contains(.canToggleViewOnce),
-            canChangeMediaQuality: options.contains(.canChangeQualityLevel),
+            canChangeMediaQuality: options.contains(.canChangeQualityLevel) && currentPageViewController.attachmentApprovalItem.videoEditorModel?.tellomiIsMuted != true,
             canSaveMedia: currentPageViewController.canSaveMedia,
+            canMuteVideo: !isViewOnceEnabled,
+            isVideoMuted: currentPageViewController.attachmentApprovalItem.videoEditorModel?.tellomiIsMuted == true,
             proceedButtonIcon: isScreenNotFinal ? .next : .send,
         )
         bottomToolView.update(
@@ -781,7 +787,12 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
         }
         dataSource.sourceFilename = filename
 
-        return try PreviewableAttachment.videoAttachment(dataSource: dataSource, dataUTI: dataUTI, attachmentLimits: attachmentLimits)
+        let attachment = try PreviewableAttachment.videoAttachment(dataSource: dataSource, dataUTI: dataUTI, attachmentLimits: attachmentLimits)
+        // Tellomi（tellomi/tellomi#1518 V-6）：静音的视频当 GIF 发（`AttachmentPointer` 的 GIF 标记：自动播放、循环、无声）。
+        if videoEditorModel.tellomiIsMuted {
+            attachment.rawValue.isLoopingVideo = true
+        }
+        return attachment
     }
 
     func attachmentApprovalItem(before currentItem: AttachmentApprovalItem) -> AttachmentApprovalItem? {
@@ -1115,10 +1126,24 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
 
     // MARK: - Media Quality Selection UI
 
+    /// Tellomi（tellomi/tellomi#1518 V-6，owner 2026-10-14 照 TG 两端）：静音 = 当 GIF 发；打开时提示一句（同 TG），画质键这时不给。
+    func tellomiDidTapMuteVideo() {
+        guard let model = currentPageViewController?.attachmentApprovalItem.videoEditorModel else { return }
+        model.tellomiIsMuted.toggle()
+        if model.tellomiIsMuted {
+            presentToast(text: OWSLocalizedString(
+                "ATTACHMENT_APPROVAL_TELLOMI_VIDEO_SENT_AS_GIF",
+                comment: "Toast shown when a video is muted before sending: it will be sent like a GIF, playing on a loop without sound.",
+            ))
+        }
+        updateBottomToolView(animated: true)
+    }
+
     /// Tellomi（tellomi/tellomi#1518 V-7 ②）：当前这一页是能选画质档的视频时，它的编辑模型。
     private var tellomiCurrentVideoLevelModel: VideoEditorModel? {
         guard
             let model = currentPageViewController?.attachmentApprovalItem.videoEditorModel,
+            !model.tellomiIsMuted,
             model.tellomiAvailableLevels.count >= 2
         else {
             return nil

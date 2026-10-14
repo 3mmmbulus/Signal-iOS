@@ -17,6 +17,9 @@ class AttachmentApprovalToolbar: UIView, MediaCaptionToolbarDelegate {
         var canToggleViewOnce = true
         var canChangeMediaQuality = true
         var canSaveMedia = false
+        /// Tellomi（tellomi/tellomi#1518 V-6）：当前这一页是视频时给静音键；静音 = 当 GIF 发。
+        var canMuteVideo = false
+        var isVideoMuted = false
         var proceedButtonIcon: ProceedButtonIcon = .send
 
         enum ProceedButtonIcon: String {
@@ -327,6 +330,7 @@ class AttachmentApprovalToolbar: UIView, MediaCaptionToolbarDelegate {
             enabled: configuration.isMediaHighQualityEnabled,
             using: animator,
         )
+        mediaToolbar.setIsVideoMuted(configuration.isVideoMuted)
         let availableButtons: MediaToolbar.AvailableButtons = {
             guard let currentAttachmentItem else {
                 return []
@@ -340,6 +344,9 @@ class AttachmentApprovalToolbar: UIView, MediaCaptionToolbarDelegate {
             }
             if configuration.isAddMoreVisible {
                 buttons.insert(.addMedia)
+            }
+            if configuration.canMuteVideo, currentAttachmentItem.type == .video {
+                buttons.insert(.muteVideo)
             }
             switch currentAttachmentItem.type {
             case .image:
@@ -541,6 +548,11 @@ class AttachmentApprovalToolbar: UIView, MediaCaptionToolbarDelegate {
         mediaToolbar.saveMediaButton
     }
 
+    /// Tellomi（tellomi/tellomi#1518 V-6）。
+    var buttonMuteVideo: UIButton {
+        mediaToolbar.muteVideoButton
+    }
+
     var buttonAddMedia: UIButton {
         let mediaQualityButton = mediaToolbar.addMediaButton
         mediaQualityButton.accessibilityLabel = OWSLocalizedString(
@@ -561,6 +573,7 @@ private class MediaToolbar: UIView {
         static let mediaQuality = AvailableButtons(rawValue: 1 << 2)
         static let save = AvailableButtons(rawValue: 1 << 3)
         static let addMedia = AvailableButtons(rawValue: 1 << 4)
+        static let muteVideo = AvailableButtons(rawValue: 1 << 5)
 
         static let all: AvailableButtons = [.pen, .crop, .mediaQuality, .save, .addMedia]
     }
@@ -571,6 +584,7 @@ private class MediaToolbar: UIView {
         mediaQualityButton.setIsHidden(!availableButtons.contains(.mediaQuality), using: animator)
         saveMediaButton.setIsHidden(!availableButtons.contains(.save), using: animator)
         addMediaButton.setIsHidden(!availableButtons.contains(.addMedia), using: animator)
+        muteVideoButton.setIsHidden(!availableButtons.contains(.muteVideo), using: animator)
     }
 
     override init(frame: CGRect) {
@@ -582,6 +596,7 @@ private class MediaToolbar: UIView {
             cropToolButton,
             penToolButton,
             mediaQualityButton,
+            muteVideoButton,
             saveMediaButton,
             addMediaButton,
         ])
@@ -665,6 +680,23 @@ private class MediaToolbar: UIView {
     lazy var addMediaButton = UIButton(configuration: Self.buttonConfiguration(
         image: UIImage(imageLiteralResourceName: "album-plus"),
     ))
+
+    /// Tellomi（tellomi/tellomi#1518 V-6，照 TG 两端查看器底栏的静音键）。
+    lazy var muteVideoButton = UIButton(configuration: Self.buttonConfiguration(
+        image: Self.muteVideoImage(isMuted: false),
+    ))
+
+    private static func muteVideoImage(isMuted: Bool) -> UIImage {
+        let symbol = UIImage.SymbolConfiguration(pointSize: 17, weight: .medium)
+        return UIImage(systemName: isMuted ? "speaker.slash" : "speaker.wave.2", withConfiguration: symbol) ?? UIImage()
+    }
+
+    fileprivate func setIsVideoMuted(_ isMuted: Bool) {
+        muteVideoButton.configuration?.image = Self.muteVideoImage(isMuted: isMuted)
+        muteVideoButton.accessibilityLabel = isMuted
+            ? OWSLocalizedString("ATTACHMENT_APPROVAL_TELLOMI_UNMUTE_VIDEO", comment: "Accessibility label of the button that turns a muted video's sound back on before sending.")
+            : OWSLocalizedString("ATTACHMENT_APPROVAL_TELLOMI_MUTE_VIDEO", comment: "Accessibility label of the button that mutes a video before sending, which sends it like a GIF.")
+    }
 
     private static let iconMediaQualityHigh = UIImage(imageLiteralResourceName: "hd")
     private static let iconMediaQualityStandard = UIImage(imageLiteralResourceName: "hd-slash")

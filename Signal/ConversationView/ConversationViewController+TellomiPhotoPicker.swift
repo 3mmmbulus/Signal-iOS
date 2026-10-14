@@ -261,6 +261,29 @@ final class TellomiPickerCameraRoute: SendMediaNavDelegate {
     }
 }
 
+/// Tellomi（tellomi/tellomi#1518 V-6，owner 2026-10-14 照 Telegram 两端）：静音的视频当 GIF 发，单独成一条（照 TG 安卓 `SendMessagesHelper`
+/// 静音那一项不进相册组；Signal Desktop 也只在整条消息只有一个附件时按 GIF 画），其余的保持顺序成一组在前。
+enum TellomiMutedVideoSending {
+    static func isMutedGif(_ attachment: PreviewableAttachment) -> Bool {
+        attachment.isVideo && attachment.rawValue.isLoopingVideo
+    }
+
+    /// 不用拆（一次性查看、只有一项、没有静音视频）时是 nil；`bodyIndex` 是带说明的那一组。
+    static func messageGroups(_ approved: ApprovedAttachments) -> (groups: [ApprovedAttachments], bodyIndex: Int)? {
+        guard !approved.isViewOnce, approved.attachments.count > 1 else { return nil }
+        let muted = approved.attachments.filter(isMutedGif)
+        guard !muted.isEmpty else { return nil }
+        let rest = approved.attachments.filter { !isMutedGif($0) }
+
+        var groups = [ApprovedAttachments]()
+        if !rest.isEmpty {
+            groups.append(ApprovedAttachments(nonViewOnceAttachments: rest, imageQuality: approved.imageQuality))
+        }
+        groups += muted.map { ApprovedAttachments(nonViewOnceAttachments: [$0], imageQuality: approved.imageQuality) }
+        return (groups, rest.isEmpty ? groups.count - 1 : 0)
+    }
+}
+
 /// Tellomi（#1261 P-5「单独发送」）：一张一条，说明（连同 @ 与样式）挂最后一条；上一条没发出去（被拦下 / 取消）就不再发后面的。
 /// 引用只挂第一条：会话页每发出一条就清掉引用草稿（上游 `messageWasSent`）。
 /// 时间戳不重复、落库顺序与勾的顺序一致：上游 `MessageTimestampGenerator` 连发时逐个 +1，`ThreadUtil.enqueueSendQueue` 串行。

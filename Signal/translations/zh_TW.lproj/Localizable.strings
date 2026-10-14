@@ -408,8 +408,17 @@
 /* Title for the attachment approval media quality sheet */
 "ATTACHMENT_APPROVAL_MEDIA_QUALITY_TITLE" = "媒體的品質";
 
+/* Accessibility label of the button that mutes a video before sending, which sends it like a GIF. */
+"ATTACHMENT_APPROVAL_TELLOMI_MUTE_VIDEO" = "靜音";
+
+/* Accessibility label of the button that turns a muted video's sound back on before sending. */
+"ATTACHMENT_APPROVAL_TELLOMI_UNMUTE_VIDEO" = "開啟聲音";
+
 /* Title of the menu that picks the quality level of the one video being previewed before sending. */
 "ATTACHMENT_APPROVAL_TELLOMI_VIDEO_QUALITY_TITLE" = "影片畫質";
+
+/* Toast shown when a video is muted before sending: it will be sent like a GIF, playing on a loop without sound. */
+"ATTACHMENT_APPROVAL_TELLOMI_VIDEO_SENT_AS_GIF" = "已關閉聲音，影片會像 GIF 一樣循環播放。";
 
 /* Notification body shown when media sync to a linked device is complete. */
 "ATTACHMENT_BACKFILL_FINISHED_NOTIFICATION" = "已與已連結裝置上的 Tellomi 完成同步。";

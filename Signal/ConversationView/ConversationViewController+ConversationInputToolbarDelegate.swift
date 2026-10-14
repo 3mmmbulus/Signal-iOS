@@ -959,6 +959,24 @@ extension ConversationViewController: SendMediaNavDelegate {
         clearsDraft: Bool = true,
         captionAboveMedia: Bool = false,
     ) async -> Bool {
+        // Tellomi（tellomi/tellomi#1518 V-6，owner 2026-10-14 照 TG）：静音当 GIF 发的视频单独成一条，其余照常成组；
+        // 说明跟着其余那组（全是静音视频时跟着最后一条）。上一条没发出去就不再发后面的。
+        if let split = TellomiMutedVideoSending.messageGroups(approvedAttachments) {
+            for (index, group) in split.groups.enumerated() {
+                let hasBody = index == split.bodyIndex
+                let sent = await sendAttachments(
+                    group,
+                    messageBody: hasBody ? messageBody : nil,
+                    from: viewController,
+                    attachmentLimits: attachmentLimits,
+                    clearsDraft: clearsDraft,
+                    captionAboveMedia: hasBody && captionAboveMedia,
+                )
+                guard sent else { return false }
+            }
+            return true
+        }
+
         let didSend: Bool
         do {
             didSend = try await tryToSendAttachments(
