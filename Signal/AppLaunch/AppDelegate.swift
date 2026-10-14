@@ -1452,6 +1452,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             DispatchQueue.main.async {
                 SSKEnvironment.shared.contactManagerImplRef.fetchSystemContactsOnceIfAlreadyAuthorized()
 
+                // Tellomi（tellomi/tellomi#1519 M-4）：补发到点的定时消息、挂前台定时器（同安卓启动时 `scheduleIfNecessary`）。
+                TellomiScheduledMessageSender.shared.applicationDidBecomeActive()
+
                 if !UIApplication.shared.isRegisteredForRemoteNotifications {
                     Logger.info("Retrying to register for remote notifications since user hasn't registered yet.")
                     // Push tokens don't normally change while the app is launched, so checking once during launch is

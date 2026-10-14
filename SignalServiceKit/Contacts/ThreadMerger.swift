@@ -56,6 +56,8 @@ final class ThreadMerger {
         mergeMutedUntil(threadPair, tx: tx)
         mergePlaybackRate(threadPair, tx: tx)
         mergeThreadReplyInfo(threadPair, tx: tx)
+        // Tellomi（tellomi/tellomi#1519 M-4）：还没发的定时消息跟着去合并后的会话。
+        TellomiScheduledMessageStore.moveAll(fromThreadUniqueId: thread.uniqueId, toThreadUniqueId: targetThread.uniqueId, tx: tx)
         mergeChatColors(threadPair, tx: tx)
         mergeWallpaper(threadPair, tx: tx)
         mergeCallRecords(threadPair, tx: tx)

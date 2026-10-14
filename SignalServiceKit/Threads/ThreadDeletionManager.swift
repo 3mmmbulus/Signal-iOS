@@ -176,6 +176,9 @@ final class ThreadDeletionManagerImpl: ThreadDeletionManager {
 
         pinnedThreadManager.unpinThread(thread, updateStorageService: updateStorageService, tx: tx)
 
+        // Tellomi（tellomi/tellomi#1519 M-4）：会话里还没发的定时消息一起删（安卓的定时消息就在会话的消息表里，跟着删）。
+        TellomiScheduledMessageStore.removeAll(threadUniqueId: thread.uniqueId, tx: tx)
+
         if shouldHardDeleteThread(thread, localIdentifiers: localIdentifiers) {
             threadRemover.remove(thread, tx: tx)
         } else {
