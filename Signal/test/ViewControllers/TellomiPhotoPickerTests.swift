@@ -228,7 +228,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
     // MARK: - P-5「···」
 
-    /// 已选里有照片才有「以高清质量发送」（默认已是高就换成「以标准质量发送」）；已选 ≥ 2 才有「单独发送」；只有视频时没有画质项。
+    /// 已选全是静态图才有「以高清质量发送」（默认已是高就换成「以标准质量发送」；V-7 / O4）；已选 ≥ 2 才有「单独发送」；只有视频时没有画质项。
     @MainActor
     func testMoreMenuItems() async throws {
         let hosted = host()
@@ -257,6 +257,17 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         videos.picker.tapCheckForTesting(itemIndex: 7)
         XCTAssertEqual(videos.picker.moreMenuItemsForTesting, [.sendSeparately])
         XCTAssertTrue(videos.picker.isMoreButtonShownForTesting)
+
+        // V-7 / O4：照片和视频一起选时没有画质项（全是静态图才有）；动图也不算。
+        let mixed = host()
+        defer { mixed.tearDown() }
+        mixed.picker.tapCheckForTesting(itemIndex: 0)
+        mixed.picker.tapCheckForTesting(itemIndex: 1)
+        XCTAssertEqual(mixed.picker.moreMenuItemsForTesting, [.sendSeparately])
+        let animated = host()
+        defer { animated.tearDown() }
+        animated.picker.tapCheckForTesting(itemIndex: 5)
+        XCTAssertEqual(animated.picker.moreMenuItemsForTesting, [])
 
         let noSeparate = host(canSendSeparately: false)
         defer { noSeparate.tearDown() }

@@ -1069,14 +1069,16 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     // MARK: - More menu (P-5)
 
-    /// 按这个顺序：「以文件发送」（#1263，会话里、有选中）；已选里有照片时「以高清质量发送」（默认已是高时换成「以标准质量发送」）；
+    /// 按这个顺序：「以文件发送」（#1263，会话里、有选中）；已选全是静态图时「以高清质量发送」（默认已是高时换成「以标准质量发送」）；
     /// 已选 ≥ 2 且是单个会话时「单独发送」。网格里没有一次性查看（那在预览页），遮罩那一刀再加「开了遮罩就没有以文件发送」。
     private func moreMenuItems() -> [MoreMenuItem] {
         var items = [MoreMenuItem]()
         if canSendAsFile, !selectedIds.isEmpty {
             items.append(.sendAsFile)
         }
-        if selectedItems.values.contains(where: { !$0.isVideo }) {
+        // V-7 / O4（tellomi/tellomi#1518，取 Telegram 安卓 `ChatAttachAlertPhotoLayout` 的规则：已选数 = `getSelectedPhotosCount()`）：
+        // 选的全是静态图才有高清项，里面有视频或动图就没有；裁剪、画过的照片照样算。
+        if !selectedItems.isEmpty, selectedItems.values.allSatisfy({ !$0.isVideo && !$0.isAnimatedImage }) {
             items.append(defaultImageQuality == .high ? .sendStandardQuality : .sendHighQuality)
         }
         if selectedIds.count >= 2, canSendSeparately {
