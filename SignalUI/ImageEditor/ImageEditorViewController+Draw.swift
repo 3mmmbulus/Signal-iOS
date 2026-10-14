@@ -19,6 +19,7 @@ extension ImageEditorViewController {
         ])
 
         view.addGestureRecognizer(drawToolGestureRecognizer)
+        view.addGestureRecognizer(fillGestureRecognizer)
 
         drawToolUIInitialized = true
     }

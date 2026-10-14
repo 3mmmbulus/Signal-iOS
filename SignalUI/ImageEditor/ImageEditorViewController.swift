@@ -106,6 +106,9 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
         return button
     }()
 
+    /// Tellomi（tellomi/tellomi#1522 E-2）：画笔 / 打码时长按画布填满（`ImageEditorViewController+Fill.swift`）。
+    lazy var fillGestureRecognizer: UILongPressGestureRecognizer = makeFillGestureRecognizer()
+
     lazy var drawToolGestureRecognizer: ImageEditorPanGestureRecognizer = {
         let gestureRecognizer = ImageEditorPanGestureRecognizer(target: self, action: #selector(handleDrawToolGesture(_:)))
         gestureRecognizer.maximumNumberOfTouches = 1
@@ -511,6 +514,7 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
         updateDrawToolUIVisibility()
         updateBlurToolUIVisibility()
         updateTextUIVisibility()
+        fillGestureRecognizer.isEnabled = mode == .draw || mode == .blur
     }
 
     private func updateTopBar() {

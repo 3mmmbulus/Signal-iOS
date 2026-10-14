@@ -832,6 +832,27 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         shapeLayer.strokeColor = item.color?.cgColor
         shapeLayer.frame = CGRect(origin: .zero, size: viewSize)
 
+        // Tellomi（tellomi/tellomi#1522 E-2）：长按填满——整块画布涂满（笔、荧光笔），或作橡皮 / 模糊的遮罩盖满整块画布。
+        if item.isFill {
+            shapeLayer.path = UIBezierPath(rect: shapeLayer.bounds).cgPath
+            shapeLayer.lineWidth = 0
+            shapeLayer.strokeColor = nil
+            switch item.strokeType {
+            case .eraser:
+                shapeLayer.fillColor = UIColor.black.cgColor
+                return eraserLayerForItem(item: item, model: model, transform: transform, viewSize: viewSize, mask: shapeLayer)
+            case .blur:
+                guard let blurredImageLayer = optionalBlurredImageLayer else { return nil }
+                shapeLayer.fillColor = UIColor.black.cgColor
+                blurredImageLayer.mask = shapeLayer
+                return blurredImageLayer
+            case .pen, .highlighter, .arrow, .neon:
+                shapeLayer.fillColor = item.color?.cgColor
+                shapeLayer.zPosition = zPositionForItem(item: item, model: model, zPositionBase: brushLayerZ)
+                return shapeLayer
+            }
+        }
+
         // Blur region origins are specified in "image unit" coordinates,
         // but need to be rendered in "canvas" coordinates. The imageFrame
         // is the bounds of the image specified in "canvas" coordinates,

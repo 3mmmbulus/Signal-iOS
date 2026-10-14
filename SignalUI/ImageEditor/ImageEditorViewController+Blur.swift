@@ -26,6 +26,7 @@ extension ImageEditorViewController {
         ])
 
         view.addGestureRecognizer(blurToolGestureRecognizer)
+        view.addGestureRecognizer(fillGestureRecognizer)
 
         blurToolUIInitialized = true
     }

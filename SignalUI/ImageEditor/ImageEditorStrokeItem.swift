@@ -42,6 +42,10 @@ class ImageEditorStrokeItem: ImageEditorItem {
     /// Tellomi（tellomi/tellomi#1522 E-2）：手指已经抬起。箭头这时才长出箭头。
     let isFinished: Bool
 
+    /// Tellomi（tellomi/tellomi#1522 E-2）：长按画布填满（照两端 TG：iOS `FillTool`、安卓 `Input.fill`）：不是一条线，是整块画布。
+    /// 笔、荧光笔是涂满颜色，橡皮是擦掉它之前画的所有笔画，模糊是整张打码。`unitSamples` 只记按下去的那一点。
+    let isFill: Bool
+
     func strokeWidth(forDstSize dstSize: CGSize) -> CGFloat {
         ImageEditorStrokeItem.strokeWidth(forUnitStrokeWidth: unitStrokeWidth, dstSize: dstSize)
     }
@@ -52,12 +56,14 @@ class ImageEditorStrokeItem: ImageEditorItem {
         unitSamples: [StrokeSample],
         unitStrokeWidth: CGFloat,
         isFinished: Bool = true,
+        isFill: Bool = false,
     ) {
         self.color = color
         self.strokeType = strokeType
         self.unitSamples = unitSamples
         self.unitStrokeWidth = unitStrokeWidth
         self.isFinished = isFinished
+        self.isFill = isFill
 
         super.init(itemType: .stroke)
     }
@@ -69,12 +75,14 @@ class ImageEditorStrokeItem: ImageEditorItem {
         unitSamples: [StrokeSample],
         unitStrokeWidth: CGFloat,
         isFinished: Bool = true,
+        isFill: Bool = false,
     ) {
         self.color = color
         self.strokeType = strokeType
         self.unitSamples = unitSamples
         self.unitStrokeWidth = unitStrokeWidth
         self.isFinished = isFinished
+        self.isFill = isFill
 
         super.init(itemId: itemId, itemType: .stroke)
     }

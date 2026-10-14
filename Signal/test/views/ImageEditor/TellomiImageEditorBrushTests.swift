@@ -173,6 +173,64 @@ final class TellomiImageEditorBrushTests: SignalBaseTest {
         XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, penColor)
     }
 
+    // MARK: - Long-press fill
+
+    /// 长按填满（照两端 TG）：笔涂满整张（发出去的四角都是笔的颜色），一步撤销；荧光笔半透明。
+    @MainActor
+    func testFillCoversTheWholeCanvasAndIsOneUndoStep() throws {
+        let model = try Self.model(color: .blue)
+        let editor = ImageEditorViewController(model: model, stickerSheetDelegate: nil)
+        let window = try Self.window(showing: editor)
+        defer { window.isHidden = true }
+        editor.mode = .draw
+        XCTAssertTrue(editor.fillGestureRecognizer.isEnabled)
+        let red = ColorPickerBarColor(color: .red, palettePhase: 0)
+        editor.drawToolbar.colorPickerBar.color = red
+        editor.colorPickerBarValueChanged(color: red)
+
+        let fill = editor.fill(atLocationInView: .zero)
+        XCTAssertTrue(fill.isFill)
+        XCTAssertEqual(fill.strokeType, .pen)
+        let output = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: model, transform: model.currentTransform()))
+        let pixels = try XCTUnwrap(TellomiEyedropperPixels(image: output))
+        for unit in [CGPoint(x: 0.02, y: 0.02), CGPoint(x: 0.98, y: 0.98), CGPoint(x: 0.5, y: 0.5)] {
+            Self.assertColor(pixels.color(atUnit: unit), .red, "filled at \(unit)")
+        }
+        XCTAssertTrue(model.canUndo)
+        model.undo()
+        XCTAssertFalse(model.items.contains { ($0 as? ImageEditorStrokeItem)?.isFill == true })
+
+        editor.drawToolbar.select(strokeType: .neon)
+        XCTAssertEqual(editor.fill(atLocationInView: .zero).strokeType, .pen, "neon fills like the pen (Telegram Android)")
+        editor.drawToolbar.select(strokeType: .highlighter)
+        let highlight = editor.fill(atLocationInView: .zero)
+        XCTAssertEqual(highlight.strokeType, .highlighter)
+        XCTAssertEqual(highlight.color?.cgColor.alpha ?? 1, ImageEditorViewController.highligherStrokeOpacity, accuracy: 0.01)
+    }
+
+    /// 橡皮长按：擦掉之前画的所有笔画，照片露出来；之后画的不受影响。打码模式长按是整张打码。
+    @MainActor
+    func testEraserFillClearsEarlierStrokesAndBlurFillBlursEverything() throws {
+        let model = try Self.model(color: .blue)
+        model.append(item: Self.stroke(.pen, color: .red, from: CGPoint(x: 0.1, y: 0.5), to: CGPoint(x: 0.9, y: 0.5)))
+        let editor = ImageEditorViewController(model: model, stickerSheetDelegate: nil)
+        let window = try Self.window(showing: editor)
+        defer { window.isHidden = true }
+        editor.mode = .draw
+        editor.drawToolbar.select(strokeType: .eraser)
+        XCTAssertEqual(editor.fill(atLocationInView: .zero).strokeType, .eraser)
+        model.append(item: Self.stroke(.pen, color: .yellow, from: CGPoint(x: 0.1, y: 0.25), to: CGPoint(x: 0.9, y: 0.25)))
+
+        let output = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: model, transform: model.currentTransform()))
+        let pixels = try XCTUnwrap(TellomiEyedropperPixels(image: output))
+        Self.assertColor(pixels.color(atUnit: CGPoint(x: 0.3, y: 0.5)), .blue, "the earlier stroke is gone")
+        Self.assertColor(pixels.color(atUnit: CGPoint(x: 0.5, y: 0.25)), .yellow, "the later stroke stays")
+
+        editor.mode = .blur
+        XCTAssertTrue(editor.fillGestureRecognizer.isEnabled)
+        XCTAssertEqual(editor.fill(atLocationInView: .zero).strokeType, .blur)
+    }
+
     // MARK: - Screenshots
 
     /// 截图（TELLOMI_SHOTS=1）：发出去的图——笔、箭头、霓虹，一道橡皮竖着擦过；模糊一道在橡皮之前（被擦开）、一道在之后（留着）。
@@ -207,6 +265,18 @@ final class TellomiImageEditorBrushTests: SignalBaseTest {
     }
 
     // MARK: - Helpers
+
+    /// 窗口挂在测试宿主的场景上（应用用 UIScene，`UIWindow(frame:)` 不排版），画布才有大小。
+    @MainActor
+    private static func window(showing viewController: UIViewController) throws -> UIWindow {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        window.rootViewController = viewController
+        window.isHidden = false
+        window.layoutIfNeeded()
+        return window
+    }
 
     @MainActor
     private static func model(color: UIColor) throws -> ImageEditorModel {

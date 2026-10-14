@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B4BBB4BAE9CEFE0A8E83B70D /* ImageEditorViewController+Fill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4815F4DE7175BA07445F27 /* ImageEditorViewController+Fill.swift */; };
 		DE61BB8F95628C152382BE2A /* TellomiImageAdjustBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */; };
 		CFAA904E14BBEC8464B0F491 /* TellomiImageAdjustCurves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */; };
 		3892E5CA45F76A4E5CC2DCEF /* TellomiImageAdjustments.metal in Sources */ = {isa = PBXBuildFile; fileRef = B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */; };
@@ -4462,6 +4463,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2C4815F4DE7175BA07445F27 /* ImageEditorViewController+Fill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageEditorViewController+Fill.swift"; sourceTree = "<group>"; };
 		25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustBlur.swift; sourceTree = "<group>"; };
 		8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustCurves.swift; sourceTree = "<group>"; };
 		B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = TellomiImageAdjustments.metal; sourceTree = "<group>"; };
@@ -9956,6 +9958,7 @@
 				34A95562271B510400B05242 /* ImageEditorView.swift */,
 				7666D54528331E4800A3BDB9 /* ImageEditorViewController+Blur.swift */,
 				7666D54328331E1100A3BDB9 /* ImageEditorViewController+Draw.swift */,
+				2C4815F4DE7175BA07445F27 /* ImageEditorViewController+Fill.swift */,
 				76995F14283868BD009DD4F4 /* ImageEditorViewController+StrokeWidthSlider.swift */,
 				7666D54728331E6900A3BDB9 /* ImageEditorViewController+Text.swift */,
 				7628DDC4280A01B8009AA53D /* ImageEditorViewController.swift */,
@@ -18871,6 +18874,7 @@
 				3402AA6C271D9E180084CBAE /* ImageEditorView.swift in Sources */,
 				7666D54628331E4800A3BDB9 /* ImageEditorViewController+Blur.swift in Sources */,
 				7666D54428331E1100A3BDB9 /* ImageEditorViewController+Draw.swift in Sources */,
+				B4BBB4BAE9CEFE0A8E83B70D /* ImageEditorViewController+Fill.swift in Sources */,
 				76995F15283868BD009DD4F4 /* ImageEditorViewController+StrokeWidthSlider.swift in Sources */,
 				7666D54828331E6900A3BDB9 /* ImageEditorViewController+Text.swift in Sources */,
 				7628DDC5280A01B8009AA53D /* ImageEditorViewController.swift in Sources */,
