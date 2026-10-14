@@ -11391,6 +11391,12 @@
 /* Button on the chat list banner that opens the system notification settings for Tellomi. */
 "TELLOMI_NOTIFICATIONS_DISABLED_REMINDER_ACTION" = "Go to Settings";
 
+/* Body of the notification shown when a scheduled message is due and the app isn't open. It never includes the message text. */
+"TELLOMI_SCHEDULED_MESSAGE_DUE_NOTIFICATION_BODY" = "Your scheduled message is due. Tap to send it.";
+
+/* Action on the notification shown when a scheduled message is due: send it right away without opening the app. */
+"TELLOMI_SCHEDULED_MESSAGE_SEND_NOW_ACTION" = "Send Now";
+
 /* Setting for enabling & disabling expanding short links (such as b23.tv) before generating a link preview. */
 "TELLOMI_SETTINGS_EXPAND_SHORT_LINKS" = "Expand Short Links";
 

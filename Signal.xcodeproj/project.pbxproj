@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AEDC6C5429F6FDB3867841C4 /* TellomiScheduledMessageNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C8E426A816B9C163299D78 /* TellomiScheduledMessageNotificationTests.swift */; };
+		B97A1EA34E8F6FAE68798D44 /* TellomiScheduledMessageNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5621A866C3C46BE1B2D248 /* TellomiScheduledMessageNotifications.swift */; };
 		907A926689426E912880A57C /* TellomiScheduledMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B193FF5C16EE0F9436217B /* TellomiScheduledMessageTests.swift */; };
 		AAEF756D96685A893AA7C1E1 /* TellomiScheduledMessageSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F34337E78AEAAF7BB835556 /* TellomiScheduledMessageSender.swift */; };
 		2AF4B817F3CDA8A195A2D0DC /* TellomiScheduledMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 322CD6733C7EEBC9BDC0084A /* TellomiScheduledMessage.swift */; };
@@ -4441,6 +4443,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C1C8E426A816B9C163299D78 /* TellomiScheduledMessageNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessageNotificationTests.swift; sourceTree = "<group>"; };
+		1B5621A866C3C46BE1B2D248 /* TellomiScheduledMessageNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessageNotifications.swift; sourceTree = "<group>"; };
 		D0B193FF5C16EE0F9436217B /* TellomiScheduledMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessageTests.swift; sourceTree = "<group>"; };
 		0F34337E78AEAAF7BB835556 /* TellomiScheduledMessageSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessageSender.swift; sourceTree = "<group>"; };
 		322CD6733C7EEBC9BDC0084A /* TellomiScheduledMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessage.swift; sourceTree = "<group>"; };
@@ -10093,6 +10097,7 @@
 				A700770A7A33416692237DF5 /* TellomiVideoLevelTests.swift */,
 				805CBB2A6487FD76D22DECAC /* TellomiMutedVideoTests.swift */,
 				D0B193FF5C16EE0F9436217B /* TellomiScheduledMessageTests.swift */,
+				C1C8E426A816B9C163299D78 /* TellomiScheduledMessageNotificationTests.swift */,
 				5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */,
 				C4BD449DE6812A48D2CAACBA /* TellomiCaptureLockTests.swift */,
 				147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */,
@@ -12385,6 +12390,7 @@
 				D979DA152B8D1FDD000EEAB8 /* BadgeCountFetcher.swift */,
 				F9C5CB92289453B200548EEE /* NoopNotificationPresenterImpl.swift */,
 				B9B4621C3037A35D004C358F /* NotificationPreferencesManager.swift */,
+				1B5621A866C3C46BE1B2D248 /* TellomiScheduledMessageNotifications.swift */,
 				664657402AC4FB720099DE1C /* NotificationPresenter.swift */,
 				88D23D0A23CEBF4400B0E74B /* NotificationPresenterImpl.swift */,
 				5063B41D2C5432A30041CA51 /* ResolvableValue.swift */,
@@ -19968,6 +19974,7 @@
 				4675DBEFDCC84C3E01819C6E /* TellomiVideoLevelTests.swift in Sources */,
 				74A84450739B8C893E8E22A3 /* TellomiMutedVideoTests.swift in Sources */,
 				907A926689426E912880A57C /* TellomiScheduledMessageTests.swift in Sources */,
+				AEDC6C5429F6FDB3867841C4 /* TellomiScheduledMessageNotificationTests.swift in Sources */,
 				D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */,
 				1486A43C609ED88D791AE53D /* TellomiCaptureLockTests.swift in Sources */,
 				D05B5DA804E799FAF4A8F706 /* TellomiCameraModeTests.swift in Sources */,
@@ -20657,6 +20664,7 @@
 				668A01312C2B6088007B8808 /* NotificationCenter+Promise.swift in Sources */,
 				5079F3B62DA4713C008430EC /* NotificationPrecondition.swift in Sources */,
 				B9B4621D3037A35D004C358F /* NotificationPreferencesManager.swift in Sources */,
+				B97A1EA34E8F6FAE68798D44 /* TellomiScheduledMessageNotifications.swift in Sources */,
 				664657412AC4FB720099DE1C /* NotificationPresenter.swift in Sources */,
 				725465612BA033E200EABFD2 /* NotificationPresenterImpl.swift in Sources */,
 				D9C7CECF28ECC043001E87B6 /* NSAttributedString+SSK.swift in Sources */,

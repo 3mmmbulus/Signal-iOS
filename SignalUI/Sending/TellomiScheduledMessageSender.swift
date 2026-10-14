@@ -9,8 +9,9 @@ public import SignalServiceKit
 /// Tellomi（tellomi/tellomi#1519 M-4，方案 `docs/product/specs/scheduled-send-ios-plan.md` §6.2）：定时消息的排定与到点发送（主 App）。
 ///
 /// 和 Signal 安卓一样是「本机尽力而为」（安卓 `ScheduledMessageManager`）：App 在前台时定时器准点发；
-/// 在后台或没开时等下次回到前台补发（`applicationDidBecomeActive`，同安卓启动时 `scheduleIfNecessary`）。
-/// 后台刷新顺手发、到点通知是下一步（方案 §6.2 / §6.3）。
+/// 在后台时系统后台刷新碰上就发（`MessageFetchBGRefreshTask`，提前到最早那一条）；到点弹本地通知，点它或「立即发送」就发
+/// （`TellomiScheduledMessageNotifications`）；都没碰上就等下次回到前台补发（`applicationDidBecomeActive`，同安卓启动时
+/// `scheduleIfNecessary`）。
 ///
 /// 到点发出：用当时的会话建消息（时间戳 = 发出时刻，阅后即焚取当时的设置）；消息建好后在落库的同一个写事务里删定时记录，
 /// 谁先删到谁发——崩溃重来、几处同时触发都不会重发，也不会漏。会话删了、退了群、只许管理员发言、拉黑了就不发，
@@ -18,19 +19,24 @@ public import SignalServiceKit
 @MainActor
 public final class TellomiScheduledMessageSender {
 
-    public static let shared = TellomiScheduledMessageSender()
+    public static let shared = TellomiScheduledMessageSender(managesNotifications: true)
 
     /// 测试换掉。
     var now: () -> Date = { Date() }
 
     private var timer: Timer?
     private var hasCleanedUpFiles = false
-    private var isFlushing = false
+    /// 正在发的这一轮；这时又被叫就等它（它发完再看一遍）。
+    private var currentFlush: Task<Void, Never>?
     private var needsAnotherFlush = false
     /// 建消息出错的（例如文件坏了、磁盘满）：不反复重试，下次回到前台再试一次；用户可以在定时消息列表里删掉。
     private var failedSinceActivation = Set<String>()
 
-    init() {
+    /// 到点通知是 App 全局的一份，只让 `shared` 管（测试里建的执行器不碰系统通知）。
+    private let managesNotifications: Bool
+
+    init(managesNotifications: Bool = false) {
+        self.managesNotifications = managesNotifications
         // 一建出来就听：刚注册完还没「回到前台」过时排的也要挂定时器。
         NotificationCenter.default.addObserver(
             self,
@@ -55,6 +61,23 @@ public final class TellomiScheduledMessageSender {
             }
         }
         Task { await flushDue() }
+        syncNotifications()
+    }
+
+    /// 到点通知上点了它或「立即发送」：这一条马上发（还没到点的提前到现在），等它进了发送队列再返回。
+    public func sendNow(id: String) async {
+        let now = self.now()
+        do {
+            try await SSKEnvironment.shared.databaseStorageRef.awaitableWrite { tx in
+                if let message = TellomiScheduledMessageStore.fetch(id: id, tx: tx), message.scheduledAt > now {
+                    try TellomiScheduledMessageStore.reschedule(id: id, to: now, tx: tx)
+                }
+            }
+        } catch {
+            Logger.warn("Couldn't move a scheduled message to now: \(error)")
+        }
+        failedSinceActivation.remove(id)
+        await flushDue()
     }
 
     @objc
@@ -62,6 +85,19 @@ public final class TellomiScheduledMessageSender {
         // 通知是异步投到主线程的，可能晚于环境拆掉（只在测试里会这样）。
         guard SSKEnvironment.hasShared else { return }
         scheduleTimer()
+        syncNotifications()
+    }
+
+    /// 到点通知对齐记录。几处同时要对齐时排成一个接一个（各自都读最新的记录，最后一次说了算）。
+    private var notificationSync: Task<Void, Never>?
+
+    private func syncNotifications() {
+        guard managesNotifications else { return }
+        let previous = notificationSync
+        notificationSync = Task {
+            await previous?.value
+            await TellomiScheduledMessageNotifications.sync()
+        }
     }
 
     // MARK: - Scheduling
@@ -137,29 +173,44 @@ public final class TellomiScheduledMessageSender {
 
     // MARK: - Sending
 
-    /// 发出到点的（按先后，一条一条）。已经在发的时候又被叫：发完这一轮再看一遍。
+    /// 发出到点的（按先后，一条一条）。已经在发的时候又被叫：等这一轮，它发完再看一遍。
+    /// 返回时到点的都已进了发送队列（或丢掉 / 记为失败）：后台刷新、「立即发送」接着等发送队列发完。
+    /// 调用方被取消（后台刷新、通知动作的 27 秒限时到了）就停在两条之间：没发的还到点，下次再发（认领保证不重不漏）。
     public func flushDue() async {
-        guard !isFlushing else {
+        if let currentFlush {
             needsAnotherFlush = true
+            await Self.wait(for: currentFlush)
             return
         }
-        isFlushing = true
-        defer {
-            isFlushing = false
-            scheduleTimer()
+        let flush = Task { @MainActor in
+            defer {
+                currentFlush = nil
+                scheduleTimer()
+            }
+            repeat {
+                needsAnotherFlush = false
+                guard DependenciesBridge.shared.tsAccountManager.registrationStateWithMaybeSneakyTransaction.isRegistered else {
+                    return
+                }
+                let due = SSKEnvironment.shared.databaseStorageRef.read { tx in
+                    TellomiScheduledMessageStore.fetchDue(now: now(), tx: tx)
+                }
+                for message in due where !failedSinceActivation.contains(message.id) {
+                    guard !Task.isCancelled else { return }
+                    await send(message)
+                }
+            } while needsAnotherFlush && !Task.isCancelled
         }
-        repeat {
-            needsAnotherFlush = false
-            guard DependenciesBridge.shared.tsAccountManager.registrationStateWithMaybeSneakyTransaction.isRegistered else {
-                return
-            }
-            let due = SSKEnvironment.shared.databaseStorageRef.read { tx in
-                TellomiScheduledMessageStore.fetchDue(now: now(), tx: tx)
-            }
-            for message in due where !failedSinceActivation.contains(message.id) {
-                await send(message)
-            }
-        } while needsAnotherFlush
+        currentFlush = flush
+        await Self.wait(for: flush)
+    }
+
+    private static func wait(for flush: Task<Void, Never>) async {
+        await withTaskCancellationHandler {
+            await flush.value
+        } onCancel: {
+            flush.cancel()
+        }
     }
 
     private enum Disposition {

@@ -10396,6 +10396,12 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "چېكىلسە چىراي بەلگىنى ئالماشتۇرىدۇ";
 
+/* Body of the notification shown when a scheduled message is due and the app isn't open. It never includes the message text. */
+"TELLOMI_SCHEDULED_MESSAGE_DUE_NOTIFICATION_BODY" = "Your scheduled message is due. Tap to send it.";
+
+/* Action on the notification shown when a scheduled message is due: send it right away without opening the app. */
+"TELLOMI_SCHEDULED_MESSAGE_SEND_NOW_ACTION" = "Send Now";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "توم";
 

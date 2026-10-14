@@ -11346,6 +11346,12 @@
 /* Title of the one-time sheet shown on the chat list after registration, explaining why Tellomi asks for notification permission. */
 "TELLOMI_NOTIFICATION_PRIMER_TITLE" = "即時收到新訊息";
 
+/* Body of the notification shown when a scheduled message is due and the app isn't open. It never includes the message text. */
+"TELLOMI_SCHEDULED_MESSAGE_DUE_NOTIFICATION_BODY" = "定時訊息到時間了，點一下傳送。";
+
+/* Action on the notification shown when a scheduled message is due: send it right away without opening the app. */
+"TELLOMI_SCHEDULED_MESSAGE_SEND_NOW_ACTION" = "立即傳送";
+
 /* Tellomi: Setting in Chats settings for expanding short links (such as b23.tv) before generating a link preview. On by default, kept on this device only. */
 "TELLOMI_SETTINGS_EXPAND_SHORT_LINKS" = "展開短連結";
 

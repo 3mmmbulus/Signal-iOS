@@ -880,6 +880,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             name: .registrationStateDidChange,
             object: nil,
         )
+        // Tellomi（tellomi/tellomi#1519 M-4）：定时消息一变，后台刷新的最早时间跟着变。
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(tellomiScheduledMessagesDidChange),
+            name: TellomiScheduledMessageStore.didChange,
+            object: nil,
+        )
 
         SignalApp.shared.showLaunchInterface(
             launchInterface,
@@ -1388,6 +1395,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void,
     ) {
         appReadiness.runNowOrWhenAppDidBecomeReadySync {
+            // Tellomi（tellomi/tellomi#1519 M-4）：定时消息的到点通知在前台不弹，前台定时器自己发（顺手再发一遍到点的）。
+            if TellomiScheduledMessageNotifications.isScheduledMessageNotification(notification) {
+                completionHandler([])
+                Task { await TellomiScheduledMessageSender.shared.flushDue() }
+                return
+            }
             // We need to respect the in-app notification sound preference. This method, which is called
             // for modern UNUserNotification users, could be a place to do that, but since we'd still
             // need to handle this behavior for legacy UINotification users anyway, we "allow" all
@@ -1910,6 +1923,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // MARK: - Events
+
+    @objc
+    private func tellomiScheduledMessagesDidChange() {
+        scheduleBgAppRefresh()
+    }
 
     @objc
     private func registrationStateDidChange() {
