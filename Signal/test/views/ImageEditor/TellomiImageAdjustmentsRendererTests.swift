@@ -10,7 +10,7 @@ import XCTest
 @testable import SignalServiceKit
 @testable import SignalUI
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7、#1598 E5-8）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7、#1598 E5-8、#1599 E5-9）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
 @MainActor
 final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
 
@@ -268,6 +268,49 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         let vertical = try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: stripes)))
         XCTAssertGreaterThan(abs(vertical[5 * 400 + 200].x - vertical[5 * 400 + 201].x), 0.5, "转成竖带，中间一竖条清楚")
         XCTAssertLessThan(abs(vertical[150 * 400 + 20].x - vertical[150 * 400 + 21].x), 0.05, "左边糊了")
+    }
+
+    // MARK: - E5-9 enhance
+
+    /// 两端同一套：16 × 12 的一张小图算出的 16 张表、按位置插值后的值。和安卓 `ImageAdjustmentsDetailTest.enhanceMatchesTheSharedReferenceValues` 同一组。
+    func testEnhanceMatchesTheSharedReferenceValues() {
+        let width = 16
+        let height = 12
+        var values = [UInt8]()
+        for y in 0..<height {
+            for x in 0..<width {
+                values.append(UInt8(min(255, ((x * 13 + y * 29 + (x * y) % 7) % 256) / 2 + 40)))
+            }
+        }
+        XCTAssertEqual(Array(values.prefix(8)), [40, 46, 53, 59, 66, 72, 79, 85])
+        let luts = Renderer.enhanceLuts(values: values, width: width, height: height)
+        XCTAssertEqual(luts.count, 16 * 256)
+        XCTAssertEqual([40, 60, 80, 100, 120, 160].map { luts[$0] }, [21, 106, 213, 255, 255, 255])
+        XCTAssertEqual([40, 60, 80, 100, 120, 160].map { luts[5 * 256 + $0] }, [0, 0, 0, 0, 43, 255])
+        XCTAssertEqual([40, 60, 80, 100, 120, 160].map { luts[15 * 256 + $0] }, [0, 21, 21, 21, 21, 234])
+        XCTAssertEqual(luts.reduce(0) { $0 + Int($1) }, 615_884)
+
+        XCTAssertEqual(Renderer.enhanceValue(luts, value: 0.3, at: SIMD2(0.1, 0.1)), 0.83529, accuracy: 1e-4)
+        XCTAssertEqual(Renderer.enhanceValue(luts, value: 0.5, at: SIMD2(0.5, 0.5)), 0.58333, accuracy: 1e-4)
+        XCTAssertEqual(Renderer.enhanceValue(luts, value: 0.4, at: SIMD2(0.8, 0.3)), 0.54141, accuracy: 1e-4)
+        XCTAssertEqual(Renderer.enhanceValue(luts, value: 0.6, at: SIMD2(0.95, 0.95)), 0.74902, accuracy: 1e-4)
+    }
+
+    /// 增强把一张发灰（只占中间一段亮度）的图拉开：暗的更暗、亮的更亮；色相不变（三个通道按比例）；0 时不动。
+    func testEnhanceStretchesAFlatImage() throws {
+        let flat = try makeImage(width: 256, height: 192) { x, y in
+            let v = 0.35 + 0.3 * Float((x + y) % 64) / 63
+            return SIMD3(v, v * 0.8, v * 0.6)
+        }
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.enhance = 100
+        let input = try pixels(of: flat)
+        let output = try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: flat)))
+        let inputRange = (input.map(\.x).max() ?? 0) - (input.map(\.x).min() ?? 0)
+        let outputRange = (output.map(\.x).max() ?? 0) - (output.map(\.x).min() ?? 0)
+        XCTAssertGreaterThan(outputRange, inputRange + 0.2, "亮度拉开了")
+        let sample = output[100 * 256 + 37]
+        XCTAssertEqual(sample.y / sample.x, 0.8, accuracy: 0.03, "色相不变")
     }
 
     private func assertClose(_ actual: SIMD3<Float>, _ expected: SIMD3<Float>, line: UInt = #line) {

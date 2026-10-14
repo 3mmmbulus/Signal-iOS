@@ -28,7 +28,7 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
     /// 行是已经能画的那几项，顺序照 Telegram iOS（曝光、对比度、饱和度、色温、褪色、高光、阴影）；每行的滑杆范围对。
     func testRowsAreTheRenderedToolsInTelegramOrder() throws {
         let (viewController, _) = try makeViewController()
-        XCTAssertEqual(viewController.rowToolsForTesting, [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows, .vignette, .grain, .sharpen])
+        XCTAssertEqual(viewController.rowToolsForTesting, [.enhance, .exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows, .vignette, .grain, .sharpen])
         XCTAssertEqual(try XCTUnwrap(viewController.sliderForTesting(.fade)).range, 0...100, "褪色是单极的")
         XCTAssertEqual(try XCTUnwrap(viewController.sliderForTesting(.exposure)).range, -100...100)
     }
@@ -307,6 +307,14 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         window.layoutIfNeeded()
         try await Task.sleep(nanoseconds: 500_000_000)
         try save(window, as: "adjust-blur-linear", in: directory)
+
+        // E5-9：只开增强 100 的发出图，和原图并排看程度。
+        let enhanceModel = try ImageEditorModel(normalizedImage: NormalizedImage.forImage(Self.samplePhoto()))
+        var enhanced = TellomiImageAdjustments.default
+        enhanced.enhance = 100
+        enhanceModel.replace(adjustments: enhanced)
+        let enhancedOutput = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: enhanceModel, transform: enhanceModel.currentTransform()))
+        try XCTUnwrap(enhancedOutput.pngData()).write(to: directory.appendingPathComponent("\(Int(window.bounds.size.width))/adjust-enhance-output.png"))
     }
 
     // MARK: - Helpers

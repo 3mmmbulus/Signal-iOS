@@ -9,12 +9,13 @@ import SignalServiceKit
 import simd
 import UIKit
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6、#1597 E5-7、#1598 E5-8，Epic #1523）：把调色画进图里。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6、#1597 E5-7、#1598 E5-8、#1599 E5-9，Epic #1523）：把调色画进图里。
 ///
 /// 逐像素的几项（曲线、曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
 /// 在图自己的颜色空间（sRGB / Display P3 的编码值）里查——预览图和发出的原尺寸图走同一张表，所以两边一致。
 /// 和位置有关的三项（锐化、颗粒、暗角）是自己写的 CoreImage 内核
-/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序照两端 Telegram：锐化 → 查找表 → 颗粒 → 暗角 → 模糊。
+/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序：锐化 → 增强 → 查找表 → 颗粒 → 暗角 → 模糊（照两端 Telegram，只是增强挪到锐化后面，
+/// 锐化要取旁边的像素，放在最前面最省事）。
 ///
 /// 每一项的数学是自己定的（Telegram 只用来对照工具、范围和方向，它的着色器一行不搬，见 `docs/product/specs/media-editor-adjustments-e5.md`）：
 /// - 曲线：每条 5 个点（输入 0 / 0.25 / 0.5 / 0.75 / 1，输出 = 值/100），单调三次插值（Fritsch–Carlson，不会冲过相邻两点）；
@@ -40,6 +41,9 @@ import UIKit
 ///   查同一张表、压同样的暗角，再放大回去；遮罩 m = smoothstep(内半径, 外半径, d)，d 在「短边 = 1」的单位里量：径向是到中心的距离，
 ///   线性是到过中心那条线的距离；这个像素 = mix(清楚的, 模糊的, m)。内半径 = `falloff`、外半径 = `size`（照两端 TG 的控件）。
 ///   iOS 的角度是那条线的方向（0 = 横），法线 (−sin, cos)；安卓照 TG 安卓存的是法线方向（π/2 = 横）。
+/// - 增强（E5-9）：分块直方图均衡（CLAHE）。原图缩到长边 ≤ 256，取 HSV 亮度 v = max(r, g, b)，分 4 × 4 块，每块直方图 256 格，
+///   每格最多 ⌈3 × 平均⌉（多出来的平均分给 256 格），累加成 CDF，表 = round(255 · (CDF − CDF[0]) / (块里像素数 − CDF[0]))（Float 一步步算，
+///   两端结果逐字节一样）；每个像素在四个最近的块的表里查、双线性混，v' = v + (查到的 − v) · 0.6 · (值/100)，三个通道按 v'/v 缩放。
 @MainActor
 enum TellomiImageAdjustmentsRenderer {
 
@@ -73,6 +77,11 @@ enum TellomiImageAdjustmentsRenderer {
         if detail, adjustments.sharpen > 0 {
             guard let sharpened = sharpen(output, amount: 2.5 * adjustments.sharpen / 100, unit: unit, colorSpace: colorSpace) else { return nil }
             output = sharpened
+        }
+
+        if detail, adjustments.enhance > 0 {
+            guard let enhanced = enhance(output, source: image, amount: enhanceStrength * adjustments.enhance / 100, colorSpace: colorSpace) else { return nil }
+            output = enhanced
         }
 
         let colorTools = colorOnly(adjustments)
@@ -130,6 +139,8 @@ enum TellomiImageAdjustmentsRenderer {
     /// 查找表只管逐像素的几项：把和位置有关的几项放回默认，只动了它们时不用查表，拖它们的滑杆也不用重算表。
     private static func colorOnly(_ adjustments: TellomiImageAdjustments) -> TellomiImageAdjustments {
         var colorOnly = adjustments
+        colorOnly.enhance = 0
+        colorOnly.skin = 0
         colorOnly.sharpen = 0
         colorOnly.grain = 0
         colorOnly.vignette = 0
@@ -193,7 +204,7 @@ enum TellomiImageAdjustmentsRenderer {
         colorSpace: nil,
     )
 
-    private static let kernels: (sharpen: CIKernel, grainVignette: CIKernel)? = {
+    private static let kernels: (sharpen: CIKernel, grainVignette: CIKernel, enhance: CIKernel)? = {
         // `TellomiImageAdjustments.metal` 编进 SignalUI.framework 自己的 default.metallib（主 App 和分享扩展都带着它）。
         guard
             let url = Bundle(for: ImageEditorModel.self).url(forResource: "default", withExtension: "metallib"),
@@ -206,6 +217,7 @@ enum TellomiImageAdjustmentsRenderer {
             return (
                 try CIKernel(functionName: "tellomiSharpen", fromMetalLibraryData: data),
                 try CIKernel(functionName: "tellomiGrainVignette", fromMetalLibraryData: data),
+                try CIKernel(functionName: "tellomiEnhance", fromMetalLibraryData: data),
             )
         } catch {
             owsFailDebug("Could not load the adjustment kernels: \(error)")
@@ -260,6 +272,132 @@ enum TellomiImageAdjustmentsRenderer {
                 CIVector(x: CGFloat(radii.inner), y: CGFloat(radii.outer)),
                 CIVector(x: CGFloat(normal.x), y: CGFloat(normal.y)),
             ],
+        )
+        return output?.matchedToWorkingSpace(from: colorSpace)
+    }
+
+    // MARK: - Enhance (E5-9)
+
+    static let enhanceTiles = 4
+    /// 值 100 时混进多少均衡后的亮度：全混在平滑的渐变（天空）上会压出一条暗带，0.6 看起来像「自动对比」。安卓一样。
+    static let enhanceStrength: Float = 0.6
+    /// 算直方图的小图长边上限。
+    static let enhanceSmallLongSide = 256
+
+    /// 由小图的 HSV 亮度（每个像素一个字节，一行一行）算 16 张表（第 t 张 = 第 t 块，块按行排），每张 256 个字节。安卓 `ImageAdjustmentsDetail.enhanceLuts` 一样。
+    static func enhanceLuts(values: [UInt8], width: Int, height: Int) -> [UInt8] {
+        let n = enhanceTiles
+        var luts = [UInt8](repeating: 0, count: n * n * 256)
+        for tileY in 0..<n {
+            for tileX in 0..<n {
+                let x0 = tileX * width / n
+                let x1 = (tileX + 1) * width / n
+                let y0 = tileY * height / n
+                let y1 = (tileY + 1) * height / n
+                let base = (tileY * n + tileX) * 256
+                let count = (x1 - x0) * (y1 - y0)
+                var histogram = [Int](repeating: 0, count: 256)
+                for y in y0..<max(y0, y1) {
+                    for x in x0..<max(x0, x1) {
+                        histogram[Int(values[y * width + x])] += 1
+                    }
+                }
+                guard count > 0 else {
+                    for k in 0..<256 { luts[base + k] = UInt8(k) }
+                    continue
+                }
+                let limit = max(1, (3 * count + 255) / 256)
+                let excess = histogram.reduce(0) { $0 + max(0, $1 - limit) }
+                let share = Float(excess) / Float(256)
+                var cdf: Float = 0
+                var cdfs = [Float](repeating: 0, count: 256)
+                for k in 0..<256 {
+                    cdf = cdf + Float(min(histogram[k], limit)) + share
+                    cdfs[k] = cdf
+                }
+                let denominator = Float(count) - cdfs[0]
+                for k in 0..<256 {
+                    if denominator <= 0 {
+                        luts[base + k] = UInt8(k)
+                    } else {
+                        let value = Float(255) * (cdfs[k] - cdfs[0]) / denominator
+                        luts[base + k] = UInt8(min(max(Int((value + 0.5).rounded(.down)), 0), 255))
+                    }
+                }
+            }
+        }
+        return luts
+    }
+
+    /// 单位坐标 `unit` 处 HSV 亮度 `v`（0…1）均衡后的值（四块双线性、表内线性）；测试和 CPU 对照用，GPU 上同样的查法在内核里。
+    static func enhanceValue(_ luts: [UInt8], value v: Float, at unit: SIMD2<Float>) -> Float {
+        let n = Float(enhanceTiles)
+        let t = simd_clamp(unit * n - 0.5, SIMD2(repeating: 0), SIMD2(repeating: n - 1))
+        let t0 = SIMD2(t.x.rounded(.down), t.y.rounded(.down))
+        let t1 = simd_min(t0 + 1, SIMD2(repeating: n - 1))
+        let f = t - t0
+        func lookup(_ tileX: Float, _ tileY: Float) -> Float {
+            let base = Int(tileY * n + tileX) * 256
+            let position = min(max(v, 0), 1) * 255
+            let k0 = Int(position.rounded(.down))
+            let k1 = min(k0 + 1, 255)
+            let fraction = position - Float(k0)
+            return (Float(luts[base + k0]) * (1 - fraction) + Float(luts[base + k1]) * fraction) / 255
+        }
+        let top = lookup(t0.x, t0.y) * (1 - f.x) + lookup(t1.x, t0.y) * f.x
+        let bottom = lookup(t0.x, t1.y) * (1 - f.x) + lookup(t1.x, t1.y) * f.x
+        return top * (1 - f.y) + bottom * f.y
+    }
+
+    private static var enhanceCache: (source: CGImage, luts: CIImage)?
+
+    /// 原图的增强表（作一张 256 × 16 的图给内核），同一张原图只算一次。
+    private static func enhanceLutImage(_ image: CGImage, colorSpace: CGColorSpace) -> CIImage? {
+        if let enhanceCache, enhanceCache.source === image {
+            return enhanceCache.luts
+        }
+        let longSide = max(image.width, image.height)
+        let scale = min(1, CGFloat(enhanceSmallLongSide) / CGFloat(longSide))
+        let width = max(1, Int((CGFloat(image.width) * scale).rounded()))
+        let height = max(1, Int((CGFloat(image.height) * scale).rounded()))
+        guard
+            let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue,
+            )
+        else { return nil }
+        context.interpolationQuality = .high
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let data = context.data?.bindMemory(to: UInt8.self, capacity: width * height * 4) else { return nil }
+        let values = (0..<(width * height)).map { max(data[$0 * 4], data[$0 * 4 + 1], data[$0 * 4 + 2]) }
+        let luts = enhanceLuts(values: values, width: width, height: height)
+        let lutImage = CIImage(
+            bitmapData: Data(luts),
+            bytesPerRow: 256,
+            size: CGSize(width: 256, height: enhanceTiles * enhanceTiles),
+            format: .L8,
+            colorSpace: nil,
+        )
+        enhanceCache = (image, lutImage)
+        return lutImage
+    }
+
+    private static func enhance(_ image: CIImage, source: CGImage, amount: Float, colorSpace: CGColorSpace) -> CIImage? {
+        guard
+            let kernel = kernels?.enhance,
+            let lut = enhanceLutImage(source, colorSpace: colorSpace),
+            let encoded = image.matchedFromWorkingSpace(to: colorSpace)
+        else { return nil }
+        let extent = image.extent
+        let output = kernel.apply(
+            extent: extent,
+            roiCallback: { index, rect in index == 0 ? rect : lut.extent },
+            arguments: [encoded, lut, amount, CIVector(x: extent.width, y: extent.height)],
         )
         return output?.matchedToWorkingSpace(from: colorSpace)
     }

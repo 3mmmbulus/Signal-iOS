@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
-// Tellomi（tellomi/tellomi#1595 E5-5、#1597 E5-8）：调色里和位置有关的几项——锐化、颗粒、暗角、模糊（移轴）。
+// Tellomi（tellomi/tellomi#1595 E5-5、#1598 E5-8、#1599 E5-9）：调色里和位置有关的几项——锐化、增强、颗粒、暗角、模糊（移轴）。
 // 数学写在 TellomiImageAdjustmentsRenderer.swift 顶上，和安卓 ImageAdjustmentsGl 的着色器是同一套（自己定的，Telegram 的着色器一行不搬）。
 // 进来的是图自己颜色空间里的编码值（Swift 那边用 matchedFromWorkingSpace 转好），不是 CoreImage 的线性工作空间。
 // [[stitchable]] 的 CoreImage 内核不用 -fcikernel 编译选项（iOS 15 起），但要链 CoreImage：SignalUI 的 MTLLINKER_FLAGS = -framework CoreImage。
@@ -37,6 +37,35 @@ namespace coreimage {
     float4 blur = (center * 4.0 + edges * 2.0 + corners) / 16.0;
     float3 rgb = clamp(center.rgb + amount * (center.rgb - blur.rgb), 0.0, center.a);
     return float4(rgb, center.a);
+}
+
+/// 增强（E5-9）：分块直方图均衡（CLAHE）——4 × 4 块，每块一张 256 级的表（`lut` 是 256 × 16 的图，第 t 行 = 第 t 块，第 0 行在上）；
+/// 这个像素的 HSV 亮度 v = max(r, g, b) 在四个最近的块的表里查（表内线性插值，块之间双线性），v' = v + (查到的 − v) · amount，
+/// 三个通道按 v'/v 一起缩放（色相、饱和度不变）。在锐化之后、查找表之前（TG 两端增强在所有工具前面）。
+[[stitchable]] float4 tellomiEnhance(sampler image, sampler lut, float amount, float2 size, destination dest) {
+    float2 p = dest.coord();
+    float4 color = image.sample(image.transform(p));
+    if (color.a <= 0.0) {
+        return color;
+    }
+    float3 rgb = clamp(color.rgb / color.a, 0.0, 1.0);
+    float v = max(rgb.r, max(rgb.g, rgb.b));
+    if (v <= 0.0001) {
+        return color;
+    }
+    float2 unit = float2(p.x, size.y - p.y) / size;
+    float2 t = clamp(unit * 4.0 - 0.5, 0.0, 3.0);
+    float2 t0 = floor(t);
+    float2 t1 = min(t0 + 1.0, 3.0);
+    float2 f = t - t0;
+    float x = v * 255.0 + 0.5;
+    float a = lut.sample(lut.transform(float2(x, 15.5 - (t0.y * 4.0 + t0.x)))).r;
+    float b = lut.sample(lut.transform(float2(x, 15.5 - (t0.y * 4.0 + t1.x)))).r;
+    float c = lut.sample(lut.transform(float2(x, 15.5 - (t1.y * 4.0 + t0.x)))).r;
+    float d = lut.sample(lut.transform(float2(x, 15.5 - (t1.y * 4.0 + t1.x)))).r;
+    float equalized = mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    float nv = v + (equalized - v) * amount;
+    return float4(clamp(rgb * (nv / v), 0.0, 1.0) * color.a, color.a);
 }
 
 /// 颗粒，然后暗角，最后模糊（顺序照两端 Telegram：颗粒在暗角前，模糊在所有工具之后）。
