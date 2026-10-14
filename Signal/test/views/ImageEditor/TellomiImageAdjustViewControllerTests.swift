@@ -223,6 +223,24 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         XCTAssertEqual(model.adjustments.blur.kind, .off, "一步撤销回到打开前")
     }
 
+    /// 美肤（E5-9）：没认出人脸时没有这一行；认出了加在最上面；已经磨过的照片再打开直接有。
+    func testSkinRowAppearsWithFaces() throws {
+        let (viewController, _) = try makeViewController()
+        XCTAssertFalse(viewController.rowToolsForTesting.contains(.skin), "灰图没有人脸")
+        viewController.showSkinRow()
+        XCTAssertEqual(viewController.rowToolsForTesting.first, .skin)
+        viewController.showSkinRow()
+        XCTAssertEqual(viewController.rowToolsForTesting.filter { $0 == .skin }.count, 1)
+
+        let model = try makeModel()
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.skin = 30
+        model.replace(adjustments: adjustments)
+        let reopened = TellomiImageAdjustViewController(model: model)
+        reopened.loadViewIfNeeded()
+        XCTAssertEqual(reopened.rowToolsForTesting.first, .skin)
+    }
+
     /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），按住看原图，色调页，暗角 / 颗粒 / 锐化和发出的图，曲线页签，模糊页签。
     func testScreenshots() async throws {
         let environment = ProcessInfo.processInfo.environment

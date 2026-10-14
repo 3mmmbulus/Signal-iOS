@@ -14,8 +14,8 @@ import UIKit
 /// 逐像素的几项（曲线、曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
 /// 在图自己的颜色空间（sRGB / Display P3 的编码值）里查——预览图和发出的原尺寸图走同一张表，所以两边一致。
 /// 和位置有关的三项（锐化、颗粒、暗角）是自己写的 CoreImage 内核
-/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序：锐化 → 增强 → 查找表 → 颗粒 → 暗角 → 模糊（照两端 Telegram，只是增强挪到锐化后面，
-/// 锐化要取旁边的像素，放在最前面最省事）。
+/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序：锐化 → 美肤 → 增强 → 查找表 → 颗粒 → 暗角 → 模糊（照两端 Telegram，
+/// 只是美肤、增强挪到锐化后面，锐化要取旁边的像素，放在最前面最省事）。
 ///
 /// 每一项的数学是自己定的（Telegram 只用来对照工具、范围和方向，它的着色器一行不搬，见 `docs/product/specs/media-editor-adjustments-e5.md`）：
 /// - 曲线：每条 5 个点（输入 0 / 0.25 / 0.5 / 0.75 / 1，输出 = 值/100），单调三次插值（Fritsch–Carlson，不会冲过相邻两点）；
@@ -44,6 +44,9 @@ import UIKit
 /// - 增强（E5-9）：分块直方图均衡（CLAHE）。原图缩到长边 ≤ 256，取 HSV 亮度 v = max(r, g, b)，分 4 × 4 块，每块直方图 256 格，
 ///   每格最多 ⌈3 × 平均⌉（多出来的平均分给 256 格），累加成 CDF，表 = round(255 · (CDF − CDF[0]) / (块里像素数 − CDF[0]))（Float 一步步算，
 ///   两端结果逐字节一样）；每个像素在四个最近的块的表里查、双线性混，v' = v + (查到的 − v) · 0.6 · (值/100)，三个通道按 v'/v 缩放。
+/// - 美肤（E5-9）：原图缩到长边 ≤ 768，三遍方框模糊（半径 = 长边的 0.4%，四舍五入，至少 1），放大回去当「磨过的」；
+///   肤色权重从磨过的颜色的 YCbCr 算（`skinWeight`），边缘保留（`skinEdgeKeep`），c' = mix(c, 磨过的, 0.8 · (值/100) · 肤色 · 边缘)。
+///   只在照片里认出人脸时出现这一行（两端 TG 都是）。
 @MainActor
 enum TellomiImageAdjustmentsRenderer {
 
@@ -77,6 +80,11 @@ enum TellomiImageAdjustmentsRenderer {
         if detail, adjustments.sharpen > 0 {
             guard let sharpened = sharpen(output, amount: 2.5 * adjustments.sharpen / 100, unit: unit, colorSpace: colorSpace) else { return nil }
             output = sharpened
+        }
+
+        if detail, adjustments.skin > 0 {
+            guard let softened = softenSkin(output, source: image, amount: adjustments.skin / 100, colorSpace: colorSpace) else { return nil }
+            output = softened
         }
 
         if detail, adjustments.enhance > 0 {
@@ -204,7 +212,7 @@ enum TellomiImageAdjustmentsRenderer {
         colorSpace: nil,
     )
 
-    private static let kernels: (sharpen: CIKernel, grainVignette: CIKernel, enhance: CIKernel)? = {
+    private static let kernels: (sharpen: CIKernel, grainVignette: CIKernel, enhance: CIKernel, skin: CIKernel)? = {
         // `TellomiImageAdjustments.metal` 编进 SignalUI.framework 自己的 default.metallib（主 App 和分享扩展都带着它）。
         guard
             let url = Bundle(for: ImageEditorModel.self).url(forResource: "default", withExtension: "metallib"),
@@ -218,6 +226,7 @@ enum TellomiImageAdjustmentsRenderer {
                 try CIKernel(functionName: "tellomiSharpen", fromMetalLibraryData: data),
                 try CIKernel(functionName: "tellomiGrainVignette", fromMetalLibraryData: data),
                 try CIKernel(functionName: "tellomiEnhance", fromMetalLibraryData: data),
+                try CIKernel(functionName: "tellomiSkin", fromMetalLibraryData: data),
             )
         } catch {
             owsFailDebug("Could not load the adjustment kernels: \(error)")
@@ -402,6 +411,74 @@ enum TellomiImageAdjustmentsRenderer {
         return output?.matchedToWorkingSpace(from: colorSpace)
     }
 
+    // MARK: - Soften skin (E5-9)
+
+    /// 美肤「磨过的」小图长边上限。
+    static let skinSmallLongSide = 768
+
+    /// 小图上三遍方框模糊的半径：长边的 0.4%，四舍五入，至少 1（768 上是 3）。安卓一样。
+    static func skinRadius(forLongSide longSide: Int) -> Int {
+        max(1, Int((0.004 * Float(longSide)).rounded()))
+    }
+
+    /// 肤色权重：(r, g, b) 是磨过的颜色（0…1），换成 YCbCr（BT.601，0…255），Cr 在 [136, 172]、Cb 在 [85, 128]，两头各 6 的过渡。
+    static func skinWeight(_ color: SIMD3<Float>) -> Float {
+        let v = color * 255
+        let cb = 128 - 0.168736 * v.x - 0.331264 * v.y + 0.5 * v.z
+        let cr = 128 + 0.5 * v.x - 0.418688 * v.y - 0.081312 * v.z
+        return window(cr, 136, 172, 6) * window(cb, 85, 128, 6)
+    }
+
+    /// 边缘保留：原来的和磨过的亮度差 e 越大越不磨，1 − smoothstep(0.04, 0.12, e)。
+    static func skinEdgeKeep(_ difference: Float) -> Float {
+        1 - smoothstep(0.04, 0.12, difference)
+    }
+
+    private static func window(_ x: Float, _ low: Float, _ high: Float, _ feather: Float) -> Float {
+        smoothstep(low - feather, low, x) * (1 - smoothstep(high, high + feather, x))
+    }
+
+    private static func smoothstep(_ edge0: Float, _ edge1: Float, _ x: Float) -> Float {
+        let t = min(max((x - edge0) / (edge1 - edge0), 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+
+    private static var skinCache: (source: CGImage, smoothed: CGImage)?
+
+    private static func softenSkin(_ image: CIImage, source: CGImage, amount: Float, colorSpace: CGColorSpace) -> CIImage? {
+        let smoothed: CGImage
+        if let skinCache, skinCache.source === source {
+            smoothed = skinCache.smoothed
+        } else {
+            guard
+                let small = boxBlurredSmallImage(
+                    source,
+                    longSide: skinSmallLongSide,
+                    radius: { skinRadius(forLongSide: $0) },
+                    colorSpace: colorSpace,
+                )
+            else { return nil }
+            skinCache = (source, small)
+            smoothed = small
+        }
+        let extent = image.extent
+        guard
+            let kernel = kernels?.skin,
+            let encoded = image.matchedFromWorkingSpace(to: colorSpace),
+            let smooth = CIImage(cgImage: smoothed)
+                .clampedToExtent()
+                .transformed(by: CGAffineTransform(scaleX: extent.width / CGFloat(smoothed.width), y: extent.height / CGFloat(smoothed.height)))
+                .cropped(to: extent)
+                .matchedFromWorkingSpace(to: colorSpace)
+        else { return nil }
+        let output = kernel.apply(
+            extent: extent,
+            roiCallback: { _, rect in rect },
+            arguments: [encoded, smooth, amount],
+        )
+        return output?.matchedToWorkingSpace(from: colorSpace)
+    }
+
     // MARK: - Blur (E5-8)
 
     /// 模糊用的小图长边上限。
@@ -457,8 +534,22 @@ enum TellomiImageAdjustmentsRenderer {
         if let blurCache, blurCache.source === image {
             return blurCache.blurred
         }
+        guard let blurred = boxBlurredSmallImage(image, longSide: blurSmallLongSide, radius: { blurRadius(forLongSide: $0) }, colorSpace: colorSpace) else {
+            return nil
+        }
+        blurCache = (image, blurred)
+        return blurred
+    }
+
+    /// 缩到长边 ≤ `longSide`，每个通道横、竖各三遍方框模糊（半径由缩好的长边定）。
+    private static func boxBlurredSmallImage(
+        _ image: CGImage,
+        longSide maximum: Int,
+        radius: (Int) -> Int,
+        colorSpace: CGColorSpace,
+    ) -> CGImage? {
         let longSide = max(image.width, image.height)
-        let scale = min(1, CGFloat(blurSmallLongSide) / CGFloat(longSide))
+        let scale = min(1, CGFloat(maximum) / CGFloat(longSide))
         let width = max(1, Int((CGFloat(image.width) * scale).rounded()))
         let height = max(1, Int((CGFloat(image.height) * scale).rounded()))
         guard
@@ -476,7 +567,7 @@ enum TellomiImageAdjustmentsRenderer {
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         guard let data = context.data?.bindMemory(to: UInt8.self, capacity: width * height * 4) else { return nil }
 
-        let radius = blurRadius(forLongSide: max(width, height))
+        let radius = radius(max(width, height))
         for channel in 0..<4 {
             for _ in 0..<3 {
                 for y in 0..<height {
@@ -493,9 +584,7 @@ enum TellomiImageAdjustmentsRenderer {
                 }
             }
         }
-        guard let blurred = context.makeImage() else { return nil }
-        blurCache = (image, blurred)
-        return blurred
+        return context.makeImage()
     }
 
     // MARK: - Lookup table

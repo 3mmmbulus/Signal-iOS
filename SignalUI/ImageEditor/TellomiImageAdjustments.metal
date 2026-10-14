@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
-// Tellomi（tellomi/tellomi#1595 E5-5、#1598 E5-8、#1599 E5-9）：调色里和位置有关的几项——锐化、增强、颗粒、暗角、模糊（移轴）。
+// Tellomi（tellomi/tellomi#1595 E5-5、#1598 E5-8、#1599 E5-9）：调色里和位置有关的几项——锐化、美肤、增强、颗粒、暗角、模糊（移轴）。
 // 数学写在 TellomiImageAdjustmentsRenderer.swift 顶上，和安卓 ImageAdjustmentsGl 的着色器是同一套（自己定的，Telegram 的着色器一行不搬）。
 // 进来的是图自己颜色空间里的编码值（Swift 那边用 matchedFromWorkingSpace 转好），不是 CoreImage 的线性工作空间。
 // [[stitchable]] 的 CoreImage 内核不用 -fcikernel 编译选项（iOS 15 起），但要链 CoreImage：SignalUI 的 MTLLINKER_FLAGS = -framework CoreImage。
@@ -18,6 +18,11 @@ namespace tellomi {
 float noiseAt(coreimage::sampler noise, float2 cell) {
     float2 wrapped = cell - 256.0 * floor(cell / 256.0);
     return noise.sample(noise.transform(float2(wrapped.x + 0.5, 255.5 - wrapped.y))).r * (255.0 / 127.5) - 1.0;
+}
+
+/// x 在 [lo, hi] 里为 1，两头各 feather 宽的过渡。
+float window(float x, float lo, float hi, float feather) {
+    return smoothstep(lo - feather, lo, x) * (1.0 - smoothstep(hi, hi + feather, x));
 }
 
 }
@@ -37,6 +42,27 @@ namespace coreimage {
     float4 blur = (center * 4.0 + edges * 2.0 + corners) / 16.0;
     float3 rgb = clamp(center.rgb + amount * (center.rgb - blur.rgb), 0.0, center.a);
     return float4(rgb, center.a);
+}
+
+/// 美肤（E5-9）：smooth 是缩小、方框模糊过、放大回来的原图；肤色权重从 smooth 的 YCbCr（BT.601，0…255）算：
+/// Cr 在 [136, 172]、Cb 在 [85, 128]，两头各 6 的过渡；边缘保留：亮度差 e = |luma(c) − luma(smooth)|，权重 1 − smoothstep(0.04, 0.12, e)；
+/// c' = mix(c, smooth, 0.8 · amount · 肤色 · 边缘)。在锐化之后、增强之前。
+[[stitchable]] float4 tellomiSkin(sampler image, sampler smooth, float amount, destination dest) {
+    float2 p = dest.coord();
+    float4 color = image.sample(image.transform(p));
+    float4 smoothed = smooth.sample(smooth.transform(p));
+    if (color.a <= 0.0 || smoothed.a <= 0.0) {
+        return color;
+    }
+    float3 c = clamp(color.rgb / color.a, 0.0, 1.0);
+    float3 s = clamp(smoothed.rgb / smoothed.a, 0.0, 1.0);
+    float3 v = s * 255.0;
+    float cb = 128.0 - 0.168736 * v.r - 0.331264 * v.g + 0.5 * v.b;
+    float cr = 128.0 + 0.5 * v.r - 0.418688 * v.g - 0.081312 * v.b;
+    float skin = tellomi::window(cr, 136.0, 172.0, 6.0) * tellomi::window(cb, 85.0, 128.0, 6.0);
+    float e = abs(dot(c - s, float3(0.2126, 0.7152, 0.0722)));
+    float keep = 1.0 - smoothstep(0.04, 0.12, e);
+    return float4(mix(c, s, 0.8 * amount * skin * keep) * color.a, color.a);
 }
 
 /// 增强（E5-9）：分块直方图均衡（CLAHE）——4 × 4 块，每块一张 256 级的表（`lut` 是 256 × 16 的图，第 t 行 = 第 t 块，第 0 行在上）；

@@ -10,7 +10,7 @@ import XCTest
 @testable import SignalServiceKit
 @testable import SignalUI
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7、#1598 E5-8、#1599 E5-9）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5、#1597 E5-7、#1598 E5-8、#1599 E5-9 增强 / 美肤）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
 @MainActor
 final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
 
@@ -311,6 +311,41 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         XCTAssertGreaterThan(outputRange, inputRange + 0.2, "亮度拉开了")
         let sample = output[100 * 256 + 37]
         XCTAssertEqual(sample.y / sample.x, 0.8, accuracy: 0.03, "色相不变")
+    }
+
+    // MARK: - E5-9 soften skin
+
+    /// 两端同一套：小图方框模糊的半径、肤色权重、边缘保留。和安卓 `ImageAdjustmentsDetailTest.skinMatchesTheSharedReferenceValues` 同一组。
+    func testSkinMatchesTheSharedReferenceValues() {
+        XCTAssertEqual(Renderer.skinRadius(forLongSide: 768), 3)
+        XCTAssertEqual(Renderer.skinRadius(forLongSide: 400), 2)
+        XCTAssertEqual(Renderer.skinRadius(forLongSide: 100), 1)
+
+        XCTAssertEqual(Renderer.skinWeight(SIMD3(224, 172, 140) / 255), 1, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.skinWeight(SIMD3(1, 1, 1)), 0, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.skinWeight(SIMD3(0.2, 0.4, 0.9)), 0, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.skinWeight(SIMD3(0.7, 0.65, 0.6)), 0.97305, accuracy: 1e-4)
+        XCTAssertEqual(Renderer.skinWeight(SIMD3(0.68, 0.66, 0.62)), 0.13426, accuracy: 1e-4)
+
+        XCTAssertEqual(Renderer.skinEdgeKeep(0), 1, accuracy: 1e-6)
+        XCTAssertEqual(Renderer.skinEdgeKeep(0.05), 0.95703, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.skinEdgeKeep(0.08), 0.5, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.skinEdgeKeep(0.2), 0, accuracy: 1e-6)
+    }
+
+    /// 美肤只磨肤色：左半边是带细纹理的肤色，磨完起伏小了很多；右半边是带同样纹理的蓝色，不动。
+    func testSkinSmoothsSkinOnly() throws {
+        let image = try makeImage(width: 400, height: 300) { x, y in
+            let bump: Float = (x + y) % 2 == 0 ? 0.03 : -0.03
+            return x < 200 ? SIMD3(0.85 + bump, 0.62 + bump, 0.52 + bump) : SIMD3(0.2 + bump, 0.4 + bump, 0.9 + bump)
+        }
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.skin = 100
+        let input = try pixels(of: image)
+        let output = try pixels(of: XCTUnwrap(Renderer.apply(adjustments, to: image)))
+        func ripple(_ values: [SIMD3<Float>], x: Int) -> Float { abs(values[150 * 400 + x].x - values[150 * 400 + x + 1].x) }
+        XCTAssertLessThan(ripple(output, x: 100), ripple(input, x: 100) * 0.4, "肤色磨平了")
+        XCTAssertEqual(ripple(output, x: 300), ripple(input, x: 300), accuracy: 1 / 255, "蓝色不动")
     }
 
     private func assertClose(_ actual: SIMD3<Float>, _ expected: SIMD3<Float>, line: UInt = #line) {

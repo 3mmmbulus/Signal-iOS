@@ -5,6 +5,7 @@
 
 import SignalServiceKit
 import UIKit
+import Vision
 
 /// Tellomi（tellomi/tellomi#1593 E5-3，Epic #1523）：调色页。
 ///
@@ -95,23 +96,14 @@ public final class TellomiImageAdjustViewController: OWSViewController {
         rowsScrollView.delaysContentTouches = false
         rowsScrollView.addSubview(rowsStack)
         panelView.addSubview(rowsScrollView)
-        for tool in Self.availableTools {
-            let row = RowView(tool: tool, value: adjustments[tool])
-            row.slider.addAction(UIAction { [weak self, weak row] _ in
-                guard let self, let row else { return }
-                self.sliderChanged(tool: tool, value: row.slider.value)
-            }, for: .valueChanged)
-            row.slider.interactionBegan = { [weak self, weak row] in
-                guard let self, let row else { return }
-                self.setDragging(true, row: row)
-            }
-            row.slider.interactionEnded = { [weak self, weak row] in
-                guard let self, let row else { return }
-                self.setDragging(false, row: row)
-            }
-            rows[tool] = row
-            rowsStack.addArrangedSubview(row)
+        // 美肤：照片里有人脸才出现，排第一（照两端 TG）；已经磨过的（再打开调色页）直接出现。
+        if adjustments.skin > 0 {
+            addRow(.skin)
         }
+        for tool in Self.availableTools {
+            addRow(tool)
+        }
+        detectFaces()
 
         panelView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(panelView)
@@ -253,6 +245,60 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             hudLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             hudLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
         ])
+    }
+
+    private func addRow(_ tool: TellomiImageAdjustments.Tool, at index: Int? = nil) {
+        let row = RowView(tool: tool, value: adjustments[tool])
+        row.slider.addAction(UIAction { [weak self, weak row] _ in
+            guard let self, let row else { return }
+            self.sliderChanged(tool: tool, value: row.slider.value)
+        }, for: .valueChanged)
+        row.slider.interactionBegan = { [weak self, weak row] in
+            guard let self, let row else { return }
+            self.setDragging(true, row: row)
+        }
+        row.slider.interactionEnded = { [weak self, weak row] in
+            guard let self, let row else { return }
+            self.setDragging(false, row: row)
+        }
+        rows[tool] = row
+        if let index {
+            rowsStack.insertArrangedSubview(row, at: index)
+        } else {
+            rowsStack.addArrangedSubview(row)
+        }
+    }
+
+    /// Tellomi（tellomi/tellomi#1599 E5-9）：美肤这一行照两端 TG 只在认出人脸时出现（`TGPhotoToolsController` 的 `requiresFaces`、
+    /// 安卓 `PhotoFilterView` 的 `hasFaces`）。用 Vision 在原图上找，找到了把这一行加在最上面。
+    private func detectFaces() {
+        guard rows[.skin] == nil, let srcImage = ImageEditorCanvasView.loadSrcImage(model: model), let cgImage = srcImage.cgImage else { return }
+        let orientation: CGImagePropertyOrientation = switch srcImage.imageOrientation {
+        case .up: .up
+        case .down: .down
+        case .left: .left
+        case .right: .right
+        case .upMirrored: .upMirrored
+        case .downMirrored: .downMirrored
+        case .leftMirrored: .leftMirrored
+        case .rightMirrored: .rightMirrored
+        @unknown default: .up
+        }
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let request = VNDetectFaceRectanglesRequest()
+            let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation, options: [:])
+            let hasFaces = (try? handler.perform([request])) != nil && !(request.results ?? []).isEmpty
+            DispatchQueue.main.async {
+                if hasFaces {
+                    self?.showSkinRow()
+                }
+            }
+        }
+    }
+
+    func showSkinRow() {
+        guard rows[.skin] == nil else { return }
+        addRow(.skin, at: 0)
     }
 
     // MARK: - Editing
