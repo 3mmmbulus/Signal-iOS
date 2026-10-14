@@ -909,6 +909,46 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertNil(viewer.checkNumberTextForTesting)
     }
 
+    /// 查看器：照片在 iCloud、要下载时中间一个进度圈，下完收起；本机就有的不出（tellomi/tellomi#1521 G-3，
+    /// 照 Telegram 聊天选图查看器 `TGMediaPickerGalleryPhotoItemView` 的 `setProgressVisible`）。
+    @MainActor
+    func testAlbumViewerShowsICloudDownloadProgress() async throws {
+        let library = FakePhotoLibrary()
+        let hosted = host(library: library)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let opened = await waitUntil { self.albumViewer(over: picker) != nil && library.viewerProgress["r4"] != nil }
+        XCTAssertTrue(opened)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertFalse(viewer.isDownloadProgressShownForTesting, "本机就有的不出圈")
+
+        library.viewerProgress["r4"]?(0)
+        XCTAssertTrue(viewer.isDownloadProgressShownForTesting, "开始下载就出圈")
+        library.viewerProgress["r4"]?(0.4)
+        XCTAssertTrue(viewer.isDownloadProgressShownForTesting)
+        library.viewerProgress["r4"]?(1)
+        XCTAssertFalse(viewer.isDownloadProgressShownForTesting, "下完收起")
+    }
+
+    /// 截图（TELLOMI_SHOTS=1）：查看器里一张照片正在从 iCloud 下载（G-3）。
+    @MainActor
+    func testAlbumViewerDownloadProgressScreenshot() async throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
+        let library = FakePhotoLibrary()
+        let hosted = host(library: library)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let opened = await waitUntil { self.albumViewer(over: picker) != nil && library.viewerProgress["r4"] != nil }
+        XCTAssertTrue(opened)
+        library.viewerProgress["r4"]?(0.35)
+        try await settle()
+        try save(render(hosted.window), name: "picker-viewer-icloud-progress.png", width: 402)
+    }
+
     // MARK: - P-11 上限
 
     /// 下滑关闭：距离 128 或速度 700 任一达到即关。
@@ -2051,6 +2091,19 @@ private final class FakePhotoLibrary: TellomiPhotoPickerLibrary {
     func requestThumbnail(for item: TellomiPhotoPickerItem, targetSize: CGSize, completion: @escaping (UIImage?) -> Void) -> TellomiPhotoPickerRequest {
         completion(image(for: item, size: CGSize(width: 90, height: 90)))
         return NoopRequest()
+    }
+
+    /// 查看器取图时交出来的进度回调，按 id（G-3：测试里自己报 iCloud 下载进度）。
+    private(set) var viewerProgress = [String: (Double) -> Void]()
+
+    func requestViewerImage(
+        for item: TellomiPhotoPickerItem,
+        targetSize: CGSize,
+        progress: @escaping (Double) -> Void,
+        completion: @escaping (UIImage?) -> Void,
+    ) -> TellomiPhotoPickerRequest {
+        viewerProgress[item.id] = progress
+        return requestThumbnail(for: item, targetSize: targetSize, completion: completion)
     }
 
     private func color(for item: TellomiPhotoPickerItem) -> UIColor {

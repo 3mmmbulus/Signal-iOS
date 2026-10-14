@@ -535,6 +535,8 @@ extension TellomiPhotoPickerAlbumViewer: UIGestureRecognizerDelegate {
 
 /// 查看器里的一页（照 Telegram `TGModernGalleryZoomableItemView`）：照片按像素尺寸放进滚动视图，正常比例 = 放进屏幕；
 /// 可捏合、双击放大 / 还原；缩到正常以下松手回弹；放大后换成全分辨率图。
+/// 照片在 iCloud、要下载时中间一个圆形进度，下完淡出（tellomi/tellomi#1521 G-3，照 Telegram 聊天选图查看器
+/// `TGMediaPickerGalleryPhotoItemView` 的 `setProgressVisible`：50 pt、不能点取消）。
 private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollViewDelegate {
 
     static let reuseIdentifier = "TellomiAlbumViewerPageCell"
@@ -551,6 +553,7 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
     private var fittedBoundsSize = CGSize.zero
     private var normalZoomScale: CGFloat = 1
     private var isFullResolution = false
+    private let downloadProgress = TellomiAlbumViewerDownloadProgress()
 
     var isZoomed: Bool { scrollView.zoomScale > normalZoomScale + 0.0001 }
 
@@ -566,6 +569,9 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
 
         imageView.contentMode = .scaleToFill
         scrollView.addSubview(imageView)
+
+        downloadProgress.isHidden = true
+        contentView.addSubview(downloadProgress)
 
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
         doubleTap.numberOfTapsRequired = 2
@@ -583,6 +589,12 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
     override func layoutSubviews() {
         super.layoutSubviews()
         scrollView.frame = contentView.bounds
+        downloadProgress.frame = CGRect(
+            x: (contentView.bounds.width - TellomiAlbumViewerDownloadProgress.size) / 2,
+            y: (contentView.bounds.height - TellomiAlbumViewerDownloadProgress.size) / 2,
+            width: TellomiAlbumViewerDownloadProgress.size,
+            height: TellomiAlbumViewerDownloadProgress.size,
+        )
         if needsFit || scrollView.bounds.size != fittedBoundsSize {
             applyFit()
         }
@@ -597,6 +609,7 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
         library = nil
         isFullResolution = false
         needsFit = true
+        downloadProgress.hide(animated: false)
     }
 
     func configure(item: TellomiPhotoPickerItem, library: TellomiPhotoPickerLibrary, targetSize: CGSize) {
@@ -604,12 +617,35 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
         self.library = library
         isFullResolution = false
         needsFit = true
-        thumbnailRequest?.cancel()
-        thumbnailRequest = library.requestThumbnail(for: item, targetSize: targetSize) { [weak self] image in
-            self?.show(image, for: item.id)
-        }
+        downloadProgress.hide(animated: false)
+        request(item, from: library, targetSize: targetSize)
         setNeedsLayout()
     }
+
+    private func request(_ item: TellomiPhotoPickerItem, from library: TellomiPhotoPickerLibrary, targetSize: CGSize) {
+        thumbnailRequest?.cancel()
+        thumbnailRequest = library.requestViewerImage(
+            for: item,
+            targetSize: targetSize,
+            progress: { [weak self] value in
+                self?.showDownloadProgress(value, for: item.id)
+            },
+            completion: { [weak self] image in
+                self?.show(image, for: item.id)
+            },
+        )
+    }
+
+    private func showDownloadProgress(_ value: Double, for itemId: String) {
+        guard self.item?.id == itemId else { return }
+        if value < 1 {
+            downloadProgress.show(progress: value)
+        } else {
+            downloadProgress.hide(animated: true)
+        }
+    }
+
+    var isShowingDownloadProgress: Bool { downloadProgress.isShowing }
 
     private var contentSize: CGSize {
         guard let item, item.pixelSize.width > 0, item.pixelSize.height > 0 else { return scrollView.bounds.size }
@@ -649,10 +685,7 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
     private func upgradeToFullResolution() {
         guard !isFullResolution, let item, let library else { return }
         isFullResolution = true
-        thumbnailRequest?.cancel()
-        thumbnailRequest = library.requestThumbnail(for: item, targetSize: item.pixelSize) { [weak self] image in
-            self?.show(image, for: item.id)
-        }
+        request(item, from: library, targetSize: item.pixelSize)
     }
 
     @objc private func handleSingleTap() {
@@ -694,6 +727,63 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
     }
 }
 
+/// iCloud 下载进度：半透明黑底圆、白色进度弧（照 Telegram `TGMessageImageViewOverlayView` 的大小与配色；画法是 Signal 的 `CircularProgressView`）。
+private final class TellomiAlbumViewerDownloadProgress: UIView {
+
+    static let size: CGFloat = 50
+
+    private let ring = CircularProgressView(frame: .zero)
+    private(set) var isShowing = false
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isUserInteractionEnabled = false
+        backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        layer.cornerRadius = Self.size / 2
+        ring.lineWidth = 2.5
+        ring.progressTintColor = .white
+        ring.trackTintColor = UIColor.white.withAlphaComponent(0.25)
+        addSubview(ring)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        ring.frame = bounds.insetBy(dx: 8, dy: 8)
+    }
+
+    /// 刚开始下时进度是 0，留一点弧，看得出是进度圈（同 Telegram 网格的 0.027 下限）。
+    func show(progress: Double) {
+        let wasShowing = isShowing
+        isShowing = true
+        layer.removeAllAnimations()
+        isHidden = false
+        alpha = 1
+        ring.setProgress(Float(max(progress, 0.03)), animated: wasShowing)
+    }
+
+    func hide(animated: Bool) {
+        guard isShowing || !isHidden else { return }
+        isShowing = false
+        guard animated else {
+            layer.removeAllAnimations()
+            isHidden = true
+            ring.progress = 0
+            return
+        }
+        UIView.animate(withDuration: 0.3, delay: 0, options: .beginFromCurrentState) {
+            self.alpha = 0
+        } completion: { _ in
+            guard !self.isShowing else { return }
+            self.isHidden = true
+            self.ring.progress = 0
+        }
+    }
+}
+
 #if TESTABLE_BUILD
 
 extension TellomiPhotoPickerAlbumViewer {
@@ -721,6 +811,12 @@ extension TellomiPhotoPickerAlbumViewer {
 
     func tapToolForTesting(_ tool: TellomiApprovalEditTool) {
         didTapEdit(tool: tool)
+    }
+
+    /// 正在看的这一页有没有 iCloud 下载进度圈。
+    var isDownloadProgressShownForTesting: Bool {
+        view.layoutIfNeeded()
+        return (collectionView.cellForItem(at: IndexPath(item: currentIndex, section: 0)) as? TellomiAlbumViewerPageCell)?.isShowingDownloadProgress ?? false
     }
 
     var isCropShownForTesting: Bool { !toolsStack.isHidden && !cropButton.isHidden }

@@ -45,6 +45,15 @@ protocol TellomiPhotoPickerLibrary: AnyObject {
     /// 缩略图；可能回调不止一次（先模糊后清楚）。返回的对象用来取消。
     func requestThumbnail(for item: TellomiPhotoPickerItem, targetSize: CGSize, completion: @escaping (UIImage?) -> Void) -> TellomiPhotoPickerRequest
 
+    /// Tellomi（tellomi/tellomi#1521 G-3）：查看器里看的那张。同 `requestThumbnail`，另外要从 iCloud 下载时在主线程报进度（0…1），
+    /// 下完或失败报 1；本机就有的不报。
+    func requestViewerImage(
+        for item: TellomiPhotoPickerItem,
+        targetSize: CGSize,
+        progress: @escaping (Double) -> Void,
+        completion: @escaping (UIImage?) -> Void,
+    ) -> TellomiPhotoPickerRequest
+
     func attachment(for item: TellomiPhotoPickerItem, attachmentLimits: OutgoingAttachmentLimits) async throws -> PreviewableAttachment
 
     /// Tellomi（tellomi/tellomi#1263 P-5「以文件发送」）：是不是 HEIC（已选里有就先问要不要转成 JPEG）。
@@ -66,6 +75,15 @@ protocol TellomiPhotoPickerLibrary: AnyObject {
 
 extension TellomiPhotoPickerLibrary {
     func fileSize(for item: TellomiPhotoPickerItem) -> Int64? { nil }
+
+    func requestViewerImage(
+        for item: TellomiPhotoPickerItem,
+        targetSize: CGSize,
+        progress: @escaping (Double) -> Void,
+        completion: @escaping (UIImage?) -> Void,
+    ) -> TellomiPhotoPickerRequest {
+        requestThumbnail(for: item, targetSize: targetSize, completion: completion)
+    }
 }
 
 protocol TellomiPhotoPickerRequest {
@@ -197,6 +215,45 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
         options.isNetworkAccessAllowed = true
         let id = imageManager.requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { image, _ in
             completion(image)
+        }
+        return ImageRequest(manager: imageManager, id: id)
+    }
+
+    func requestViewerImage(
+        for item: TellomiPhotoPickerItem,
+        targetSize: CGSize,
+        progress: @escaping (Double) -> Void,
+        completion: @escaping (UIImage?) -> Void,
+    ) -> TellomiPhotoPickerRequest {
+        guard let asset = item.asset else {
+            completion(nil)
+            return ImageRequest(manager: imageManager, id: PHInvalidImageRequestID)
+        }
+        // 下完以后还可能有排在主队列里的进度，丢掉（不然圈又冒出来）。只在主线程读写。
+        final class Finished {
+            var value = false
+        }
+        let finished = Finished()
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .opportunistic
+        options.resizeMode = .fast
+        options.isNetworkAccessAllowed = true
+        // 系统只在要从 iCloud 下载时调它，在任意队列上。
+        options.progressHandler = { value, _, _, _ in
+            DispatchQueue.main.async {
+                guard !finished.value else { return }
+                progress(min(max(value, 0), 1))
+            }
+        }
+        let id = imageManager.requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { image, info in
+            completion(image)
+            // 先给的模糊图不算完；清楚的图、出错、取消都算。
+            let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
+            guard !isDegraded else { return }
+            DispatchMainThreadSafe {
+                finished.value = true
+                progress(1)
+            }
         }
         return ImageRequest(manager: imageManager, id: id)
     }
