@@ -86,10 +86,37 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
             (SIMD3(0.6, 0.4, 0.4), adjustments(saturation: 50), SIMD3(0.67874, 0.37874, 0.37874)),
             (SIMD3(0.5, 0.5, 0.5), adjustments(warmth: 100), SIMD3(0.55356, 0.49054, 0.4152)),
             (SIMD3(0.2, 0.5, 0.8), adjustments(exposure: 35, contrast: 25, saturation: -30, warmth: 40), SIMD3(0.34061, 0.5699, 0.73056)),
+            // E5-4
+            (SIMD3(0, 0, 0), adjustments(fade: 100), SIMD3(0.24, 0.24, 0.24)),
+            (SIMD3(1, 1, 1), adjustments(fade: 100), SIMD3(0.9, 0.9, 0.9)),
+            (SIMD3(0.2, 0.2, 0.2), adjustments(shadows: 100), SIMD3(0.27767, 0.27767, 0.27767)),
+            (SIMD3(0.2, 0.2, 0.2), adjustments(shadows: -100), SIMD3(0.12233, 0.12233, 0.12233)),
+            (SIMD3(0.8, 0.8, 0.8), adjustments(highlights: 100), SIMD3(0.93593, 0.93593, 0.93593)),
+            (SIMD3(0.8, 0.8, 0.8), adjustments(highlights: -100), SIMD3(0.72233, 0.72233, 0.72233)),
+            (SIMD3(0.3, 0.5, 0.7), adjustments(exposure: 10, fade: 40, highlights: -50, shadows: 60), SIMD3(0.35348, 0.52817, 0.70425)),
         ]
         for (input, adjustments, expected) in cases {
             let output = Renderer.adjust(input, adjustments)
             XCTAssertLessThanOrEqual(simd_reduce_max(simd_abs(output - expected)), 1e-4, "\(input) → \(output)")
+        }
+    }
+
+    /// 褪色抬黑压白、中灰几乎不动；阴影只动暗部、高光只动亮部，方向照 TG（正 = 提亮）；色相不变；亮度单调。
+    func testFadeHighlightsShadows() {
+        XCTAssertEqual(Renderer.adjust(SIMD3(repeating: 0.5), adjustments(fade: 100)).x, 0.51, accuracy: 0.01)
+        XCTAssertGreaterThan(Renderer.adjust(SIMD3(repeating: 0.2), adjustments(shadows: 60)).x, 0.2)
+        XCTAssertEqual(Renderer.adjust(SIMD3(repeating: 0.9), adjustments(shadows: 100)).x, 0.9, accuracy: 0.02, "阴影不动亮部")
+        XCTAssertLessThan(Renderer.adjust(SIMD3(repeating: 0.8), adjustments(highlights: -60)).x, 0.8)
+        XCTAssertEqual(Renderer.adjust(SIMD3(repeating: 0.1), adjustments(highlights: 100)).x, 0.1, accuracy: 0.02, "高光不动暗部")
+
+        let reddish = Renderer.adjust(SIMD3(0.3, 0.15, 0.1), adjustments(shadows: 80))
+        XCTAssertEqual(reddish.x / reddish.y, 2, accuracy: 0.01, "按比例缩放，色相不变")
+
+        var previous: Float = 0
+        for step in 0...100 {
+            let output = Renderer.adjust(SIMD3(repeating: Float(step) / 100), adjustments(highlights: 100, shadows: -100)).x
+            XCTAssertGreaterThanOrEqual(output, previous - 1e-6, "step \(step)")
+            previous = output
         }
     }
 
@@ -182,12 +209,23 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         SIMD3(0, 0, 0), SIMD3(1, 1, 1), SIMD3(0.5, 0.5, 0.5), SIMD3(0.9, 0.2, 0.1), SIMD3(0.1, 0.7, 0.3), SIMD3(0.2, 0.3, 0.95),
     ]
 
-    private func adjustments(exposure: Float = 0, contrast: Float = 0, saturation: Float = 0, warmth: Float = 0) -> TellomiImageAdjustments {
+    private func adjustments(
+        exposure: Float = 0,
+        contrast: Float = 0,
+        saturation: Float = 0,
+        warmth: Float = 0,
+        fade: Float = 0,
+        highlights: Float = 0,
+        shadows: Float = 0,
+    ) -> TellomiImageAdjustments {
         var adjustments = TellomiImageAdjustments.default
         adjustments.exposure = exposure
         adjustments.contrast = contrast
         adjustments.saturation = saturation
         adjustments.warmth = warmth
+        adjustments.fade = fade
+        adjustments.highlights = highlights
+        adjustments.shadows = shadows
         return adjustments
     }
 

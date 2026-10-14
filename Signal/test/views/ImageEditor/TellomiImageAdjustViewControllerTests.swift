@@ -25,10 +25,11 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         XCTAssertEqual(TellomiImageAdjustViewController.hudText(tool: .warmth, value: 0), "Warmth 0.00")
     }
 
-    /// 行是已经能画的那几项，顺序照 Telegram iOS（曝光、对比度、饱和度、色温）；每行的滑杆范围对。
+    /// 行是已经能画的那几项，顺序照 Telegram iOS（曝光、对比度、饱和度、色温、褪色、高光、阴影）；每行的滑杆范围对。
     func testRowsAreTheRenderedToolsInTelegramOrder() throws {
         let (viewController, _) = try makeViewController()
-        XCTAssertEqual(viewController.rowToolsForTesting, [.exposure, .contrast, .saturation, .warmth])
+        XCTAssertEqual(viewController.rowToolsForTesting, [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows])
+        XCTAssertEqual(try XCTUnwrap(viewController.sliderForTesting(.fade)).range, 0...100, "褪色是单极的")
         XCTAssertEqual(try XCTUnwrap(viewController.sliderForTesting(.exposure)).range, -100...100)
     }
 

@@ -25,7 +25,7 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     }
 
     /// 照 Telegram iOS `PGPhotoEditor.availableTools` 的顺序，只放已经能画的。
-    static let availableTools: [TellomiImageAdjustments.Tool] = [.exposure, .contrast, .saturation, .warmth]
+    static let availableTools: [TellomiImageAdjustments.Tool] = [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows]
 
     private let model: ImageEditorModel
     private let initialAdjustments: TellomiImageAdjustments
@@ -35,6 +35,9 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     private let panelView = UIView()
     private let panelBackgroundView = UIView()
     private let rowsStack = UIStackView()
+    /// 照 Telegram iOS：工具列表区高度固定（约四行半），工具多了在里面上下滚，不往上盖住照片。
+    private let rowsScrollView = UIScrollView()
+    private static let maxRowsHeight: CGFloat = 52 * 4.5
     private let bottomBar = ImageEditorToolbar(tools: [])
     private let hudLabel = HUDLabel()
     private var rows: [TellomiImageAdjustments.Tool: RowView] = [:]
@@ -71,7 +74,12 @@ public final class TellomiImageAdjustViewController: OWSViewController {
 
         rowsStack.axis = .vertical
         rowsStack.translatesAutoresizingMaskIntoConstraints = false
-        panelView.addSubview(rowsStack)
+        rowsScrollView.translatesAutoresizingMaskIntoConstraints = false
+        rowsScrollView.showsVerticalScrollIndicator = false
+        // 按在滑杆上立刻开始拖（不等滚动判断）；上下滚从每行的文字那一条拖。
+        rowsScrollView.delaysContentTouches = false
+        rowsScrollView.addSubview(rowsStack)
+        panelView.addSubview(rowsScrollView)
         for tool in Self.availableTools {
             let row = RowView(tool: tool, value: adjustments[tool])
             row.slider.addAction(UIAction { [weak self, weak row] _ in
@@ -116,10 +124,22 @@ public final class TellomiImageAdjustViewController: OWSViewController {
             panelBackgroundView.trailingAnchor.constraint(equalTo: panelView.trailingAnchor),
             panelBackgroundView.bottomAnchor.constraint(equalTo: panelView.bottomAnchor),
 
-            rowsStack.topAnchor.constraint(equalTo: panelView.topAnchor, constant: 4),
-            rowsStack.leadingAnchor.constraint(equalTo: panelView.leadingAnchor, constant: 16),
-            rowsStack.trailingAnchor.constraint(equalTo: panelView.trailingAnchor, constant: -16),
-            rowsStack.bottomAnchor.constraint(equalTo: panelView.bottomAnchor, constant: -4),
+            rowsScrollView.topAnchor.constraint(equalTo: panelView.topAnchor, constant: 4),
+            rowsScrollView.leadingAnchor.constraint(equalTo: panelView.leadingAnchor, constant: 16),
+            rowsScrollView.trailingAnchor.constraint(equalTo: panelView.trailingAnchor, constant: -16),
+            rowsScrollView.bottomAnchor.constraint(equalTo: panelView.bottomAnchor, constant: -4),
+            rowsScrollView.heightAnchor.constraint(lessThanOrEqualToConstant: Self.maxRowsHeight),
+            {
+                let fitsContent = rowsScrollView.heightAnchor.constraint(equalTo: rowsStack.heightAnchor)
+                fitsContent.priority = .defaultHigh
+                return fitsContent
+            }(),
+
+            rowsStack.topAnchor.constraint(equalTo: rowsScrollView.contentLayoutGuide.topAnchor),
+            rowsStack.leadingAnchor.constraint(equalTo: rowsScrollView.contentLayoutGuide.leadingAnchor),
+            rowsStack.trailingAnchor.constraint(equalTo: rowsScrollView.contentLayoutGuide.trailingAnchor),
+            rowsStack.bottomAnchor.constraint(equalTo: rowsScrollView.contentLayoutGuide.bottomAnchor),
+            rowsStack.widthAnchor.constraint(equalTo: rowsScrollView.frameLayoutGuide.widthAnchor),
 
             imageEditorView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             imageEditorView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
