@@ -25,7 +25,7 @@ public final class TellomiImageAdjustViewController: OWSViewController {
     }
 
     /// 照 Telegram iOS `PGPhotoEditor.availableTools` 的顺序，只放已经能画的。
-    static let availableTools: [TellomiImageAdjustments.Tool] = [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows]
+    static let availableTools: [TellomiImageAdjustments.Tool] = [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows, .vignette, .grain, .sharpen]
 
     private let model: ImageEditorModel
     private let initialAdjustments: TellomiImageAdjustments

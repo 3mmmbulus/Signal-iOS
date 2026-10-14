@@ -10,7 +10,7 @@ import XCTest
 @testable import SignalServiceKit
 @testable import SignalUI
 
-/// Tellomi（tellomi/tellomi#1592 E5-2）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1595 E5-5）：调色的渲染——每一项的方向、查找表和数学一致、预览和发出的图一致、全默认跳过整条管线。
 @MainActor
 final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
 
@@ -201,10 +201,10 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         let model = try ImageEditorModel(normalizedImage: NormalizedImage.forImage(UIImage.image(color: .gray, size: CGSize(square: 400))))
         let blurred = try makeImage(width: 30, height: 20) { _, _ in SIMD3(repeating: 0.5) }
         model.blurredSourceImage = blurred
-        XCTAssertTrue(ImageEditorCanvasView.tellomiBlurredBaseImage(model: model) === blurred)
+        XCTAssertTrue(ImageEditorCanvasView.tellomiBlurredBaseImage(model: model, transform: model.currentTransform()) === blurred)
 
         model.replace(adjustments: adjustments(exposure: -80))
-        let adjustedBlur = try XCTUnwrap(ImageEditorCanvasView.tellomiBlurredBaseImage(model: model))
+        let adjustedBlur = try XCTUnwrap(ImageEditorCanvasView.tellomiBlurredBaseImage(model: model, transform: model.currentTransform()))
         XCTAssertLessThan(try centerPixel(of: adjustedBlur).x, 0.4)
     }
 
@@ -221,6 +221,184 @@ final class TellomiImageAdjustmentsRendererTests: SignalBaseTest {
         XCTAssertNotNil(output)
         print("TELLOMI_E52_12MP_BAKE_MS=\(Int(elapsedMs))")
         XCTAssertLessThan(elapsedMs, 5000)
+    }
+
+    // MARK: - E5-5 sharpen, grain, vignette
+
+    /// 两端同一套：噪声块的字节、「格」的大小、颗粒权重、暗角强度和压暗。按 `docs/product/specs/media-editor-adjustments-e5.md`
+    /// 第 4 节 E5-5 的定义算出来，安卓 `ImageAdjustmentsDetailTest.matchesTheSharedReferenceValues` 用的是同一组。
+    func testDetailMatchesTheSharedReferenceValues() {
+        let noise = Renderer.noiseTile
+        XCTAssertEqual(noise.count, 256 * 256)
+        XCTAssertEqual(Array(noise.prefix(16)), [225, 139, 100, 0, 242, 254, 138, 18, 150, 70, 19, 157, 142, 158, 38, 231])
+        XCTAssertEqual(noise.reduce(0) { $0 + Int($1) }, 8_380_824)
+        XCTAssertEqual(noise[256], 185)
+        XCTAssertEqual(noise[256 * 256 - 1], 198)
+
+        XCTAssertEqual(Renderer.detailUnit(forLongSide: 1000), 1)
+        XCTAssertEqual(Renderer.detailUnit(forLongSide: 2048), 1)
+        XCTAssertEqual(Renderer.detailUnit(forLongSide: 4032), 1.96875)
+
+        XCTAssertEqual(Renderer.grainWeight(0.5), 1, accuracy: 1e-6)
+        XCTAssertEqual(Renderer.grainWeight(0.9), 0.488, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.grainWeight(0.25), 0.875, accuracy: 1e-6)
+        XCTAssertEqual(Renderer.grainWeight(0), 0, accuracy: 1e-6)
+
+        XCTAssertEqual(Renderer.vignetteStrength(1, at: CGPoint(x: 1, y: 1)), 1, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.vignetteStrength(1, at: CGPoint(x: 1, y: 0)), 0.35355, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.vignetteStrength(1, at: CGPoint(x: 0.5, y: 0.5)), 0.125, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.vignetteStrength(1, at: CGPoint(x: 2, y: 2)), 1, accuracy: 1e-5, "画框外不再加深")
+        XCTAssertEqual(Renderer.vignette(0.5, strength: 1), 0.14146, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.vignette(1, strength: 1), 0.65, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.vignette(0.8, strength: 1), 0.39784, accuracy: 1e-5)
+        XCTAssertEqual(Renderer.vignette(0.5, strength: 0.35355), 0.3265, accuracy: 1e-4)
+        XCTAssertEqual(Renderer.vignette(0.2, strength: 0.5), 0.06282, accuracy: 1e-5)
+    }
+
+    /// 锐化：一条竖直的边两侧拉开（帐篷核、2.5 倍，参考值 0.275 / 0.725，同安卓），平的地方不动，图边不被外面拉暗。
+    func testSharpenMatchesTheMath() throws {
+        let image = try makeImage(width: 16, height: 6) { x, _ in SIMD3(repeating: x < 8 ? 0.4 : 0.6) }
+        let output = try XCTUnwrap(Renderer.apply(detail(sharpen: 100), to: image))
+        let sharpened = try pixels(of: output)
+        func at(_ x: Int, _ y: Int) -> Float { sharpened[y * 16 + x].x }
+        XCTAssertEqual(at(7, 3), 0.275, accuracy: 2.5 / 255)
+        XCTAssertEqual(at(8, 3), 0.725, accuracy: 2.5 / 255)
+        XCTAssertEqual(at(7, 3), at(7, 0), accuracy: 1 / 255, "上下边和中间一样")
+        XCTAssertEqual(at(2, 3), 0.4, accuracy: 1.5 / 255)
+        XCTAssertEqual(at(13, 3), 0.6, accuracy: 1.5 / 255)
+        XCTAssertEqual(at(0, 0), 0.4, accuracy: 1.5 / 255, "图边不被外面拉暗")
+
+        let half = try pixels(of: XCTUnwrap(Renderer.apply(detail(sharpen: 50), to: image)))
+        XCTAssertEqual(half[3 * 16 + 7].x, 0.3375, accuracy: 2.5 / 255)
+    }
+
+    /// 颗粒：中灰上有起伏（标准差 0.01…0.04），平均不变，三个通道一样（单色）；纯黑不加；噪声固定，同一张图画两次一样。
+    func testGrainAddsMonochromeMidtoneNoise() throws {
+        let gray = try makeImage(width: 128, height: 128) { _, _ in SIMD3(repeating: 0.5) }
+        let output = try pixels(of: XCTUnwrap(Renderer.apply(detail(grain: 100), to: gray)))
+        let values = output.map(\.x)
+        let mean = values.reduce(0, +) / Float(values.count)
+        let deviation = (values.map { ($0 - mean) * ($0 - mean) }.reduce(0, +) / Float(values.count)).squareRoot()
+        XCTAssertEqual(mean, 0.5, accuracy: 0.01)
+        XCTAssertGreaterThan(deviation, 0.01)
+        XCTAssertLessThan(deviation, 0.04)
+        XCTAssertTrue(output.allSatisfy { abs($0.x - $0.y) <= 1 / 255 && abs($0.y - $0.z) <= 1 / 255 }, "单色颗粒")
+
+        let again = try pixels(of: XCTUnwrap(Renderer.apply(detail(grain: 100), to: gray)))
+        XCTAssertEqual(output, again)
+
+        let black = try makeImage(width: 32, height: 32) { _, _ in SIMD3(repeating: 0) }
+        XCTAssertTrue(try pixels(of: XCTUnwrap(Renderer.apply(detail(grain: 100), to: black))).allSatisfy { $0 == SIMD3(repeating: 0) })
+    }
+
+    /// 暗角：中心不动、四角最暗，和数学一致（角上的中灰 ≈ 0.14）。
+    func testVignetteMatchesTheMath() throws {
+        let gray = try makeImage(width: 200, height: 100) { _, _ in SIMD3(repeating: 0.5) }
+        let output = try pixels(of: XCTUnwrap(Renderer.apply(detail(vignette: 100), to: gray)))
+        func at(_ x: Int, _ y: Int) -> Float { output[y * 200 + x].x }
+        let input = Float(128) / 255
+        XCTAssertEqual(at(100, 50), input, accuracy: 1.5 / 255)
+        for (x, y) in [(0, 0), (199, 0), (0, 99), (199, 99), (30, 70)] {
+            let d = CGPoint(x: 2 * (CGFloat(x) + 0.5) / 200 - 1, y: 2 * (CGFloat(y) + 0.5) / 100 - 1)
+            let expected = Renderer.vignette(input, strength: Renderer.vignetteStrength(1, at: d))
+            XCTAssertEqual(at(x, y), expected, accuracy: 2.5 / 255, "(\(x), \(y))")
+        }
+        XCTAssertLessThan(at(0, 0), 0.16)
+    }
+
+    /// 暗角跟着画框（裁剪后的输出范围）走：放大 2 倍只看中间一半时，原图 (0.25, 0.25) 是画框的左上角；左右翻转时原图左上角是画框右上角。
+    func testVignetteFrameFollowsTheCrop() {
+        let size = CGSize(width: 200, height: 100)
+        let full = ImageEditorCanvasView.tellomiVignetteFrame(imageSize: size, transform: .defaultTransform(srcImageSizePixels: size))
+        assertMaps(full, CGPoint(x: 0, y: 0), to: CGPoint(x: -1, y: -1))
+        assertMaps(full, CGPoint(x: 0.5, y: 0.5), to: .zero)
+        assertMaps(full, CGPoint(x: 1, y: 1), to: CGPoint(x: 1, y: 1))
+
+        let zoomed = ImageEditorCanvasView.tellomiVignetteFrame(
+            imageSize: size,
+            transform: ImageEditorTransform(outputSizePixels: size, unitTranslation: .zero, rotationRadians: 0, scaling: 2, isFlipped: false),
+        )
+        assertMaps(zoomed, CGPoint(x: 0.25, y: 0.25), to: CGPoint(x: -1, y: -1))
+        assertMaps(zoomed, CGPoint(x: 0.75, y: 0.75), to: CGPoint(x: 1, y: 1))
+
+        let flipped = ImageEditorCanvasView.tellomiVignetteFrame(
+            imageSize: size,
+            transform: ImageEditorTransform(outputSizePixels: size, unitTranslation: .zero, rotationRadians: 0, scaling: 1, isFlipped: true),
+        )
+        assertMaps(flipped, CGPoint(x: 0, y: 0), to: CGPoint(x: 1, y: -1))
+    }
+
+    /// 发出的图：裁剪（放大 2 倍）后暗角在裁剪后的四角，不在原图四角；画布上的预览跟着裁剪重画，暗角是 0 时裁剪变了不重画。
+    func testOutputVignetteIsCenteredOnTheCrop() throws {
+        let size = CGSize(width: 400, height: 200)
+        let source = try makeImage(width: 400, height: 200) { _, _ in SIMD3(repeating: 0.5) }
+        let model = try ImageEditorModel(normalizedImage: NormalizedImage.forImage(UIImage(cgImage: source)))
+        model.replace(adjustments: detail(vignette: 100))
+        let previewBefore = try XCTUnwrap(ImageEditorCanvasView.tellomiPreviewBaseImage(model: model))
+
+        let zoomed = ImageEditorTransform(outputSizePixels: size, unitTranslation: .zero, rotationRadians: 0, scaling: 2, isFlipped: false)
+        model.replace(transform: zoomed)
+        let output = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: model, transform: zoomed)?.cgImage)
+        let outputPixels = try pixels(of: output)
+        let corner = outputPixels[2 * output.width + 2].x
+        let center = try centerPixel(of: output).x
+        XCTAssertLessThan(corner, 0.2, "裁剪后的角上压得最暗")
+        XCTAssertEqual(center, Float(128) / 255, accuracy: 2 / 255)
+
+        let previewAfter = try XCTUnwrap(ImageEditorCanvasView.tellomiPreviewBaseImage(model: model))
+        XCTAssertFalse(previewAfter === previewBefore, "裁剪变了，暗角重画")
+
+        var noVignette = detail(grain: 30)
+        noVignette.exposure = 10
+        model.replace(adjustments: noVignette)
+        let first = try XCTUnwrap(ImageEditorCanvasView.tellomiPreviewBaseImage(model: model))
+        model.replace(transform: .defaultTransform(srcImageSizePixels: size))
+        XCTAssertTrue(try XCTUnwrap(ImageEditorCanvasView.tellomiPreviewBaseImage(model: model)) === first, "没有暗角时裁剪变了不重画")
+    }
+
+    /// 打码的小模糊图：调色和暗角照加，锐化、颗粒不加。
+    func testFaceBlurGetsVignetteButNoGrain() throws {
+        let model = try ImageEditorModel(normalizedImage: NormalizedImage.forImage(UIImage.image(color: .gray, size: CGSize(square: 400))))
+        let blurred = try makeImage(width: 60, height: 60) { _, _ in SIMD3(repeating: 0.5) }
+        model.blurredSourceImage = blurred
+        var adjustments = detail(grain: 100, vignette: 100)
+        adjustments.sharpen = 100
+        model.replace(adjustments: adjustments)
+        let adjustedBlur = try XCTUnwrap(ImageEditorCanvasView.tellomiBlurredBaseImage(model: model, transform: model.currentTransform()))
+        let blurPixels = try pixels(of: adjustedBlur)
+        XCTAssertLessThan(blurPixels[0].x, 0.2, "角上有暗角")
+        let middle = blurPixels[(30 * 60)..<(30 * 60 + 60)].map(\.x)[25..<35]
+        XCTAssertLessThanOrEqual((middle.max() ?? 0) - (middle.min() ?? 0), 2 / 255, "中间没有颗粒")
+    }
+
+    /// 12MP 原尺寸烘焙，锐化 + 颗粒 + 暗角 + 调色都开：耗时记进 PR。
+    func testTwelveMegapixelDetailBakeTime() throws {
+        let image = try makeImage(width: 4032, height: 3024) { x, y in
+            SIMD3(Float(x % 256) / 255, Float(y % 256) / 255, Float((x ^ y) % 256) / 255)
+        }
+        var adjusted = detail(sharpen: 60, grain: 50, vignette: 50)
+        adjusted.exposure = 20
+        _ = Renderer.apply(detail(sharpen: 1, grain: 1, vignette: 1), to: image) // 预热
+        let start = CACurrentMediaTime()
+        let output = Renderer.apply(adjusted, to: image)
+        let elapsedMs = (CACurrentMediaTime() - start) * 1000
+        XCTAssertNotNil(output)
+        print("TELLOMI_E55_12MP_BAKE_MS=\(Int(elapsedMs))")
+        XCTAssertLessThan(elapsedMs, 5000)
+    }
+
+    private func detail(sharpen: Float = 0, grain: Float = 0, vignette: Float = 0) -> TellomiImageAdjustments {
+        var adjustments = TellomiImageAdjustments.default
+        adjustments.sharpen = sharpen
+        adjustments.grain = grain
+        adjustments.vignette = vignette
+        return adjustments
+    }
+
+    private func assertMaps(_ frame: CGAffineTransform, _ unit: CGPoint, to expected: CGPoint, line: UInt = #line) {
+        let mapped = unit.applying(frame)
+        XCTAssertEqual(mapped.x, expected.x, accuracy: 1e-6, line: line)
+        XCTAssertEqual(mapped.y, expected.y, accuracy: 1e-6, line: line)
     }
 
     // MARK: - Helpers

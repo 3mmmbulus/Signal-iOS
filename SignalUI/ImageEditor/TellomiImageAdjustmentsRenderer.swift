@@ -9,11 +9,12 @@ import SignalServiceKit
 import simd
 import UIKit
 
-/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1596 E5-6，Epic #1523）：把调色画进图里。
+/// Tellomi（tellomi/tellomi#1592 E5-2、#1594 E5-4、#1595 E5-5、#1596 E5-6，Epic #1523）：把调色画进图里。
 ///
 /// 逐像素的几项（曝光、对比度、高光、阴影、饱和度、色温、色调、褪色）合成一张 3D 查找表，用 CoreImage 的 `CIColorCubeWithColorSpace`
 /// 在图自己的颜色空间（sRGB / Display P3 的编码值）里查——预览图和发出的原尺寸图走同一张表，所以两边一致。
-/// 后面的逐像素工具（曲线）往 `adjust(_:_:)` 里加；暗角、颗粒、锐化、模糊这些和位置有关的另走滤镜。
+/// 后面的逐像素工具（曲线）往 `adjust(_:_:)` 里加。和位置有关的三项（锐化、颗粒、暗角）是自己写的 CoreImage 内核
+/// （`TellomiImageAdjustments.metal`），也在编码值上算；顺序照两端 Telegram：锐化 → 查找表 → 颗粒 → 暗角。
 ///
 /// 每一项的数学是自己定的（Telegram 只用来对照工具、范围和方向，它的着色器一行不搬，见 `docs/product/specs/media-editor-adjustments-e5.md`）：
 /// - 曝光：线性光里乘增益，+100 = +2 档、−100 = −1.5 档；调亮时用一个让原来的白仍落在白上的肩，亮部不会一下顶死。
@@ -25,6 +26,14 @@ import UIKit
 /// - 色调：暗部 / 亮部各一个颜色，往那个颜色的色相偏（加上「颜色 − 它自己的亮度」，亮度不变），暗部按 (1−y)²、亮部按 y² 加权，
 ///   强度固定 50%（O8），c' = c + (T − luma(T))·0.6·(强度/100)·w。
 /// - 褪色：往一条「哑光」曲线 t(c) = 0.24 + 0.42c + 0.24c² 混（黑抬到 0.24、白压到 0.9、中灰几乎不动），混的比例 = 值/100。
+///
+/// 和位置有关的三项用一个「格」u = max(1, 长边 / 2048) 像素量尺寸：预览图（长边 ≤ 2048）上 u = 1，原尺寸图上按比例放大，
+/// 所以预览和发出的图看起来一样（发出的图只是同一个样子的更高分辨率版本）。
+/// - 锐化：c' = c + 2.5·(值/100)·(c − 模糊)，模糊是以 u 为一格的 3×3 帐篷核；在查找表之前（照 TG，锐化在调色之前）。
+/// - 颗粒：一块 256 × 256 的固定噪声（xorshift32，种子 0x2545F491，两端字节一样），按 2u 像素一格双线性插值、四边循环；
+///   c' = c + 0.06·(值/100)·w(y)·n，w(y) = 1 − |2y − 1|³（中间调最多，纯黑纯白不加），单色。只用于照片。
+/// - 暗角：跟着画框（裁剪后的输出范围）走，不跟着整张原图；d 是画框坐标（中心 0，四边 ±1），ρ = min(|d|/√2, 1)，
+///   k = (值/100)·ρ³，c' = c^(1 + 1.2k)·(1 − 0.35k)：角上中灰 0.5 → 0.141、白 → 0.65（TG ≈ 0.141 / 0.685，暗部比亮部压得多）。
 @MainActor
 enum TellomiImageAdjustmentsRenderer {
 
@@ -38,21 +47,68 @@ enum TellomiImageAdjustmentsRenderer {
     // MARK: - Images
 
     /// 把调色画进 `image`。全在默认值时原样返回（整条管线跳过）；出错返回 nil。
-    static func apply(_ adjustments: TellomiImageAdjustments, to image: CGImage) -> CGImage? {
+    ///
+    /// - `frame`：暗角跟着的画框，见 `fullImageFrame`；只在暗角不是 0 时有用。
+    /// - `detail`：要不要锐化和颗粒。打码用的小模糊图不要（锐化一张模糊图没意义，颗粒在小图上放大会成斑块），只调色和暗角。
+    static func apply(
+        _ adjustments: TellomiImageAdjustments,
+        to image: CGImage,
+        frame: CGAffineTransform = fullImageFrame,
+        detail: Bool = true,
+    ) -> CGImage? {
         guard !adjustments.isDefault else { return image }
 
         let colorSpace = workingColorSpace(for: image)
         let input = CIImage(cgImage: image)
-        let filter = CIFilter.colorCubeWithColorSpace()
-        filter.inputImage = input
-        filter.cubeDimension = Float(cubeDimension)
-        filter.cubeData = cubeData(for: adjustments)
-        filter.colorSpace = colorSpace
-        guard let output = filter.outputImage else {
-            owsFailDebug("Color cube produced no image.")
-            return nil
+        let extent = input.extent
+        let unit = detailUnit(forLongSide: max(image.width, image.height))
+        var output = input
+
+        if detail, adjustments.sharpen > 0 {
+            guard let sharpened = sharpen(output, amount: 2.5 * adjustments.sharpen / 100, unit: unit, colorSpace: colorSpace) else { return nil }
+            output = sharpened
         }
-        return context.createCGImage(output, from: input.extent, format: .RGBA8, colorSpace: colorSpace)
+
+        let colorTools = colorOnly(adjustments)
+        if colorTools != .default {
+            let filter = CIFilter.colorCubeWithColorSpace()
+            filter.inputImage = output
+            filter.cubeDimension = Float(cubeDimension)
+            filter.cubeData = cubeData(for: colorTools)
+            filter.colorSpace = colorSpace
+            guard let cubed = filter.outputImage else {
+                owsFailDebug("Color cube produced no image.")
+                return nil
+            }
+            output = cubed
+        }
+
+        let grain = detail ? adjustments.grain : 0
+        if grain > 0 || adjustments.vignette > 0 {
+            guard
+                let finished = grainAndVignette(
+                    output,
+                    grain: 0.06 * grain / 100,
+                    grainCell: 2 * unit,
+                    vignette: adjustments.vignette / 100,
+                    frame: frame,
+                    colorSpace: colorSpace,
+                )
+            else { return nil }
+            output = finished
+        }
+
+        return context.createCGImage(output, from: extent, format: .RGBA8, colorSpace: colorSpace)
+    }
+
+    /// 查找表只管逐像素的几项：把和位置有关的几项放回默认，只动了它们时不用查表，拖它们的滑杆也不用重算表。
+    private static func colorOnly(_ adjustments: TellomiImageAdjustments) -> TellomiImageAdjustments {
+        var colorOnly = adjustments
+        colorOnly.sharpen = 0
+        colorOnly.grain = 0
+        colorOnly.vignette = 0
+        colorOnly.blur = TellomiImageAdjustments.default.blur
+        return colorOnly
     }
 
     /// 查表用图自己的 RGB 颜色空间（相册里的照片多是 Display P3，换到 sRGB 会把超出 sRGB 的颜色截掉）；
@@ -62,6 +118,113 @@ enum TellomiImageAdjustmentsRenderer {
             return colorSpace
         }
         return CGColorSpace(name: CGColorSpace.sRGB)!
+    }
+
+    // MARK: - Position-dependent tools (E5-5)
+
+    /// 整张图就是画框（没裁剪）：单位坐标 0…1 → 画框坐标 −1…1。
+    static let fullImageFrame = CGAffineTransform(a: 2, b: 0, c: 0, d: 2, tx: -1, ty: -1)
+
+    /// 锐化、颗粒量尺寸的「格」：预览图（长边 ≤ 2048）是 1 像素，更大的图按长边 / 2048 放大。
+    static func detailUnit(forLongSide longSide: Int) -> CGFloat {
+        max(1, CGFloat(longSide) / 2048)
+    }
+
+    /// 颗粒加的量按亮度的权重：中间调 1，纯黑纯白 0。
+    static func grainWeight(_ luma: Float) -> Float {
+        let t = abs(2 * luma - 1)
+        return 1 - t * t * t
+    }
+
+    /// 画框坐标 `d` 处的暗角强度 k（`vignette` 是 值/100）。
+    static func vignetteStrength(_ vignette: Float, at d: CGPoint) -> Float {
+        let rho = min(Float(hypot(d.x, d.y)) / Float(2).squareRoot(), 1)
+        return vignette * rho * rho * rho
+    }
+
+    /// 暗角压一个编码值：c^(1 + 1.2k)·(1 − 0.35k)。
+    static func vignette(_ value: Float, strength k: Float) -> Float {
+        pow(value, 1 + 1.2 * k) * (1 - 0.35 * k)
+    }
+
+    /// 颗粒的噪声块：xorshift32（种子 0x2545F491），每步取高 8 位，256 × 256，第 0 行在上。安卓 `ImageAdjustmentsDetail.NOISE` 同一组字节。
+    static let noiseTile: [UInt8] = {
+        var state: UInt32 = 0x2545_F491
+        return (0..<(256 * 256)).map { _ in
+            state ^= state << 13
+            state ^= state >> 17
+            state ^= state << 5
+            return UInt8(state >> 24)
+        }
+    }()
+
+    /// 不做颜色管理（`colorSpace: nil`），内核读到的就是字节 / 255。
+    private static let noiseImage = CIImage(
+        bitmapData: Data(noiseTile),
+        bytesPerRow: 256,
+        size: CGSize(width: 256, height: 256),
+        format: .L8,
+        colorSpace: nil,
+    )
+
+    private static let kernels: (sharpen: CIKernel, grainVignette: CIKernel)? = {
+        // `TellomiImageAdjustments.metal` 编进 SignalUI.framework 自己的 default.metallib（主 App 和分享扩展都带着它）。
+        guard
+            let url = Bundle(for: ImageEditorModel.self).url(forResource: "default", withExtension: "metallib"),
+            let data = try? Data(contentsOf: url)
+        else {
+            owsFailDebug("SignalUI has no Metal library.")
+            return nil
+        }
+        do {
+            return (
+                try CIKernel(functionName: "tellomiSharpen", fromMetalLibraryData: data),
+                try CIKernel(functionName: "tellomiGrainVignette", fromMetalLibraryData: data),
+            )
+        } catch {
+            owsFailDebug("Could not load the adjustment kernels: \(error)")
+            return nil
+        }
+    }()
+
+    private static func sharpen(_ image: CIImage, amount: Float, unit: CGFloat, colorSpace: CGColorSpace) -> CIImage? {
+        guard let kernel = kernels?.sharpen, let encoded = image.matchedFromWorkingSpace(to: colorSpace) else { return nil }
+        let extent = image.extent
+        // 边上的像素往外取时拿最靠边的那一圈（不然图边会被透明的外面拉暗）。
+        let output = kernel.apply(
+            extent: extent,
+            roiCallback: { _, rect in rect.insetBy(dx: -unit - 1, dy: -unit - 1) },
+            arguments: [encoded.clampedToExtent(), Float(unit), amount],
+        )
+        return output?.cropped(to: extent).matchedToWorkingSpace(from: colorSpace)
+    }
+
+    private static func grainAndVignette(
+        _ image: CIImage,
+        grain: Float,
+        grainCell: CGFloat,
+        vignette: Float,
+        frame: CGAffineTransform,
+        colorSpace: CGColorSpace,
+    ) -> CIImage? {
+        guard let kernel = kernels?.grainVignette, let encoded = image.matchedFromWorkingSpace(to: colorSpace) else { return nil }
+        let extent = image.extent
+        let noise = noiseImage
+        let output = kernel.apply(
+            extent: extent,
+            roiCallback: { index, rect in index == 0 ? rect : noise.extent },
+            arguments: [
+                encoded,
+                noise,
+                grain,
+                Float(grainCell),
+                vignette,
+                CIVector(x: extent.width, y: extent.height),
+                CIVector(x: frame.a, y: frame.c, z: frame.tx),
+                CIVector(x: frame.b, y: frame.d, z: frame.ty),
+            ],
+        )
+        return output?.matchedToWorkingSpace(from: colorSpace)
     }
 
     // MARK: - Lookup table

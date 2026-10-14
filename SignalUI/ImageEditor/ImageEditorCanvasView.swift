@@ -724,7 +724,7 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         }
         let imageLayer = CALayer()
         // Tellomi（tellomi/tellomi#1592 E5-2）：调过色就画原尺寸的调色图。
-        imageLayer.contents = tellomiFullBaseImage(model: model, srcImage: srcImage) ?? srcImage.cgImage
+        imageLayer.contents = tellomiFullBaseImage(model: model, srcImage: srcImage, transform: transform) ?? srcImage.cgImage
         imageLayer.contentsScale = srcImage.scale
         updateImageLayer(
             imageLayer: imageLayer,
@@ -1079,7 +1079,7 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         }
         let imageLayer = CALayer()
         // Tellomi（tellomi/tellomi#1592 E5-2）：橡皮露出来的是调色后的照片。
-        imageLayer.contents = tellomiEraserBaseImage(model: model) ?? srcImage.cgImage
+        imageLayer.contents = tellomiEraserBaseImage(model: model, transform: transform) ?? srcImage.cgImage
         imageLayer.contentsScale = srcImage.scale
         updateImageLayer(imageLayer: imageLayer, viewSize: viewSize, imageSize: model.srcImageSizePixels, transform: transform)
         return imageLayer
@@ -1517,7 +1517,7 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         viewSize: CGSize,
     ) -> CALayer? {
         // Tellomi（tellomi/tellomi#1592 E5-2）：打码从调色后的底图取样。
-        guard let blurredSourceImage = tellomiBlurredBaseImage(model: model) else {
+        guard let blurredSourceImage = tellomiBlurredBaseImage(model: model, transform: transform) else {
             // If we fail to generate the blur image, or it's not ready yet, use a black mask
             let layer = CALayer()
             layer.frame = imageFrame(forViewSize: viewSize, imageSize: model.srcImageSizePixels, transform: transform)
@@ -1682,9 +1682,8 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
     // MARK: - ImageEditorModelObserver
 
     func imageEditorModelDidChange(before: ImageEditorContents, after: ImageEditorContents) {
-        if before.adjustments != after.adjustments {
-            tellomiUpdateBaseImage()
-        }
+        // 调色变了要重画底图；裁剪变了（这里 before == after）而暗角不是 0 也要，暗角跟着画框。没变时走缓存，不重画。
+        tellomiUpdateBaseImage()
         updateAllContent()
         updateLayout()
     }

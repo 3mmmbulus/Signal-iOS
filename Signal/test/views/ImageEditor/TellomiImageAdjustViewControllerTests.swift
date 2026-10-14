@@ -28,7 +28,7 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
     /// 行是已经能画的那几项，顺序照 Telegram iOS（曝光、对比度、饱和度、色温、褪色、高光、阴影）；每行的滑杆范围对。
     func testRowsAreTheRenderedToolsInTelegramOrder() throws {
         let (viewController, _) = try makeViewController()
-        XCTAssertEqual(viewController.rowToolsForTesting, [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows])
+        XCTAssertEqual(viewController.rowToolsForTesting, [.exposure, .contrast, .saturation, .warmth, .fade, .highlights, .shadows, .vignette, .grain, .sharpen])
         XCTAssertEqual(try XCTUnwrap(viewController.sliderForTesting(.fade)).range, 0...100, "褪色是单极的")
         XCTAssertEqual(try XCTUnwrap(viewController.sliderForTesting(.exposure)).range, -100...100)
     }
@@ -125,7 +125,7 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         XCTAssertNil(viewController.hudTextForTesting)
     }
 
-    /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），以及按住看原图。
+    /// 截图（TELLOMI_SHOTS=1）：调色页（曝光 +0.35、色温 −0.20），按住看原图，色调页，暗角 / 颗粒 / 锐化和发出的图。
     func testScreenshots() async throws {
         let environment = ProcessInfo.processInfo.environment
         try XCTSkipUnless(environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
@@ -158,6 +158,25 @@ final class TellomiImageAdjustViewControllerTests: SignalBaseTest {
         window.layoutIfNeeded()
         try await Task.sleep(nanoseconds: 300_000_000)
         try save(window, as: "adjust-tint", in: directory)
+
+        // E5-5：暗角、颗粒、锐化（列表滚到底看新加的三行），再存一张发出的原尺寸图看效果。
+        viewController.showTintTabForTesting(false)
+        let vignetteSlider = try XCTUnwrap(viewController.sliderForTesting(.vignette))
+        vignetteSlider.updateValue(100)
+        try XCTUnwrap(viewController.sliderForTesting(.grain)).updateValue(60)
+        try XCTUnwrap(viewController.sliderForTesting(.sharpen)).updateValue(60)
+        var ancestor: UIView? = vignetteSlider
+        while let view = ancestor, !(view is UIScrollView) {
+            ancestor = view.superview
+        }
+        if let scrollView = ancestor as? UIScrollView {
+            scrollView.setContentOffset(CGPoint(x: 0, y: max(0, scrollView.contentSize.height - scrollView.bounds.size.height)), animated: false)
+        }
+        window.layoutIfNeeded()
+        try await Task.sleep(nanoseconds: 500_000_000)
+        try save(window, as: "adjust-detail", in: directory)
+        let output = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: model, transform: model.currentTransform()))
+        try XCTUnwrap(output.pngData()).write(to: directory.appendingPathComponent("\(Int(window.bounds.size.width))/adjust-detail-output.png"))
     }
 
     // MARK: - Helpers

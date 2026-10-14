@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3892E5CA45F76A4E5CC2DCEF /* TellomiImageAdjustments.metal in Sources */ = {isa = PBXBuildFile; fileRef = B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */; };
 		AC0321167F1B63C3997210D4 /* TellomiImageAdjustViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675DF55C96AD35AE5265F7B /* TellomiImageAdjustViewControllerTests.swift */; };
 		D41529141EFD1714CF27BB44 /* TellomiImageAdjustViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C2A7A48A7A1E314AAC61CA /* TellomiImageAdjustViewController.swift */; };
 		9948927ED4C905209CEAA345 /* TellomiAdjustmentSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FA69BBAE9AC62B12AE90B6 /* TellomiAdjustmentSlider.swift */; };
@@ -4459,6 +4460,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = TellomiImageAdjustments.metal; sourceTree = "<group>"; };
 		3675DF55C96AD35AE5265F7B /* TellomiImageAdjustViewControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustViewControllerTests.swift; sourceTree = "<group>"; };
 		C2C2A7A48A7A1E314AAC61CA /* TellomiImageAdjustViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustViewController.swift; sourceTree = "<group>"; };
 		46FA69BBAE9AC62B12AE90B6 /* TellomiAdjustmentSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAdjustmentSlider.swift; sourceTree = "<group>"; };
@@ -9931,6 +9933,7 @@
 				46FA69BBAE9AC62B12AE90B6 /* TellomiAdjustmentSlider.swift */,
 				671DB4204E85E0036EB88B4A /* ImageEditorCanvasView+TellomiAdjustments.swift */,
 				1C345EAFF60BA1E0807FBDD8 /* TellomiImageAdjustmentsRenderer.swift */,
+				B17944C739489178AC277CB8 /* TellomiImageAdjustments.metal */,
 				7628DDBC28075056009AA53D /* ImageEditorCropView.swift */,
 				34A95556271B510400B05242 /* ImageEditorCropViewController.swift */,
 				34A9555E271B510400B05242 /* ImageEditorItem.swift */,
@@ -18843,6 +18846,7 @@
 				9948927ED4C905209CEAA345 /* TellomiAdjustmentSlider.swift in Sources */,
 				897C8B5DB1CDC2E4327B8367 /* ImageEditorCanvasView+TellomiAdjustments.swift in Sources */,
 				46F6F4E39302F08FEFD872D2 /* TellomiImageAdjustmentsRenderer.swift in Sources */,
+				3892E5CA45F76A4E5CC2DCEF /* TellomiImageAdjustments.metal in Sources */,
 				7628DDBE2807505D009AA53D /* ImageEditorCropView.swift in Sources */,
 				3402AAB6271D9E180084CBAE /* ImageEditorCropViewController.swift in Sources */,
 				3402AA72271D9E180084CBAE /* ImageEditorItem.swift in Sources */,
@@ -22137,6 +22141,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTLLINKER_FLAGS = "-framework CoreImage";
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -22200,6 +22205,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTLLINKER_FLAGS = "-framework CoreImage";
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
@@ -22266,6 +22272,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTLLINKER_FLAGS = "-framework CoreImage";
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
@@ -22332,6 +22339,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTLLINKER_FLAGS = "-framework CoreImage";
 				PRODUCT_BUNDLE_IDENTIFIER = org.signal.SignalUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
