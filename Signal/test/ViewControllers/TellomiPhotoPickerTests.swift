@@ -472,7 +472,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         hosted.picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertFalse(hosted.picker.moreMenuItemsForTesting.contains(.moveCaptionUp))
-        XCTAssertNil(hosted.picker.sendMenuTitlesForTesting, "没有说明时发送键长按不弹")
+        XCTAssertEqual(hosted.picker.sendMenuTitlesForTesting, ["Schedule Message"], "没有说明时长按只有定时发送（M-4）")
     }
 
     /// #1263（ADR-0068 §4.7 P3）：发送键长按菜单的「说明文字上移 / 下移」——条件同「···」那项，和它是同一个开关；
@@ -483,13 +483,13 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         let picker = hosted.picker
         picker.tapCheckForTesting(itemIndex: 0)
-        XCTAssertNil(picker.sendMenuTitlesForTesting)
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Schedule Message"])
 
         picker.typeCaptionForTesting("说明")
-        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Up"])
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Up", "Schedule Message"])
 
         picker.performSendMenuCaptionItemForTesting()
-        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Down"])
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Down", "Schedule Message"])
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
         XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
 
@@ -499,16 +499,16 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         editor.tellomiLongPressSendForTesting()
         let preview = try await presentedPreview(picker)
         XCTAssertTrue(preview.presentingViewController === editor.navigationController, "盖在预览 / 编辑页上面")
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down"])
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down", "Schedule Message"])
         picker.performMoreMenuItemForTesting(.moveCaptionDown)
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up"])
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up", "Schedule Message"])
         preview.tapBackgroundForTesting()
         let previewClosed = await waitUntil { picker.sendPreviewForTesting == nil }
         XCTAssertTrue(previewClosed)
         await closeEditor(picker)
 
         picker.typeCaptionForTesting("")
-        XCTAssertNil(picker.sendMenuTitlesForTesting)
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Schedule Message"])
     }
 
     /// #1519 M-5（照 Telegram iOS `ChatSendMessageContextScreen`）：长按发送键 = 发送键左边一个「发出去是什么样」的气泡、下面是菜单，
@@ -525,7 +525,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         picker.longPressSendForTesting()
         let preview = try await presentedPreview(picker)
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up"])
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up", "Schedule Message"])
         XCTAssertEqual(preview.captionTextForTesting, "Trip")
         XCTAssertEqual(preview.captionIsAboveMediaForTesting, false)
 
@@ -545,7 +545,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         preview.performActionForTesting(at: 0)
         XCTAssertTrue(picker.sendPreviewForTesting === preview, "点了不收")
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down"])
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down", "Schedule Message"])
         XCTAssertEqual(preview.captionIsAboveMediaForTesting, true)
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
 
@@ -613,6 +613,78 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         hosted.picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertNil(hosted.picker.sendMenuTitlesForTesting)
+    }
+
+    // MARK: - M-4 定时发送
+
+    /// #1519 M-4（照 Telegram 两端）：长按发送 →「定时发送」→ 底部弹出选时间 → 点「… 发送」：照常发送，只是交给会话页时带着时间；
+    /// 之后普通的发送不带时间。
+    @MainActor
+    func testLongPressSendSchedulesTheMessage() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 1)
+        picker.typeCaptionForTesting("Later")
+
+        picker.longPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        XCTAssertEqual(preview.actionTitlesForTesting.last, "Schedule Message")
+        preview.performActionForTesting(at: preview.actionTitlesForTesting.count - 1)
+        let sheet = try await presentedScheduleSheet(over: picker)
+        XCTAssertNil(picker.sendPreviewForTesting, "预览收起，换成选时间")
+
+        let at = try XCTUnwrap(Calendar.current.date(byAdding: .day, value: 3, to: TellomiScheduleTimeSheet.defaultDate(now: Date())))
+        sheet.datePickerForTesting.date = at
+        sheet.tapConfirmForTesting()
+
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(sent.scheduledAt, at)
+        XCTAssertEqual(sent.body?.text, "Later")
+        XCTAssertEqual(sent.approved.attachments.count, 2)
+        XCTAssertFalse(sent.separately)
+
+        picker.tapSendForTesting()
+        let next = try await nextSend(hosted, count: 2)
+        XCTAssertNil(next.scheduledAt, "普通发送不带时间")
+    }
+
+    /// 上游预览 / 编辑页的发送键长按里选「定时发送」：那一页照常发送，交回来时带着时间；之后在同一页普通发送不带时间。
+    @MainActor
+    func testSchedulingFromTheEditorThenSendingNormally() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        let editor = try await openEditor(picker, onCard: "r0")
+        XCTAssertTrue(editor.tellomiSendLongPressEnabledForTesting, "没写说明也能长按（有定时发送）")
+        editor.tellomiLongPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Schedule Message"])
+        preview.performActionForTesting(at: 0)
+        let sheet = try await presentedScheduleSheet(over: picker)
+        let at = TellomiScheduleTimeSheet.defaultDate(now: Date()).addingTimeInterval(3600)
+        sheet.datePickerForTesting.date = at
+        sheet.tapConfirmForTesting()
+
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(sent.scheduledAt, at)
+        XCTAssertEqual(sent.approved.attachments.count, 1)
+
+        // 还在这一页（测试里的会话页不收起它）：普通发送不带上一次的时间。
+        editor.tellomiTapSendForTesting()
+        let next = try await nextSend(hosted, count: 2)
+        XCTAssertNil(next.scheduledAt)
+    }
+
+    /// 收藏（给自己）里叫「设置提醒」（同 Telegram 两端 `SetReminder`）。
+    @MainActor
+    func testSavedMessagesSaysSetAReminder() async throws {
+        let hosted = host(canSendAsFile: true, isNoteToSelf: true)
+        defer { hosted.tearDown() }
+        hosted.picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertEqual(hosted.picker.sendMenuTitlesForTesting, ["Set a Reminder"])
     }
 
     // MARK: - P-9 / P-10 在网格里直接发
@@ -1828,7 +1900,8 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         }
     }
 
-    /// 截图（TELLOMI_SHOTS=1）：长按发送的预览（#1519 M-5）——三张 + 说明在下、切到上面之后。窗口接在真实屏幕上（要安全区）。
+    /// 截图（TELLOMI_SHOTS=1）：长按发送的预览（#1519 M-5）——三张 + 说明在下、切到上面之后；再点「定时发送」的选时间（M-4）。
+    /// 窗口接在真实屏幕上（要安全区）。
     @MainActor
     func testSendPreviewScreenshots() async throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
@@ -1849,8 +1922,13 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             preview.performActionForTesting(at: 0)
             try await settle()
             try save(render(hosted.window), name: "send-preview-caption-above.png", width: width)
-            preview.tapBackgroundForTesting()
-            _ = await waitUntil { hosted.picker.sendPreviewForTesting == nil }
+            // M-4：菜单里的「定时发送」→ 底部弹出选时间。
+            preview.performActionForTesting(at: preview.actionTitlesForTesting.count - 1)
+            let sheet = try await presentedScheduleSheet(over: hosted.picker)
+            try await settle()
+            try save(render(hosted.window), name: "schedule-time-sheet.png", width: width)
+            sheet.dismiss(animated: false)
+            _ = await waitUntil { sheet.presentingViewController == nil }
             hosted.window.isHidden = true
         }
     }
@@ -1863,6 +1941,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defaultImageQuality: ImageQuality = .standard,
         canSendSeparately: Bool = true,
         canSendAsFile: Bool = false,
+        isNoteToSelf: Bool = false,
         maxSelection: Int = 32,
         initialText: String? = nil,
         chatBackground: UIView? = nil,
@@ -1880,6 +1959,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             defaultImageQuality: defaultImageQuality,
             canSendSeparately: canSendSeparately,
             canSendAsFile: canSendAsFile,
+            isNoteToSelf: isNoteToSelf,
             hasQuotedReplyDraft: false,
             attachmentLimits: .currentLimits(),
             approvalDataSource: dataSource,
@@ -1973,6 +2053,24 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let opened = await waitUntil { self.approvalViewController(over: picker) != nil }
         XCTAssertTrue(opened)
         return try XCTUnwrap(approvalViewController(over: picker))
+    }
+
+    /// 盖在最上面的「定时发送」选时间页。
+    @MainActor
+    private func presentedScheduleSheet(over picker: TellomiPhotoPickerViewController) async throws -> TellomiScheduleTimeSheet {
+        func topmost() -> UIViewController? {
+            var top: UIViewController? = picker
+            while let presented = top?.presentedViewController {
+                top = presented
+            }
+            return top
+        }
+        let shown = await waitUntil {
+            guard let sheet = topmost() as? TellomiScheduleTimeSheet else { return false }
+            return sheet.viewIfLoaded?.window != nil && !sheet.isBeingPresented
+        }
+        XCTAssertTrue(shown, "弹出选时间")
+        return try XCTUnwrap(topmost() as? TellomiScheduleTimeSheet)
     }
 
     @MainActor
@@ -2233,6 +2331,7 @@ private final class RecordingPickerDelegate: TellomiPhotoPickerDelegate {
         let body: MessageBody?
         let separately: Bool
         var captionAboveMedia = false
+        var scheduledAt: Date?
     }
 
     var cancels = 0
@@ -2258,8 +2357,8 @@ private final class RecordingPickerDelegate: TellomiPhotoPickerDelegate {
         cameraRequests += 1
     }
 
-    func photoPicker(_ picker: TellomiPhotoPickerViewController, send approvedAttachments: ApprovedAttachments, messageBody: MessageBody?, separately: Bool, captionAboveMedia: Bool) {
-        sent.append(Sent(approved: approvedAttachments, body: messageBody, separately: separately, captionAboveMedia: captionAboveMedia))
+    func photoPicker(_ picker: TellomiPhotoPickerViewController, send approvedAttachments: ApprovedAttachments, messageBody: MessageBody?, separately: Bool, captionAboveMedia: Bool, scheduledAt: Date?) {
+        sent.append(Sent(approved: approvedAttachments, body: messageBody, separately: separately, captionAboveMedia: captionAboveMedia, scheduledAt: scheduledAt))
     }
 
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?) {

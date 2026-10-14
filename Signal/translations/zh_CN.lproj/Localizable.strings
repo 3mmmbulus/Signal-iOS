@@ -11223,6 +11223,36 @@
 /* Action on the notification shown when a scheduled message is due: send it right away without opening the app. */
 "TELLOMI_SCHEDULED_MESSAGE_SEND_NOW_ACTION" = "立即发送";
 
+/* Long-press send menu item and sheet title: choose a time to send this message later. */
+"TELLOMI_SCHEDULE_MESSAGE" = "定时发送";
+
+/* Toast after scheduling a message to be sent later. Embeds {{date and time, e.g. 'Today at 14:35'}}. */
+"TELLOMI_SCHEDULE_MESSAGE_SCHEDULED_TOAST_FORMAT" = "已定时：%@";
+
+/* Toast after setting a reminder in Saved Messages (note to self). Embeds {{date and time, e.g. 'Today at 14:35'}}. */
+"TELLOMI_SCHEDULE_REMINDER_SET_TOAST_FORMAT" = "已设置提醒：%@";
+
+/* Button in the reminder time sheet (Saved Messages) for a day after tomorrow. Embeds {{date}} and {{time}}. */
+"TELLOMI_SCHEDULE_REMIND_ON_FORMAT" = "%1$@ %2$@ 提醒";
+
+/* Button in the reminder time sheet (Saved Messages) when the chosen time is today. Embeds {{time}}. */
+"TELLOMI_SCHEDULE_REMIND_TODAY_FORMAT" = "今天 %@ 提醒";
+
+/* Button in the reminder time sheet (Saved Messages) when the chosen time is tomorrow. Embeds {{time}}. */
+"TELLOMI_SCHEDULE_REMIND_TOMORROW_FORMAT" = "明天 %@ 提醒";
+
+/* Button in the schedule time sheet for a day after tomorrow. Embeds {{date}} and {{time}}. */
+"TELLOMI_SCHEDULE_SEND_ON_FORMAT" = "%1$@ %2$@ 发送";
+
+/* Button in the schedule time sheet when the chosen time is today. Embeds {{time}}. */
+"TELLOMI_SCHEDULE_SEND_TODAY_FORMAT" = "今天 %@ 发送";
+
+/* Button in the schedule time sheet when the chosen time is tomorrow. Embeds {{time}}. */
+"TELLOMI_SCHEDULE_SEND_TOMORROW_FORMAT" = "明天 %@ 发送";
+
+/* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
+"TELLOMI_SCHEDULE_SET_REMINDER" = "设置提醒";
+
 /* Tellomi: Setting in Chats settings for expanding short links (such as b23.tv) before generating a link preview. On by default, kept on this device only. */
 "TELLOMI_SETTINGS_EXPAND_SHORT_LINKS" = "展开短链接";
 

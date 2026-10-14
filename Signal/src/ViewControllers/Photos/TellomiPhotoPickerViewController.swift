@@ -19,12 +19,14 @@ protocol TellomiPhotoPickerDelegate: AnyObject {
     /// 发送：网格里直接发（P-10）、「···」里立即发（P-5），或从上游预览 / 编辑页发。
     /// 附件按勾的顺序；画质只管这一次（D9）；`separately` 时一张一条、说明挂最后一条。发完由接收方把面板收起。
     /// `captionAboveMedia`（#1263，ADR-0068 §4.7）：说明文字画在媒体上方（「···」里切的）。
+    /// `scheduledAt`（#1519 M-4）：长按发送里选了「定时发送」时的时间：不马上发，排成定时消息。
     func photoPicker(
         _ picker: TellomiPhotoPickerViewController,
         send approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
         separately: Bool,
         captionAboveMedia: Bool,
+        scheduledAt: Date?,
     )
 
     /// 说明和会话输入框是同一段字（同上游的预览页）。
@@ -83,6 +85,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         /// M-2（#1263，ADR-0068 §4.7）：说明文字上移 / 下移（开关，不发送）。
         case moveCaptionUp
         case moveCaptionDown
+        /// M-4（#1519）：定时发送（长按发送里，收藏里叫「设置提醒」）。
+        case scheduleSend
 
         var isToggle: Bool {
             self == .moveCaptionUp || self == .moveCaptionDown
@@ -104,6 +108,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         didSet { updateSendMenus() }
     }
     private let hasQuotedReplyDraft: Bool
+    /// M-4：收藏（给自己）里「定时发送」叫「设置提醒」（同 Telegram 两端）。
+    private let isNoteToSelf: Bool
     private let maxSelection: Int
     let attachmentLimits: OutgoingAttachmentLimits
     private let initialMessageBody: MessageBody?
@@ -151,6 +157,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         defaultImageQuality: ImageQuality,
         canSendSeparately: Bool,
         canSendAsFile: Bool = false,
+        isNoteToSelf: Bool = false,
         hasQuotedReplyDraft: Bool,
         attachmentLimits: OutgoingAttachmentLimits,
         approvalDataSource: AttachmentApprovalViewControllerDataSource,
@@ -166,6 +173,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         self.defaultImageQuality = defaultImageQuality
         self.canSendSeparately = canSendSeparately
         self.canSendAsFile = canSendAsFile
+        self.isNoteToSelf = isNoteToSelf
         self.hasQuotedReplyDraft = hasQuotedReplyDraft
         self.attachmentLimits = attachmentLimits
         self.approvalDataSource = approvalDataSource
@@ -1098,23 +1106,58 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     // MARK: - Long-press send (#1263 P3, #1519 M-5)
 
-    /// 发送键长按菜单里的项（ADR-0068 §4.7 P3）：照 Telegram iOS `ChatSendMessageContextScreen` 的第一项「说明文字上移 / 下移」（captionPosition），
-    /// 条件同「···」里那项。Tellomi iOS 的长按菜单现在只有这一项（定时发送是 M-4，还没做），没有可给的就不挂长按。
+    /// 发送键长按菜单里的项，照 Telegram iOS `ChatSendMessageContextScreen` 的顺序：
+    /// 「说明文字上移 / 下移」（captionPosition，ADR-0068 §4.7 P3，条件同「···」里那项），「定时发送」（M-4：会话里、有选中；
+    /// TG 两端在能发的会话里都给）。没有可给的就不挂长按。
     private func sendMenuItems() -> [MoreMenuItem] {
-        guard canMoveCaption else { return [] }
-        return [isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp]
+        var items = [MoreMenuItem]()
+        if canMoveCaption {
+            items.append(isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp)
+        }
+        if canSchedule {
+            items.append(.scheduleSend)
+        }
+        return items
+    }
+
+    /// M-4：会话里（同「以文件发送」，由会话页发）、有选中。
+    private var canSchedule: Bool {
+        canSendAsFile && !selectedIds.isEmpty
     }
 
     private func sendPreviewActions() -> [TellomiSendPreviewViewController.Action] {
         sendMenuItems().map { item in
             TellomiSendPreviewViewController.Action(
-                title: Self.title(for: item, selectedCount: selectedIds.count),
+                title: Self.title(for: item, selectedCount: selectedIds.count, isNoteToSelf: isNoteToSelf),
                 image: Self.image(for: item),
-                keepsPresented: true,
+                keepsPresented: item.isToggle,
             ) { [weak self] in
-                self?.toggleCaptionFromSendMenu()
+                guard let self else { return }
+                if item == .scheduleSend {
+                    self.presentScheduleSheet(sendingWith: self.sendPreviewButton)
+                } else {
+                    self.toggleCaptionFromSendMenu()
+                }
             }
         }
+    }
+
+    /// M-4：选时间；选好了照点这个发送键那样发，只是排成定时消息。网格的发送键直接发；上游预览 / 编辑页的发送键让那一页照常发
+    /// （编辑画进去、选的画质、一次性查看），它交回来时带着时间（`tellomiApprovedScheduledAt`）。
+    private func presentScheduleSheet(sendingWith button: UIButton?) {
+        let sheet = TellomiScheduleTimeSheet(isReminder: isNoteToSelf) { [weak self, weak button] date in
+            guard let self else { return }
+            if let button, button !== self.sendButton, let editingApproval = self.editingApproval {
+                editingApproval.tellomiProceed(scheduledAt: date)
+            } else {
+                self.send(quality: self.defaultImageQuality, separately: false, scheduledAt: date)
+            }
+        }
+        var presenter: UIViewController = self
+        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
+            presenter = presented
+        }
+        sheet.present(from: presenter)
     }
 
     private func toggleCaptionFromSendMenu() {
@@ -1134,6 +1177,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     }
 
     private weak var sendPreview: TellomiSendPreviewViewController?
+    /// 弹出预览的那个发送键（网格的，或上游预览 / 编辑页的）。
+    private weak var sendPreviewButton: UIButton?
 
     /// 正开着的预览（收起了就是 nil）。
     private var presentedSendPreview: TellomiSendPreviewViewController? {
@@ -1171,6 +1216,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         }
         presenter.present(preview, animated: false)
         sendPreview = preview
+        sendPreviewButton = button
     }
 
     private func moreMenuActions() -> [UIMenuElement] {
@@ -1186,7 +1232,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         return sendActions + [UIMenu(title: "", options: .displayInline, children: toggleActions)]
     }
 
-    private static func title(for item: MoreMenuItem, selectedCount: Int) -> String {
+    private static func title(for item: MoreMenuItem, selectedCount: Int, isNoteToSelf: Bool = false) -> String {
         switch item {
         case .sendAsFile where selectedCount > 1:
             String.nonPluralLocalizedStringWithFormat(
@@ -1205,6 +1251,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP", comment: "Photo picker more-menu item: show the caption above the photos in the sent message.")
         case .moveCaptionDown:
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN", comment: "Photo picker more-menu item: show the caption below the photos in the sent message (the default).")
+        case .scheduleSend:
+            TellomiScheduleTimeSheet.title(isReminder: isNoteToSelf)
         }
     }
 
@@ -1216,6 +1264,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case .sendSeparately: Theme.iconImage(.buttonPhotoLibrary)
         case .moveCaptionUp: UIImage(named: "arrow-up")
         case .moveCaptionDown: UIImage(named: "arrow-down")
+        case .scheduleSend: UIImage(systemName: "calendar.badge.clock")
         }
     }
 
@@ -1232,6 +1281,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case .moveCaptionUp, .moveCaptionDown:
             // 菜单自己收起，下次打开换成另一项（同 Telegram：点了先收起再切）。长按发送里的那项跟着换（didSet）。
             isCaptionAboveMedia.toggle()
+        case .scheduleSend:
+            presentScheduleSheet(sendingWith: sendButton)
         }
     }
 
@@ -1360,6 +1411,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 separately: true,
                 // 按文件发的不适用（ADR-0068 §4.7）。
                 captionAboveMedia: false,
+                scheduledAt: nil,
             )
         }
         guard let name = tooLarge.first else {
@@ -1384,7 +1436,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         return body.text.ows_stripped().isEmpty ? nil : body
     }
 
-    private func send(quality: ImageQuality, separately: Bool) {
+    private func send(quality: ImageQuality, separately: Bool, scheduledAt: Date? = nil) {
         let items = selectedIds.compactMap { selectedItems[$0] }
         guard !items.isEmpty else { return }
         let messageBody = messageBodyForSending
@@ -1396,6 +1448,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 messageBody: messageBody,
                 separately: separately,
                 captionAboveMedia: self.isCaptionAboveMedia,
+                scheduledAt: scheduledAt,
             )
         }
     }
@@ -1658,7 +1711,14 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         didApproveAttachments approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
     ) {
-        delegate?.photoPicker(self, send: approvedAttachments, messageBody: messageBody, separately: false, captionAboveMedia: isCaptionAboveMedia)
+        delegate?.photoPicker(
+            self,
+            send: approvedAttachments,
+            messageBody: messageBody,
+            separately: false,
+            captionAboveMedia: isCaptionAboveMedia,
+            scheduledAt: attachmentApproval.tellomiApprovedScheduledAt,
+        )
     }
 
     func attachmentApprovalDidCancel() {
@@ -1980,7 +2040,7 @@ extension TellomiPhotoPickerViewController {
     /// 发送键长按弹出的菜单里有哪几项；长按不弹时 nil。
     var sendMenuTitlesForTesting: [String]? {
         guard TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.isEnabled == true else { return nil }
-        return sendMenuItems().map { Self.title(for: $0, selectedCount: selectedIds.count) }
+        return sendMenuItems().map { Self.title(for: $0, selectedCount: selectedIds.count, isNoteToSelf: isNoteToSelf) }
     }
 
     /// 同手指按住网格的发送键。

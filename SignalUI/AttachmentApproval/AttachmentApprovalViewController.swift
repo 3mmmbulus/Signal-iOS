@@ -127,6 +127,11 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
         return options.contains(.canAddMore) && !isViewOnceEnabled
     }
 
+    /// Tellomi（tellomi/tellomi#1519 M-4）：长按发送选了「定时发送」时要发的时间（`tellomiProceed(scheduledAt:)` 设）。
+    /// 按下发送那一刻取走（`didTapProceed`），发成了才放进 `tellomiApprovedScheduledAt` 交给 delegate；之后普通的发送拿不到它。
+    var tellomiPendingScheduledAt: Date?
+    public private(set) var tellomiApprovedScheduledAt: Date?
+
     var isViewOnceEnabled = false {
         didSet {
             approvalDelegate?.attachmentApproval(self, didChangeViewOnceState: isViewOnceEnabled)
@@ -925,6 +930,9 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
     }
 
     private func didTapProceed() {
+        // Tellomi（#1519 M-4）：这一次是不是定时发送，按下的这一刻就定了。
+        let tellomiScheduledAt = tellomiPendingScheduledAt
+        tellomiPendingScheduledAt = nil
         // Generate the attachments once, so that any changes we
         // make below are reflected afterwards.
         ModalActivityIndicatorViewController.present(
@@ -939,6 +947,7 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
                         let isViewOnce = self.options.contains(.canToggleViewOnce) && self.isViewOnceEnabled
                         let messageBody = self.mediaCaptionToolbar.messageBodyForSending
                         owsPrecondition(!isViewOnce || messageBody == nil)
+                        self.tellomiApprovedScheduledAt = tellomiScheduledAt
                         self.approvalDelegate?.attachmentApproval(
                             self,
                             didApproveAttachments: {
