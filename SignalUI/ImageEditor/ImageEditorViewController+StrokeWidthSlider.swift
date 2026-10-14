@@ -59,7 +59,32 @@ extension ImageEditorViewController {
     /// Tellomi（tellomi/tellomi#1522 E-2）：从画笔菜单选了一支笔。
     func didSelectStrokeType(_ strokeType: ImageEditorStrokeItem.StrokeType) {
         owsAssertDebug(currentStroke == nil)
+        let previous = currentStrokeType
+        if previous != strokeType {
+            swapBrushColor(from: previous, to: strokeType)
+        }
         currentStrokeType = strokeType
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-2，照 Telegram 两端每支笔各记颜色）：没用过的笔从 Telegram 的默认色开始——
+    /// 箭头橙、荧光笔（Telegram 的马克笔）黄、霓虹绿；笔从上游色条的默认色开始，橡皮没有颜色。
+    static func defaultBrushColor(for strokeType: ImageEditorStrokeItem.StrokeType) -> ColorPickerBarColor? {
+        switch strokeType {
+        case .arrow: return ColorPickerBarColor(color: UIColor(rgbHex: 0xff8a00), palettePhase: 0.164)
+        case .highlighter: return ColorPickerBarColor(color: UIColor(rgbHex: 0xffd60a), palettePhase: 0.22)
+        case .neon: return ColorPickerBarColor(color: UIColor(rgbHex: 0x34c759), palettePhase: 0.375)
+        case .pen, .blur, .eraser: return nil
+        }
+    }
+
+    /// 换笔：色条记下离开的这支笔的颜色，换上下一支笔上次的颜色（没用过就用默认色）；橡皮没有颜色，色条不动。
+    private func swapBrushColor(from: ImageEditorStrokeItem.StrokeType, to: ImageEditorStrokeItem.StrokeType) {
+        if from != .eraser {
+            brushColors[from] = drawToolbar.colorPickerBar.color
+        }
+        guard to != .eraser, let color = brushColors[to] ?? Self.defaultBrushColor(for: to) else { return }
+        drawToolbar.colorPickerBar.color = color
+        colorPickerBarValueChanged(color: color)
     }
 
     @objc

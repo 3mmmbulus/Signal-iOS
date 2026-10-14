@@ -264,6 +264,8 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
     var hideStrokeWidthSliderTimer: Timer?
     var strokeWidthSliderPosition: NSLayoutConstraint?
     var strokeWidthValues: [ImageEditorStrokeItem.StrokeType: Float] = [:]
+    /// Tellomi（tellomi/tellomi#1522 E-2）：每支笔上次用的颜色（这次编辑里）。
+    var brushColors: [ImageEditorStrokeItem.StrokeType: ColorPickerBarColor] = [:]
     var currentStrokeType: ImageEditorStrokeItem.StrokeType = .pen {
         didSet {
             updateStrokeWidthSliderValue()

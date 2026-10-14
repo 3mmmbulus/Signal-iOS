@@ -143,6 +143,36 @@ final class TellomiImageEditorBrushTests: SignalBaseTest {
         XCTAssertEqual(editor.strokeWidthSlider.value, 1.5, "each brush keeps its own width")
     }
 
+    /// 每支笔各记各的颜色：没用过的从 Telegram 的默认色开始，橡皮不动色条，换回来还是上次的颜色。
+    @MainActor
+    func testEachBrushKeepsItsOwnColor() throws {
+        let editor = ImageEditorViewController(model: try Self.model(color: .gray), stickerSheetDelegate: nil)
+        editor.loadViewIfNeeded()
+        editor.mode = .draw
+        let penColor = editor.drawToolbar.colorPickerBar.uiColor
+
+        editor.drawToolbar.select(strokeType: .arrow)
+        XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, UIColor(rgbHex: 0xff8a00))
+        XCTAssertEqual(editor.model.color.color, UIColor(rgbHex: 0xff8a00))
+
+        let blue = ColorPickerBarColor(color: .blue, palettePhase: 5 / 8)
+        editor.drawToolbar.colorPickerBar.color = blue
+        editor.colorPickerBarValueChanged(color: blue)
+
+        editor.drawToolbar.select(strokeType: .neon)
+        XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, UIColor(rgbHex: 0x34c759))
+        editor.drawToolbar.select(strokeType: .highlighter)
+        XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, UIColor(rgbHex: 0xffd60a))
+
+        editor.drawToolbar.select(strokeType: .eraser)
+        XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, UIColor(rgbHex: 0xffd60a), "the eraser has no color")
+
+        editor.drawToolbar.select(strokeType: .arrow)
+        XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, .blue)
+        editor.drawToolbar.select(strokeType: .pen)
+        XCTAssertEqual(editor.drawToolbar.colorPickerBar.uiColor, penColor)
+    }
+
     // MARK: - Screenshots
 
     /// 截图（TELLOMI_SHOTS=1）：发出去的图——笔、箭头、霓虹，一道橡皮竖着擦过；模糊一道在橡皮之前（被擦开）、一道在之后（留着）。
