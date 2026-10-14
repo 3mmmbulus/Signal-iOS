@@ -93,11 +93,36 @@ class ImageEditorModel {
         if itemCount > 0 {
             return true
         }
+        // Tellomi（#1591 E5-1）：调过色也算编辑过（高清项、发出时重新渲染）
+        if !contents.adjustments.isDefault {
+            return true
+        }
         return transform != ImageEditorTransform.defaultTransform(srcImageSizePixels: srcImageSizePixels)
     }
 
     var itemCount: Int {
         contents.itemCount
+    }
+
+    /// Tellomi（#1591 E5-1）：这张照片的调色。
+    var adjustments: TellomiImageAdjustments {
+        contents.adjustments
+    }
+
+    /// Tellomi（#1591 E5-1）：换调色；和当前一样就什么都不做。拖滑杆时第一下不带 `suppressUndo`（撤销栈记下拖之前的样子），
+    /// 之后拖动中都带上，一次拖动只占一步撤销（同 `ImageEditorView` 拖贴纸调 `replace(item:suppressUndo:)` 的做法）。
+    /// 走整份重载（`changedItemIds: nil`），因为调色改的是底图，不是某一个元素。
+    func replace(adjustments: TellomiImageAdjustments, suppressUndo: Bool = false) {
+        guard adjustments != contents.adjustments else { return }
+        performAction(
+            { oldContents in
+                var newContents = oldContents
+                newContents.adjustments = adjustments
+                return newContents
+            },
+            changedItemIds: nil,
+            suppressUndo: suppressUndo,
+        )
     }
 
     var items: [ImageEditorItem] {

@@ -14,6 +14,9 @@ struct ImageEditorContents {
     // a mapping of [itemId : item].
     private(set) var itemMap = ItemMap()
 
+    /// Tellomi（#1591 E5-1）：这张照片的调色。在快照里，撤销 / 重做跟着走。
+    var adjustments = TellomiImageAdjustments.default
+
     func item(forId itemId: String) -> ImageEditorItem? {
         return itemMap[itemId]
     }

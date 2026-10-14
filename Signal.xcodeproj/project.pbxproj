@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		30532E9D4C7A74D651B435B1 /* TellomiImageAdjustmentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943142427F919F0085E255DB /* TellomiImageAdjustmentsTests.swift */; };
+		EBFEE3193C6F1A3D1A995D03 /* TellomiImageAdjustments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2B3D1A59AE11F871DDD6D7 /* TellomiImageAdjustments.swift */; };
 		97A33B7606987496A65349AA /* TellomiScheduledComposeBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A5A1CE43B10D70080A3B82C /* TellomiScheduledComposeBar.swift */; };
 		CE919897ADD76620F0C582CA /* ConversationViewController+TellomiScheduledSend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6215551A593A8FDB6CF26A44 /* ConversationViewController+TellomiScheduledSend.swift */; };
 		702A9D88C1648DF728E8DAC0 /* TellomiScheduledMessagesListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CAA216A60DE503F2434EE7 /* TellomiScheduledMessagesListTests.swift */; };
@@ -4451,6 +4453,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		943142427F919F0085E255DB /* TellomiImageAdjustmentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustmentsTests.swift; sourceTree = "<group>"; };
+		7E2B3D1A59AE11F871DDD6D7 /* TellomiImageAdjustments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustments.swift; sourceTree = "<group>"; };
 		0A5A1CE43B10D70080A3B82C /* TellomiScheduledComposeBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledComposeBar.swift; sourceTree = "<group>"; };
 		6215551A593A8FDB6CF26A44 /* ConversationViewController+TellomiScheduledSend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiScheduledSend.swift"; sourceTree = "<group>"; };
 		10CAA216A60DE503F2434EE7 /* TellomiScheduledMessagesListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScheduledMessagesListTests.swift; sourceTree = "<group>"; };
@@ -9910,6 +9914,7 @@
 				E9C006F7195DD44CF31CACAC /* TellomiEyedropperView.swift */,
 				1803078A042B587AE797A9E1 /* ImageEditorViewController+Eyedropper.swift */,
 				34A9555F271B510400B05242 /* ImageEditorContents.swift */,
+				7E2B3D1A59AE11F871DDD6D7 /* TellomiImageAdjustments.swift */,
 				7628DDBC28075056009AA53D /* ImageEditorCropView.swift */,
 				34A95556271B510400B05242 /* ImageEditorCropViewController.swift */,
 				34A9555E271B510400B05242 /* ImageEditorItem.swift */,
@@ -10146,6 +10151,7 @@
 				34BBC85F220E883200857249 /* ImageEditorModelTest.swift */,
 				34BBC860220E883200857249 /* ImageEditorTest.swift */,
 				DD0CD29A6BCF4AACABE37A7A /* TellomiImageEditorTextTests.swift */,
+				943142427F919F0085E255DB /* TellomiImageAdjustmentsTests.swift */,
 				0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */,
 				F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */,
 			);
@@ -18814,6 +18820,7 @@
 				11F01F2D91D00A4CEB35E786 /* TellomiEyedropperView.swift in Sources */,
 				66E3818A17DFD980EE9D800A /* ImageEditorViewController+Eyedropper.swift in Sources */,
 				3402AA7D271D9E180084CBAE /* ImageEditorContents.swift in Sources */,
+				EBFEE3193C6F1A3D1A995D03 /* TellomiImageAdjustments.swift in Sources */,
 				7628DDBE2807505D009AA53D /* ImageEditorCropView.swift in Sources */,
 				3402AAB6271D9E180084CBAE /* ImageEditorCropViewController.swift in Sources */,
 				3402AA72271D9E180084CBAE /* ImageEditorItem.swift in Sources */,
@@ -19986,6 +19993,7 @@
 				34BBC861220E883300857249 /* ImageEditorModelTest.swift in Sources */,
 				34BBC862220E883300857249 /* ImageEditorTest.swift in Sources */,
 				EB0D5AC10C04E8FE1AE16AB3 /* TellomiImageEditorTextTests.swift in Sources */,
+				30532E9D4C7A74D651B435B1 /* TellomiImageAdjustmentsTests.swift in Sources */,
 				F1DC99DD8A249C3B4AFED6A4 /* TellomiImageEditorBrushTests.swift in Sources */,
 				FA256CF5BDAE0696B9E2BD11 /* TellomiImageEditorEyedropperTests.swift in Sources */,
 				D970460A2E81D5C00034C05D /* InfoMessageGroupUpdateMigratorTest.swift in Sources */,
