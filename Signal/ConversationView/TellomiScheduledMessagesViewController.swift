@@ -16,12 +16,14 @@ import UIKit
 /// - 按天分组，组头「定于 10 月 15 日发送」/「定于今天发送」（iOS `ChatMessageDateHeader`，安卓 `MessageScheduledOn`）；
 /// - 气泡上的时间是到点时间；空的时候一句「还没有定时消息」，页面不自己关（两端都是）；
 /// - 长按：「立即发送」「改时间」（同一个选时间页，带着原来的时间）「复制」「删除」（删除要确认）。
+/// - 底下一个输入框（TG 这一页就是聊天页）：写新的 → 选时间 → 排；长按「编辑」改一条的文字（`TellomiScheduledComposeBar`）。
 /// 只有一端有的不做（O8）：iOS 的「选择」「全部清除」；安卓删除时的「推迟」（重复消息才有）。
-/// 不同：TG 这一页是完整的聊天页（底下能直接写新的定时消息、能改文字）——那两样是 M-4 下一步；这里是自己画的同样排法的列表
-/// （定时消息还不是会话里的消息，会话页的气泡要整条消息的数据）。
-final class TellomiScheduledMessagesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+/// 不同：这里是自己画的同样排法的列表，不是会话页（定时消息还不是会话里的消息，会话页的气泡要整条消息的数据）。
+final class TellomiScheduledMessagesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, TellomiScheduledComposeBarDelegate {
 
     private let threadUniqueId: String
+    /// 有会话、而且现在能往里发（`canSendChatMessagesToThread`）才有底下的输入框。
+    private let thread: TSThread?
     private let isNoteToSelf: Bool
     private let bubbleColor: ColorOrGradientValue?
     private let sender: TellomiScheduledMessageSender
@@ -31,6 +33,8 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
     private let emptyLabel = UILabel()
     private var sections = [Section]()
     private var hasScrolledToBottom = false
+    private var composeBar: TellomiScheduledComposeBar?
+    private var lastTableHeight: CGFloat = 0
 
     struct Section {
         let day: Date
@@ -39,12 +43,14 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
 
     init(
         threadUniqueId: String,
+        thread: TSThread? = nil,
         isNoteToSelf: Bool,
         bubbleColor: ColorOrGradientValue?,
         sender: TellomiScheduledMessageSender = .shared,
         now: @escaping () -> Date = { Date() },
     ) {
         self.threadUniqueId = threadUniqueId
+        self.thread = thread
         self.isNoteToSelf = isNoteToSelf
         self.bubbleColor = bubbleColor
         self.sender = sender
@@ -58,8 +64,13 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
     }
 
     /// 从会话页打开（整页弹出，同 TG iOS `.modal`）。
-    static func present(threadUniqueId: String, isNoteToSelf: Bool, bubbleColor: ColorOrGradientValue?, from presenter: UIViewController) {
-        let viewController = TellomiScheduledMessagesViewController(threadUniqueId: threadUniqueId, isNoteToSelf: isNoteToSelf, bubbleColor: bubbleColor)
+    static func present(thread: TSThread, bubbleColor: ColorOrGradientValue?, from presenter: UIViewController) {
+        let viewController = TellomiScheduledMessagesViewController(
+            threadUniqueId: thread.uniqueId,
+            thread: thread,
+            isNoteToSelf: thread.isNoteToSelf,
+            bubbleColor: bubbleColor,
+        )
         let navigationController = OWSNavigationController(rootViewController: viewController)
         presenter.present(navigationController, animated: true)
     }
@@ -81,7 +92,26 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
         tableView.register(DayHeader.self, forHeaderFooterViewReuseIdentifier: DayHeader.reuseIdentifier)
         tableView.sectionHeaderTopPadding = 8
         view.addSubview(tableView)
-        tableView.autoPinEdgesToSuperviewEdges()
+        tableView.autoPinEdge(toSuperviewEdge: .top)
+        tableView.autoPinEdge(toSuperviewEdge: .leading)
+        tableView.autoPinEdge(toSuperviewEdge: .trailing)
+        tableView.keyboardDismissMode = .interactive
+
+        if let thread, thread.canSendChatMessagesToThread() {
+            let composeBar = TellomiScheduledComposeBar(thread: thread, isReminder: isNoteToSelf)
+            composeBar.delegate = self
+            view.addSubview(composeBar)
+            composeBar.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                composeBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                composeBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                composeBar.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+                tableView.bottomAnchor.constraint(equalTo: composeBar.topAnchor),
+            ])
+            self.composeBar = composeBar
+        } else {
+            tableView.autoPinEdge(toSuperviewEdge: .bottom)
+        }
 
         emptyLabel.text = Self.emptyText(isNoteToSelf: isNoteToSelf)
         emptyLabel.font = .dynamicTypeSubheadline
@@ -89,7 +119,9 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
         emptyLabel.textAlignment = .center
         emptyLabel.numberOfLines = 0
         view.addSubview(emptyLabel)
-        emptyLabel.autoCenterInSuperview()
+        emptyLabel.autoAlignAxis(toSuperviewAxis: .vertical)
+        // 空的提示在列表那块的正中（有输入框时不压到它上面）
+        emptyLabel.autoAlignAxis(.horizontal, toSameAxisOf: tableView)
         emptyLabel.autoPinEdge(toSuperviewMargin: .leading, relation: .greaterThanOrEqual)
         emptyLabel.autoPinEdge(toSuperviewMargin: .trailing, relation: .greaterThanOrEqual)
 
@@ -109,6 +141,12 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
             TellomiScheduledMessageStore.fetchAll(threadUniqueId: threadUniqueId, tx: tx)
         }
         let newSections = Self.sections(for: messages)
+        // 正在改的那条没了（到点发出去了）：收起编辑，说一声改动没存上。
+        // 自己点的「立即发送」「删除」在那里先收起了；保存时撞上的由保存那边说，这里先收起、它就不再说一遍。
+        if let composeBar, let editingId = composeBar.editingMessageId, !messages.contains(where: { $0.id == editingId }) {
+            composeBar.endEditing()
+            showAlreadySentNotice()
+        }
         // 一开始 `sections` 是空的、空提示是显示着的：空会话不用动。
         guard newSections.map(\.messages) != sections.map(\.messages) else {
             return
@@ -132,12 +170,32 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
             hasScrolledToBottom = true
             scrollToBottom()
         }
+        // 键盘起来、列表变矮：同聊天页，最后一条跟着上去；在改的时候让改的那条留在眼前
+        let tableHeight = tableView.bounds.height
+        if tableHeight < lastTableHeight - 0.5, let composeBar, composeBar.isTyping {
+            if let editingId = composeBar.editingMessageId {
+                scroll(to: editingId, animated: false)
+            } else {
+                scrollToBottom()
+            }
+        }
+        lastTableHeight = tableHeight
     }
 
-    private func scrollToBottom() {
+    private func scrollToBottom(animated: Bool = false) {
         guard let lastSection = sections.indices.last, let lastRow = sections[lastSection].messages.indices.last else { return }
         tableView.layoutIfNeeded()
-        tableView.scrollToRow(at: IndexPath(row: lastRow, section: lastSection), at: .bottom, animated: false)
+        tableView.scrollToRow(at: IndexPath(row: lastRow, section: lastSection), at: .bottom, animated: animated)
+    }
+
+    private func scroll(to messageId: String, animated: Bool = true) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let row = section.messages.firstIndex(where: { $0.id == messageId }) {
+                tableView.layoutIfNeeded()
+                tableView.scrollToRow(at: IndexPath(row: row, section: sectionIndex), at: .middle, animated: animated)
+                return
+            }
+        }
     }
 
     static func sections(for messages: [TellomiScheduledMessage], calendar: Calendar = .current) -> [Section] {
@@ -240,6 +298,13 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
                 UIPasteboard.general.string = text
             })
         }
+        // 「编辑」：同 TG iOS 排在复制后面、删除前面（会话现在不能发的时候没有输入框，也就不能改）。
+        // 阅后即焚的不给改：它不许带说明（同会话页排定时那条路）
+        if composeBar != nil, !message.isViewOnce {
+            elements.append(UIAction(title: CommonStrings.editButton, image: UIImage(systemName: "pencil")) { [weak self] _ in
+                self?.beginEditing(message)
+            })
+        }
         // 删除要再点一次确认（同 TG iOS：子菜单里只有一项红色的「删除定时消息」）。
         let confirm = UIAction(
             title: isNoteToSelf
@@ -253,6 +318,9 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
     }
 
     private func sendNow(_ message: TellomiScheduledMessage) {
+        if composeBar?.editingMessageId == message.id {
+            composeBar?.endEditing()
+        }
         let sender = self.sender
         Task { await sender.sendNow(id: message.id) }
     }
@@ -266,12 +334,137 @@ final class TellomiScheduledMessagesViewController: UIViewController, UITableVie
     }
 
     private func delete(_ message: TellomiScheduledMessage) {
+        if composeBar?.editingMessageId == message.id {
+            composeBar?.endEditing()
+        }
         SSKEnvironment.shared.databaseStorageRef.asyncWrite { tx in
             TellomiScheduledMessageStore.remove(id: message.id, tx: tx)
         }
     }
 
+    // MARK: - Writing and editing
+
+    private func beginEditing(_ message: TellomiScheduledMessage) {
+        guard let composeBar else { return }
+        let body = try? message.messageBody()
+        let linkPreviewDraft = message.linkPreview?.draft(in: TellomiScheduledMessageStore.directory(for: message.id))
+        composeBar.beginEditing(message, body: body, thumbnail: nil, linkPreviewDraft: linkPreviewDraft)
+        scroll(to: message.id)
+        // 有附件的带一张小图（同会话输入框改消息时）
+        guard let first = message.attachments.first, MimeTypeUtil.isSupportedVisualMediaMimeType(first.mimeType) else { return }
+        let url = TellomiScheduledMessageStore.fileUrl(for: first, messageId: message.id)
+        let isVideo = MimeTypeUtil.isSupportedVideoMimeType(first.mimeType)
+        Task { [weak composeBar] in
+            let image = await ScheduledMessageCell.thumbnail(url: url, isVideo: isVideo, pixelSize: 60)
+            guard let composeBar, composeBar.editingMessageId == message.id, let image else { return }
+            composeBar.setEditThumbnail(image)
+        }
+    }
+
+    func composeBarMentionPickerParentView(_ composeBar: TellomiScheduledComposeBar) -> UIView? {
+        view
+    }
+
+    /// 新写的一条：先选时间（同 TG 两端在定时消息页点发送），然后同会话页长按发送那条路——拉黑先解除、安全码先确认，再排。
+    func composeBar(_ composeBar: TellomiScheduledComposeBar, didSubmitNew body: MessageBody, linkPreviewDraft: OWSLinkPreviewDraft?) {
+        guard let thread else { return }
+        let capacity = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            TellomiScheduledMessageSender.remainingCapacity(threadUniqueId: thread.uniqueId, tx: tx)
+        }
+        guard capacity > 0 else {
+            OWSActionSheets.showActionSheet(message: TellomiScheduledMessageSender.ScheduleError.tooManyScheduled.localizedDescription, fromViewController: self)
+            return
+        }
+        let sheet = TellomiScheduleTimeSheet(isReminder: isNoteToSelf) { [weak self] date in
+            Task { await self?.scheduleNew(body: body, linkPreviewDraft: linkPreviewDraft, at: date) }
+        }
+        sheet.present(from: self)
+    }
+
+    private func scheduleNew(body: MessageBody, linkPreviewDraft: OWSLinkPreviewDraft?, at date: Date) async {
+        guard let thread, let composeBar else { return }
+        let isBlocked = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            SSKEnvironment.shared.blockingManagerRef.isThreadBlocked(thread, transaction: tx)
+        }
+        if isBlocked {
+            composeBar.resignFirstResponder()
+            let stillBlocked = await withCheckedContinuation { continuation in
+                BlockListUIUtils.showUnblockThreadActionSheet(thread, from: self) { isBlocked in
+                    continuation.resume(returning: isBlocked)
+                }
+            }
+            guard !stillBlocked else { return }
+        }
+        let identityIsConfirmed = await SafetyNumberConfirmationSheet.presentRepeatedlyAsNecessary(
+            for: { thread.recipientAddressesWithSneakyTransaction },
+            from: self,
+            confirmationText: SafetyNumberStrings.confirmSendButton,
+            untrustedThreshold: Date().addingTimeInterval(-OWSIdentityManagerImpl.Constants.defaultUntrustedInterval),
+        )
+        guard identityIsConfirmed else { return }
+        composeBar.isBusy = true
+        defer { composeBar.isBusy = false }
+        do {
+            // 解除拉黑、确认安全码花的时间里已经过了点也照排：执行器马上发出去
+            let message = try await sender.schedule(
+                body: body,
+                attachments: [],
+                isViewOnce: false,
+                thread: thread,
+                quotedReplyDraft: nil,
+                linkPreviewDraft: linkPreviewDraft,
+                captionAboveMedia: false,
+                at: date,
+            )
+            composeBar.clearAfterSubmit()
+            reload()
+            scroll(to: message.id)
+        } catch TellomiScheduledMessageSender.ScheduleError.tooManyScheduled {
+            OWSActionSheets.showActionSheet(message: TellomiScheduledMessageSender.ScheduleError.tooManyScheduled.localizedDescription, fromViewController: self)
+        } catch {
+            Logger.warn("Couldn't schedule a message from the scheduled list: \(error)")
+            OWSActionSheets.showErrorAlert(message: CommonStrings.somethingWentWrongError)
+        }
+    }
+
+    /// 改好了一条：换掉文字和预览，到点时刻不变。改的这会儿已经发出去了就说一声。
+    func composeBar(_ composeBar: TellomiScheduledComposeBar, didSubmitEditOf messageId: String, body: MessageBody, linkPreviewDraft: OWSLinkPreviewDraft?) {
+        let sender = self.sender
+        composeBar.isBusy = true
+        Task { [weak self, weak composeBar] in
+            defer { composeBar?.isBusy = false }
+            do {
+                let edited = try await sender.edit(id: messageId, body: body, linkPreviewDraft: linkPreviewDraft)
+                guard let self else { return }
+                // 还在改这一条：先收起（`reload` 才不会把它当成「改的那条没了」）；没存上就说一声。
+                // 已经不在改了：是 `reload` 先看到它没了，已经收起、说过了
+                guard self.composeBar?.editingMessageId == messageId else { return }
+                self.composeBar?.endEditing()
+                if edited {
+                    self.reload()
+                } else {
+                    self.showAlreadySentNotice()
+                }
+            } catch {
+                Logger.warn("Couldn't edit a scheduled message: \(error)")
+                OWSActionSheets.showErrorAlert(message: CommonStrings.somethingWentWrongError)
+            }
+        }
+    }
+
+    private func showAlreadySentNotice() {
+        OWSActionSheets.showActionSheet(
+            message: isNoteToSelf
+                ? OWSLocalizedString("TELLOMI_SCHEDULED_MESSAGES_EDIT_REMINDER_ALREADY_SENT", comment: "Alert in the reminders list when the reminder being edited was sent before the changes were saved.")
+                : OWSLocalizedString("TELLOMI_SCHEDULED_MESSAGES_EDIT_ALREADY_SENT", comment: "Alert in the scheduled messages list when the message being edited was sent before the changes were saved."),
+            fromViewController: self,
+        )
+    }
+
 #if TESTABLE_BUILD
+    var composeBarForTesting: TellomiScheduledComposeBar? { composeBar }
+    func beginEditingForTesting(_ message: TellomiScheduledMessage) { beginEditing(message) }
+    func scheduleNewForTesting(body: MessageBody, at date: Date) async { await scheduleNew(body: body, linkPreviewDraft: nil, at: date) }
     var sectionsForTesting: [Section] { sections }
     func plainTextForTesting(_ message: TellomiScheduledMessage) -> String? { plainText(for: message) }
     var isEmptyShownForTesting: Bool { !emptyLabel.isHidden }
@@ -435,7 +628,7 @@ private final class ScheduledMessageCell: UITableViewCell {
     }
 
     @concurrent
-    private static func thumbnail(url: URL, isVideo: Bool, pixelSize: CGFloat) async -> UIImage? {
+    fileprivate static func thumbnail(url: URL, isVideo: Bool, pixelSize: CGFloat) async -> UIImage? {
         if isVideo {
             let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
             generator.appliesPreferredTrackTransform = true

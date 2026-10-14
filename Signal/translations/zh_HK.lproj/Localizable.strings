@@ -11352,6 +11352,12 @@
 /* Destructive confirmation in the reminders list: delete this reminder. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_REMINDER" = "刪除提醒";
 
+/* Alert in the scheduled messages list when the message being edited was sent before the changes were saved. */
+"TELLOMI_SCHEDULED_MESSAGES_EDIT_ALREADY_SENT" = "這則訊息已經傳出去了，修改沒有儲存。";
+
+/* Alert in the reminders list when the reminder being edited was sent before the changes were saved. */
+"TELLOMI_SCHEDULED_MESSAGES_EDIT_REMINDER_ALREADY_SENT" = "這則提醒已經傳出去了，修改沒有儲存。";
+
 /* Shown in the scheduled messages list of a chat when there are none. */
 "TELLOMI_SCHEDULED_MESSAGES_EMPTY" = "這裡還沒有定時訊息。";
 

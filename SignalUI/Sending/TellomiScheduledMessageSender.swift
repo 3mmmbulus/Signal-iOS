@@ -77,6 +77,81 @@ public final class TellomiScheduledMessageSender {
         scheduleTimer()
     }
 
+    /// 改文字（定时消息页）：换正文和链接预览，到点时刻不变。记录已经没了（刚发出 / 删掉）返回 false。
+    /// 预览没变（还是那个网址、那份内容）就沿用原来的图；换了就另存一张新图，改好后删掉旧图。
+    public func edit(id: String, body: MessageBody?, linkPreviewDraft: OWSLinkPreviewDraft?) async throws -> Bool {
+        let db = SSKEnvironment.shared.databaseStorageRef
+        let current = db.read { tx in TellomiScheduledMessageStore.fetch(id: id, tx: tx) }
+        guard let current else {
+            return false
+        }
+        guard body?.isEmpty == false || !current.attachments.isEmpty else {
+            throw EditError.nothingLeft
+        }
+        let directory = TellomiScheduledMessageStore.directory(for: id)
+        var newImageFileName: String?
+        let linkPreview: TellomiScheduledMessage.LinkPreview?
+        if let linkPreviewDraft {
+            if let existing = current.linkPreview, Self.isSamePreview(existing, linkPreviewDraft) {
+                linkPreview = existing
+            } else {
+                if let imageData = linkPreviewDraft.imageData {
+                    guard OWSFileSystem.ensureDirectoryExists(directory.path) else {
+                        throw OWSAssertionError("Couldn't create the scheduled message directory.")
+                    }
+                    let fileName = "link-preview-\(UUID().uuidString)"
+                    let url = directory.appendingPathComponent(fileName)
+                    try imageData.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+                    OWSFileSystem.protectFileOrFolder(atPath: url.path)
+                    newImageFileName = fileName
+                }
+                linkPreview = TellomiScheduledMessage.LinkPreview(linkPreviewDraft, imageFileName: newImageFileName)
+            }
+        } else {
+            linkPreview = nil
+        }
+        let old: TellomiScheduledMessage?
+        do {
+            old = try await db.awaitableWrite { tx in
+                try TellomiScheduledMessageStore.edit(id: id, body: body, linkPreview: linkPreview, tx: tx)
+            }
+        } catch {
+            if let newImageFileName {
+                try? OWSFileSystem.deleteFileIfExists(url: directory.appendingPathComponent(newImageFileName))
+            }
+            throw error
+        }
+        guard let old else {
+            // 改的这会儿已经发出去了：新存的图没人用了（目录随记录删掉时已经删了，这里只是保险）
+            if let newImageFileName {
+                try? OWSFileSystem.deleteFileIfExists(url: directory.appendingPathComponent(newImageFileName))
+            }
+            return false
+        }
+        if let oldImageFileName = old.linkPreview?.imageFileName, oldImageFileName != linkPreview?.imageFileName {
+            try? OWSFileSystem.deleteFileIfExists(url: directory.appendingPathComponent(oldImageFileName))
+        }
+        Logger.info("Edited a scheduled message.")
+        // 内容换了：上次建不成的这次再试
+        failedSinceActivation.remove(id)
+        scheduleTimer()
+        return true
+    }
+
+    public enum EditError: Error {
+        /// 纯文字的改成了空的（界面上存不了，这里再挡一次）。
+        case nothingLeft
+    }
+
+    private static func isSamePreview(_ stored: TellomiScheduledMessage.LinkPreview, _ draft: OWSLinkPreviewDraft) -> Bool {
+        stored.url == draft.url
+            && stored.title == draft.title
+            && stored.previewDescription == draft.previewDescription
+            && stored.date == draft.date
+            && stored.rich == draft.rich
+            && (stored.imageFileName != nil || stored.imageData != nil) == (draft.imageData != nil)
+    }
+
     /// 这个会话还能排几条（到上限 `maxScheduledPerChat` 为止）。
     public static func remainingCapacity(threadUniqueId: String, tx: DBReadTransaction) -> Int {
         max(0, maxScheduledPerChat - TellomiScheduledMessageStore.fetchAll(threadUniqueId: threadUniqueId, tx: tx).count)
@@ -330,7 +405,7 @@ public final class TellomiScheduledMessageSender {
                 linkPreviewDraft: message.linkPreview?.draft(in: TellomiScheduledMessageStore.directory(for: message.id)),
                 captionAboveMedia: message.captionAboveMedia,
                 claim: ThreadUtil.TellomiEnqueueClaim(
-                    isStillDue: { tx in TellomiScheduledMessageStore.isDue(id: message.id, now: now, tx: tx) },
+                    isStillDue: { tx in TellomiScheduledMessageStore.isStillDue(message, now: now, tx: tx) },
                     claim: { tx in TellomiScheduledMessageStore.remove(id: message.id, tx: tx) },
                 ),
             )

@@ -11223,6 +11223,12 @@
 /* Destructive confirmation in the reminders list: delete this reminder. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_REMINDER" = "删除提醒";
 
+/* Alert in the scheduled messages list when the message being edited was sent before the changes were saved. */
+"TELLOMI_SCHEDULED_MESSAGES_EDIT_ALREADY_SENT" = "这条消息已经发出去了，改动没有保存。";
+
+/* Alert in the reminders list when the reminder being edited was sent before the changes were saved. */
+"TELLOMI_SCHEDULED_MESSAGES_EDIT_REMINDER_ALREADY_SENT" = "这条提醒已经发出去了，改动没有保存。";
+
 /* Shown in the scheduled messages list of a chat when there are none. */
 "TELLOMI_SCHEDULED_MESSAGES_EMPTY" = "这里还没有定时消息。";
 

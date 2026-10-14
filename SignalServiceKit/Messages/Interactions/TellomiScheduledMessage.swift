@@ -77,14 +77,14 @@ public struct TellomiScheduledMessage: Codable, Equatable {
     public var scheduledAt: Date
     /// 同一时刻排了几条（例如「单独发送」拆开的）时按它排先后。
     public let createdAt: Date
-    /// `MessageBody`（文字 + @ / 样式）按 NSSecureCoding 归档。
-    public let body: Data?
+    /// `MessageBody`（文字 + @ / 样式）按 NSSecureCoding 归档。定时消息页里改文字时换掉（`setMessageBody`）。
+    public private(set) var body: Data?
     public let attachments: [Attachment]
     public let isViewOnce: Bool
-    public let captionAboveMedia: Bool
+    public var captionAboveMedia: Bool
     /// 引用回复：到点按它在会话里重新找原消息（同上游草稿的 `ThreadReplyInfo`）；原消息没了就不带引用。
     public let replyInfo: ThreadReplyInfo?
-    public let linkPreview: LinkPreview?
+    public var linkPreview: LinkPreview?
 
     public init(
         id: String = UUID().uuidString,
@@ -108,6 +108,10 @@ public struct TellomiScheduledMessage: Codable, Equatable {
         self.captionAboveMedia = captionAboveMedia
         self.replyInfo = replyInfo
         self.linkPreview = linkPreview
+    }
+
+    public mutating func setMessageBody(_ messageBody: MessageBody?) throws {
+        body = try messageBody.map { try NSKeyedArchiver.archivedData(withRootObject: $0, requiringSecureCoding: true) }
     }
 
     public func messageBody() throws -> MessageBody? {
@@ -205,6 +209,15 @@ public enum TellomiScheduledMessageStore {
         return message.scheduledAt <= now
     }
 
+    /// 同上，而且内容还是建消息时读到的那一版：建消息的这段时间里在定时消息页改了文字，就不发旧的
+    /// （这次不算，改过的那版接着到点再发）。
+    public static func isStillDue(_ message: TellomiScheduledMessage, now: Date, tx: DBReadTransaction) -> Bool {
+        guard let current = fetch(id: message.id, tx: tx) else {
+            return false
+        }
+        return current == message && current.scheduledAt <= now
+    }
+
     /// 到点时这个会话还能不能发；不能就说为什么（记日志用），这条丢掉。
     /// 同上游输入框能不能发（`canSendChatMessagesToThread`：退了群、群解散、只许管理员发言、旧版群、Signal 官方会话），加上拉黑。
     public static func reasonNotToSend(to thread: TSThread, tx: DBReadTransaction) -> String? {
@@ -248,6 +261,28 @@ public enum TellomiScheduledMessageStore {
         try store.setCodable(message, key: id, transaction: tx)
         postDidChange(threadUniqueIds: [message.threadUniqueId], tx: tx)
         return true
+    }
+
+    /// 改文字（定时消息页，同 TG 两端可以改还没发的定时消息）：换正文和链接预览，到点时刻不变。
+    /// 记录已经没了（发出 / 删掉）返回 nil；改好了返回改之前的那一版（调用方据此删掉换下来的预览图文件）。
+    public static func edit(
+        id: String,
+        body: MessageBody?,
+        linkPreview: TellomiScheduledMessage.LinkPreview?,
+        tx: DBWriteTransaction,
+    ) throws -> TellomiScheduledMessage? {
+        guard let old = fetch(id: id, tx: tx) else {
+            return nil
+        }
+        var message = old
+        let hasText = body?.isEmpty == false
+        try message.setMessageBody(hasText ? body : nil)
+        // 同排定时：没有说明就谈不上说明在上面
+        message.captionAboveMedia = old.captionAboveMedia && hasText
+        message.linkPreview = linkPreview
+        try store.setCodable(message, key: id, transaction: tx)
+        postDidChange(threadUniqueIds: [message.threadUniqueId], tx: tx)
+        return old
     }
 
     /// 删掉记录；事务提交后删文件。记录本来就没有返回 false——到点发送用它「认领」：和消息落库在同一个写事务里，

@@ -10402,6 +10402,12 @@
 /* Destructive confirmation in the reminders list: delete this reminder. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_REMINDER" = "Delete Reminder";
 
+/* Alert in the scheduled messages list when the message being edited was sent before the changes were saved. */
+"TELLOMI_SCHEDULED_MESSAGES_EDIT_ALREADY_SENT" = "This message was already sent, so your changes weren't saved.";
+
+/* Alert in the reminders list when the reminder being edited was sent before the changes were saved. */
+"TELLOMI_SCHEDULED_MESSAGES_EDIT_REMINDER_ALREADY_SENT" = "This reminder was already sent, so your changes weren't saved.";
+
 /* Shown in the scheduled messages list of a chat when there are none. */
 "TELLOMI_SCHEDULED_MESSAGES_EMPTY" = "No scheduled messages here yet.";
 

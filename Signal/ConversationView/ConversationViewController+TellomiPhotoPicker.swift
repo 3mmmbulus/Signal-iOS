@@ -246,8 +246,7 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
     func tellomiOpenScheduledMessages() {
         dismissKeyBoard()
         TellomiScheduledMessagesViewController.present(
-            threadUniqueId: thread.uniqueId,
-            isNoteToSelf: thread.isNoteToSelf,
+            thread: thread,
             bubbleColor: viewState.conversationStyle.bubbleChatColorOutgoing,
             from: self,
         )
