@@ -277,7 +277,15 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
         }
         // 取原数据、视频压成 mp4 都沿用上游（和附件面板里「最近照片」同一段）。
         let contents = PhotoAlbumContents(fetchResult: PHFetchResult<PHAsset>(), limit: 0)
-        return try await contents.outgoingAttachment(for: asset, attachmentLimits: attachmentLimits)
+        var attachment = try await contents.outgoingAttachment(for: asset, attachmentLimits: attachmentLimits)
+        // Tellomi（tellomi/tellomi#1518 V-7 ②）：记下原件，预览页选了画质档时发送前从原件重新导出。
+        if asset.mediaType == .video {
+            attachment.tellomiVideoSource = TellomiVideoSource(
+                assetIdentifier: asset.localIdentifier,
+                pixelSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight),
+            )
+        }
+        return attachment
     }
 
     // MARK: - 按文件发送（#1263）

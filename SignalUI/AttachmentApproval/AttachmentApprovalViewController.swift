@@ -115,6 +115,11 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
             options.insert(.canChangeQualityLevel)
         }
 
+        // Tellomi（tellomi/tellomi#1518 V-7 ②）：有能选画质档的视频，画质键也在（选的是这个视频自己的档）。
+        if attachmentApprovalItemCollection.attachmentApprovalItems.contains(where: { ($0.videoEditorModel?.tellomiAvailableLevels.count ?? 0) >= 2 }) {
+            options.insert(.canChangeQualityLevel)
+        }
+
         return options
     }
 
@@ -515,7 +520,7 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
         let configuration = AttachmentApprovalToolbar.Configuration(
             isAddMoreVisible: isAddMoreVisible,
             isMediaStripVisible: attachmentApprovalItems.count > 1,
-            isMediaHighQualityEnabled: outputImageQuality == .high,
+            isMediaHighQualityEnabled: tellomiCurrentVideoLevelModel.map { ($0.tellomiLevel ?? TellomiVideoLevel.upstreamDefault).isHighDefinition } ?? (outputImageQuality == .high),
             isViewOnceOn: isViewOnceEnabled,
             canToggleViewOnce: options.contains(.canToggleViewOnce),
             canChangeMediaQuality: options.contains(.canChangeQualityLevel),
@@ -1110,7 +1115,65 @@ public final class AttachmentApprovalViewController: OWSViewController, UIPageVi
 
     // MARK: - Media Quality Selection UI
 
+    /// Tellomi（tellomi/tellomi#1518 V-7 ②）：当前这一页是能选画质档的视频时，它的编辑模型。
+    private var tellomiCurrentVideoLevelModel: VideoEditorModel? {
+        guard
+            let model = currentPageViewController?.attachmentApprovalItem.videoEditorModel,
+            model.tellomiAvailableLevels.count >= 2
+        else {
+            return nil
+        }
+        return model
+    }
+
+    /// Tellomi（tellomi/tellomi#1518 V-7 ②，照 Telegram 两端每个视频各选画质）：这个视频的画质档，从高到低，每档写大概多大
+    /// （系统导出会话按现在剪的范围估）；超过上传上限的档不给。选 360p 就是上游的样子。
+    private func tellomiVideoLevelMenu(model: VideoEditorModel) -> UIMenu {
+        let current = model.tellomiLevel ?? TellomiVideoLevel.upstreamDefault
+        let maxBytes = Int64(clamping: OutgoingAttachmentLimits.currentLimits().maxPlaintextVideoBytes)
+        let levels = model.tellomiAvailableLevels.reversed()
+
+        let deferred = UIDeferredMenuElement.uncached { [weak self, weak model] completion in
+            Task { @MainActor in
+                guard let model else {
+                    completion([])
+                    return
+                }
+                var actions = [UIMenuElement]()
+                for level in levels {
+                    let estimate = await model.tellomiEstimatedBytes(for: level)
+                    // 超过上传上限的档不给；已经选了的那档留着，好选回去。
+                    if level != TellomiVideoLevel.upstreamDefault, level != current, let estimate, estimate > maxBytes {
+                        continue
+                    }
+                    let action = UIAction(
+                        title: level.label,
+                        subtitle: estimate.map { "≈ " + ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) },
+                    ) { [weak self, weak model] _ in
+                        model?.tellomiLevel = level == TellomiVideoLevel.upstreamDefault ? nil : level
+                        self?.updateBottomToolView(animated: false)
+                    }
+                    action.state = level == current ? .on : .off
+                    actions.append(action)
+                }
+                completion(actions)
+            }
+        }
+
+        return UIMenu(
+            title: OWSLocalizedString(
+                "ATTACHMENT_APPROVAL_TELLOMI_VIDEO_QUALITY_TITLE",
+                comment: "Title of the menu that picks the quality level of the one video being previewed before sending.",
+            ),
+            children: [deferred],
+        )
+    }
+
     private func mediaQualitySelectionMenu() -> UIMenu {
+        if let model = tellomiCurrentVideoLevelModel {
+            return tellomiVideoLevelMenu(model: model)
+        }
+
         let sdQualityItem = UIAction(
             title: ImageQuality.standard.localizedString,
             subtitle: OWSLocalizedString(

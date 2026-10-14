@@ -408,6 +408,9 @@
 /* Title for the attachment approval media quality sheet */
 "ATTACHMENT_APPROVAL_MEDIA_QUALITY_TITLE" = "媒体质量";
 
+/* Title of the menu that picks the quality level of the one video being previewed before sending. */
+"ATTACHMENT_APPROVAL_TELLOMI_VIDEO_QUALITY_TITLE" = "视频画质";
+
 /* Notification body shown when media sync to a linked device is complete. */
 "ATTACHMENT_BACKFILL_FINISHED_NOTIFICATION" = "在已链接设备上同步 Tellomi 已完成。";
 

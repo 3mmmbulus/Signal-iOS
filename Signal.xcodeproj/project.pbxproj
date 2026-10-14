@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4675DBEFDCC84C3E01819C6E /* TellomiVideoLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A700770A7A33416692237DF5 /* TellomiVideoLevelTests.swift */; };
+		4DFC5EDCC3D954D14AB4F7D9 /* TellomiVideoLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3952982D00C2D5967C781E7C /* TellomiVideoLevel.swift */; };
 		F1DC99DD8A249C3B4AFED6A4 /* TellomiImageEditorBrushTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */; };
 		FA256CF5BDAE0696B9E2BD11 /* TellomiImageEditorEyedropperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */; };
 		11F01F2D91D00A4CEB35E786 /* TellomiEyedropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C006F7195DD44CF31CACAC /* TellomiEyedropperView.swift */; };
@@ -4435,6 +4437,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A700770A7A33416692237DF5 /* TellomiVideoLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiVideoLevelTests.swift; sourceTree = "<group>"; };
+		3952982D00C2D5967C781E7C /* TellomiVideoLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiVideoLevel.swift; sourceTree = "<group>"; };
 		0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorBrushTests.swift; sourceTree = "<group>"; };
 		F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorEyedropperTests.swift; sourceTree = "<group>"; };
 		E9C006F7195DD44CF31CACAC /* TellomiEyedropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiEyedropperView.swift; sourceTree = "<group>"; };
@@ -9823,6 +9827,7 @@
 			children = (
 				76896BF728415ABA00F6C8D2 /* VideoAttachmentPrepViewController.swift */,
 				34A9551B271B510400B05242 /* VideoEditorModel.swift */,
+				3952982D00C2D5967C781E7C /* TellomiVideoLevel.swift */,
 				34A9551C271B510400B05242 /* VideoEditorView.swift */,
 				76896BF928415B6B00F6C8D2 /* VideoTimelineView.swift */,
 			);
@@ -10076,6 +10081,7 @@
 				57FAA2A48068A96186BF4F12 /* TellomiLinkOpenLauncherTest.swift */,
 				7395A91DCF7C0E057F379F3B /* TellomiPhotoPickerTests.swift */,
 				8B8D2DFEFED854BC41142080 /* TellomiImageEditorCropAspectTests.swift */,
+				A700770A7A33416692237DF5 /* TellomiVideoLevelTests.swift */,
 				5D49C2289FD00A87FFAC2A24 /* TellomiCaptureFilmstripTests.swift */,
 				C4BD449DE6812A48D2CAACBA /* TellomiCaptureLockTests.swift */,
 				147B7C14D1E92E8F5118AC85 /* TellomiCameraModeTests.swift */,
@@ -18936,6 +18942,7 @@
 				D9A3E2302A0DABDF00E2A8B5 /* UsernameQuerier.swift in Sources */,
 				76896BF828415ABA00F6C8D2 /* VideoAttachmentPrepViewController.swift in Sources */,
 				3402AA97271D9E180084CBAE /* VideoEditorModel.swift in Sources */,
+				4DFC5EDCC3D954D14AB4F7D9 /* TellomiVideoLevel.swift in Sources */,
 				3402AA6F271D9E180084CBAE /* VideoEditorView.swift in Sources */,
 				34A954E8271B4F6A00B05242 /* VideoPlayer.swift in Sources */,
 				3402AAB4271D9E180084CBAE /* VideoPlayerView.swift in Sources */,
@@ -19945,6 +19952,7 @@
 				DA819E1E08EE3A282CE9BE67 /* TellomiLinkOpenLauncherTest.swift in Sources */,
 				3127CA830877399B6F32FAA9 /* TellomiPhotoPickerTests.swift in Sources */,
 				5A92D05A6548625913B79CEA /* TellomiImageEditorCropAspectTests.swift in Sources */,
+				4675DBEFDCC84C3E01819C6E /* TellomiVideoLevelTests.swift in Sources */,
 				D14974CEB7DC3B396F0FF2E4 /* TellomiCaptureFilmstripTests.swift in Sources */,
 				1486A43C609ED88D791AE53D /* TellomiCaptureLockTests.swift in Sources */,
 				D05B5DA804E799FAF4A8F706 /* TellomiCameraModeTests.swift in Sources */,

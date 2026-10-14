@@ -26,6 +26,9 @@ public struct PreviewableAttachment {
     public let rawValue: SignalAttachment
     public let attachmentType: AttachmentType
 
+    /// Tellomi（tellomi/tellomi#1518 V-7 ②）：从相册选的视频记下原件，选了画质档时发送前从原件重新导出。
+    public var tellomiVideoSource: TellomiVideoSource?
+
     public enum AttachmentType {
         case image(NormalizedImage)
         case animatedImage
