@@ -158,6 +158,9 @@ extension ImageEditorViewController {
             size: 44,
         ))
 
+        /// Tellomi（tellomi/tellomi#1522 E-2）：吸管键，在色条和画笔键之间（和安卓一样）。
+        let eyedropperButton = ImageEditorViewController.makeEyedropperButton()
+
         private func updateStrokeTypeButtonImage() {
             switch strokeType {
             case .pen:
@@ -183,11 +186,12 @@ extension ImageEditorViewController {
             directionalLayoutMargins.bottom = 2
 
             strokeTypeButton.setCompressionResistanceHorizontalHigh()
+            eyedropperButton.setCompressionResistanceHorizontalHigh()
             updateStrokeTypeButtonImage() // just in case
 
             // I had to use a custom layout guide because stack view isn't centered
             // but instead has slight offset towards the trailing edge.
-            let stackView = UIStackView(arrangedSubviews: [colorPickerBar, strokeTypeButton])
+            let stackView = UIStackView(arrangedSubviews: [colorPickerBar, eyedropperButton, strokeTypeButton])
             stackView.translatesAutoresizingMaskIntoConstraints = false
             stackView.alignment = .center
             stackView.spacing = 8

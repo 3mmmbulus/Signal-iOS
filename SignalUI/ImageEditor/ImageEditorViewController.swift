@@ -88,7 +88,23 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
             UIAction { [weak self] _ in self?.didTapStrokeTypeButton() },
             for: .primaryActionTriggered,
         )
+        toolbar.eyedropperButton.addAction(
+            UIAction { [weak self] _ in self?.didTapEyedropperButton() },
+            for: .primaryActionTriggered,
+        )
         return toolbar
+    }()
+
+    // Tellomi（tellomi/tellomi#1522 E-2）：吸管。画笔的吸管键在 `drawToolbar` 里；写文字时键盘工具条放不下，吸管键浮在键盘上方靠后的角上。
+    weak var eyedropperView: TellomiEyedropperView?
+
+    lazy var textEyedropperButton: UIButton = {
+        let button = Self.makeEyedropperButton()
+        button.addAction(
+            UIAction { [weak self] _ in self?.didTapEyedropperButton() },
+            for: .primaryActionTriggered,
+        )
+        return button
     }()
 
     lazy var drawToolGestureRecognizer: ImageEditorPanGestureRecognizer = {
@@ -472,6 +488,8 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
     // MARK: -
 
     private func updateUIForCurrentMode() {
+        dismissEyedropper(animated: false)
+
         switch mode {
         case .draw, .blur:
             strokeWidthSliderContainer.isHidden = false
@@ -572,6 +590,9 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
 
     private func modelDidChange() {
         updateTopBar()
+
+        // 撤销 / 清空之后画布变了，吸管的快照不再对。
+        dismissEyedropper()
 
         if blurToolUIInitialized {
             // If we undo/redo, we may remove or re-apply the auto blur
@@ -758,6 +779,11 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
     // MARK: - UIGestureRecognizerDelegate
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // Tellomi（tellomi/tellomi#1522 E-2）：吸管开着时，盖住的这块画布上的拖动只给吸管，不画线、不打码。
+        if let eyedropperView, !eyedropperView.isDismissing, eyedropperView.bounds.contains(touch.location(in: eyedropperView)) {
+            return false
+        }
+
         // Ignore touches that begin inside the control areas.
         switch mode {
         case .draw:
@@ -790,6 +816,8 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
     // MARK: - ColorPickerBarViewDelegate
 
     func colorPickerBarValueChanged(color: ColorPickerBarColor) {
+        dismissEyedropper()
+
         switch mode {
         case .draw:
             model.color = color

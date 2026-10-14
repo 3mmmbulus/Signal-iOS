@@ -109,6 +109,8 @@ extension ImageEditorViewController {
             action: #selector(didTapDimmerView(_:)),
         ))
 
+        installTextEyedropperButton()
+
         UIView.performWithoutAnimation {
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
@@ -175,6 +177,7 @@ extension ImageEditorViewController {
 
         UIView.animate(withDuration: 0.2) {
             self.textViewContainer.alpha = 1
+            self.textEyedropperButton.alpha = 1
         }
         textView.becomeFirstResponder()
     }
@@ -334,6 +337,7 @@ extension ImageEditorViewController {
     }
 
     func textColorDidChange(newColor: ColorPickerBarColor) {
+        dismissEyedropper()
         imageEditorView.updateSelectedTextItem(withColor: newColor)
         if textView.isFirstResponder {
             updateTextViewAttributes(using: textViewAccessoryToolbar)
@@ -349,6 +353,7 @@ extension ImageEditorViewController {
 
     func textViewDidEndEditing(_ textView: UITextView) {
         bottomBar.setIsHidden(false, animated: true)
+        dismissEyedropper(animated: false)
 
         // Save changes to the model unless we were told not to (eg when dismissing screen).
         if !discardTextEditsOnEditingEnd {
@@ -360,6 +365,7 @@ extension ImageEditorViewController {
         UIView.animate(withDuration: 0.2) {
             self.imageEditorView.canvasView.hiddenItemId = nil
             self.textViewContainer.alpha = 0
+            self.textEyedropperButton.alpha = 0
         }
 
         currentTextItem = nil

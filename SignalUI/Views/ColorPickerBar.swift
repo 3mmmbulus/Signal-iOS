@@ -50,7 +50,9 @@ public struct ColorPickerBarColor {
     }
 
     static func ==(left: ColorPickerBarColor, right: ColorPickerBarColor) -> Bool {
-        return left.palettePhase.fuzzyEquals(right.palettePhase)
+        // Tellomi（tellomi/tellomi#1522 E-2）：吸管取的颜色不在色条上、滑块位置不动，只比位置会把“只换了颜色”当成没改，颜色也要比。
+        // 色条上的颜色由位置算出来，位置相同颜色就相同，所以对原来的用法没有影响。
+        return left.palettePhase.fuzzyEquals(right.palettePhase) && left.color.isEqualToColor(right.color, tolerance: 0.001)
     }
 }
 

@@ -5014,6 +5014,9 @@
 /* A toast indicating that you can blur more faces after detection */
 "IMAGE_EDITOR_BLUR_TOAST" = "Tarraing chun aghaidheanna nó áiteanna eile a dhoiléiriú";
 
+/* Accessibility label of the eyedropper button in the image editor's draw and text tools; it lets the user pick a color from the photo. */
+"IMAGE_EDITOR_TELLOMI_EYEDROPPER" = "Pick a color from the photo";
+
 /* Accessibility label of the button in the image editor's text tool that cycles the text alignment between left, center and right. */
 "IMAGE_EDITOR_TELLOMI_TEXT_ALIGNMENT" = "Text Alignment";
 
