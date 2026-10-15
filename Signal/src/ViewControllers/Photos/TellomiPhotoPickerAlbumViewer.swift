@@ -12,6 +12,10 @@ import SignalUI
 /// （照 Telegram `TGPhotoToolbarView`：查看器底部只有一条工具栏，没有单独的「编辑」键，点工具就地进编辑器）。
 /// 2026-10-16（owner 发来的方案第 6 节「方案 A」）：去掉「编辑」键——它进的上游预览 / 编辑页底栏也是这三个工具，功能完全重叠；
 /// 工具不再先关查看器、整屏弹预览页、再盖工具页（三层转场），而是直接盖在查看器上（[onEdit] → 选图页就地打开）。
+/// 同一方案第 1 条后半：底部「说明 + 发送」（照 Telegram `TGMediaPickerGalleryInterfaceView`：说明栏和发送在查看器同页，工具键在上；
+/// 安卓 `MediaAlbumScreen` 同样摆法）。说明框和网格底栏同一种（[TellomiCaptionField]），由选图页同步成同一份说明；
+/// 一个都没勾时发送发正在看的这一张（Telegram `completeWithCurrentItem`）。写说明时照片压暗、点一下收起键盘
+/// （Telegram `TGPhotoCaptionInputMixin` 的 dismissView）。
 ///
 /// 给了 [FileMode] 时是「文件」页相册网格的预览（tellomi/tellomi#1263 F-3，owner 2026-10-13 照 Telegram）：不能编辑（Telegram iOS
 /// 文件模式用 `TGMediaEditingContext contextForCaptionsOnly`，安卓 `PhotoViewer` 的 `isDocumentsPicker` 把编辑都藏起来），没有已选计数；
@@ -32,6 +36,8 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     var onToggle: ((TellomiPhotoPickerItem) -> Void)?
     var onShowSelected: (() -> Void)?
     var onEdit: ((TellomiPhotoPickerItem, TellomiApprovalEditTool) -> Void)?
+    /// 普通模式的发送：参数是正在看的这一张（一个都没勾时选图页发它）。
+    var onSend: ((TellomiPhotoPickerItem) -> Void)?
     /// 这张改过之后的样子（选图页给，没改过是 nil）：查看器里显示它，不显示原图。
     var editedImage: (String) -> UIImage? = { _ in nil }
     /// 选图页用：工具页还盖着时，改完的重画等它收起再做。
@@ -149,9 +155,9 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         return stack
     }()
 
-    // MARK: 文件模式（F-3）
+    // MARK: 底栏（说明 + 发送；文件模式另有文件名、详情）
 
-    private let fileBar: UIView = {
+    private let bottomBar: UIView = {
         let bar = UIView()
         bar.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         return bar
@@ -172,7 +178,18 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         return label
     }()
 
-    private lazy var captionField: UITextField = {
+    /// 普通模式的说明框：和网格底栏同一种（@ 提到、表情键盘），选图页把两个同步成同一份说明。
+    private(set) lazy var captionField: TellomiCaptionField = {
+        let field = TellomiCaptionField(
+            placeholder: OWSLocalizedString("IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER", comment: "Placeholder of the caption field at the bottom of the photo picker."),
+        )
+        field.textView.textColor = .Signal.label
+        field.textView.tintColor = .Signal.accent
+        return field
+    }()
+
+    /// 文件模式的说明框（「文件」页的说明是纯文字）。
+    private lazy var fileCaptionField: UITextField = {
         let field = UITextField()
         field.font = .dynamicTypeBodyClamped
         field.textColor = .white
@@ -184,23 +201,24 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         field.returnKeyType = .default
         field.addAction(UIAction { [weak self] _ in
             guard let self else { return }
-            self.fileMode?.onCaptionChanged(self.captionField.text ?? "")
+            self.fileMode?.onCaptionChanged(self.fileCaptionField.text ?? "")
         }, for: .editingChanged)
         return field
     }()
 
-    private lazy var fileSendButton: UIButton = {
+    /// 选图页在普通模式下给它挂长按菜单（同网格的发送键）。
+    private(set) lazy var sendButton: UIButton = {
         var configuration = UIButton.Configuration.filled()
         configuration.image = Theme.iconImage(.arrowUp)
         configuration.baseBackgroundColor = .Signal.accent
         configuration.baseForegroundColor = .white
         configuration.cornerStyle = .capsule
-        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.didTapFileSend() })
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.didTapSend() })
         button.accessibilityLabel = MessageStrings.sendButton
         return button
     }()
 
-    /// 发送键右上角：勾了几个（照 Telegram 预览发送键上的计数）。
+    /// 文件模式发送键右上角：勾了几个（照 Telegram 预览发送键上的计数）。普通模式右上角已有计数，不再重复。
     private let sendBadge: UILabel = {
         let label = UILabel()
         label.font = .monospacedDigitSystemFont(ofSize: 12, weight: .semibold)
@@ -211,6 +229,16 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         label.layer.masksToBounds = true
         label.isHidden = true
         return label
+    }()
+
+    /// 写说明时盖在照片和上面那些键上的暗层，点一下收起键盘（照 Telegram `TGPhotoCaptionInputMixin` 的 dismissView，40% 黑）。
+    private lazy var editingDimView: UIView = {
+        let dim = UIView()
+        dim.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        dim.alpha = 0
+        dim.isHidden = true
+        dim.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(endCaptionEditing)))
+        return dim
     }()
 
     init(library: TellomiPhotoPickerLibrary, album: TellomiPhotoPickerAlbum, initialIndex: Int, fileMode: FileMode? = nil) {
@@ -276,53 +304,60 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             adjustButton.heightAnchor.constraint(equalToConstant: 44),
 
             toolsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toolsStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            toolsStack.bottomAnchor.constraint(equalTo: bottomBar.topAnchor, constant: -12),
         ])
-        if let fileMode {
-            setUpFileBar(initialCaption: fileMode.initialCaption)
-        }
+        setUpBottomBar()
+        setUpEditingDim()
         refreshChrome(animatedCheck: false)
     }
 
-    /// 文件模式的底栏：文件名、「尺寸 · 时长 · 大小」，再下面说明 + 发送；键盘弹起时整条跟着上来。
-    private func setUpFileBar(initialCaption: String) {
-        toolsStack.isHidden = true
-        captionField.text = initialCaption
-
-        let capsule = UIView()
-        capsule.backgroundColor = UIColor.white.withAlphaComponent(0.15)
-        capsule.layer.cornerRadius = 20
-        capsule.addSubview(captionField)
-        captionField.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(hMargin: 14, vMargin: 0))
+    /// 底栏：说明 + 发送，键盘弹起时整条跟着上来。文件模式上面再加文件名、「尺寸 · 时长 · 大小」；普通模式工具键在底栏上面。
+    private func setUpBottomBar() {
+        let captionView: UIView
+        var constraints = [NSLayoutConstraint]()
+        if let fileMode {
+            fileCaptionField.text = fileMode.initialCaption
+            let capsule = UIView()
+            capsule.backgroundColor = UIColor.white.withAlphaComponent(0.15)
+            capsule.layer.cornerRadius = 20
+            capsule.addSubview(fileCaptionField)
+            fileCaptionField.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(hMargin: 14, vMargin: 0))
+            constraints.append(capsule.heightAnchor.constraint(equalToConstant: 40))
+            captionView = capsule
+        } else {
+            // 黑底上用深色外观（说明框的底色、字色、占位字都是随外观变的颜色）。
+            bottomBar.overrideUserInterfaceStyle = .dark
+            captionView = captionField
+        }
 
         let sendContainer = UIView()
-        sendContainer.addSubview(fileSendButton)
+        sendContainer.addSubview(sendButton)
         sendContainer.addSubview(sendBadge)
-        fileSendButton.autoPinEdgesToSuperviewEdges()
+        sendButton.autoPinEdgesToSuperviewEdges()
 
-        let row = UIStackView(arrangedSubviews: [capsule, sendContainer])
+        // 说明多行时发送键贴着最后一行（同网格底栏）。
+        let row = UIStackView(arrangedSubviews: [captionView, sendContainer])
         row.axis = .horizontal
-        row.alignment = .center
+        row.alignment = .bottom
         row.spacing = 8
 
-        let stack = UIStackView(arrangedSubviews: [fileNameLabel, fileDetailsLabel, row])
+        let stack = UIStackView(arrangedSubviews: fileMode != nil ? [fileNameLabel, fileDetailsLabel, row] : [row])
         stack.axis = .vertical
         stack.spacing = 2
         stack.setCustomSpacing(10, after: fileDetailsLabel)
 
-        fileBar.addSubview(stack)
-        for subview in [stack, capsule, sendContainer, sendBadge] {
+        bottomBar.addSubview(stack)
+        for subview in [stack, captionView, sendContainer, sendBadge] {
             subview.translatesAutoresizingMaskIntoConstraints = false
         }
-        NSLayoutConstraint.activate([
-            fileBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            fileBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            fileBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            stack.topAnchor.constraint(equalTo: fileBar.topAnchor, constant: 10),
+        NSLayoutConstraint.activate(constraints + [
+            bottomBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            stack.topAnchor.constraint(equalTo: bottomBar.topAnchor, constant: 10),
             stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -12),
             stack.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -8),
-            capsule.heightAnchor.constraint(equalToConstant: 40),
             sendContainer.widthAnchor.constraint(equalToConstant: 40),
             sendContainer.heightAnchor.constraint(equalToConstant: 40),
             sendBadge.heightAnchor.constraint(equalToConstant: 18),
@@ -332,14 +367,69 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         ])
     }
 
-    private func didTapFileSend() {
+    private func setUpEditingDim() {
+        view.insertSubview(editingDimView, belowSubview: bottomBar)
+        editingDimView.autoPinEdgesToSuperviewEdges()
+        let editor: AnyObject = fileMode != nil ? fileCaptionField : captionField.textView
+        let center = NotificationCenter.default
+        for name in [UITextView.textDidBeginEditingNotification, UITextField.textDidBeginEditingNotification] {
+            center.addObserver(self, selector: #selector(captionDidBeginEditing), name: name, object: editor)
+        }
+        for name in [UITextView.textDidEndEditingNotification, UITextField.textDidEndEditingNotification] {
+            center.addObserver(self, selector: #selector(captionDidEndEditing), name: name, object: editor)
+        }
+    }
+
+    @objc private func captionDidBeginEditing() {
+        setEditingDimmed(true)
+    }
+
+    @objc private func captionDidEndEditing() {
+        setEditingDimmed(false)
+    }
+
+    @objc private func endCaptionEditing() {
+        view.endEditing(true)
+    }
+
+    private var isEditingCaption = false
+
+    /// 说明框打 @ 时，提到的人的列表贴着这条往上弹。
+    var captionBarView: UIView { bottomBar }
+
+    private func setEditingDimmed(_ dimmed: Bool) {
+        guard dimmed != isEditingCaption else { return }
+        isEditingCaption = dimmed
+        if dimmed {
+            editingDimView.isHidden = false
+        }
+        UIView.animate(withDuration: 0.2) {
+            self.editingDimView.alpha = dimmed ? 1 : 0
+        } completion: { _ in
+            if !self.isEditingCaption {
+                self.editingDimView.isHidden = true
+            }
+        }
+    }
+
+    private func didTapSend() {
         guard items.indices.contains(currentIndex) else { return }
-        fileMode?.onSend(items[currentIndex])
+        view.endEditing(true)
+        let item = items[currentIndex]
+        if let fileMode {
+            fileMode.onSend(item)
+        } else {
+            onSend?(item)
+        }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         collectionView.frame = view.bounds
+        if fileMode == nil {
+            // 说明框的高度要按排好之后的真实宽度算。
+            captionField.updatePlaceholderAndHeight()
+        }
 
         let size = view.bounds.size
         guard size != laidOutSize, size.width > 0 else { return }
@@ -425,7 +515,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     }
 
     private var chromeViews: [UIView] {
-        [closeButton, positionPill, checkButton, countButton, toolsStack] + (fileMode != nil ? [fileBar] : [])
+        [closeButton, positionPill, checkButton, countButton, toolsStack, bottomBar]
     }
 
     private var currentPageIsZoomed: Bool {
@@ -539,7 +629,7 @@ extension TellomiPhotoPickerAlbumViewer: UIGestureRecognizerDelegate {
 
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         guard gestureRecognizer === dismissPan else { return true }
-        guard !currentPageIsZoomed else { return false }
+        guard !currentPageIsZoomed, !isEditingCaption else { return false }
         let velocity = dismissPan.velocity(in: view)
         return abs(velocity.y) > abs(velocity.x)
     }
@@ -846,20 +936,64 @@ extension TellomiPhotoPickerAlbumViewer {
     var isAdjustShownForTesting: Bool { !toolsStack.isHidden && !adjustButton.isHidden }
     /// 2026-10-16 起没有「编辑」键（工具就地打开）。
     var isEditShownForTesting: Bool { false }
-    var isFileBarShownForTesting: Bool { fileBar.superview != nil }
+    var isFileBarShownForTesting: Bool { fileMode != nil && bottomBar.superview != nil }
+    /// 普通模式底部的说明 + 发送。
+    var isSendBarShownForTesting: Bool { fileMode == nil && bottomBar.superview != nil && !bottomBar.isHidden }
+    var isCaptionDimShownForTesting: Bool { isEditingCaption }
     var fileNameTextForTesting: String? { fileNameLabel.isHidden ? nil : fileNameLabel.text }
     var fileDetailsTextForTesting: String? { fileDetailsLabel.text }
-    var captionTextForTesting: String? { captionField.text }
+    var captionTextForTesting: String? {
+        fileMode != nil ? fileCaptionField.text : captionField.textView.messageBodyForSending.text
+    }
     var sendBadgeTextForTesting: String? { sendBadge.isHidden ? nil : sendBadge.text?.trimmingCharacters(in: .whitespaces) }
 
     func typeCaptionForTesting(_ text: String) {
-        captionField.text = text
-        captionField.sendActions(for: .editingChanged)
+        if fileMode != nil {
+            fileCaptionField.text = text
+            fileCaptionField.sendActions(for: .editingChanged)
+        } else {
+            let textView = captionField.textView
+            textView.setMessageBody(MessageBody(text: text, ranges: .empty), txProvider: DependenciesBridge.shared.db.readTxProvider)
+            textView.bodyRangesDelegate?.textViewDidChange?(textView)
+        }
     }
 
     func tapFileSendForTesting() {
-        didTapFileSend()
+        didTapSend()
     }
+
+    func tapSendForTesting() {
+        didTapSend()
+    }
+
+    /// 点说明框开始写。
+    @discardableResult
+    func beginCaptionEditingForTesting() -> Bool {
+        captionField.textView.becomeFirstResponder()
+    }
+
+    var isCaptionEditingForTesting: Bool { captionField.textView.isFirstResponder }
+
+    func tapEditingDimForTesting() {
+        endCaptionEditing()
+    }
+
+    func tapCaptionEmojiButtonForTesting() {
+        captionField.emojiButton.sendActions(for: .primaryActionTriggered)
+    }
+
+    var isCaptionEmojiKeyboardForTesting: Bool { captionField.textView.inputView is TellomiCaptionEmojiKeyboard }
+
+    var isSendLongPressEnabledForTesting: Bool {
+        TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.isEnabled == true
+    }
+
+    func longPressSendForTesting() {
+        TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.fireForTesting()
+    }
+
+    var toolsFrameForTesting: CGRect { toolsStack.convert(toolsStack.bounds, to: view) }
+    var sendBarFrameForTesting: CGRect { bottomBar.frame }
 }
 
 #endif

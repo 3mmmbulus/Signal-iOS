@@ -73,9 +73,6 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         static let countPillHeight: CGFloat = 44
         static let gridSpacing: CGFloat = 1
         static let bannerHeight: CGFloat = 56
-        static let captionMinHeight: CGFloat = 40
-        static let captionMaxHeight: CGFloat = 110
-        static let captionEmojiButtonSize: CGFloat = 32
     }
 
     /// P-5 的「···」里有哪几项。
@@ -299,42 +296,14 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     }()
 
     private let sendBar = UIView()
-    private let captionContainer = UIView()
-    private let captionTextView = BodyRangesTextView()
-    private let captionPlaceholder = UILabel()
-    private var captionHeightConstraint: NSLayoutConstraint?
+    /// P-9、P-10：说明框（表情键、长高都在 [TellomiCaptionField] 里）。查看器底栏另有一个，由这里同步成同一份说明。
+    private lazy var captionField = TellomiCaptionField(
+        placeholder: OWSLocalizedString("IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER", comment: "Placeholder of the caption field at the bottom of the photo picker."),
+    )
+    private var captionTextView: BodyRangesTextView { captionField.textView }
 
-    /// P-9 表情键：说明框用文字键盘还是表情键盘。收起键盘就回到文字（同 Telegram）。
-    private enum CaptionInputMode {
-        case text
-        case emoji
-    }
-
-    private var captionInputMode = CaptionInputMode.text
-
-    private lazy var captionEmojiKeyboard: TellomiCaptionEmojiKeyboard = {
-        let keyboard = TellomiCaptionEmojiKeyboard()
-        keyboard.onSelectEmoji = { [weak self] emoji in
-            self?.captionTextView.insertText(emoji)
-        }
-        keyboard.onDeleteBackward = { [weak self] in
-            self?.captionTextView.deleteBackward()
-        }
-        keyboard.onSwitchToText = { [weak self] in
-            self?.setCaptionInputMode(.text)
-        }
-        return keyboard
-    }()
-
-    private lazy var captionEmojiButton: UIButton = {
-        var configuration = UIButton.Configuration.plain()
-        configuration.baseForegroundColor = .Signal.secondaryLabel
-        configuration.contentInsets = .zero
-        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in
-            self?.toggleCaptionInputMode()
-        })
-        return button
-    }()
+    /// 正开着的整本相册查看器（它底部也有说明框和发送键）。
+    private weak var albumViewer: TellomiPhotoPickerAlbumViewer?
 
     private lazy var sendButton: UIButton = {
         var configuration = UIButton.Configuration.filled()
@@ -568,69 +537,31 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         sendBar.isHidden = true
         view.addSubview(sendBar)
 
-        captionContainer.backgroundColor = .Signal.secondaryFill
-        captionContainer.layer.cornerRadius = Metrics.captionMinHeight / 2
-        captionContainer.translatesAutoresizingMaskIntoConstraints = false
-        sendBar.addSubview(captionContainer)
-
+        captionField.translatesAutoresizingMaskIntoConstraints = false
+        sendBar.addSubview(captionField)
         captionTextView.bodyRangesDelegate = self
-        captionTextView.font = .dynamicTypeBody
-        captionTextView.backgroundColor = .clear
-        // 右边让出表情键（离框 4、键 32、再空 4）。
-        captionTextView.textContainerInset = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: Metrics.captionEmojiButtonSize + 8)
-        captionTextView.translatesAutoresizingMaskIntoConstraints = false
-        captionContainer.addSubview(captionTextView)
         if let initialMessageBody, !initialMessageBody.text.isEmpty {
             captionTextView.setMessageBody(initialMessageBody, txProvider: DependenciesBridge.shared.db.readTxProvider)
         }
 
-        captionPlaceholder.text = OWSLocalizedString("IMAGE_PICKER_TELLOMI_CAPTION_PLACEHOLDER", comment: "Placeholder of the caption field at the bottom of the photo picker.")
-        captionPlaceholder.font = .dynamicTypeBody
-        captionPlaceholder.textColor = .Signal.secondaryLabel
-        captionPlaceholder.isUserInteractionEnabled = false
-        captionPlaceholder.translatesAutoresizingMaskIntoConstraints = false
-        captionContainer.addSubview(captionPlaceholder)
-
-        updateCaptionEmojiButton()
-        captionEmojiButton.translatesAutoresizingMaskIntoConstraints = false
-        captionContainer.addSubview(captionEmojiButton)
-
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         sendBar.addSubview(sendButton)
 
-        let captionHeight = captionTextView.heightAnchor.constraint(equalToConstant: Metrics.captionMinHeight)
-        captionHeightConstraint = captionHeight
         // 说明栏的底色铺到屏幕底（盖住 Home 条那一截），输入框跟着键盘走。
         NSLayoutConstraint.activate([
             sendBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             sendBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             sendBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-            captionContainer.topAnchor.constraint(equalTo: sendBar.topAnchor, constant: 10),
-            captionContainer.leadingAnchor.constraint(equalTo: sendBar.layoutMarginsGuide.leadingAnchor),
-            captionContainer.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -10),
-            captionContainer.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8),
-
-            captionTextView.topAnchor.constraint(equalTo: captionContainer.topAnchor),
-            captionTextView.leadingAnchor.constraint(equalTo: captionContainer.leadingAnchor),
-            captionTextView.trailingAnchor.constraint(equalTo: captionContainer.trailingAnchor),
-            captionTextView.bottomAnchor.constraint(equalTo: captionContainer.bottomAnchor),
-            captionHeight,
-
-            captionPlaceholder.leadingAnchor.constraint(equalTo: captionContainer.leadingAnchor, constant: 17),
-            captionPlaceholder.trailingAnchor.constraint(lessThanOrEqualTo: captionEmojiButton.leadingAnchor, constant: -4),
-            captionPlaceholder.centerYAnchor.constraint(equalTo: captionContainer.topAnchor, constant: Metrics.captionMinHeight / 2),
-
-            // 多行时贴着最后一行（同 Telegram 的键在输入框右下角）。
-            captionEmojiButton.widthAnchor.constraint(equalToConstant: Metrics.captionEmojiButtonSize),
-            captionEmojiButton.heightAnchor.constraint(equalToConstant: Metrics.captionEmojiButtonSize),
-            captionEmojiButton.trailingAnchor.constraint(equalTo: captionContainer.trailingAnchor, constant: -4),
-            captionEmojiButton.bottomAnchor.constraint(equalTo: captionContainer.bottomAnchor, constant: -(Metrics.captionMinHeight - Metrics.captionEmojiButtonSize) / 2),
+            captionField.topAnchor.constraint(equalTo: sendBar.topAnchor, constant: 10),
+            captionField.leadingAnchor.constraint(equalTo: sendBar.layoutMarginsGuide.leadingAnchor),
+            captionField.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -10),
+            captionField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8),
 
             sendButton.widthAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
             sendButton.heightAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
             sendButton.trailingAnchor.constraint(equalTo: sendBar.layoutMarginsGuide.trailingAnchor),
-            sendButton.bottomAnchor.constraint(equalTo: captionContainer.bottomAnchor, constant: 2),
+            sendButton.bottomAnchor.constraint(equalTo: captionField.bottomAnchor, constant: 2),
         ])
         updateCaptionPlaceholderAndHeight()
     }
@@ -783,9 +714,28 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             guard let self, let viewer else { return }
             self.editInPlace(item, tool: tool, over: viewer)
         }
+        // 底部「说明 + 发送」（方案 A 第 1 条后半）：说明框和网格的同一份说明，查看器里改了网格跟着变（textViewDidChange）。
+        let viewerCaption = viewer.captionField.textView
+        viewerCaption.bodyRangesDelegate = self
+        viewerCaption.setMessageBody(captionTextView.messageBodyForSending, txProvider: DependenciesBridge.shared.db.readTxProvider)
+        viewer.onSend = { [weak self, weak viewer] item in
+            self?.sendFromAlbumViewer(item, viewer: viewer)
+        }
         viewer.onClose = { [weak viewer] in viewer?.dismiss(animated: true) }
         viewer.modalPresentationStyle = .overFullScreen
+        albumViewer = viewer
+        updateSendMenus()
         present(viewer, animated: true)
+    }
+
+    /// 查看器底部的发送：一个都没勾时发正在看的这一张（照 Telegram `completeWithCurrentItem`，「文件」页的预览同样）；
+    /// 有勾的就发勾的，同网格的发送键。发出去后会话页把整个面板连查看器一起收起。
+    private func sendFromAlbumViewer(_ item: TellomiPhotoPickerItem, viewer: TellomiPhotoPickerAlbumViewer?) {
+        if selectedIds.isEmpty {
+            guard setSelection(item: item, selected: true) else { return }
+            viewer?.refreshSelection()
+        }
+        send(quality: defaultImageQuality, separately: false)
     }
 
     /// 2026-10-16（owner 发来的方案第 6 节「方案 A」）：查看器底部的工具就地打开——不关查看器、不进上游预览页，
@@ -1198,10 +1148,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     /// M-4：选时间；选好了照点这个发送键那样发，只是排成定时消息。网格的发送键直接发；上游预览 / 编辑页的发送键让那一页照常发
     /// （编辑画进去、选的画质、一次性查看），它交回来时带着时间（`tellomiApprovedScheduledAt`）。
     private func presentScheduleSheet(sendingWith button: UIButton?) {
-        var presenter: UIViewController = self
-        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
-            presenter = presented
-        }
+        let presenter = topmostPresenter
         // 排满了（一个会话 100 条，同 TG）：先说，不用选完时间、准备完附件才知道。
         guard (delegate?.photoPickerScheduledMessageCapacity(self) ?? 0) > 0 else {
             OWSActionSheets.showActionSheet(
@@ -1233,6 +1180,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             self?.presentSendPreview(from: button)
         }
         TellomiSendLongPressGestureRecognizer.install(on: sendButton, handler: handler)
+        if let albumViewer {
+            TellomiSendLongPressGestureRecognizer.install(on: albumViewer.sendButton, handler: handler)
+        }
         editingApproval?.tellomiSetSendLongPress(handler)
         presentedSendPreview?.update(captionAboveMedia: isCaptionAboveMedia, actions: sendPreviewActions())
     }
@@ -1271,11 +1221,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             sourceButton: button,
             onSend: onSend,
         )
-        var presenter: UIViewController = self
-        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
-            presenter = presented
-        }
-        presenter.present(preview, animated: false)
+        topmostPresenter.present(preview, animated: false)
         sendPreview = preview
         sendPreviewButton = button
     }
@@ -1492,6 +1438,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     // MARK: - Sending / editing
 
+    /// 最上面那一层：查看器、上游预览页盖在选图页上时，提示和菜单从它弹（选图页已经 present 着它，再 present 会失败）。
+    private var topmostPresenter: UIViewController {
+        var presenter: UIViewController = self
+        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
+            presenter = presented
+        }
+        return presenter
+    }
+
     private var messageBodyForSending: MessageBody? {
         let body = captionTextView.messageBodyForSending
         return body.text.ows_stripped().isEmpty ? nil : body
@@ -1571,7 +1526,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let attachmentLimits = self.attachmentLimits
         ModalActivityIndicatorViewController.present(
             // 查看器盖在选图页上时从查看器弹（选图页这时已经 present 着查看器，再 present 会失败）
-            fromViewController: presenter ?? self,
+            fromViewController: presenter ?? topmostPresenter,
             title: CommonStrings.preparingModal,
             canCancel: true,
             asyncBlock: { modal in
@@ -1675,70 +1630,35 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     // MARK: - Caption
 
-    private func toggleCaptionInputMode() {
-        setCaptionInputMode(captionInputMode == .text ? .emoji : .text)
-        if !captionTextView.isFirstResponder {
-            captionTextView.becomeFirstResponder()
-        }
-    }
-
-    private func setCaptionInputMode(_ mode: CaptionInputMode) {
-        captionInputMode = mode
-        updateCaptionEmojiButton()
-        let desiredInputView: UIView?
-        switch mode {
-        case .text:
-            desiredInputView = nil
-        case .emoji:
-            captionEmojiKeyboard.updateHeightForPresentation()
-            desiredInputView = captionEmojiKeyboard
-        }
-        guard captionTextView.inputView !== desiredInputView else { return }
-        captionTextView.inputView = desiredInputView
-        if captionTextView.isFirstResponder {
-            captionTextView.reloadInputViews()
-        }
-    }
-
-    /// 文字键盘时显示笑脸（点了切表情），表情键盘时显示键盘（点了切回文字）。
-    private func updateCaptionEmojiButton() {
-        switch captionInputMode {
-        case .text:
-            captionEmojiButton.configuration?.image = Theme.iconImage(.emojiSmiley)
-            captionEmojiButton.accessibilityLabel = OWSLocalizedString(
-                "IMAGE_PICKER_TELLOMI_CAPTION_EMOJI_BUTTON",
-                comment: "Accessibility label of the button in the photo picker caption field that switches to the emoji keyboard.",
-            )
-        case .emoji:
-            captionEmojiButton.configuration?.image = UIImage(imageLiteralResourceName: "keyboard")
-            captionEmojiButton.accessibilityLabel = OWSLocalizedString(
-                "INPUT_TOOLBAR_KEYBOARD_BUTTON_ACCESSIBILITY_LABEL",
-                comment: "accessibility label for the button which shows the regular keyboard instead of sticker picker",
-            )
-        }
-    }
-
     private func updateCaptionPlaceholderAndHeight() {
-        captionPlaceholder.isHidden = !captionTextView.isEmpty
-        let width = captionTextView.bounds.width
-        guard width > 0 else { return }
-        let fitting = captionTextView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height
-        let height = min(max(fitting, Metrics.captionMinHeight), Metrics.captionMaxHeight)
-        captionTextView.isScrollEnabled = fitting > Metrics.captionMaxHeight
-        if captionHeightConstraint?.constant != height {
-            captionHeightConstraint?.constant = height
-        }
+        captionField.updatePlaceholderAndHeight()
     }
 
-    // MARK: - BodyRangesTextViewDelegate
+    // MARK: - BodyRangesTextViewDelegate（网格的说明框和查看器的说明框都由这里管）
+
+    private func isAlbumViewerCaption(_ textView: UITextView) -> Bool {
+        guard let albumViewer else { return false }
+        return textView === albumViewer.captionField.textView
+    }
+
+    private func captionFieldOwning(_ textView: UITextView) -> TellomiCaptionField? {
+        if textView === captionTextView {
+            return captionField
+        }
+        return isAlbumViewerCaption(textView) ? albumViewer?.captionField : nil
+    }
 
     func textViewDidBeginTypingMention(_ textView: BodyRangesTextView) {}
 
     func textViewDidEndTypingMention(_ textView: BodyRangesTextView) {}
 
-    func textViewMentionPickerParentView(_ textView: BodyRangesTextView) -> UIView? { view }
+    func textViewMentionPickerParentView(_ textView: BodyRangesTextView) -> UIView? {
+        isAlbumViewerCaption(textView) ? albumViewer?.view : view
+    }
 
-    func textViewMentionPickerReferenceView(_ textView: BodyRangesTextView) -> UIView? { sendBar }
+    func textViewMentionPickerReferenceView(_ textView: BodyRangesTextView) -> UIView? {
+        isAlbumViewerCaption(textView) ? albumViewer?.captionBarView : sendBar
+    }
 
     func textViewMentionPickerPossibleAcis(_ textView: BodyRangesTextView, tx: DBReadTransaction) -> [Aci] {
         approvalDataSource?.attachmentApprovalMentionableAcis(tx: tx) ?? []
@@ -1755,10 +1675,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     func mentionPickerStyle(_ textView: BodyRangesTextView) -> MentionPickerStyle { .composingAttachment }
 
     func textViewDidEndEditing(_ textView: UITextView) {
-        setCaptionInputMode(.text)
+        captionFieldOwning(textView)?.setInputMode(.text)
     }
 
     func textViewDidChange(_ textView: UITextView) {
+        if isAlbumViewerCaption(textView), let viewerField = albumViewer?.captionField {
+            // 查看器里改的：网格的说明框跟着变（查看器开着时网格的框没人改，不用反过来同步）。
+            viewerField.updatePlaceholderAndHeight()
+            captionTextView.setMessageBody(viewerField.textView.messageBodyForSending, txProvider: DependenciesBridge.shared.db.readTxProvider)
+        }
         updateCaptionPlaceholderAndHeight()
         updateSendMenus()
         delegate?.photoPicker(self, didChangeMessageBody: captionTextView.messageBodyForSending)
@@ -2235,12 +2160,12 @@ extension TellomiPhotoPickerViewController {
     }
 
     func tapCaptionEmojiButtonForTesting() {
-        captionEmojiButton.sendActions(for: .primaryActionTriggered)
+        captionField.emojiButton.sendActions(for: .primaryActionTriggered)
     }
 
-    var captionEmojiButtonAccessibilityLabelForTesting: String? { captionEmojiButton.accessibilityLabel }
-    var captionEmojiButtonFrameForTesting: CGRect { captionEmojiButton.convert(captionEmojiButton.bounds, to: captionContainer) }
-    var captionFieldFrameForTesting: CGRect { captionContainer.bounds }
+    var captionEmojiButtonAccessibilityLabelForTesting: String? { captionField.emojiButton.accessibilityLabel }
+    var captionEmojiButtonFrameForTesting: CGRect { captionField.emojiButton.convert(captionField.emojiButton.bounds, to: captionField) }
+    var captionFieldFrameForTesting: CGRect { captionField.bounds }
     var captionTextContainerInsetForTesting: UIEdgeInsets { captionTextView.textContainerInset }
     var captionInputViewForTesting: UIView? { captionTextView.inputView }
     var isCaptionEditingForTesting: Bool { captionTextView.isFirstResponder }

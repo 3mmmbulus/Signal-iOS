@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3BFC9D7F7C62A0459587A000 /* TellomiCaptionField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4558E3D98619F28E914E122A /* TellomiCaptionField.swift */; };
 		5E96F4E5D262F344AC766415 /* TellomiImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */; };
 		4348952412156B70DFAFC047 /* ConversationViewController+TellomiSheetPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */; };
 		E50557DD726BD7EB699F7BCF /* TellomiAttachmentPollPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */; };
@@ -4474,6 +4475,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4558E3D98619F28E914E122A /* TellomiCaptionField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionField.swift; sourceTree = "<group>"; };
 		C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageTools.swift; sourceTree = "<group>"; };
 		86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiSheetPages.swift"; sourceTree = "<group>"; };
 		17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAttachmentPollPage.swift; sourceTree = "<group>"; };
@@ -9645,6 +9647,7 @@
 				7AA940CD8AD849697C5D7DCD /* TellomiPhotoPickerCamera.swift */,
 				F5FA32AB6F79CA89781DB616 /* TellomiCaptureFilmstrip.swift */,
 				540EABFA023E1C1A878DA9F2 /* TellomiCaptionEmojiKeyboard.swift */,
+				4558E3D98619F28E914E122A /* TellomiCaptionField.swift */,
 				0532E3135A6D469CEC78A953 /* TellomiPhotoPickerLibrary.swift */,
 				4C4AE69F224AF21900D4AF6F /* SendMediaNavigationController.swift */,
 			);
@@ -19782,6 +19785,7 @@
 				2E174D0E19C84099DB6A1FF9 /* TellomiPhotoPickerCamera.swift in Sources */,
 				621842E786A21E560B88BC13 /* TellomiCaptureFilmstrip.swift in Sources */,
 				8A656AB02AE3A44B4DEE01DC /* TellomiCaptionEmojiKeyboard.swift in Sources */,
+				3BFC9D7F7C62A0459587A000 /* TellomiCaptionField.swift in Sources */,
 				40B3651A6590416B1FB5DBF0 /* TellomiPhotoPickerLibrary.swift in Sources */,
 				887889A52476E999001B5FCF /* PinConfirmationViewController.swift in Sources */,
 				048D58362ED4FABB00F26237 /* PinDisappearingMessageViewController.swift in Sources */,

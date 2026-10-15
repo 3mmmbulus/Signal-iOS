@@ -906,6 +906,111 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "再编辑不会把它取消")
     }
 
+    /// 方案 A 第 1 条后半：查看器底部「说明 + 发送」，工具键在它上面（照 Telegram `TGMediaPickerGalleryInterfaceView`，
+    /// 安卓 `MediaAlbumScreen` 同样摆法）。说明框和网格的是同一份说明：网格里的字带进来，查看器里改了网格和会话输入框都跟着变。
+    @MainActor
+    func testAlbumViewerHasCaptionAndSendSharingTheGridCaption() async throws {
+        let hosted = host(initialText: "今天的照片")
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertTrue(viewer.isSendBarShownForTesting, "没勾也有说明 + 发送")
+        XCTAssertFalse(viewer.isFileBarShownForTesting)
+        XCTAssertEqual(viewer.captionTextForTesting, "今天的照片")
+        viewer.view.layoutIfNeeded()
+        XCTAssertLessThanOrEqual(viewer.toolsFrameForTesting.maxY, viewer.sendBarFrameForTesting.minY, "工具键在说明栏上面")
+        XCTAssertGreaterThan(viewer.toolsFrameForTesting.size.height, 0)
+
+        viewer.typeCaptionForTesting("海边")
+        XCTAssertEqual(picker.captionTextForTesting, "海边", "网格的说明框跟着变")
+        XCTAssertEqual(hosted.delegate.bodies.last??.text, "海边", "会话输入框跟着变")
+        XCTAssertEqual(picker.selectedIdsForTesting, [], "写说明不勾选")
+    }
+
+    /// 查看器里发送：一个都没勾时发正在看的这一张，带上说明（照 Telegram `completeWithCurrentItem`，「文件」页预览同样）。
+    @MainActor
+    func testAlbumViewerSendWithNothingSelectedSendsTheShownPhoto() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        viewer.typeCaptionForTesting("海边")
+        viewer.tapSendForTesting()
+
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r4"])
+        XCTAssertEqual(sent.body?.text, "海边")
+        XCTAssertEqual(sent.approved.imageQuality, .standard)
+        XCTAssertFalse(sent.separately)
+    }
+
+    /// 有勾的就发勾的、按勾的次序（同网格的发送键），不把正在看的这张加进去；长按发送键是同一个预览 + 菜单，盖在查看器上。
+    @MainActor
+    func testAlbumViewerSendSendsTheSelectionAndLongPressShowsTheSameMenu() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapCheckForTesting(itemIndex: 2)
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapItemForTesting(itemIndex: 4)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+
+        XCTAssertTrue(viewer.isSendLongPressEnabledForTesting)
+        viewer.longPressSendForTesting()
+        let preview = try await presentedPreview(picker)
+        XCTAssertTrue(preview.presentingViewController === viewer, "预览盖在查看器上")
+        XCTAssertEqual(preview.actionTitlesForTesting, ["Schedule Message"])
+        preview.tapBackgroundForTesting()
+        let previewClosed = await waitUntil { picker.sendPreviewForTesting == nil }
+        XCTAssertTrue(previewClosed)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "点空白处收起，不发")
+
+        viewer.tapSendForTesting()
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r2", "r0"])
+    }
+
+    /// 写说明时照片压暗、点暗处收起键盘（照 Telegram `TGPhotoCaptionInputMixin` 的 dismissView），不勾选；
+    /// 表情键同网格的说明框：切到表情键盘，收起键盘后下次是文字键盘。
+    @MainActor
+    func testAlbumViewerDimsThePhotoWhileWritingTheCaption() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapItemForTesting(itemIndex: 4)
+        let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(viewed)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        // 弹出动画走完、查看器在窗口里了，说明框才能成为第一响应者。
+        let onScreen = await waitUntil { viewer.view.window != nil && !viewer.isBeingPresented }
+        XCTAssertTrue(onScreen)
+        XCTAssertFalse(viewer.isCaptionDimShownForTesting)
+
+        XCTAssertTrue(viewer.beginCaptionEditingForTesting())
+        XCTAssertTrue(viewer.isCaptionDimShownForTesting)
+        viewer.tapCaptionEmojiButtonForTesting()
+        XCTAssertTrue(viewer.isCaptionEmojiKeyboardForTesting)
+        XCTAssertTrue(viewer.isCaptionEditingForTesting)
+
+        viewer.tapEditingDimForTesting()
+        XCTAssertFalse(viewer.isCaptionEditingForTesting)
+        XCTAssertFalse(viewer.isCaptionDimShownForTesting)
+        XCTAssertFalse(viewer.isCaptionEmojiKeyboardForTesting, "收起键盘就回到文字键盘")
+        XCTAssertEqual(picker.selectedIdsForTesting, [], "点暗处不勾选")
+    }
+
     /// 视频没有「裁剪」「绘制」「调整」（上游对视频没有这些工具）。
     @MainActor
     func testAlbumViewerHidesImageToolsForVideos() async throws {
@@ -1039,6 +1144,34 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         library.viewerProgress["r4"]?(0.35)
         try await settle()
         try save(render(hosted.window), name: "picker-viewer-icloud-progress.png", width: 402)
+    }
+
+    /// 查看器底部的说明 + 发送（没写 / 写了说明、正在写时照片压暗）。
+    @MainActor
+    func testAlbumViewerCaptionBarScreenshots() async throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1", "只在 TELLOMI_SHOTS=1 时截图")
+        let hosted = host()
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapItemForTesting(itemIndex: 4)
+        let opened = await waitUntil { self.albumViewer(over: picker) != nil }
+        XCTAssertTrue(opened)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        let onScreen = await waitUntil { viewer.view.window != nil && !viewer.isBeingPresented }
+        XCTAssertTrue(onScreen)
+        try await settle()
+        try save(render(hosted.window), name: "picker-viewer-caption-empty.png", width: 402)
+
+        viewer.typeCaptionForTesting("海边的下午，风很大，浪一阵一阵地打上来")
+        try await settle()
+        try save(render(hosted.window), name: "picker-viewer-caption-filled.png", width: 402)
+
+        viewer.beginCaptionEditingForTesting()
+        try await settle()
+        try save(render(hosted.window), name: "picker-viewer-caption-editing.png", width: 402)
+        viewer.tapEditingDimForTesting()
     }
 
     // MARK: - P-11 上限
