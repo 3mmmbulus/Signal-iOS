@@ -97,7 +97,7 @@ final class TellomiCaptureLockTests: SignalBaseTest {
     }
 
     private func hostBottomBar() -> (UIWindow, CameraBottomBar) {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         let root = UIViewController()
         window.rootViewController = root
         window.isHidden = false

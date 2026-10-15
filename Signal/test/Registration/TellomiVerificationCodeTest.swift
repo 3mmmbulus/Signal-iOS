@@ -284,7 +284,7 @@ final class TellomiVerificationCodeTest: SignalBaseTest {
             ),
             presenter: Presenter(),
         )
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = viewController
         window.makeKeyAndVisible()
         defer {

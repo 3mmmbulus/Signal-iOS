@@ -146,7 +146,7 @@ final class TellomiFeedComposeTests: XCTestCase {
         let sample = SampleFeedSource()
         var publishedStates = [String]()
         let compose = FeedComposeViewController(source: sample) { publishedStates.append($0) }
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = OWSNavigationController(rootViewController: compose)
         window.isHidden = false
         window.layoutIfNeeded()
@@ -208,7 +208,7 @@ final class TellomiFeedComposeTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         func shoot(_ viewController: UIViewController, _ name: String, prepare: () -> Void = {}) async throws {
-            let window = UIWindow(frame: UIScreen.main.bounds)
+            let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
             window.rootViewController = OWSNavigationController(rootViewController: viewController)
             window.isHidden = false
             prepare()

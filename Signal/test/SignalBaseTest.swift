@@ -4,6 +4,7 @@
 //
 
 public import XCTest
+import UIKit
 
 @testable import SignalServiceKit
 
@@ -24,6 +25,8 @@ open class SignalBaseTest: XCTestCase {
 
     @MainActor
     override open func tearDown() {
+        // Tellomi: take this test's windows off the app's scene while the mock environment is still up (TellomiTestWindow.swift).
+        UIWindow.tellomiDetachTestWindows()
         MockSSKEnvironment.deactivate(oldContext: self.oldContext)
         super.tearDown()
     }

@@ -145,7 +145,7 @@ final class TellomiImageEditorEyedropperTests: SignalBaseTest {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         // 编辑器出现前工具条是隐藏的（等出现动画），工具条单独拍。
-        let toolbarWindow = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 160))
+        let toolbarWindow = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 160))
         toolbarWindow.overrideUserInterfaceStyle = .dark
         let host = UIViewController()
         host.view.backgroundColor = .black
@@ -206,7 +206,7 @@ final class TellomiImageEditorEyedropperTests: SignalBaseTest {
         }
         let model = try ImageEditorModel(normalizedImage: NormalizedImage.forImage(image))
         let editor = ImageEditorViewController(model: model, stickerSheetDelegate: nil)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.overrideUserInterfaceStyle = .dark
         window.rootViewController = editor
         window.isHidden = false

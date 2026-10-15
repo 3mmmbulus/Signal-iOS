@@ -306,7 +306,7 @@ final class TellomiUpdateRequiredTest: SignalBaseTest {
         }
 
         func shoot(_ viewController: UIViewController, name: String, presentation: Presentation) async throws {
-            let window = UIWindow(frame: UIScreen.main.bounds)
+            let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
             let base = UIViewController()
             base.view.backgroundColor = .Signal.background
             switch presentation {
@@ -420,7 +420,7 @@ final class TellomiUpdateRequiredTest: SignalBaseTest {
         }
         let viewController = TellomiUpdateRequiredAppBlockingViewController(openUpdatePage: {}, openNotes: { _ in }, viewChatsOnly: {})
         viewController.traitOverrides.preferredContentSizeCategory = category
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 667))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 667))
         window.rootViewController = viewController
         window.isHidden = false
         viewController.view.layoutIfNeeded()

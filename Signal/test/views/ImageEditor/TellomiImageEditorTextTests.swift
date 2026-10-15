@@ -76,7 +76,7 @@ final class TellomiImageEditorTextTests: SignalBaseTest {
         let directory = URL(fileURLWithPath: environment["TELLOMI_SHOTS_DIR"] ?? NSTemporaryDirectory())
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 120))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 120))
         window.overrideUserInterfaceStyle = .dark
         let host = UIViewController()
         host.view.backgroundColor = .black

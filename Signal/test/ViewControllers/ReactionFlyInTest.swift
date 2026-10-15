@@ -113,7 +113,7 @@ final class ReactionFlyInTest: XCTestCase {
     // MARK: -
 
     private func makeWindowWithTarget() -> (UIWindow, UILabel) {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.isHidden = false
         let target = UILabel(frame: CGRect(x: 200, y: 400, width: 20, height: 18))
         target.font = .boldSystemFont(ofSize: 14)

@@ -66,6 +66,8 @@ final class TellomiAsFileCellTests: XCTestCase {
 
     @MainActor
     override func tearDown() {
+        // 先把这个测试开的窗口摘下来，环境还在时让它们收尾（TellomiTestWindow.swift）。
+        UIWindow.tellomiDetachTestWindows()
         MockSSKEnvironment.deactivate(oldContext: self.oldContext)
         super.tearDown()
     }
@@ -359,7 +361,7 @@ final class TellomiAsFileCellTests: XCTestCase {
     @MainActor
     func testTheLiveViewPlaysOnceMutedOrLoopsWithSound() async throws {
         let url = try Self.makeTestVideo()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 300))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 300))
         window.isHidden = false
         defer { window.isHidden = true }
         let liveView = TellomiLivePhotoView(fill: true)
@@ -495,7 +497,7 @@ final class TellomiAsFileCellTests: XCTestCase {
     private func hostViewer(_ message: TSMessage, thread: TSThread) async throws -> (UIWindow, MediaPageViewController, MediaItemViewController) {
         let attachment = try XCTUnwrap(bodyAttachments(of: message).first)
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: attachment, thread: thread, spoilerState: SpoilerRenderState()))
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = viewer
         window.isHidden = false
         window.layoutIfNeeded()
@@ -803,7 +805,7 @@ final class TellomiAsFileCellTests: XCTestCase {
 
         let delegate = MockConversationView(model: .init(items: []), hasWallpaper: false, customChatColor: nil)
         let cellHeight = renderItem.cellMeasurement.cellSize.height
-        let window = UIWindow(frame: CGRect(x: 0, y: 150, width: width, height: cellHeight + 24))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 150, width: width, height: cellHeight + 24))
         window.overrideUserInterfaceStyle = dark ? .dark : .light
         window.backgroundColor = dark ? .black : .white
         let cellView = CVCellView()

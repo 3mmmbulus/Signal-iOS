@@ -52,7 +52,7 @@ final class TellomiRegistrationSplashTest: SignalBaseTest {
     /// 放进一个真窗口里（轮播只在上屏时自动播），不接系统的「减弱动态效果」，由用例指定。
     private func makeCarouselOnScreen(reduceMotion: Bool) -> (UIWindow, TellomiSplashCarouselView) {
         let carousel = TellomiSplashCarouselView(isReduceMotionEnabled: { reduceMotion })
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         let root = UIViewController()
         window.rootViewController = root
         root.view.addSubview(carousel)

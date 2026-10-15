@@ -66,6 +66,8 @@ final class AlbumViewerScreenshotTests: XCTestCase {
 
     @MainActor
     override func tearDown() {
+        // 先把这个测试开的窗口摘下来，环境还在时让它们收尾（TellomiTestWindow.swift）。
+        UIWindow.tellomiDetachTestWindows()
         MockSSKEnvironment.deactivate(oldContext: self.oldContext)
         super.tearDown()
     }
@@ -153,7 +155,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
 
         let third = try bodyAttachments(of: album)[2]
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: third, thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         // 系统是浅色模式时查看器也要是深色（照 Telegram：浅色玻璃按钮放在亮的图片上看不清）。
         window.overrideUserInterfaceStyle = .light
         window.rootViewController = viewer
@@ -215,7 +217,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         // 只有一张：轻点后也没有缩略条
         let singleAttachment = try bodyAttachments(of: single)[0]
         let singleViewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: singleAttachment, thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let singleWindow = UIWindow(frame: UIScreen.main.bounds)
+        let singleWindow = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         singleWindow.rootViewController = singleViewer
         singleWindow.isHidden = false
         singleWindow.layoutIfNeeded()
@@ -230,7 +232,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         // 白底的图（截图、文档）上：按钮照样看得清——深色玻璃 + 白图标（照 Telegram）。
         let whitePage = try await insertMediaMessage(thread: thread, incoming: true, media: [(data: whitePageJpeg(), mimeType: "image/jpeg")], body: nil)
         let whiteViewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: try bodyAttachments(of: whitePage)[0], thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let whiteWindow = UIWindow(frame: UIScreen.main.bounds)
+        let whiteWindow = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         whiteWindow.overrideUserInterfaceStyle = .light
         whiteWindow.rootViewController = whiteViewer
         whiteWindow.isHidden = false
@@ -276,7 +278,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         let thread = write { tx in ContactThreadFactory().create(transaction: tx) }
         let album = try await insertAlbum(thread: thread, incoming: true, sizes: sizes(2), body: nil)
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: try bodyAttachments(of: album)[0], thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.overrideUserInterfaceStyle = .light
         window.rootViewController = viewer
         window.isHidden = false
@@ -303,7 +305,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         )
         let attachments = try bodyAttachments(of: message)
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: attachments[0], thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.rootViewController = viewer
         window.isHidden = false
         window.layoutIfNeeded()
@@ -327,7 +329,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         let album = try await insertAlbum(thread: thread, incoming: true, sizes: sizes(3), body: nil)
         let attachments = try bodyAttachments(of: album)
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: attachments[2], thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.rootViewController = viewer
         window.isHidden = false
         window.layoutIfNeeded()
@@ -413,7 +415,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         let attachments = try bodyAttachments(of: message)
 
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: attachments[0], thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.rootViewController = viewer
         window.isHidden = false
         window.layoutIfNeeded()
@@ -775,7 +777,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         let video = try await makeVideo(size: CGSize(width: 320, height: 180), duration: 6, framesPerSecond: 10)
         let message = try await insertMediaMessage(thread: thread, incoming: true, media: [(data: video, mimeType: "video/mp4")], body: nil)
         let viewer = try XCTUnwrap(MediaPageViewController(initialMediaAttachment: try bodyAttachments(of: message)[0], thread: thread, spoilerState: SpoilerRenderState(), showingSingleMessage: true))
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.rootViewController = viewer
         window.isHidden = false
         window.layoutIfNeeded()
@@ -916,7 +918,7 @@ final class AlbumViewerScreenshotTests: XCTestCase {
         let delegate = MockConversationView(model: .init(items: []), hasWallpaper: false, customChatColor: nil)
         let cellHeight = renderItem.cellMeasurement.cellSize.height
         // 窗口放在状态栏以下：否则 cell 落在安全区里，布局边距会被加上安全区（会话页里 cell 不会这样）
-        let window = UIWindow(frame: CGRect(x: 0, y: 150, width: width, height: cellHeight + 24))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 150, width: width, height: cellHeight + 24))
         window.backgroundColor = Theme.backgroundColor
         let cellView = CVCellView()
         cellView.configure(renderItem: renderItem, componentDelegate: delegate)

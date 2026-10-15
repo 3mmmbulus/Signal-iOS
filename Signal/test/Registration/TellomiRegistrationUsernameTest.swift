@@ -327,7 +327,7 @@ final class TellomiRegistrationProfileUsernameTest: SignalBaseTest {
             ),
             presenter: presenter,
         )
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = OWSNavigationController(rootViewController: viewController)
         window.makeKeyAndVisible()
         viewController.loadViewIfNeeded()

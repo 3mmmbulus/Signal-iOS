@@ -141,7 +141,7 @@ final class TellomiFeedEventsTests: XCTestCase {
     @MainActor
     func testTimelineReportsOnlyVisiblePostsOfTheCurrentPage() async throws {
         let feed = FeedViewController(source: SampleFeedSource())
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = OWSNavigationController(rootViewController: feed)
         window.isHidden = false
         defer { window.isHidden = true }

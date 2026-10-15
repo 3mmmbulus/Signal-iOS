@@ -78,7 +78,7 @@ final class TellomiCaptureFilmstripTests: SignalBaseTest {
         let directory = URL(fileURLWithPath: root).appendingPathComponent("\(Int(width))")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 160))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: width, height: 160))
         let host = UIViewController()
         host.view.backgroundColor = .black
         window.rootViewController = host

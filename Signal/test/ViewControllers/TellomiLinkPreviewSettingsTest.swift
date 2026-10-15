@@ -20,7 +20,7 @@ final class TellomiLinkPreviewSettingsTest: SignalBaseTest {
 
     @MainActor
     private func present() async throws -> UIWindow {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.overrideUserInterfaceStyle = .light
         window.rootViewController = OWSNavigationController(rootViewController: ChatsSettingsViewController())
         window.isHidden = false

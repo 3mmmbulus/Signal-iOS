@@ -2015,7 +2015,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             window = UIWindow(windowScene: scene)
             window.frame = frame
         } else {
-            window = UIWindow(frame: frame)
+            window = UIWindow.tellomiTestWindow(frame: frame)
         }
         window.backgroundColor = .Signal.background
         if asAttachmentSheet {

@@ -173,7 +173,7 @@ final class TellomiScheduledMessagesListTests: SignalBaseTest {
     /// 会话输入框里长按发送（M-4，同 TG 两端）：只有文字时气泡贴着文字宽；字多了到最宽、换行。菜单里是「定时发送」。
     @MainActor
     func testTheTextOnlyPreviewFitsTheText() throws {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         let root = UIViewController()
         window.rootViewController = root
         window.isHidden = false
@@ -211,7 +211,7 @@ final class TellomiScheduledMessagesListTests: SignalBaseTest {
     /// 从右往左的语言：发送键在左边，气泡和菜单在它右边，不出屏幕。
     @MainActor
     func testThePreviewMirrorsForRightToLeft() {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         let root = UIViewController()
         window.rootViewController = root
         window.isHidden = false
@@ -308,7 +308,7 @@ final class TellomiScheduledMessagesListTests: SignalBaseTest {
             bubbleColor: .solidColor(color: UIColor(red: 0.23, green: 0.47, blue: 0.27, alpha: 1)),
             sender: sender,
         )
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = OWSNavigationController(rootViewController: screen)
         window.isHidden = false
         defer { window.isHidden = true }

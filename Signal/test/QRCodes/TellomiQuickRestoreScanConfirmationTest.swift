@@ -34,7 +34,7 @@ final class TellomiQuickRestoreScanConfirmationTest: SignalBaseTest {
     func testACameraScannedTransferCodeAsksBeforeOpeningTheTransferPage() throws {
         let delegate = NoopScanDelegate()
         let scanner = UsernameLinkScanQRCodeViewController(scanDelegate: delegate)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = scanner
         window.makeKeyAndVisible()
         defer { window.isHidden = true }

@@ -269,9 +269,7 @@ final class TellomiImageEditorBrushTests: SignalBaseTest {
     /// 窗口挂在测试宿主的场景上（应用用 UIScene，`UIWindow(frame:)` 不排版），画布才有大小。
     @MainActor
     private static func window(showing viewController: UIViewController) throws -> UIWindow {
-        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
-        let window = UIWindow(windowScene: scene)
-        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = viewController
         window.isHidden = false
         window.layoutIfNeeded()

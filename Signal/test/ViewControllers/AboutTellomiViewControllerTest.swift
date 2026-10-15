@@ -160,7 +160,7 @@ final class AboutTellomiViewControllerTest: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         func shoot(_ viewController: UIViewController, name: String, scrollToBottom: Bool) async throws {
-            let window = UIWindow(frame: UIScreen.main.bounds)
+            let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
             window.rootViewController = UINavigationController(rootViewController: viewController)
             window.isHidden = false
             window.layoutIfNeeded()

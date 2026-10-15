@@ -425,7 +425,7 @@ final class TellomiFeedClientTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         let feed = FeedViewController(source: SampleFeedSource())
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.rootViewController = OWSNavigationController(rootViewController: feed)
         window.isHidden = false
         window.layoutIfNeeded()

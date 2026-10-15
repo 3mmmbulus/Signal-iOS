@@ -64,6 +64,8 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
 
     @MainActor
     override func tearDown() {
+        // 先把这个测试开的窗口摘下来，环境还在时让它们收尾（TellomiTestWindow.swift）。
+        UIWindow.tellomiDetachTestWindows()
         MockSSKEnvironment.deactivate(oldContext: self.oldContext)
         super.tearDown()
     }
@@ -887,7 +889,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         let dark = Theme.isDarkThemeEnabled
         let view = LinkPreviewView(state: .failed(LinkPreviewError.groupLinkInactive))
         // y = 150：不压在屏幕顶部的安全区上（别的离屏测试也这样放）
-        let window = UIWindow(frame: CGRect(x: 0, y: 150, width: width, height: 100))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 150, width: width, height: 100))
         window.overrideUserInterfaceStyle = dark ? .dark : .light
         window.backgroundColor = dark ? .black : .white
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -1493,7 +1495,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
 
         let delegate = MockConversationView(model: .init(items: []), hasWallpaper: false, customChatColor: nil)
         let cellHeight = renderItem.cellMeasurement.cellSize.height
-        let window = UIWindow(frame: CGRect(x: 0, y: 150, width: width, height: cellHeight + 24))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 150, width: width, height: cellHeight + 24))
         window.overrideUserInterfaceStyle = dark ? .dark : .light
         window.backgroundColor = dark ? .black : .white
         let cellView = CVCellView()

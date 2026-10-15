@@ -168,7 +168,7 @@ final class TellomiUsernameLowercaseTest: XCTestCase {
 
     @MainActor
     private func makeFieldInWindow(text: String) -> (UITextField, UIWindow) {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 200))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 200))
         let field = UITextField(frame: CGRect(x: 0, y: 0, width: 390, height: 44))
         window.addSubview(field)
         window.makeKeyAndVisible()
@@ -324,7 +324,7 @@ final class TellomiUsernameSelectionLowercaseTest: SignalBaseTest {
                 storageServiceManager: SSKEnvironment.shared.storageServiceManagerRef,
             ),
         )
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = OWSNavigationController(rootViewController: viewController)
         window.makeKeyAndVisible()
         defer { window.isHidden = true }
