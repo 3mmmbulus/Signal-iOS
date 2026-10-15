@@ -10965,6 +10965,15 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "点击替换表情符号";
 
+/* Toast shown above the tab bar after a chat is archived from the chat list. Has an Undo button. */
+"TELLOMI_CHAT_LIST_ARCHIVED_TOAST" = "聊天已存档";
+
+/* Toast shown above the tab bar after several chats are archived at once. Embeds {{number of chats}}. Has an Undo button. */
+"TELLOMI_CHAT_LIST_ARCHIVED_TOAST_MULTIPLE_FORMAT" = "%@ 个聊天已存档";
+
+/* Button on the 'chat archived' toast that moves the chat back out of the archive. */
+"TELLOMI_CHAT_LIST_ARCHIVED_UNDO" = "撤销";
+
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_ACTION_FAILED" = "操作失败，请重试";
 

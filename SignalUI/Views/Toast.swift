@@ -39,6 +39,12 @@ public class ToastController: NSObject, ToastViewDelegate {
         let toastView = ToastView()
         toastView.text = self.toastText
         toastView.tellomiEmphasize(tellomiBoldTexts)
+        if let tellomiAction {
+            toastView.tellomiSetAction(title: tellomiAction.title) { [weak self] in
+                self?.dismissToastView()
+                tellomiAction.handler()
+            }
+        }
         toastView.image = self.toastIcon
         toastView.delegate = self
         self.toastView = toastView
@@ -157,6 +163,9 @@ public class ToastController: NSObject, ToastViewDelegate {
     /// Tellomi：提示条里要加粗的片段（「已转发给 **小林**」，#1259）。
     public var tellomiBoldTexts: [String] = []
 
+    /// Tellomi（交互审计 A-24）：提示条右边的操作键（「撤销」）。点它先收起提示条再执行；点提示条别处只收起。
+    public var tellomiAction: (title: String, handler: () -> Void)?
+
     func didSwipeToastView(_ toastView: ToastView) {
         Logger.debug("")
         self.dismissToastView()
@@ -223,6 +232,28 @@ class ToastView: UIView {
     }
 
     var tellomiAttributedTextForTesting: NSAttributedString? { label.attributedText }
+
+    private var tellomiActionHandler: (() -> Void)?
+    private(set) var tellomiActionButton: UIButton?
+
+    /// Tellomi（交互审计 A-24）：右边加一个操作键（「撤销」）。字用深色外观下的强调色（亮一些的蓝），在深色 / 玻璃底上看得清；
+    /// 按钮自己接点按，不会再触发整条提示条的点按。
+    func tellomiSetAction(title: String, handler: @escaping () -> Void) {
+        tellomiActionHandler = handler
+        var configuration = UIButton.Configuration.plain()
+        configuration.attributedTitle = AttributedString(title, attributes: AttributeContainer([.font: label.font.semibold()]))
+        configuration.baseForegroundColor = UIColor.Signal.accent.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 0)
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in
+            self?.tellomiActionHandler?()
+        })
+        button.setContentHuggingHorizontalHigh()
+        button.setCompressionResistanceHorizontalHigh()
+        // 文字先按一行排开，排不下（到提示条最宽）才折行；不然按钮的抗压更高，文字会被挤成一字一行。
+        label.setContentCompressionResistancePriority(.required - 1, for: .horizontal)
+        stackView.addArrangedSubview(button)
+        tellomiActionButton = button
+    }
 
     weak var delegate: ToastViewDelegate?
 

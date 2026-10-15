@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CC4B2233689610A8AB2A9D32 /* TellomiChatListArchiveUndoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */; };
 		4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */; };
 		01C3C09AE1F3069279AE0903 /* TellomiFeatureIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790EE117274F9B362AB474B0 /* TellomiFeatureIntro.swift */; };
 		3BFC9D7F7C62A0459587A000 /* TellomiCaptionField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4558E3D98619F28E914E122A /* TellomiCaptionField.swift */; };
@@ -4473,6 +4474,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiChatListArchiveUndoTests.swift; sourceTree = "<group>"; };
 		52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeatureIntroTests.swift; sourceTree = "<group>"; };
 		790EE117274F9B362AB474B0 /* TellomiFeatureIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeatureIntro.swift; sourceTree = "<group>"; };
 		4558E3D98619F28E914E122A /* TellomiCaptionField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionField.swift; sourceTree = "<group>"; };
@@ -10151,6 +10153,7 @@
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
 				F9A335C9282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift */,
 				CC8AF1A5B874D4FC13BE4BCC /* TellomiNotificationPrimerTest.swift */,
+				1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */,
 				52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */,
 				F97A2EE828247C1300610669 /* BadgeIssueSheetStateTest.swift */,
 				41815269E42B9E12DA5A1452 /* ChatListConnectionTitleTest.swift */,
@@ -20024,6 +20027,7 @@
 				50438A8F2ECBBE1D00FCB28F /* BackupRefreshManagerTest.swift in Sources */,
 				F9A335CA282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift in Sources */,
 				865569088848A1C2ED573991 /* TellomiNotificationPrimerTest.swift in Sources */,
+				CC4B2233689610A8AB2A9D32 /* TellomiChatListArchiveUndoTests.swift in Sources */,
 				4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */,
 				F97A2EEA282578C000610669 /* BadgeIssueSheetStateTest.swift in Sources */,
 				BF61BB90117E904CAFF81F86 /* ChatListConnectionTitleTest.swift in Sources */,

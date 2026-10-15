@@ -18,6 +18,9 @@ private struct ThreadContextualAction {
     let action: @MainActor () -> Void
     /// Tellomi（交互审计 A-39）：有值时，长按菜单里把这一项做成就地展开的子菜单；左滑按钮没有子菜单，仍走 [action]。
     var contextMenuChildren: [UIMenuElement]?
+    /// Tellomi（交互审计 A-24）：左滑按钮点了以后这一行就离开列表（归档 / 取消归档）：告诉系统做完了（`completion(true)`），
+    /// 行跟着滑走，不先弹回原位再消失。其余（置顶、静音、已读、要确认的删除）行还在，照旧弹回。
+    var completesSwipe = false
 }
 
 // MARK: -
@@ -67,7 +70,7 @@ extension ThreadContextualActionProvider where Self: UIViewController {
             handler: { completion in
                 MainActor.assumeIsolated {
                     action.action()
-                    completion(false)
+                    completion(action.completesSwipe)
                 }
             },
         )
@@ -232,6 +235,7 @@ extension ThreadContextualActionProvider where Self: UIViewController {
                 action: { [weak self] in
                     self?.toggleThreadIsArchived(threadViewModel: threadViewModel)
                 },
+                completesSwipe: true,
             )
         } else {
             return ThreadContextualAction(
@@ -243,6 +247,7 @@ extension ThreadContextualActionProvider where Self: UIViewController {
                 action: { [weak self] in
                     self?.toggleThreadIsArchived(threadViewModel: threadViewModel)
                 },
+                completesSwipe: true,
             )
         }
     }
@@ -275,6 +280,22 @@ extension ThreadContextualActionProvider where Self: UIViewController {
     func toggleThreadIsArchived(threadViewModel: ThreadViewModel) {
         AssertIsOnMainThread()
 
+        let wasPinned = threadViewModel.isPinned
+        let didArchive = tellomiSetArchived(threadViewModel: threadViewModel)
+        if didArchive {
+            tellomiPresentArchivedUndo(
+                threadUniqueIds: [threadViewModel.threadUniqueId],
+                pinnedThreadUniqueIds: wasPinned ? [threadViewModel.threadUniqueId] : [],
+            )
+        }
+    }
+
+    /// 归档或取消归档（原来的 `toggleThreadIsArchived` 本体）；返回 true 表示这次是归档。多选一次归档好几个时，
+    /// 由多选那边统一出一条「N 个聊天已存档 · 撤销」，不一个一个出。
+    @discardableResult
+    func tellomiSetArchived(threadViewModel: ThreadViewModel) -> Bool {
+        AssertIsOnMainThread()
+
         let databaseStorage = SSKEnvironment.shared.databaseStorageRef
         let pinnedThreadManager = DependenciesBridge.shared.pinnedThreadManager
 
@@ -297,6 +318,46 @@ extension ThreadContextualActionProvider where Self: UIViewController {
             )
         }
 
+        threadContextualActionDidComplete()
+        return isArchived
+    }
+
+    /// Tellomi（交互审计 A-24，照 Telegram iOS 归档后的 `UndoOverlayController(.archivedChat, undo: true)`、安卓的 Snackbar）：
+    /// 归档后在底栏上方出「聊天已存档 · 撤销」，5 秒后自己收起；点「撤销」移回原处（原来置顶的重新置顶）。
+    func tellomiPresentArchivedUndo(threadUniqueIds: [String], pinnedThreadUniqueIds: [String]) {
+        guard !threadUniqueIds.isEmpty, isViewLoaded else { return }
+        let text: String
+        if threadUniqueIds.count == 1 {
+            text = OWSLocalizedString("TELLOMI_CHAT_LIST_ARCHIVED_TOAST", comment: "Toast shown above the tab bar after a chat is archived from the chat list. Has an Undo button.")
+        } else {
+            text = String.nonPluralLocalizedStringWithFormat(
+                OWSLocalizedString("TELLOMI_CHAT_LIST_ARCHIVED_TOAST_MULTIPLE_FORMAT", comment: "Toast shown above the tab bar after several chats are archived at once. Embeds {{number of chats}}. Has an Undo button."),
+                OWSFormat.formatInt(threadUniqueIds.count),
+            )
+        }
+        let toast = ToastController(text: text)
+        toast.tellomiAction = (
+            title: OWSLocalizedString("TELLOMI_CHAT_LIST_ARCHIVED_UNDO", comment: "Button on the 'chat archived' toast that moves the chat back out of the archive."),
+            handler: { [weak self] in
+                self?.tellomiUndoArchive(threadUniqueIds: threadUniqueIds, pinnedThreadUniqueIds: pinnedThreadUniqueIds)
+            },
+        )
+        toast.presentToastView(from: .bottom, of: view, inset: view.safeAreaInsets.bottom + 8, dismissAfter: .seconds(5))
+    }
+
+    private func tellomiUndoArchive(threadUniqueIds: [String], pinnedThreadUniqueIds: [String]) {
+        let threadStore = DependenciesBridge.shared.threadStore
+        let pinnedThreadManager = DependenciesBridge.shared.pinnedThreadManager
+        SSKEnvironment.shared.databaseStorageRef.write { tx in
+            for threadUniqueId in threadUniqueIds {
+                guard let thread = threadStore.fetchThread(uniqueId: threadUniqueId, tx: tx) else { continue }
+                thread.updateWith(isArchived: false, updateStorageService: true, transaction: tx)
+                if pinnedThreadUniqueIds.contains(threadUniqueId) {
+                    // 置顶满了就算了：撤销只是把它移回聊天列表
+                    try? pinnedThreadManager.pinThread(thread, updateStorageService: true, tx: tx)
+                }
+            }
+        }
         threadContextualActionDidComplete()
     }
 

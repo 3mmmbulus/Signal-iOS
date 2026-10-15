@@ -307,12 +307,22 @@ extension ChatListViewController {
 
     /// Archives or unarchives the selected threads
     func performArchive() {
+        var archivedIds = [String]()
+        var pinnedIds = [String]()
         performOn(indexPaths: tableView.indexPathsForSelectedRows ?? []) { threadViewModels in
             for threadViewModel in threadViewModels {
-                toggleThreadIsArchived(threadViewModel: threadViewModel)
+                let wasPinned = threadViewModel.isPinned
+                if tellomiSetArchived(threadViewModel: threadViewModel) {
+                    archivedIds.append(threadViewModel.threadUniqueId)
+                    if wasPinned {
+                        pinnedIds.append(threadViewModel.threadUniqueId)
+                    }
+                }
             }
         }
         done()
+        // Tellomi（交互审计 A-24）：多选归档出一条「N 个聊天已存档 · 撤销」。
+        tellomiPresentArchivedUndo(threadUniqueIds: archivedIds, pinnedThreadUniqueIds: pinnedIds)
     }
 
     func performRead() {
