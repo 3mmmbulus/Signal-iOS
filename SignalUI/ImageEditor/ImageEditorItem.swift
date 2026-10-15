@@ -16,6 +16,8 @@ enum ImageEditorItemType: Int {
     case text
     case sticker
     case blurRegions
+    // Tellomi（tellomi/tellomi#1522 E-3）：画笔菜单里加的形状（`ImageEditorShapeItem`）。
+    case shape
 }
 
 // MARK: -

@@ -158,9 +158,37 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
         // Remove all gesture recognizers when interaction with text objects is disabled
         // so that they don't interfere with gesture recognizers added in view controller.
 
-        moveTextGestureRecognizer.isEnabled = textInteractionModes.contains(.move)
+        moveTextGestureRecognizer.isEnabled = textInteractionModes.contains(.move) || selectedShapeTakesTouches
         tapGestureRecognizer.isEnabled = textInteractionModes.contains(.tap)
-        pinchGestureRecognizer.isEnabled = textInteractionModes.contains(.resize)
+        pinchGestureRecognizer.isEnabled = textInteractionModes.contains(.resize) || selectedShapeTakesTouches
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-3）：画笔模式里，选中的形状接手指——拖动、两指缩放 / 旋转、拖到垃圾桶
+    /// （上游安卓画笔模式里选中的贴纸就是这样接手指的）。别的东西在画笔模式里照旧只能点选。
+    var selectedShapeTakesTouches = false {
+        didSet {
+            updateGestureRecognizers()
+        }
+    }
+
+    /// 画笔模式里只认选中的形状；文字 / 贴纸模式里所有能挪的东西都认。
+    private func acceptsTransform(of item: ImageEditorItem) -> Bool {
+        if textInteractionModes.contains(.move) {
+            return true
+        }
+        return selectedShapeTakesTouches && item is ImageEditorShapeItem && item.itemId == selectedTransformableItemID
+    }
+
+    /// 选中的形状（画笔模式里颜色、粗细改的就是它）。
+    var selectedShapeItem: ImageEditorShapeItem? {
+        guard let selectedTransformableItemID else { return nil }
+        return model.item(forId: selectedTransformableItemID) as? ImageEditorShapeItem
+    }
+
+    /// 这个位置（`gestureReferenceView` 里）是不是压在选中的形状上。
+    func isOnSelectedShape(locationInView: CGPoint) -> Bool {
+        guard let selectedShapeItem else { return false }
+        return transformableLayer(forLocation: locationInView)?.name == selectedShapeItem.itemId
     }
 
     final var gestureReferenceView: UIView {
@@ -174,7 +202,7 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
 
         let shouldShowTrash: Bool
         switch movingItem {
-        case is ImageEditorStickerItem, is ImageEditorTextItem:
+        case is ImageEditorStickerItem, is ImageEditorTextItem, is ImageEditorShapeItem:
             shouldShowTrash = true
         default:
             shouldShowTrash = false
@@ -302,6 +330,35 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
         )
     }
 
+    /// Tellomi（tellomi/tellomi#1522 E-3）：新形状放在看得见的这块图中间、摆正（和新贴纸一样抵消掉图的旋转、缩放）。
+    func createNewShapeItem(
+        kind: ImageEditorShapeItem.Kind,
+        color: UIColor,
+        isFilled: Bool,
+        unitLineWidth: CGFloat,
+    ) -> ImageEditorShapeItem {
+        let transform = model.currentTransform()
+        let viewBounds = canvasView.gestureReferenceView.bounds
+        var unitCenter = CGPoint.unitMidpoint
+        if viewBounds.width > 0, viewBounds.height > 0 {
+            unitCenter = CGPoint.clamp01(ImageEditorCanvasView.locationImageUnit(
+                forLocationInView: viewBounds.center,
+                viewBounds: viewBounds,
+                model: model,
+                transform: transform,
+            ))
+        }
+        return ImageEditorShapeItem(
+            kind: kind,
+            color: color,
+            isFilled: isFilled,
+            unitLineWidth: unitLineWidth,
+            unitCenter: unitCenter,
+            rotationRadians: -transform.rotationRadians,
+            scaling: 1 / transform.scaling,
+        )
+    }
+
     @objc
     private func handleTapGesture(_ gestureRecognizer: UIGestureRecognizer) {
         AssertIsOnMainThread()
@@ -399,6 +456,9 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
                 owsFailDebug("Missing or invalid text item.")
                 return
             }
+            guard textInteractionModes.contains(.resize) || acceptsTransform(of: item) else {
+                return
+            }
             pinchingItem = item
             pinchHasChanged = false
 
@@ -478,7 +538,7 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
     private func handleMoveTextGesture(_ gestureRecognizer: ImageEditorPanGestureRecognizer) {
         AssertIsOnMainThread()
 
-        guard textInteractionModes.contains(.move) else {
+        guard textInteractionModes.contains(.move) || selectedShapeTakesTouches else {
             owsFailDebug("Unexpected text interaction mode [\(textInteractionModes)].")
             return
         }
@@ -500,6 +560,9 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
                 let item = model.item(forId: itemID) as? ImageEditorTransformable
             else {
                 owsFailDebug("Missing or invalid text item.")
+                return
+            }
+            guard acceptsTransform(of: item) else {
                 return
             }
 
@@ -609,8 +672,14 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
         }
 
         let location = touch.location(in: canvasView.gestureReferenceView)
-        let isInTextArea = self.transformableLayer(forLocation: location) != nil
-        return isInTextArea
+        guard let layer = self.transformableLayer(forLocation: location) else {
+            return false
+        }
+        if textInteractionModes.contains(.move) {
+            return true
+        }
+        // Tellomi（E-3）：画笔模式里只有按在选中的形状上才拖它，别处照旧画线。
+        return layer.name != nil && layer.name == selectedShapeItem?.itemId
     }
 
     // MARK: - ImageEditorModelObserver

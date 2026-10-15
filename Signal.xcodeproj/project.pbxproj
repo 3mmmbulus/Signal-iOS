@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AFD0E860EB2AD29124470030 /* TellomiImageEditorShapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610FA7E7B93CC555DA1EEE07 /* TellomiImageEditorShapeTests.swift */; };
+		7FBA42340140235C0E1F9C35 /* ImageEditorViewController+Shapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B560059B90389868EB9E884 /* ImageEditorViewController+Shapes.swift */; };
+		B4A8C550D3CC7A22D1AE72A4 /* ImageEditorShapeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93609F29DDB43410E18040F3 /* ImageEditorShapeItem.swift */; };
 		B4BBB4BAE9CEFE0A8E83B70D /* ImageEditorViewController+Fill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4815F4DE7175BA07445F27 /* ImageEditorViewController+Fill.swift */; };
 		DE61BB8F95628C152382BE2A /* TellomiImageAdjustBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */; };
 		CFAA904E14BBEC8464B0F491 /* TellomiImageAdjustCurves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */; };
@@ -4463,6 +4466,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		610FA7E7B93CC555DA1EEE07 /* TellomiImageEditorShapeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorShapeTests.swift; sourceTree = "<group>"; };
+		6B560059B90389868EB9E884 /* ImageEditorViewController+Shapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageEditorViewController+Shapes.swift"; sourceTree = "<group>"; };
+		93609F29DDB43410E18040F3 /* ImageEditorShapeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditorShapeItem.swift; sourceTree = "<group>"; };
 		2C4815F4DE7175BA07445F27 /* ImageEditorViewController+Fill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageEditorViewController+Fill.swift"; sourceTree = "<group>"; };
 		25A2264FD068E61571DA826E /* TellomiImageAdjustBlur.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustBlur.swift; sourceTree = "<group>"; };
 		8732210D8F11107C9DF14391 /* TellomiImageAdjustCurves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageAdjustCurves.swift; sourceTree = "<group>"; };
@@ -9950,6 +9956,8 @@
 				34A95558271B510400B05242 /* ImageEditorPinchGestureRecognizer.swift */,
 				768AE8B9280F713C00998C2D /* ImageEditorSliderView.swift */,
 				B9F2155E2A940596002DCAE0 /* ImageEditorStickerItem.swift */,
+				6B560059B90389868EB9E884 /* ImageEditorViewController+Shapes.swift */,
+				93609F29DDB43410E18040F3 /* ImageEditorShapeItem.swift */,
 				34A95559271B510400B05242 /* ImageEditorStrokeItem.swift */,
 				34A95553271B510400B05242 /* ImageEditorTextItem.swift */,
 				7628DDC22807609F009AA53D /* ImageEditorToolbar.swift */,
@@ -10183,6 +10191,7 @@
 				3675DF55C96AD35AE5265F7B /* TellomiImageAdjustViewControllerTests.swift */,
 				BD414B3F4284E448DEC8BB31 /* TellomiImageAdjustmentsRendererTests.swift */,
 				0EF2E5AC6406C93BC7AD997A /* TellomiImageEditorBrushTests.swift */,
+				610FA7E7B93CC555DA1EEE07 /* TellomiImageEditorShapeTests.swift */,
 				F494BA879D79406095727F48 /* TellomiImageEditorEyedropperTests.swift */,
 			);
 			path = ImageEditor;
@@ -18866,6 +18875,8 @@
 				3402AA89271D9E180084CBAE /* ImageEditorPinchGestureRecognizer.swift in Sources */,
 				768AE8BA280F713C00998C2D /* ImageEditorSliderView.swift in Sources */,
 				B9F2155F2A940596002DCAE0 /* ImageEditorStickerItem.swift in Sources */,
+				7FBA42340140235C0E1F9C35 /* ImageEditorViewController+Shapes.swift in Sources */,
+				B4A8C550D3CC7A22D1AE72A4 /* ImageEditorShapeItem.swift in Sources */,
 				3402AA76271D9E180084CBAE /* ImageEditorStrokeItem.swift in Sources */,
 				3402AAAE271D9E180084CBAE /* ImageEditorTextItem.swift in Sources */,
 				7628DDC32807609F009AA53D /* ImageEditorToolbar.swift in Sources */,
@@ -20035,6 +20046,7 @@
 				AC0321167F1B63C3997210D4 /* TellomiImageAdjustViewControllerTests.swift in Sources */,
 				4599D30F4A287B7A52F58FC6 /* TellomiImageAdjustmentsRendererTests.swift in Sources */,
 				F1DC99DD8A249C3B4AFED6A4 /* TellomiImageEditorBrushTests.swift in Sources */,
+				AFD0E860EB2AD29124470030 /* TellomiImageEditorShapeTests.swift in Sources */,
 				FA256CF5BDAE0696B9E2BD11 /* TellomiImageEditorEyedropperTests.swift in Sources */,
 				D970460A2E81D5C00034C05D /* InfoMessageGroupUpdateMigratorTest.swift in Sources */,
 				D931080E2B338D15006A034E /* InterleavingCompositeCursorTest.swift in Sources */,

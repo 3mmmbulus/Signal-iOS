@@ -91,6 +91,11 @@ extension ImageEditorViewController {
         case .began:
             setStrokeWidthSlider(revealed: false)
 
+            // Tellomi（tellomi/tellomi#1522 E-3）：在别处画就是把选中的形状放下。
+            if imageEditorView.selectedShapeItem != nil {
+                imageEditorView.selectedTransformableItemID = nil
+            }
+
             removeCurrentStroke()
 
             // Apply the location history of the gesture so that the stroke reflects
@@ -165,6 +170,16 @@ extension ImageEditorViewController {
 
         var onStrokeTypeSelected: ((ImageEditorStrokeItem.StrokeType) -> Void)?
 
+        /// Tellomi（tellomi/tellomi#1522 E-3，照 Telegram 两端画笔一排最后的「+」→ 形状）：菜单最后一项「形状」，点开是五种形状和「填充」开关。
+        var onShapeSelected: ((ImageEditorShapeItem.Kind) -> Void)?
+
+        /// 新形状填充还是描边（默认描边，照两端 Telegram）；只管之后加的形状，这次编辑里记着（照 Telegram 安卓的全局开关，不存盘，D9）。
+        var fillsShapes = false {
+            didSet {
+                updateStrokeTypeMenu()
+            }
+        }
+
         func select(strokeType: ImageEditorStrokeItem.StrokeType) {
             self.strokeType = strokeType
             onStrokeTypeSelected?(strokeType)
@@ -202,7 +217,7 @@ extension ImageEditorViewController {
         }
 
         private func updateStrokeTypeMenu() {
-            strokeTypeButton.menu = UIMenu(children: Self.brushes.map { brush in
+            let brushActions: [UIMenuElement] = Self.brushes.map { brush in
                 UIAction(
                     title: Self.title(for: brush),
                     image: Self.image(for: brush),
@@ -210,7 +225,62 @@ extension ImageEditorViewController {
                 ) { [weak self] _ in
                     self?.select(strokeType: brush)
                 }
-            })
+            }
+            strokeTypeButton.menu = UIMenu(children: brushActions + [shapesMenu()])
+        }
+
+        /// 形状的次序照 Telegram iOS 的形状菜单：矩形、圆、气泡、星形、箭头。
+        static let shapes: [ImageEditorShapeItem.Kind] = [.rectangle, .circle, .bubble, .star, .arrow]
+
+        private func shapesMenu() -> UIMenu {
+            let shapeActions: [UIMenuElement] = Self.shapes.map { kind in
+                UIAction(
+                    title: Self.title(for: kind),
+                    image: Self.image(for: kind, filled: fillsShapes),
+                ) { [weak self] _ in
+                    self?.onShapeSelected?(kind)
+                }
+            }
+            let fillToggle = UIAction(
+                title: OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPE_FILL", comment: "Image editor shapes menu: toggle that makes new shapes filled instead of outlined."),
+                image: UIImage(systemName: "circle.lefthalf.filled"),
+                state: fillsShapes ? .on : .off,
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.fillsShapes.toggle()
+            }
+            return UIMenu(
+                title: OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPES", comment: "Image editor brush menu: submenu that adds a shape (rectangle, circle, bubble, star, arrow) to the image."),
+                image: UIImage(systemName: "square.on.circle"),
+                children: shapeActions + [UIMenu(options: .displayInline, children: [fillToggle])],
+            )
+        }
+
+        static func title(for kind: ImageEditorShapeItem.Kind) -> String {
+            switch kind {
+            case .rectangle:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPE_RECTANGLE", comment: "Image editor shapes menu: a rectangle.")
+            case .circle:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPE_CIRCLE", comment: "Image editor shapes menu: a circle.")
+            case .star:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPE_STAR", comment: "Image editor shapes menu: a five-pointed star.")
+            case .bubble:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPE_BUBBLE", comment: "Image editor shapes menu: a speech bubble.")
+            case .arrow:
+                return OWSLocalizedString("IMAGE_EDITOR_TELLOMI_SHAPE_ARROW", comment: "Image editor shapes menu: a straight arrow shape.")
+            }
+        }
+
+        static func image(for kind: ImageEditorShapeItem.Kind, filled: Bool) -> UIImage? {
+            let name: String
+            switch kind {
+            case .rectangle: name = "rectangle"
+            case .circle: name = "circle"
+            case .star: name = "star"
+            case .bubble: name = "bubble.left"
+            case .arrow: return UIImage(systemName: "arrow.right")
+            }
+            return UIImage(systemName: filled ? name + ".fill" : name)
         }
 
         let colorPickerBar: ColorPickerBar

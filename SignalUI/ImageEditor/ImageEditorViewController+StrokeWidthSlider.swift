@@ -59,6 +59,10 @@ extension ImageEditorViewController {
     /// Tellomi（tellomi/tellomi#1522 E-2）：从画笔菜单选了一支笔。
     func didSelectStrokeType(_ strokeType: ImageEditorStrokeItem.StrokeType) {
         owsAssertDebug(currentStroke == nil)
+        // Tellomi（tellomi/tellomi#1522 E-3，照 Telegram 安卓：换工具就把正在摆的形状放下）：不然换笔时色条换色会把形状也染了。
+        if imageEditorView.selectedShapeItem != nil {
+            imageEditorView.selectedTransformableItemID = nil
+        }
         let previous = currentStrokeType
         if previous != strokeType {
             swapBrushColor(from: previous, to: strokeType)
@@ -112,6 +116,7 @@ extension ImageEditorViewController {
     func handleSliderValueChanged(value: Float) {
         strokeWidthValues[currentStrokeType] = value
         updateStrokeWidthPreviewSize()
+        applyLineWidthToSelectedShape()
     }
 
     func setStrokeWidthSlider(revealed: Bool) {

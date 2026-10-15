@@ -5311,6 +5311,27 @@
 /* Accessibility label of the eyedropper button in the image editor's draw and text tools; it lets the user pick a color from the photo. */
 "IMAGE_EDITOR_TELLOMI_EYEDROPPER" = "Pick a color from the photo";
 
+/* Image editor brush menu: submenu that adds a shape (rectangle, circle, bubble, star, arrow) to the image. */
+"IMAGE_EDITOR_TELLOMI_SHAPES" = "Shapes";
+
+/* Image editor shapes menu: a straight arrow shape. */
+"IMAGE_EDITOR_TELLOMI_SHAPE_ARROW" = "Arrow";
+
+/* Image editor shapes menu: a speech bubble. */
+"IMAGE_EDITOR_TELLOMI_SHAPE_BUBBLE" = "Bubble";
+
+/* Image editor shapes menu: a circle. */
+"IMAGE_EDITOR_TELLOMI_SHAPE_CIRCLE" = "Circle";
+
+/* Image editor shapes menu: toggle that makes new shapes filled instead of outlined. */
+"IMAGE_EDITOR_TELLOMI_SHAPE_FILL" = "Fill";
+
+/* Image editor shapes menu: a rectangle. */
+"IMAGE_EDITOR_TELLOMI_SHAPE_RECTANGLE" = "Rectangle";
+
+/* Image editor shapes menu: a five-pointed star. */
+"IMAGE_EDITOR_TELLOMI_SHAPE_STAR" = "Star";
+
 /* Accessibility label of the button in the image editor's text tool that cycles the text alignment between left, center and right. */
 "IMAGE_EDITOR_TELLOMI_TEXT_ALIGNMENT" = "Text Alignment";
 

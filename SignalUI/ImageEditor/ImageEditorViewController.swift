@@ -87,6 +87,9 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
         toolbar.onStrokeTypeSelected = { [weak self] strokeType in
             self?.didSelectStrokeType(strokeType)
         }
+        toolbar.onShapeSelected = { [weak self] kind in
+            self?.addShape(kind)
+        }
         toolbar.eyedropperButton.addAction(
             UIAction { [weak self] _ in self?.didTapEyedropperButton() },
             for: .primaryActionTriggered,
@@ -503,6 +506,7 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
             strokeWidthSliderContainer.isHidden = true
             imageEditorView.textInteractionModes = .all
         }
+        imageEditorView.selectedShapeTakesTouches = mode == .draw
 
         bottomBar.selectedToolButton = switch mode {
         case .draw: .draw
@@ -798,7 +802,8 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
             guard !strokeWidthSliderContainer.bounds.contains(touch.location(in: strokeWidthSliderContainer)) else {
                 return false
             }
-            return true
+            // Tellomi（tellomi/tellomi#1522 E-3）：按在选中的形状上是挪它，不画线、不长按填满。
+            return !touchIsOnSelectedShape(touch)
 
         case .blur:
             return !blurToolPanel.bounds.contains(touch.location(in: blurToolPanel))
@@ -827,6 +832,7 @@ class ImageEditorViewController: OWSViewController, UIGestureRecognizerDelegate,
         case .draw:
             model.color = color
             updateStrokeWidthPreviewColor()
+            applyColorToSelectedShape(color.color)
 
         default:
             owsAssertDebug(false, "Invalid mode [\(mode)]")

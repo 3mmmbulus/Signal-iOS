@@ -126,7 +126,7 @@ final class TellomiImageEditorBrushTests: SignalBaseTest {
         editor.mode = .draw
 
         let menu = try XCTUnwrap(editor.drawToolbar.strokeTypeButton.menu)
-        XCTAssertEqual(menu.children.count, 5)
+        XCTAssertEqual(menu.children.count, 6, "five brushes, then the shapes submenu (E-3)")
         XCTAssertTrue(editor.drawToolbar.strokeTypeButton.showsMenuAsPrimaryAction)
 
         editor.drawToolbar.select(strokeType: .neon)

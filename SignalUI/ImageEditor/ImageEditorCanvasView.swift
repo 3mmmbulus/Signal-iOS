@@ -796,7 +796,59 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
                 transform: transform,
                 viewSize: viewSize,
             )
+        case .shape:
+            guard let shapeItem = item as? ImageEditorShapeItem else {
+                owsFailDebug("Item has unexpected type: \(type(of: item)).")
+                return nil
+            }
+            return shapeLayerForItem(
+                item: shapeItem,
+                model: model,
+                isFaded: item.itemId == fadedItemID,
+                transform: transform,
+                viewSize: viewSize,
+            )
         }
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-3）：形状是一个矢量图层，摆法和贴纸一样（中心、缩放、旋转），和贴纸、文字在同一层。
+    private class func shapeLayerForItem(
+        item: ImageEditorShapeItem,
+        model: ImageEditorModel,
+        isFaded: Bool,
+        transform: ImageEditorTransform,
+        viewSize: CGSize,
+    ) -> CALayer {
+        AssertIsOnMainThread()
+
+        let imageFrame = ImageEditorCanvasView.imageFrame(
+            forViewSize: viewSize,
+            imageSize: model.srcImageSizePixels,
+            transform: transform,
+        )
+        let shortSide = min(imageFrame.width, imageFrame.height)
+        let size = item.size(shortSide: shortSide)
+        let lineWidth = item.lineWidth(shortSide: shortSide)
+        let center = item.unitCenter.fromUnitCoordinates(viewBounds: imageFrame)
+
+        let layer = CAShapeLayer()
+        layer.frame = CGRect(x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height)
+        layer.path = TellomiShapePath.path(kind: item.kind, size: size, lineWidth: lineWidth, isFilled: item.isFilled)
+        if item.kind == .arrow || item.isFilled {
+            layer.fillColor = item.color.cgColor
+            layer.strokeColor = nil
+        } else {
+            layer.fillColor = nil
+            layer.strokeColor = item.color.cgColor
+            layer.lineWidth = lineWidth
+            layer.lineJoin = .round
+        }
+        layer.contentsScale = UITraitCollection.current.displayScale * item.scaling * transform.scaling
+        layer.setAffineTransform(CGAffineTransform.scale(item.scaling).rotated(by: item.rotationRadians))
+        layer.zPosition = zPositionForItem(item: item, model: model, zPositionBase: textLayerZ)
+        layer.name = item.itemId
+        layer.opacity = isFaded ? 0.5 : 1
+        return layer
     }
 
     private class func strokeLayerForItem(
