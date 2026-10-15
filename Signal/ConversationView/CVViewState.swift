@@ -99,6 +99,8 @@ public class CVViewState: NSObject {
     public var isHidingScrollDownButton = false
     public let scrollToNextMentionButton = ConversationScrollButton(iconName: "at")
     public var isHidingScrollToNextMentionButton = false
+    /// Tellomi（交互审计 A-14）：滚到底 / 下一个提及两个按钮进出动画的代数，只让最近一次的收尾生效。
+    public var tellomiScrollButtonsAnimationGeneration = 0
     public var scrollUpdateTimer: Timer?
     public var isWaitingForDeceleration = false
     public var highlightedMessageId: String?

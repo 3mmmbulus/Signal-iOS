@@ -5,6 +5,7 @@
 
 public import Foundation
 import SignalServiceKit
+import SignalUI
 public import UIKit
 
 extension ConversationViewController {
@@ -96,48 +97,57 @@ extension ConversationViewController {
             return
         }
 
+        // Tellomi（交互审计 A-14，照 Telegram iOS `ChatHistoryNavigationButtons`：出现 alpha 0 → 1、缩放 0.2 → 1，消失反过来，
+        // 0.3 s 弹簧，从当前状态起步，中途反向不跳）。原来是 0.2 s 只变透明度，并且先 `removeAllAnimations`——中途反向时
+        // 先跳到上一段的终点再往回。减弱动态效果时只变透明度。
+        let reduceMotion = TellomiMotion.isReduceMotionEnabled
+        let hiddenTransform: CGAffineTransform = (shouldAnimateChanges && !reduceMotion) ? .scale(0.2) : .identity
         if scrollDownVisibilityDidChange {
+            if !scrollDownIsHidden, self.scrollDownButton.isHidden {
+                self.scrollDownButton.transform = hiddenTransform
+            }
             self.scrollDownButton.isHidden = false
             self.isHidingScrollDownButton = scrollDownIsHidden
-            scrollDownButton.layer.removeAllAnimations()
         }
         if scrollToNextMentionVisibilityDidChange {
+            if !scrollToNextMentionIsHidden, self.scrollToNextMentionButton.isHidden {
+                self.scrollToNextMentionButton.transform = hiddenTransform
+            }
             self.scrollToNextMentionButton.isHidden = false
             self.isHidingScrollToNextMentionButton = scrollToNextMentionIsHidden
-            scrollToNextMentionButton.layer.removeAllAnimations()
         }
 
         let alphaBlock = {
             if scrollDownVisibilityDidChange {
                 self.scrollDownButton.alpha = scrollDownIsHidden ? 0 : 1
+                self.scrollDownButton.transform = scrollDownIsHidden ? hiddenTransform : .identity
             }
             if scrollToNextMentionVisibilityDidChange {
                 self.scrollToNextMentionButton.alpha = scrollToNextMentionIsHidden ? 0 : 1
+                self.scrollToNextMentionButton.transform = scrollToNextMentionIsHidden ? hiddenTransform : .identity
             }
         }
+        // 只收尾最近这一次：上一段动画在反向之后才结束时，不能按它的目标把按钮藏掉。
+        viewState.tellomiScrollButtonsAnimationGeneration += 1
+        let generation = viewState.tellomiScrollButtonsAnimationGeneration
         let completionBlock = {
+            guard generation == self.viewState.tellomiScrollButtonsAnimationGeneration else { return }
             if scrollDownVisibilityDidChange {
                 self.scrollDownButton.isHidden = scrollDownIsHidden
+                self.scrollDownButton.transform = .identity
                 self.isHidingScrollDownButton = false
             }
             if scrollToNextMentionVisibilityDidChange {
                 self.scrollToNextMentionButton.isHidden = scrollToNextMentionIsHidden
+                self.scrollToNextMentionButton.transform = .identity
                 self.isHidingScrollToNextMentionButton = false
             }
         }
 
-        scrollDownButton.layer.removeAllAnimations()
-        scrollToNextMentionButton.layer.removeAllAnimations()
-
         if shouldAnimateChanges {
-            UIView.animate(
-                withDuration: 0.2,
-                animations: alphaBlock,
-            ) { finished in
-                if finished {
-                    completionBlock()
-                }
-            }
+            let animator = TellomiMotion.animator(TellomiMotion.snap, animations: alphaBlock)
+            animator.addCompletion { _ in completionBlock() }
+            animator.startAnimation()
         } else {
             alphaBlock()
             completionBlock()

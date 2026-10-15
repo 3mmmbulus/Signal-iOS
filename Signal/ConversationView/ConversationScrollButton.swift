@@ -13,10 +13,64 @@ public class ConversationScrollButton: UIButton {
 
     var unreadCount: UInt = 0 {
         didSet {
-            unreadCountLabel.text = String.localizedStringWithFormat("%u", unreadCount)
-            unreadBadge.isHidden = unreadCount == 0
+            guard unreadCount != oldValue else { return }
+            tellomiUpdateUnreadBadge(from: oldValue)
         }
     }
+
+    /// Tellomi（交互审计 A-14，照 Telegram iOS `ChatHistoryNavigationButtonNode`：角标数字滚动、角标出现 / 消失有过渡）：
+    /// 按钮看得见时，数字变了新数字从下面（变多）或上面（变少）推进来；从 0 变有数 / 变回 0 时角标从 0.5 倍弹出 / 缩回。
+    /// 看不见、减弱动态效果时直接换（减弱动态效果只淡入淡出）。
+    private func tellomiUpdateUnreadBadge(from oldValue: UInt) {
+        let isVisible = window != nil && !isHidden && alpha > 0
+        let reduceMotion = TellomiMotion.isReduceMotionEnabled
+        let shouldHideBadge = unreadCount == 0
+
+        if isVisible, oldValue != 0, unreadCount != 0 {
+            let transition = CATransition()
+            transition.duration = TellomiMotion.fadeInDuration
+            transition.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            if reduceMotion {
+                transition.type = .fade
+            } else {
+                transition.type = .push
+                transition.subtype = unreadCount > oldValue ? .fromTop : .fromBottom
+            }
+            unreadCountLabel.layer.add(transition, forKey: kCATransition)
+        }
+        if !shouldHideBadge {
+            unreadCountLabel.text = String.localizedStringWithFormat("%u", unreadCount)
+        }
+
+        guard unreadBadge.isHidden != shouldHideBadge || unreadBadge.alpha != (shouldHideBadge ? 0 : 1) else { return }
+        guard isVisible else {
+            unreadBadge.isHidden = shouldHideBadge
+            unreadBadge.alpha = 1
+            unreadBadge.transform = .identity
+            return
+        }
+        badgeAnimationGeneration += 1
+        let generation = badgeAnimationGeneration
+        let hiddenTransform: CGAffineTransform = reduceMotion ? .identity : .scale(0.5)
+        if !shouldHideBadge, unreadBadge.isHidden {
+            unreadBadge.alpha = 0
+            unreadBadge.transform = hiddenTransform
+            unreadBadge.isHidden = false
+        }
+        let animator = TellomiMotion.animator(TellomiMotion.snap) {
+            self.unreadBadge.alpha = shouldHideBadge ? 0 : 1
+            self.unreadBadge.transform = shouldHideBadge ? hiddenTransform : .identity
+        }
+        animator.addCompletion { [weak self] _ in
+            guard let self, generation == self.badgeAnimationGeneration, shouldHideBadge else { return }
+            self.unreadBadge.isHidden = true
+            self.unreadBadge.alpha = 1
+            self.unreadBadge.transform = .identity
+        }
+        animator.startAnimation()
+    }
+
+    private var badgeAnimationGeneration = 0
 
     var badgeTintColor: UIColor! {
         get { unreadBadge.backgroundColor ?? UIColor.Signal.accent }
@@ -103,6 +157,8 @@ public class ConversationScrollButton: UIButton {
 
     private func addUnreadLabel() {
         let pillViewOverlap: CGFloat = 8 // how much unread badge pill overlaps circle
+        // Tellomi：一开始没有未读，角标先藏着（原来要等第一次设数才藏，`unreadCount` 现在只在数变了时才动）。
+        unreadBadge.isHidden = true
         addSubview(unreadBadge)
         NSLayoutConstraint.activate([
             unreadBadge.centerXAnchor.constraint(equalTo: centerXAnchor),
@@ -121,3 +177,15 @@ public class ConversationScrollButton: UIButton {
         unreadBadge.layer.borderColor = strokeColor.cgColor
     }
 }
+
+#if TESTABLE_BUILD
+
+extension ConversationScrollButton {
+    var isUnreadBadgeShownForTesting: Bool { !unreadBadge.isHidden }
+    var unreadBadgeAlphaForTesting: CGFloat { unreadBadge.alpha }
+    var unreadTextForTesting: String? { unreadCountLabel.text }
+    /// 数字正在滚（新数字推进来）。
+    var isRollingUnreadCountForTesting: Bool { unreadCountLabel.layer.animation(forKey: kCATransition) != nil }
+}
+
+#endif
