@@ -27,6 +27,10 @@ extension ConversationViewController {
             guard let self else { return }
             guard self.viewState.inProgressVoiceMessage === inProgressVoiceMessage else { return }
             self.configureScrollDownButtons()
+            // Tellomi（交互审计 A-12）：录音按钮后面的光晕跟着这一条的电平变（还没开始录时是 nil，光晕不动）。
+            self.inputToolbar?.tellomiVoiceLevelSource = { [weak self] in
+                self?.viewState.inProgressVoiceMessage?.tellomiPeakPower()
+            }
             self.inputToolbar?.showVoiceMemoUI()
         }
 

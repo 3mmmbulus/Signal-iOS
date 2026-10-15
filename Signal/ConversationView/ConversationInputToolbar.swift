@@ -2646,6 +2646,19 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         return label
     }()
 
+    /// Tellomi（交互审计 A-12）：录音时红色圆按钮后面那圈随音量变大变小的淡红光晕；电平由会话页给（[tellomiVoiceLevelSource]）。
+    private lazy var tellomiVoiceLevelHalo: TellomiVoiceLevelHalo = {
+        let halo = TellomiVoiceLevelHalo(frame: CGRect(origin: .zero, size: .square(88)))
+        halo.backgroundColor = .Signal.red
+        halo.isUserInteractionEnabled = false
+        halo.translatesAutoresizingMaskIntoConstraints = false
+        halo.isHidden = true
+        return halo
+    }()
+
+    /// Tellomi（A-12）：正在录的这条的峰值电平（dBFS）。
+    var tellomiVoiceLevelSource: (() -> Float?)?
+
     private lazy var voiceMemoRedRecordingCircle: UIView = {
         let micIconSize: CGFloat = 32
         let circleSize: CGFloat = 88
@@ -2713,6 +2726,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         // These are added to self.
         voiceMemoRedRecordingCircle.removeFromSuperview()
         voiceMemoLockView.removeFromSuperview()
+        tellomiVoiceLevelHalo.removeFromSuperview()
 
         // Red mic icon
         let redMicIconImageView = UIImageView(image: UIImage(imageLiteralResourceName: "mic-fill"))
@@ -2749,10 +2763,16 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             redCircleCenterXAnchor = voiceNoteButton.centerXAnchor
         }
         addSubview(voiceMemoLockView)
+        addSubview(tellomiVoiceLevelHalo)
         addSubview(voiceMemoRedRecordingCircle)
         addConstraints([
             voiceMemoRedRecordingCircle.centerXAnchor.constraint(equalTo: redCircleCenterXAnchor),
             voiceMemoRedRecordingCircle.centerYAnchor.constraint(equalTo: voiceMemoContentView.centerYAnchor),
+
+            tellomiVoiceLevelHalo.centerXAnchor.constraint(equalTo: voiceMemoRedRecordingCircle.centerXAnchor),
+            tellomiVoiceLevelHalo.centerYAnchor.constraint(equalTo: voiceMemoRedRecordingCircle.centerYAnchor),
+            tellomiVoiceLevelHalo.widthAnchor.constraint(equalToConstant: 88),
+            tellomiVoiceLevelHalo.heightAnchor.constraint(equalToConstant: 88),
 
             voiceMemoLockView.centerXAnchor.constraint(equalTo: redCircleCenterXAnchor),
             voiceMemoLockView.topAnchor.constraint(equalTo: voiceMemoRedRecordingCircle.topAnchor, constant: -120),
@@ -2774,6 +2794,8 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             self.voiceMemoRedRecordingCircle.alpha = 1
             self.voiceMemoRedRecordingCircle.transform = .identity
         }
+        tellomiVoiceLevelHalo.levelSource = tellomiVoiceLevelSource
+        tellomiVoiceLevelHalo.start(following: voiceMemoRedRecordingCircle)
         UIView.animate(withDuration: 0.2, delay: 1) {
             self.voiceMemoLockView.alpha = 1
             self.voiceMemoLockView.transform = .identity
@@ -2814,6 +2836,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         // These are added to self.
         voiceMemoRedRecordingCircle.removeFromSuperview()
         voiceMemoLockView.removeFromSuperview()
+        tellomiVoiceLevelHalo.removeFromSuperview()
 
         voiceMemoUpdateTimer?.invalidate()
         voiceMemoUpdateTimer = nil
@@ -2878,11 +2901,13 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
                 completion: { _ in
                     self.voiceMemoRedRecordingCircle.removeFromSuperview()
                     self.voiceMemoLockView.removeFromSuperview()
+                    self.tellomiVoiceLevelHalo.removeFromSuperview()
                 },
             )
         } else {
             voiceMemoRedRecordingCircle.removeFromSuperview()
             voiceMemoLockView.removeFromSuperview()
+            tellomiVoiceLevelHalo.removeFromSuperview()
         }
     }
 

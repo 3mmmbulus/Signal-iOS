@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2937434CAE119ACF897FC71F /* TellomiVoiceLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */; };
+		58434A95C1B6B76DC3012C46 /* TellomiVoiceLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F8FEC9116A64477AA3CEF1 /* TellomiVoiceLevel.swift */; };
 		20A791C65863CF5320F857B1 /* TellomiScrollButtonBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */; };
 		CC4B2233689610A8AB2A9D32 /* TellomiChatListArchiveUndoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */; };
 		4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */; };
@@ -4475,6 +4477,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiVoiceLevelTests.swift; sourceTree = "<group>"; };
+		B1F8FEC9116A64477AA3CEF1 /* TellomiVoiceLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiVoiceLevel.swift; sourceTree = "<group>"; };
 		8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScrollButtonBadgeTests.swift; sourceTree = "<group>"; };
 		1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiChatListArchiveUndoTests.swift; sourceTree = "<group>"; };
 		52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeatureIntroTests.swift; sourceTree = "<group>"; };
@@ -10155,6 +10159,7 @@
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
 				F9A335C9282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift */,
 				CC8AF1A5B874D4FC13BE4BCC /* TellomiNotificationPrimerTest.swift */,
+				D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */,
 				8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */,
 				1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */,
 				52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */,
@@ -10495,6 +10500,7 @@
 			isa = PBXGroup;
 			children = (
 				503AECC429B2A4D300642F66 /* VoiceMessageInProgressDraft.swift */,
+				B1F8FEC9116A64477AA3CEF1 /* TellomiVoiceLevel.swift */,
 				34A955A1271B510500B05242 /* VoiceMessageInterruptedDraft.swift */,
 				503AECC729B2AEFA00642F66 /* VoiceMessageSendableDraft.swift */,
 			);
@@ -19987,6 +19993,7 @@
 				66AE5779298440A100E40CFA /* ViewControllerContext.swift in Sources */,
 				3434AE1C22AEDE7D002EE04E /* ViewOnceMessageViewController.swift in Sources */,
 				503AECC529B2A4D300642F66 /* VoiceMessageInProgressDraft.swift in Sources */,
+				58434A95C1B6B76DC3012C46 /* TellomiVoiceLevel.swift in Sources */,
 				503AECC629B2AD6700642F66 /* VoiceMessageInterruptedDraft.swift in Sources */,
 				503AECC829B2AEFA00642F66 /* VoiceMessageSendableDraft.swift in Sources */,
 				88928A7526418904009C9B30 /* VoiceMessageTooltip.swift in Sources */,
@@ -20030,6 +20037,7 @@
 				50438A8F2ECBBE1D00FCB28F /* BackupRefreshManagerTest.swift in Sources */,
 				F9A335CA282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift in Sources */,
 				865569088848A1C2ED573991 /* TellomiNotificationPrimerTest.swift in Sources */,
+				2937434CAE119ACF897FC71F /* TellomiVoiceLevelTests.swift in Sources */,
 				20A791C65863CF5320F857B1 /* TellomiScrollButtonBadgeTests.swift in Sources */,
 				CC4B2233689610A8AB2A9D32 /* TellomiChatListArchiveUndoTests.swift in Sources */,
 				4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */,

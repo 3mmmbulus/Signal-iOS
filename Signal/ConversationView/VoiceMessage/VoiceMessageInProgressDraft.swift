@@ -47,6 +47,13 @@ final class VoiceMessageInProgressDraft: VoiceMessageSendableDraft {
 
     var isRecording: Bool { audioRecorder?.isRecording ?? false }
 
+    /// Tellomi（交互审计 A-12）：现在的峰值电平（dBFS，-160…0），给录音按钮后面的光晕用；没在录返回 nil。
+    func tellomiPeakPower() -> Float? {
+        guard let audioRecorder, audioRecorder.isRecording else { return nil }
+        audioRecorder.updateMeters()
+        return audioRecorder.peakPower(forChannel: 0)
+    }
+
     func startRecording() throws {
         AssertIsOnMainThread()
 
