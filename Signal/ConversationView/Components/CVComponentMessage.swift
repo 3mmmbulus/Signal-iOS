@@ -2742,9 +2742,35 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         }
 
         fileprivate func removeSwipeActionAnimations() {
+            // Tellomi（A-10）：回位弹簧停在当前位置（手指又按住了，或这一格要复用）。
+            tellomiSwipeReturnAnimator?.stopAnimation(true)
+            tellomiSwipeReturnAnimator = nil
             for swipeToReplyWrapper in swipeToReplyWrappers {
                 swipeToReplyWrapper.layer.removeAllAnimations()
             }
+        }
+
+        /// Tellomi（交互审计 A-10）：滑动回复松手后的回位弹簧。
+        private var tellomiSwipeReturnAnimator: UIViewPropertyAnimator?
+
+        /// Tellomi（A-10）：气泡、图标、头像各层从当前位置用 `TellomiMotion.release` 弹簧回到原位；
+        /// `initialVelocity` 是「每秒走完剩余路程的比例」（`TellomiMotion.relativeVelocity`），快慢两层按同一比例走。
+        fileprivate func startSwipeToReplyReturn(initialVelocity: CGVector) {
+            AssertIsOnMainThread()
+            tellomiSwipeReturnAnimator?.stopAnimation(true)
+            let animator = MainActor.assumeIsolated {
+                TellomiMotion.animator(TellomiMotion.release, initialVelocity: initialVelocity) { [weak self] in
+                    self?.setSwipeToReplyOffset(fastOffset: .zero, slowOffset: .zero)
+                }
+            }
+            animator.addCompletion { [weak self, weak animator] _ in
+                guard let self, let animator, self.tellomiSwipeReturnAnimator === animator else {
+                    return
+                }
+                self.tellomiSwipeReturnAnimator = nil
+            }
+            tellomiSwipeReturnAnimator = animator
+            animator.startAnimation()
         }
 
         // MARK: - Flashing Message Bubble
@@ -2895,6 +2921,9 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 )
                 return
             }
+            // Tellomi（交互审计 A-10）：松手前记下气泡这一刻对应的手指位移（上一次 .changed 的），回位弹簧从这里出发。
+            // 原来松手时 `tryToApplySwipeAction` 读到已清零的进度、不带动画把位移设成 0，之后的 0.2 s 补间是 0 → 0。
+            let releaseFingerOffset = max(-(swipeActionProgress?.xOffset ?? 0), 0)
             updateSwipeActionProgress(
                 sender: sender,
                 panHandler: panHandler,
@@ -2904,14 +2933,17 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 messageSwipeActionState: messageSwipeActionState,
                 hasFinished: hasFinished,
             )
-            tryToApplySwipeAction(componentView: componentView)
             if sender.state == .ended {
                 clearSwipeAction(
                     componentView: componentView,
                     renderItem: renderItem,
                     messageSwipeActionState: messageSwipeActionState,
                     isAnimated: true,
+                    releaseFingerOffset: releaseFingerOffset,
+                    releaseFingerVelocity: Self.tellomiReplyDirectionVelocity(sender: sender, in: componentView.rootView),
                 )
+            } else {
+                tryToApplySwipeAction(componentView: componentView)
             }
         }
     }
@@ -2959,6 +2991,45 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         let overflow = fingerOffset - threshold
         let band = (1 - 1 / (overflow * 0.4 / range + 1)) * range
         return min(threshold + band, 180)
+    }
+
+    /// Tellomi（交互审计 A-10，标准第四节「判定用投射落点」）：投射落点里速度乘的时间，0.1 s（与 Android 同值，
+    /// 相当于 `UIScrollView.DecelerationRate.fast` 的投射距离）。1000 pt/s 的一甩多算 100 pt，200 pt/s 的晃动只多算 20 pt。
+    static let tellomiSwipeToReplyProjectionSeconds: CGFloat = 0.1
+
+    /// Tellomi（A-10）：松手时手指在 `fingerOffset`、速度 `fingerVelocity`（沿回复方向为正，pt/s）：投射落点过阈值就回复。
+    /// 快速一甩也算，往回甩取消。
+    static func tellomiSwipeToReplyShouldReply(fingerOffset: CGFloat, fingerVelocity: CGFloat, threshold: CGFloat) -> Bool {
+        fingerOffset + fingerVelocity * tellomiSwipeToReplyProjectionSeconds > threshold
+    }
+
+    /// Tellomi（A-10）：手指在 `fingerOffset` 处以 `fingerVelocity` 移动时气泡的速度——橡皮筋在这一点的斜率 × 手指速度。
+    /// 阈值内 1:1；到了上限或还没出发时气泡不动。松手回位的弹簧从这个速度起步。
+    static func tellomiSwipeToReplyBubbleVelocity(fingerOffset: CGFloat, fingerVelocity: CGFloat, threshold: CGFloat) -> CGFloat {
+        guard fingerOffset >= 0 else {
+            return 0
+        }
+        guard fingerOffset > threshold else {
+            return fingerVelocity
+        }
+        guard tellomiSwipeToReplyBubbleOffset(fingerOffset: fingerOffset, threshold: threshold) < 180 else {
+            return 0
+        }
+        let d = (fingerOffset - threshold) * 0.4 / 100 + 1
+        return fingerVelocity * 0.4 / (d * d)
+    }
+
+    /// Tellomi（A-10）：越过 / 退回阈值的触感（标准第五节 `.impact(.light)`，带 view 的写法）。手势回调都在主线程。
+    private static func tellomiThresholdHaptic(in view: UIView) {
+        MainActor.assumeIsolated {
+            ImpactHapticFeedback.impactOccurred(style: .light, in: view)
+        }
+    }
+
+    /// Tellomi（A-10）：手势沿回复方向的速度（pt/s，往回复方向为正；RTL 镜像）。
+    private static func tellomiReplyDirectionVelocity(sender: UIPanGestureRecognizer, in view: UIView) -> CGFloat {
+        let xVelocity = sender.velocity(in: view).x
+        return CurrentAppContext().isRTL ? xVelocity : -xVelocity
     }
 
     private func updateSwipeActionProgress(
@@ -3012,9 +3083,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
         panHandler.activeDirection = activeDirection
 
-        // Play a haptic when moving to active（Tellomi：到阈值重振一次，同 Telegram `impact(.heavy)`）.
-        if didChangeActiveDirection, activeDirection == .left {
-            ImpactHapticFeedback.impactOccurred(style: .heavy)
+        // Tellomi（交互审计 A-10，标准第四节「阈值要有反馈」、第五节触感表）：越过阈值、退回阈值以内各一次 `.impact(.light)`。
+        // 原来只在越过时 `.heavy` 一次（照 Telegram）；两端统一按标准，Android 同时改成系统的阈值触感。
+        if didChangeActiveDirection, !hasFinished {
+            Self.tellomiThresholdHaptic(in: componentView.rootView)
         }
 
         // Update the reply image styling to reflect active state
@@ -3050,10 +3122,21 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             }
         }
 
-        // 松手只看位移是否过阈值，不看速度（ADR-0058 §2，Telegram 同）。
-        if hasFinished, activeDirection == .left {
+        // Tellomi（交互审计 A-10，标准第四节「判定用投射落点」）：位移 + 速度 × 0.1 s 过阈值就回复，快速一甩也算、往回甩取消
+        // （原来照 ADR-0058 §2 / Telegram 只看松手时的位移）。没越过阈值、靠投射回复的，松手时补一次触感。
+        if hasFinished {
             let itemViewModel = CVItemViewModelImpl(renderItem: renderItem)
-            componentDelegate.didTapReplyToItem(itemViewModel)
+            let shouldReply = Self.tellomiSwipeToReplyShouldReply(
+                fingerOffset: -xOffset,
+                fingerVelocity: Self.tellomiReplyDirectionVelocity(sender: sender, in: componentView.rootView),
+                threshold: swipeActionOffsetThreshold,
+            )
+            if shouldReply, componentDelegate.shouldAllowMessageSendActionsForItem(itemViewModel) {
+                if previousActiveDirection != .left {
+                    Self.tellomiThresholdHaptic(in: componentView.rootView)
+                }
+                componentDelegate.didTapReplyToItem(itemViewModel)
+            }
         }
     }
 
@@ -3112,6 +3195,8 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         renderItem: CVRenderItem,
         messageSwipeActionState: CVMessageSwipeActionState,
         isAnimated: Bool,
+        releaseFingerOffset: CGFloat = 0,
+        releaseFingerVelocity: CGFloat = 0,
     ) {
         AssertIsOnMainThread()
 
@@ -3119,16 +3204,33 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
         let iconView = componentView.swipeToReplyIconView
 
-        let animations = {
-            componentView.setSwipeToReplyOffset(fastOffset: .zero, slowOffset: .zero)
-            iconView.alpha = 0
-        }
-
         if isAnimated {
-            UIView.animate(withDuration: 0.2, animations: animations)
+            // Tellomi（交互审计 A-10，标准第四节「松手」）：`TellomiMotion.release` 弹簧从松手时的位置和速度出发回到原位
+            // （原来是 0.2 s 补间）。初速 = 气泡速度 ÷ 剩余路程：往外甩着松手时先多走一点再回来。
+            // 减弱动态效果时 `TellomiMotion.animator` 自动去掉回弹。图标是透明度，照标准淡出、不用弹簧。
+            let threshold = swipeActionOffsetThreshold
+            let bubbleOffset = Self.tellomiSwipeToReplyBubbleOffset(fingerOffset: releaseFingerOffset, threshold: threshold)
+            let bubbleVelocity = Self.tellomiSwipeToReplyBubbleVelocity(
+                fingerOffset: releaseFingerOffset,
+                fingerVelocity: releaseFingerVelocity,
+                threshold: threshold,
+            )
+            componentView.startSwipeToReplyReturn(
+                initialVelocity: TellomiMotion.relativeVelocity(
+                    CGPoint(x: bubbleVelocity, y: 0),
+                    remaining: CGVector(dx: -bubbleOffset, dy: 0),
+                ),
+            )
+            UIView.animate(
+                withDuration: TellomiMotion.fadeOutDuration,
+                delay: 0,
+                options: [.curveEaseIn, .beginFromCurrentState],
+                animations: { iconView.alpha = 0 },
+            )
         } else {
             componentView.removeSwipeActionAnimations()
-            animations()
+            componentView.setSwipeToReplyOffset(fastOffset: .zero, slowOffset: .zero)
+            iconView.alpha = 0
         }
 
         self.swipeActionProgress = nil
