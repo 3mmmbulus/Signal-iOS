@@ -113,8 +113,13 @@ extension ConversationViewController {
         // #1121：附件 Sheet 是个容器，dock 的「相册」「文件」在同一个 Sheet 里换页
         let presented: UIViewController
         if asAttachmentSheet {
-            let container = TellomiAttachmentSheetController(photoPicker: picker) { [weak self] in
-                self?.makeTellomiFilesPage() ?? UIViewController()
+            let container = TellomiAttachmentSheetController(photoPicker: picker) { [weak self] page in
+                guard let self else { return nil }
+                switch page {
+                case .gallery: return nil
+                case .files: return self.makeTellomiFilesPage()
+                case .poll: return self.makeTellomiPollPage()
+                }
             }
             container.modalPresentationStyle = .pageSheet
             if let sheet = container.sheetPresentationController {
@@ -138,11 +143,11 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
         dismiss(animated: true)
     }
 
-    /// dock 的「文件」：同一个 Sheet 里换到「文件」页（#1121）。
-    /// 「位置 / 投票 / 联系人 / GIF」：先收起 Sheet，再走上游原来的流程（取消了会经 openAttachmentKeyboard 回到 Sheet）。
+    /// dock 的「文件」「投票」：同一个 Sheet 里换页（#1121；投票 2026-10-16，照 Telegram iOS）。
+    /// 「位置 / 联系人 / GIF」：先收起 Sheet，再走上游原来的流程（取消了会经 openAttachmentKeyboard 回到 Sheet）。
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didSelectDockItem item: TellomiAttachmentDockItem) {
-        if item == .file, let container = picker.parent as? TellomiAttachmentSheetController {
-            container.show(.files)
+        if let container = picker.parent as? TellomiAttachmentSheetController, let page = TellomiAttachmentSheetController.page(for: item) {
+            container.show(page)
             return
         }
         dismiss(animated: true) { [weak self] in

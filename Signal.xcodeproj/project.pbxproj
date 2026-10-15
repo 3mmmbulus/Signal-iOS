@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4348952412156B70DFAFC047 /* ConversationViewController+TellomiSheetPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */; };
+		E50557DD726BD7EB699F7BCF /* TellomiAttachmentPollPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */; };
 		83805FB4360A13FAA64023D2 /* TellomiContextMenuActionTimingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6818A248C64A7149D4D923BE /* TellomiContextMenuActionTimingTest.swift */; };
 		7DE3BB5B930D647AAE1D924A /* TellomiConversationItemAnimationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */; };
 		A800808F22542BA749C6EE61 /* TellomiProfileRefreshTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */; };
@@ -4471,6 +4473,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiSheetPages.swift"; sourceTree = "<group>"; };
+		17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAttachmentPollPage.swift; sourceTree = "<group>"; };
 		6818A248C64A7149D4D923BE /* TellomiContextMenuActionTimingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiContextMenuActionTimingTest.swift; sourceTree = "<group>"; };
 		40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiConversationItemAnimationTest.swift; sourceTree = "<group>"; };
 		4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiProfileRefreshTest.swift; sourceTree = "<group>"; };
@@ -9522,6 +9526,7 @@
 				34A4D8842677DF6B00A794E7 /* ConversationViewController+ConversationInputToolbarDelegate.swift */,
 				91184E3A21BA97BB3C3D2AC3 /* ConversationViewController+TellomiPhotoPicker.swift */,
 				EDBE644EE702B83DAF0CC93D /* ConversationViewController+TellomiFiles.swift */,
+				86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */,
 				3470518D254B511B00A19468 /* ConversationViewController+CVC.swift */,
 				34A4D87C2677A1EF00A794E7 /* ConversationViewController+CVComponentDelegate.swift */,
 				34A4D8862678F24300A794E7 /* ConversationViewController+Delegates.swift */,
@@ -12025,6 +12030,7 @@
 				9DBFB4871F0C17176FDF3DE2 /* TellomiAttachmentFilesViewController.swift */,
 				16C45C34B2132E99B05CCE51 /* TellomiFilesGalleryViewController.swift */,
 				00DB1A1EA26FEC3D46DE4784 /* TellomiAttachmentSheetController.swift */,
+				17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */,
 				B42D474684F6FD03D4E8E524 /* TellomiRecentFileCell.swift */,
 				DAC115CC0CA5B9F692122B4D /* TellomiFileTypeIcon.swift */,
 				8809CE8622F8FE6D00D38867 /* AttachmentKeyboard.swift */,
@@ -19158,6 +19164,7 @@
 				5CE7E2EDA57094378B020DF4 /* TellomiAttachmentFilesViewController.swift in Sources */,
 				E766D30F13B9707AA3B2C46C /* TellomiFilesGalleryViewController.swift in Sources */,
 				050E5D1AE683F2E88C7A1C21 /* TellomiAttachmentSheetController.swift in Sources */,
+				E50557DD726BD7EB699F7BCF /* TellomiAttachmentPollPage.swift in Sources */,
 				C92DC1FB7E3BC05DF994ED29 /* TellomiRecentFileCell.swift in Sources */,
 				A1852FFCCB5AD1A3EB713F85 /* TellomiFileTypeIcon.swift in Sources */,
 				8809CE8722F8FE6D00D38867 /* AttachmentKeyboard.swift in Sources */,
@@ -19370,6 +19377,7 @@
 				34A4D8852677DF6B00A794E7 /* ConversationViewController+ConversationInputToolbarDelegate.swift in Sources */,
 				E5CD5A4B793DCA20F239035D /* ConversationViewController+TellomiPhotoPicker.swift in Sources */,
 				DD83D26F2B1155DE0617174E /* ConversationViewController+TellomiFiles.swift in Sources */,
+				4348952412156B70DFAFC047 /* ConversationViewController+TellomiSheetPages.swift in Sources */,
 				3470518E254B511B00A19468 /* ConversationViewController+CVC.swift in Sources */,
 				34A4D87D2677A1EF00A794E7 /* ConversationViewController+CVComponentDelegate.swift in Sources */,
 				34A4D8872678F24300A794E7 /* ConversationViewController+Delegates.swift in Sources */,

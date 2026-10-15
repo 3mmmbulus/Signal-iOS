@@ -50,6 +50,20 @@ class NewPollViewController2: OWSViewController, UITableViewDelegate, OWSNavigat
 
     weak var sendDelegate: PollSendDelegate?
 
+    /// Tellomi（2026-10-16）：嵌在附件 Sheet 里时由 Sheet 决定怎么收（收起整个 Sheet）；没设就照上游自己 dismiss。
+    var onClose: (() -> Void)?
+
+    /// Tellomi（2026-10-16）：嵌在附件 Sheet 里时等 Sheet 展开完再弹键盘（[focusQuestion]），不在出现时就抢焦点。
+    var autoFocusesQuestion = true
+
+    private func close() {
+        if let onClose {
+            onClose()
+        } else {
+            dismiss(animated: true)
+        }
+    }
+
     init(maxOptionCount: Int) {
         self.maxOptionCount = maxOptionCount
 
@@ -70,11 +84,11 @@ class NewPollViewController2: OWSViewController, UITableViewDelegate, OWSNavigat
         let cancelBarButtonItem: UIBarButtonItem
         if #available(iOS 26, *) {
             cancelBarButtonItem = .systemItem(.close) { [weak self] in
-                self?.dismiss(animated: true)
+                self?.close()
             }
         } else {
             cancelBarButtonItem = .cancelButton { [weak self] in
-                self?.dismiss(animated: true)
+                self?.close()
             }
             cancelBarButtonItem.setTitleTextAttributes(
                 [.foregroundColor: UIColor.Signal.label],
@@ -125,6 +139,12 @@ class NewPollViewController2: OWSViewController, UITableViewDelegate, OWSNavigat
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        if autoFocusesQuestion {
+            focusQuestion()
+        }
+    }
+
+    func focusQuestion() {
         if
             let questionRowCell = tableView.cellForRow(at: IndexPath(
                 row: 0,
@@ -472,7 +492,7 @@ class NewPollViewController2: OWSViewController, UITableViewDelegate, OWSNavigat
                 options: optionRows.filter { !$0.isBlank }.map { $0.text.stripped },
                 allowMultipleVotes: allowMultipleVotes,
             )
-            dismiss(animated: true)
+            close()
             return
         }
 

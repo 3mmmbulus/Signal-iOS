@@ -468,6 +468,90 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         XCTAssertEqual(container.children.count, 1)
     }
 
+    // MARK: - Poll page in the sheet (2026-10-16)
+
+    func testContainerShowsThePollPageInsideTheSameSheetAndBuildsItFreshEachTime() throws {
+        let picker = TellomiPhotoPickerViewController(
+            library: EmptyPhotoLibrary(),
+            initialMessageBody: nil,
+            defaultImageQuality: .standard,
+            canSendSeparately: true,
+            hasQuotedReplyDraft: false,
+            attachmentLimits: .currentLimits(),
+            approvalDataSource: FilesTestApprovalDataSource(),
+            stickerSheetDelegate: nil,
+            dockItems: TellomiAttachmentDockItem.allCases,
+        )
+        var pollPagesMade = 0
+        let container = TellomiAttachmentSheetController(photoPicker: picker) { page in
+            guard page == .poll else { return nil }
+            pollPagesMade += 1
+            return TellomiAttachmentPollPage(poll: NewPollViewController2(maxOptionCount: 10), dockItems: TellomiAttachmentDockItem.allCases)
+        }
+        container.loadViewIfNeeded()
+
+        container.show(.poll, animated: false)
+        let first = try XCTUnwrap(container.visibleChildForTesting as? TellomiAttachmentPollPage, "投票页换进同一个 Sheet")
+        XCTAssertEqual(container.children.count, 1)
+        XCTAssertNil(picker.parent)
+        XCTAssertNil(container.presentedViewController, "没有另外 present")
+
+        container.show(.gallery, animated: false)
+        XCTAssertTrue(container.visibleChildForTesting === picker)
+        container.show(.poll, animated: false)
+        XCTAssertEqual(pollPagesMade, 2, "投票页每次进都新建，上次没发的不留着")
+        XCTAssertFalse(container.visibleChildForTesting === first)
+    }
+
+    func testOnlyGalleryFilesAndPollArePagesOfTheSheet() {
+        XCTAssertEqual(TellomiAttachmentSheetController.page(for: .gallery), .gallery)
+        XCTAssertEqual(TellomiAttachmentSheetController.page(for: .file), .files)
+        XCTAssertEqual(TellomiAttachmentSheetController.page(for: .poll), .poll)
+        XCTAssertNil(TellomiAttachmentSheetController.page(for: .location))
+        XCTAssertNil(TellomiAttachmentSheetController.page(for: .contact))
+        XCTAssertNil(TellomiAttachmentSheetController.page(for: .gif))
+    }
+
+    func testPollPageWaitsForTheSheetBeforeTheKeyboardAndHandsOtherDockItemsOn() {
+        let poll = NewPollViewController2(maxOptionCount: 10)
+        let page = TellomiAttachmentPollPage(poll: poll, dockItems: TellomiAttachmentDockItem.allCases)
+        let delegate = RecordingPollPageDelegate()
+        page.delegate = delegate
+        page.loadViewIfNeeded()
+
+        XCTAssertFalse(poll.autoFocusesQuestion, "Sheet 展开完再弹键盘")
+        XCTAssertTrue(page.wantsExpandedSheet)
+        XCTAssertTrue(page.isDockShownForTesting)
+
+        page.selectDockItemForTesting(.poll)
+        XCTAssertEqual(delegate.items, [], "重复点「投票」由页面自己处理")
+        page.selectDockItemForTesting(.gallery)
+        page.selectDockItemForTesting(.contact)
+        XCTAssertEqual(delegate.items, [.gallery, .contact])
+    }
+
+    func testPollPageHidesTheDockWhileTheKeyboardIsUp() {
+        let page = TellomiAttachmentPollPage(poll: NewPollViewController2(maxOptionCount: 10), dockItems: TellomiAttachmentDockItem.allCases)
+        page.loadViewIfNeeded()
+
+        NotificationCenter.default.post(name: UIResponder.keyboardWillShowNotification, object: nil)
+        XCTAssertFalse(page.isDockShownForTesting)
+        NotificationCenter.default.post(name: UIResponder.keyboardWillHideNotification, object: nil)
+        XCTAssertTrue(page.isDockShownForTesting)
+    }
+
+    func testPollCloseGoesToTheSheetInsteadOfDismissingItself() throws {
+        guard #available(iOS 16, *) else { throw XCTSkip("UIAction.performWithSender 要 iOS 16") }
+        let poll = NewPollViewController2(maxOptionCount: 10)
+        var closed = 0
+        poll.onClose = { closed += 1 }
+        poll.loadViewIfNeeded()
+
+        let close = try XCTUnwrap(poll.navigationItem.leftBarButtonItem?.primaryAction)
+        close.performWithSender(nil, target: nil)
+        XCTAssertEqual(closed, 1)
+    }
+
     // MARK: - Icon (F-6)
 
     func testFileIconColourFollowsTheExtension() {
@@ -971,4 +1055,12 @@ private final class FilesTestApprovalDataSource: AttachmentApprovalViewControlle
     func attachmentApprovalMentionableAcis(tx: DBReadTransaction) -> [Aci] { [] }
 
     func attachmentApprovalMentionCacheInvalidationKey() -> String { "tellomi-files-tests" }
+}
+
+private final class RecordingPollPageDelegate: TellomiAttachmentPollPageDelegate {
+    var items: [TellomiAttachmentDockItem] = []
+
+    func pollPage(_ page: TellomiAttachmentPollPage, didSelectDockItem item: TellomiAttachmentDockItem) {
+        items.append(item)
+    }
 }
