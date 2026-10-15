@@ -135,6 +135,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     /// E-6：每张照片在上游预览 / 编辑页里的编辑项（裁剪、涂鸦、视频剪辑都在里面）。回到网格再进来、从网格直接发送都用这一份；
     /// 取消选中也留着，再选上时编辑还在（同 Telegram 的编辑上下文）。关掉选图面板就没了。
     private var approvalItems = [String: AttachmentApprovalItem]()
+    /// 就地编辑时盯着各张图的编辑模型（模型只弱引用观察者，这里拿着）。
+    private var editObservers = [String: AnyObject]()
 
     /// P-3：网格还是「只看已选」。
     enum DisplayMode {
@@ -774,19 +776,67 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         viewer.onShowSelected = { [weak self, weak viewer] in
             viewer?.dismiss(animated: true) { self?.showSelectedOnly() }
         }
+        viewer.editedImage = { [weak self] itemId in
+            self?.approvalItems[itemId].flatMap(TellomiImageTools.editedImage(for:))
+        }
         viewer.onEdit = { [weak self, weak viewer] item, tool in
-            viewer?.dismiss(animated: false) { self?.editFromAlbumViewer(item, tool: tool) }
+            guard let self, let viewer else { return }
+            self.editInPlace(item, tool: tool, over: viewer)
         }
         viewer.onClose = { [weak viewer] in viewer?.dismiss(animated: true) }
         viewer.modalPresentationStyle = .overFullScreen
         present(viewer, animated: true)
     }
 
-    private func editFromAlbumViewer(_ item: TellomiPhotoPickerItem, tool: TellomiApprovalEditTool?) {
+    /// 2026-10-16（owner 发来的方案第 6 节「方案 A」）：查看器底部的工具就地打开——不关查看器、不进上游预览页，
+    /// 这张图的编辑模型建上游同一个工具页，交叉淡入盖在查看器上；改完回到查看器，显示改过的样子。
+    /// 改动留在 `approvalItems` 里，发送时照旧按改过的样子出附件（`prepareAttachments(applyingEditsFrom:)`）。
+    /// 编辑过的自动勾上（同原来「编辑」进预览页前先勾上）。
+    private func editInPlace(_ item: TellomiPhotoPickerItem, tool: TellomiApprovalEditTool, over viewer: TellomiPhotoPickerAlbumViewer) {
         if selectionNumber(for: item.id) == nil {
             guard setSelection(item: item, selected: true) else { return }
+            viewer.refreshSelection()
         }
-        openSelectionForEditing(startingAt: item.id, tool: tool)
+        let present = { [weak self, weak viewer] (approvalItem: AttachmentApprovalItem) in
+            guard let self, let viewer, viewer.presentedViewController == nil else { return }
+            guard let toolViewController = TellomiImageTools.makeToolViewController(
+                tool,
+                for: approvalItem,
+                stickerSheetDelegate: self.stickerSheetDelegate,
+                contentInsets: viewer.view.safeAreaInsets,
+            ) else { return }
+            self.editObservers[item.id] = TellomiImageTools.observeEdits(of: approvalItem) { [weak viewer] in
+                Self.reloadWhenToolCloses(viewer)
+            }
+            toolViewController.modalPresentationStyle = .overFullScreen
+            toolViewController.modalTransitionStyle = .crossDissolve
+            viewer.present(toolViewController, animated: true)
+        }
+        if let approvalItem = approvalItems[item.id] {
+            present(approvalItem)
+            return
+        }
+        prepareAttachments(for: [item], applyingEditsFrom: [:], presenter: viewer) { [weak self] attachments in
+            guard let self, let attachment = attachments.first else { return }
+            let approvalItem = AttachmentApprovalItem(attachment: attachment, canSave: false)
+            self.approvalItems[item.id] = approvalItem
+            present(approvalItem)
+        }
+    }
+
+    /// 工具页里每改一笔都会通知；等工具页收起了再换一次图（每笔都重画整张图太费）。
+    private static func reloadWhenToolCloses(_ viewer: TellomiPhotoPickerAlbumViewer?) {
+        guard let viewer else { return }
+        guard viewer.presentedViewController == nil else {
+            guard !viewer.isWaitingForToolToClose else { return }
+            viewer.isWaitingForToolToClose = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak viewer] in
+                viewer?.isWaitingForToolToClose = false
+                Self.reloadWhenToolCloses(viewer)
+            }
+            return
+        }
+        viewer.reloadCurrentPage()
     }
 
     // MARK: - Selection
@@ -1510,6 +1560,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private func prepareAttachments(
         for items: [TellomiPhotoPickerItem],
         applyingEditsFrom edits: [String: AttachmentApprovalItem],
+        presenter: UIViewController? = nil,
         completion: @escaping ([PreviewableAttachment]) -> Void,
     ) {
         guard !items.isEmpty else {
@@ -1519,7 +1570,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let library = self.library
         let attachmentLimits = self.attachmentLimits
         ModalActivityIndicatorViewController.present(
-            fromViewController: self,
+            // 查看器盖在选图页上时从查看器弹（选图页这时已经 present 着查看器，再 present 会失败）
+            fromViewController: presenter ?? self,
             title: CommonStrings.preparingModal,
             canCancel: true,
             asyncBlock: { modal in

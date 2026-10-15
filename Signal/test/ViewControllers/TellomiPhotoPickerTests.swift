@@ -854,10 +854,10 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(picker.captionTextForTesting.count, afterHold, "松手就停")
     }
 
-    /// 网格里点照片进整本相册的查看器（不自动选中）；查看器里「编辑」才进上游的预览 / 编辑页（盖在网格上面），先看到当前这张。
-    /// 那里删掉一张，网格里也取消；那里取消回到网格、选中的还在；那里改说明，网格的说明和会话输入框跟着变；那里发送照常交给会话页。
+    /// 2026-10-16（owner 发来的方案第 6 节「方案 A」）：查看器里没有单独的「编辑」键——它进的上游预览页底栏也是这三个工具。
+    /// 网格里点照片进整本相册的查看器，不自动选中。
     @MainActor
-    func testAlbumViewerEditOpensUpstreamEditorOverTheGrid() async throws {
+    func testAlbumViewerHasNoSeparateEditButton() async throws {
         let hosted = host()
         defer { hosted.tearDown() }
         let picker = hosted.picker
@@ -867,42 +867,17 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
         XCTAssertTrue(viewed, "点照片进了整本相册的查看器")
         XCTAssertEqual(picker.selectedIdsForTesting, ["r3"], "点开查看不自动选中")
-        try XCTUnwrap(albumViewer(over: picker)).tapEditForTesting()
-
-        let opened = await waitUntil { self.approvalViewController(over: picker) != nil }
-        XCTAssertTrue(opened, "编辑进了上游的预览 / 编辑页")
-        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "编辑会先选上当前这张")
-        let approval = try XCTUnwrap(approvalViewController(over: picker))
-        XCTAssertTrue(
-            approval.currentItem?.attachment.rawValue === hosted.library.attachmentsById["r4"]?.rawValue,
-            "点的是 r4，进来先看到 r4（不是已选里的第一张 r3）",
-        )
-
-        let removed = try XCTUnwrap(hosted.library.attachmentsById["r3"])
-        picker.attachmentApproval(approval, didRemoveAttachment: AttachmentApprovalItem(attachment: removed, canSave: false))
-        XCTAssertEqual(picker.selectedIdsForTesting, ["r4"], "预览页里删掉的，网格里也取消")
-
-        picker.attachmentApproval(approval, didChangeMessageBody: MessageBody(text: "改过的说明", ranges: .empty))
-        XCTAssertEqual(picker.captionTextForTesting, "改过的说明")
-        XCTAssertEqual(hosted.delegate.bodies.last??.text, "改过的说明")
-
-        picker.attachmentApprovalDidCancel()
-        let closed = await waitUntil { picker.presentedViewController == nil }
-        XCTAssertTrue(closed)
-        XCTAssertEqual(picker.selectedIdsForTesting, ["r4"], "取消回到网格，选中的还在")
-        XCTAssertEqual(hosted.delegate.cancels, 0, "只关预览页，不关选图")
-
-        let edited = try XCTUnwrap(hosted.library.attachmentsById["r4"])
-        picker.attachmentApproval(approval, didApproveAttachments: ApprovedAttachments(nonViewOnceAttachments: [edited], imageQuality: .high), messageBody: nil)
-        let sent = try XCTUnwrap(hosted.delegate.sent.last)
-        XCTAssertEqual(hosted.library.ids(of: sent.approved), ["r4"])
-        XCTAssertEqual(sent.approved.imageQuality, .high)
-        XCTAssertFalse(sent.separately)
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        XCTAssertFalse(viewer.isEditShownForTesting)
+        XCTAssertTrue(viewer.isCropShownForTesting)
+        XCTAssertTrue(viewer.isPenShownForTesting)
+        XCTAssertTrue(viewer.isAdjustShownForTesting)
     }
 
-    /// 查看器底部「绘制」「裁剪」：和「编辑」一样先选上当前这张、进上游的预览 / 编辑页，并直接打开对应的工具。
+    /// 查看器底部「绘制」「裁剪」「调整」：就地打开上游对应的工具，直接盖在查看器上——不关查看器、不进上游预览 / 编辑页
+    /// （原来是三层转场）；先选上当前这张；工具收起后回到查看器。
     @MainActor
-    func testAlbumViewerPenAndCropShortcutsOpenTheMatchingUpstreamTool() async throws {
+    func testAlbumViewerToolsOpenInPlaceOverTheViewer() async throws {
         let hosted = host()
         defer { hosted.tearDown() }
         let picker = hosted.picker
@@ -912,50 +887,26 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let viewed = await waitUntil { self.albumViewer(over: picker) != nil }
         XCTAssertTrue(viewed)
         let viewer = try XCTUnwrap(albumViewer(over: picker))
-        XCTAssertTrue(viewer.isCropShownForTesting, "图片上有「裁剪」")
-        XCTAssertTrue(viewer.isPenShownForTesting, "图片上有「绘制」")
 
-        viewer.tapToolForTesting(.pen)
-        let penOpened = await waitUntil { self.approvalViewController(over: picker) != nil }
-        XCTAssertTrue(penOpened, "绘制进了上游的预览 / 编辑页")
-        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "和「编辑」一样先选上当前这张")
-        let penApproval = try XCTUnwrap(approvalViewController(over: picker))
-        XCTAssertTrue(penApproval.currentItem?.attachment.rawValue === hosted.library.attachmentsById["r4"]?.rawValue)
-        let penToolOnScreen = await waitUntil { penApproval.currentPageViewController?.presentedViewController is ImageEditorViewController }
-        XCTAssertTrue(penToolOnScreen, "直接打开了上游的涂鸦工具")
+        func openTool(_ tool: TellomiApprovalEditTool, expecting type: UIViewController.Type) async throws {
+            viewer.tapToolForTesting(tool)
+            let onScreen = await waitUntil { viewer.presentedViewController.map { Swift.type(of: $0) == type } ?? false }
+            XCTAssertTrue(onScreen, "\(tool) 直接盖在查看器上")
+            XCTAssertTrue(picker.presentedViewController === viewer, "查看器没关，也没进上游预览页")
+            XCTAssertNil(approvalViewController(over: picker))
+            viewer.presentedViewController?.dismiss(animated: false)
+            let back = await waitUntil { viewer.presentedViewController == nil }
+            XCTAssertTrue(back, "工具收起回到查看器")
+        }
 
-        picker.attachmentApprovalDidCancel()
-        let penClosed = await waitUntil { picker.presentedViewController == nil }
-        XCTAssertTrue(penClosed)
-
-        picker.tapItemForTesting(itemIndex: 4)
-        let reviewed = await waitUntil { self.albumViewer(over: picker) != nil }
-        XCTAssertTrue(reviewed)
-        try XCTUnwrap(albumViewer(over: picker)).tapToolForTesting(.crop)
-        let cropOpened = await waitUntil { self.approvalViewController(over: picker) != nil }
-        XCTAssertTrue(cropOpened, "裁剪进了上游的预览 / 编辑页")
-        let cropApproval = try XCTUnwrap(approvalViewController(over: picker))
-        let cropToolOnScreen = await waitUntil { cropApproval.currentPageViewController?.presentedViewController is ImageEditorCropViewController }
-        XCTAssertTrue(cropToolOnScreen, "直接打开了上游的裁剪工具")
-
-        // tellomi/tellomi#1593 E5-3：「调整」在绘制后面（照 Telegram iOS 编辑底栏），直接打开调色页。
-        picker.attachmentApprovalDidCancel()
-        let cropClosed = await waitUntil { picker.presentedViewController == nil }
-        XCTAssertTrue(cropClosed)
-        picker.tapItemForTesting(itemIndex: 4)
-        let viewedAgain = await waitUntil { self.albumViewer(over: picker) != nil }
-        XCTAssertTrue(viewedAgain)
-        let adjustViewer = try XCTUnwrap(albumViewer(over: picker))
-        XCTAssertTrue(adjustViewer.isAdjustShownForTesting, "图片上有「调整」")
-        adjustViewer.tapToolForTesting(.adjust)
-        let adjustOpened = await waitUntil { self.approvalViewController(over: picker) != nil }
-        XCTAssertTrue(adjustOpened)
-        let adjustApproval = try XCTUnwrap(approvalViewController(over: picker))
-        let adjustToolOnScreen = await waitUntil { adjustApproval.currentPageViewController?.presentedViewController is TellomiImageAdjustViewController }
-        XCTAssertTrue(adjustToolOnScreen, "直接打开了调色页")
+        try await openTool(.pen, expecting: ImageEditorViewController.self)
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "编辑会先选上当前这张")
+        try await openTool(.crop, expecting: ImageEditorCropViewController.self)
+        try await openTool(.adjust, expecting: TellomiImageAdjustViewController.self)
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r4"], "再编辑不会把它取消")
     }
 
-    /// 视频没有「裁剪」「绘制」（上游对视频没有这两个工具），底部只剩「编辑」。
+    /// 视频没有「裁剪」「绘制」「调整」（上游对视频没有这些工具）。
     @MainActor
     func testAlbumViewerHidesImageToolsForVideos() async throws {
         let hosted = host()
@@ -971,7 +922,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertFalse(viewer.isAdjustShownForTesting, "视频不显示「调整」")
     }
 
-    /// 动图（GIF）：上游预览页不支持裁剪 / 绘制，底部和视频一样只剩「编辑」。
+    /// 动图（GIF）：上游预览页不支持裁剪 / 绘制，和视频一样底部没有工具。
     @MainActor
     func testAlbumViewerHidesImageToolsForAnimatedImages() async throws {
         let hosted = host()

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E96F4E5D262F344AC766415 /* TellomiImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */; };
 		4348952412156B70DFAFC047 /* ConversationViewController+TellomiSheetPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */; };
 		E50557DD726BD7EB699F7BCF /* TellomiAttachmentPollPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */; };
 		83805FB4360A13FAA64023D2 /* TellomiContextMenuActionTimingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6818A248C64A7149D4D923BE /* TellomiContextMenuActionTimingTest.swift */; };
@@ -4473,6 +4474,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageTools.swift; sourceTree = "<group>"; };
 		86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiSheetPages.swift"; sourceTree = "<group>"; };
 		17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAttachmentPollPage.swift; sourceTree = "<group>"; };
 		6818A248C64A7149D4D923BE /* TellomiContextMenuActionTimingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiContextMenuActionTimingTest.swift; sourceTree = "<group>"; };
@@ -10040,6 +10042,7 @@
 				763D7DDC27E25DC8002EA7E6 /* AttachmentApprovalTopBar.swift */,
 				34A9559C271B510500B05242 /* AttachmentApprovalViewController.swift */,
 				4E0FDCD6E87FA851258F210A /* AttachmentApprovalViewController+Tellomi.swift */,
+				C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */,
 				34A95598271B510500B05242 /* AttachmentItemCollection.swift */,
 				34A95599271B510500B05242 /* AttachmentPrepViewController.swift */,
 				34A9559E271B510500B05242 /* MediaCaptionToolbar.swift */,
@@ -18800,6 +18803,7 @@
 				763D7DDD27E25DC8002EA7E6 /* AttachmentApprovalTopBar.swift in Sources */,
 				3402AA4A271D9DCD0084CBAE /* AttachmentApprovalViewController.swift in Sources */,
 				7CC6F798EDC2DC8416523D9E /* AttachmentApprovalViewController+Tellomi.swift in Sources */,
+				5E96F4E5D262F344AC766415 /* TellomiImageTools.swift in Sources */,
 				3402AA34271D9DCD0084CBAE /* AttachmentItemCollection.swift in Sources */,
 				665D9B452C111C6D00E73E94 /* AttachmentMultisend+OversizeText.swift in Sources */,
 				661566722BCEDD58003F1647 /* AttachmentMultisend.swift in Sources */,

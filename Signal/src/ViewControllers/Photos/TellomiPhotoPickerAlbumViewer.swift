@@ -8,8 +8,10 @@ import SignalUI
 
 /// Tellomi（tellomi/tellomi#1518，V-1；照 Telegram `TGMediaPickerModernGalleryMixin` 的网格点开）：
 /// 网格点照片打开整本相册的查看器，左右滑看整本相册，点开不自动选中；单击照片或右上角勾选即时增减（照 Telegram
-/// `TGMediaPickerGalleryPhotoItemView` 单击切换）；选中计数点开切出已选；底部「裁剪」「绘制」直接打开上游对应的工具，
-/// 「编辑」进上游的预览 / 编辑页，都先看到当前这张（照 Telegram `TGMediaPickerGalleryPhotoItem` 底部工具栏的 Crop / Paint）。
+/// `TGMediaPickerGalleryPhotoItemView` 单击切换）；选中计数点开切出已选；底部「裁剪」「绘制」「调色」就地打开上游对应的工具
+/// （照 Telegram `TGPhotoToolbarView`：查看器底部只有一条工具栏，没有单独的「编辑」键，点工具就地进编辑器）。
+/// 2026-10-16（owner 发来的方案第 6 节「方案 A」）：去掉「编辑」键——它进的上游预览 / 编辑页底栏也是这三个工具，功能完全重叠；
+/// 工具不再先关查看器、整屏弹预览页、再盖工具页（三层转场），而是直接盖在查看器上（[onEdit] → 选图页就地打开）。
 ///
 /// 给了 [FileMode] 时是「文件」页相册网格的预览（tellomi/tellomi#1263 F-3，owner 2026-10-13 照 Telegram）：不能编辑（Telegram iOS
 /// 文件模式用 `TGMediaEditingContext contextForCaptionsOnly`，安卓 `PhotoViewer` 的 `isDocumentsPicker` 把编辑都藏起来），没有已选计数；
@@ -29,7 +31,11 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     var selectedCount: () -> Int = { 0 }
     var onToggle: ((TellomiPhotoPickerItem) -> Void)?
     var onShowSelected: (() -> Void)?
-    var onEdit: ((TellomiPhotoPickerItem, TellomiApprovalEditTool?) -> Void)?
+    var onEdit: ((TellomiPhotoPickerItem, TellomiApprovalEditTool) -> Void)?
+    /// 这张改过之后的样子（选图页给，没改过是 nil）：查看器里显示它，不显示原图。
+    var editedImage: (String) -> UIImage? = { _ in nil }
+    /// 选图页用：工具页还盖着时，改完的重画等它收起再做。
+    var isWaitingForToolToClose = false
     var onClose: (() -> Void)?
 
     private let library: TellomiPhotoPickerLibrary
@@ -134,16 +140,6 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         ),
         tool: .pen,
     )
-
-    private lazy var editButton: UIButton = {
-        var configuration = UIButton.Configuration.filled()
-        configuration.baseBackgroundColor = .Signal.accent
-        configuration.baseForegroundColor = .white
-        configuration.cornerStyle = .capsule
-        configuration.title = OWSLocalizedString("IMAGE_PICKER_TELLOMI_EDIT", comment: "Button in the album viewer of the photo picker that opens the preview and editing screen for the photo being viewed.")
-        configuration.contentInsets = .init(top: 10, leading: 24, bottom: 10, trailing: 24)
-        return UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.didTapEdit() })
-    }()
 
     private lazy var toolsStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [cropButton, penButton, adjustButton])
@@ -279,10 +275,8 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             adjustButton.widthAnchor.constraint(equalToConstant: 44),
             adjustButton.heightAnchor.constraint(equalToConstant: 44),
 
-            editButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            editButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            toolsStack.trailingAnchor.constraint(equalTo: editButton.leadingAnchor, constant: -12),
-            toolsStack.centerYAnchor.constraint(equalTo: editButton.centerYAnchor),
+            toolsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toolsStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
         ])
         if let fileMode {
             setUpFileBar(initialCaption: fileMode.initialCaption)
@@ -292,7 +286,6 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
 
     /// 文件模式的底栏：文件名、「尺寸 · 时长 · 大小」，再下面说明 + 发送；键盘弹起时整条跟着上来。
     private func setUpFileBar(initialCaption: String) {
-        editButton.isHidden = true
         toolsStack.isHidden = true
         captionField.text = initialCaption
 
@@ -366,11 +359,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         refreshChrome(animatedCheck: true)
     }
 
-    private func didTapEdit() {
-        didTapEdit(tool: nil)
-    }
-
-    private func didTapEdit(tool: TellomiApprovalEditTool?) {
+    private func didTapEdit(tool: TellomiApprovalEditTool) {
         guard items.indices.contains(currentIndex) else { return }
         onEdit?(items[currentIndex], tool)
     }
@@ -436,7 +425,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     }
 
     private var chromeViews: [UIView] {
-        [closeButton, positionPill, checkButton, countButton, toolsStack, editButton] + (fileMode != nil ? [fileBar] : [])
+        [closeButton, positionPill, checkButton, countButton, toolsStack] + (fileMode != nil ? [fileBar] : [])
     }
 
     private var currentPageIsZoomed: Bool {
@@ -490,6 +479,17 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         )
     }
 
+    /// 选图页在别处改了勾选（例如就地编辑时自动勾上）：勾选标和计数跟着变。
+    func refreshSelection() {
+        refreshChrome(animatedCheck: true)
+    }
+
+    /// 当前这张改过了：换成改过的样子。
+    func reloadCurrentPage() {
+        guard isViewLoaded, items.indices.contains(currentIndex) else { return }
+        collectionView.reloadItems(at: [IndexPath(item: currentIndex, section: 0)])
+    }
+
     private func pixelTargetSize(for item: TellomiPhotoPickerItem) -> CGSize {
         let scale = traitCollection.displayScale
         let box = CGSize(width: view.bounds.width * scale, height: view.bounds.height * scale)
@@ -511,7 +511,7 @@ extension TellomiPhotoPickerAlbumViewer: UICollectionViewDataSource, UICollectio
             let item = items[indexPath.item]
             page.onZoomChanged = { [weak self] zoomed in self?.collectionView.isScrollEnabled = !zoomed }
             page.onSingleTap = { [weak self] in self?.toggleSelection(of: item) }
-            page.configure(item: item, library: library, targetSize: pixelTargetSize(for: item))
+            page.configure(item: item, library: library, targetSize: pixelTargetSize(for: item), editedImage: editedImage(item.id))
         }
         return cell
     }
@@ -619,20 +619,31 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
         imageView.image = nil
         item = nil
         library = nil
+        editedImage = nil
         isFullResolution = false
         needsFit = true
         downloadProgress.hide(animated: false)
     }
 
-    func configure(item: TellomiPhotoPickerItem, library: TellomiPhotoPickerLibrary, targetSize: CGSize) {
+    func configure(item: TellomiPhotoPickerItem, library: TellomiPhotoPickerLibrary, targetSize: CGSize, editedImage: UIImage? = nil) {
         self.item = item
         self.library = library
-        isFullResolution = false
+        self.editedImage = editedImage
+        isFullResolution = editedImage != nil
         needsFit = true
         downloadProgress.hide(animated: false)
-        request(item, from: library, targetSize: targetSize)
+        if let editedImage {
+            thumbnailRequest?.cancel()
+            thumbnailRequest = nil
+            imageView.image = editedImage
+        } else {
+            request(item, from: library, targetSize: targetSize)
+        }
         setNeedsLayout()
     }
+
+    /// 改过之后的样子（裁剪过尺寸就不同了）：有它就不再向相册要图。
+    private var editedImage: UIImage?
 
     private func request(_ item: TellomiPhotoPickerItem, from library: TellomiPhotoPickerLibrary, targetSize: CGSize) {
         thumbnailRequest?.cancel()
@@ -660,6 +671,9 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
     var isShowingDownloadProgress: Bool { downloadProgress.isShowing }
 
     private var contentSize: CGSize {
+        if let editedImage, editedImage.size.width > 0, editedImage.size.height > 0 {
+            return CGSize(width: editedImage.size.width * editedImage.scale, height: editedImage.size.height * editedImage.scale)
+        }
         guard let item, item.pixelSize.width > 0, item.pixelSize.height > 0 else { return scrollView.bounds.size }
         return item.pixelSize
     }
@@ -817,10 +831,6 @@ extension TellomiPhotoPickerAlbumViewer {
         countButton.sendActions(for: .primaryActionTriggered)
     }
 
-    func tapEditForTesting() {
-        didTapEdit()
-    }
-
     func tapToolForTesting(_ tool: TellomiApprovalEditTool) {
         didTapEdit(tool: tool)
     }
@@ -834,7 +844,8 @@ extension TellomiPhotoPickerAlbumViewer {
     var isCropShownForTesting: Bool { !toolsStack.isHidden && !cropButton.isHidden }
     var isPenShownForTesting: Bool { !toolsStack.isHidden && !penButton.isHidden }
     var isAdjustShownForTesting: Bool { !toolsStack.isHidden && !adjustButton.isHidden }
-    var isEditShownForTesting: Bool { !editButton.isHidden }
+    /// 2026-10-16 起没有「编辑」键（工具就地打开）。
+    var isEditShownForTesting: Bool { false }
     var isFileBarShownForTesting: Bool { fileBar.superview != nil }
     var fileNameTextForTesting: String? { fileNameLabel.isHidden ? nil : fileNameLabel.text }
     var fileDetailsTextForTesting: String? { fileDetailsLabel.text }
