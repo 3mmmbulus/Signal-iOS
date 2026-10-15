@@ -136,6 +136,8 @@ extension ChatListViewController {
         // anymore. All indexPaths are based on the old model (before any change was applied) and if we
         // animate move, insert and delete changes the indexPaths of the to be updated rows will differ.
         var useFallBackUpdateMechanism = false
+        // Tellomi（交互审计 A-37）：同一节里挪了位置的行，`endUpdates` 之后原地刷新内容（见下面 `.move`）。
+        var movedRowsNeedingRefresh = [IndexPath]()
 
         if !sectionChanges.removals.isEmpty {
             checkAndSetTableUpdates()
@@ -174,6 +176,12 @@ extension ChatListViewController {
                 checkAndSetTableUpdates()
                 if oldIndexPath.section != newIndexPath.section {
                     tableView.moveRow(at: oldIndexPath, to: newIndexPath)
+                } else if animated, !isChangingFilter {
+                    // Tellomi（交互审计 A-37，照 Telegram iOS 会话列表：新消息把会话顶上去时，这一行从原位滑上去、
+                    // 其余行一起往下让位）：同一节里也用 move，不再「原位淡出、顶上淡入」。move 不会重新取 cell，
+                    // 新内容（最后一条消息、时间、未读）在 `endUpdates` 之后原地刷新，同上面 `.update` 的做法。
+                    tableView.moveRow(at: oldIndexPath, to: newIndexPath)
+                    movedRowsNeedingRefresh.append(newIndexPath)
                 } else {
                     tableView.deleteRows(at: [oldIndexPath], with: defaultRowAnimation)
                     tableView.insertRows(at: [newIndexPath], with: defaultRowAnimation)
@@ -243,6 +251,12 @@ extension ChatListViewController {
 
         if tableUpdatesPerformed {
             tableView.endUpdates()
+        }
+
+        if !movedRowsNeedingRefresh.isEmpty, let tableDataSource = tableView.dataSource as? CLVTableDataSource {
+            for indexPath in movedRowsNeedingRefresh {
+                tableDataSource.updateCellContent(at: indexPath, for: tableView)
+            }
         }
     }
 }
