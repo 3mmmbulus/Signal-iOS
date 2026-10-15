@@ -185,11 +185,39 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
         return model.item(forId: selectedTransformableItemID) as? ImageEditorShapeItem
     }
 
-    /// 这个位置（`gestureReferenceView` 里）是不是压在选中的形状上。
+    /// 这个位置（`gestureReferenceView` 里）是不是压在选中的形状或它的拉柄上。
     func isOnSelectedShape(locationInView: CGPoint) -> Bool {
         guard let selectedShapeItem else { return false }
+        if selectedShapeHandle(atLocationInView: locationInView) != nil {
+            return true
+        }
         return transformableLayer(forLocation: locationInView)?.name == selectedShapeItem.itemId
     }
+
+    /// Tellomi（tellomi/tellomi#1522 E-3b）：按在选中形状的哪个拉柄上（屏幕上 24 点以内，取最近的）。
+    func selectedShapeHandle(atLocationInView locationInView: CGPoint) -> TellomiShapeHandles.Handle? {
+        let canvasPoint = canvasLocation(forLocationInView: locationInView)
+        let tolerance = Self.shapeHandleTouchRadius / max(model.currentTransform().scaling, 0.0001)
+        return canvasView.selectedShapeHandlePositions()
+            .map { (handle: $0.handle, distance: hypot($0.point.x - canvasPoint.x, $0.point.y - canvasPoint.y)) }
+            .filter { $0.distance <= tolerance }
+            .min { $0.distance < $1.distance }?
+            .handle
+    }
+
+    private static let shapeHandleTouchRadius: CGFloat = 24
+
+    /// 正在拉的拉柄：拉之前的形状和它的图层位置 / 变换（每次都从拉之前算，不累积误差）。
+    private struct ShapeHandleDrag {
+        let handle: TellomiShapeHandles.Handle
+        let item: ImageEditorShapeItem
+        let position: CGPoint
+        let transform: CGAffineTransform
+        let unit: CGFloat
+        var hasChanged = false
+    }
+
+    private var shapeHandleDrag: ShapeHandleDrag?
 
     final var gestureReferenceView: UIView {
         canvasView.gestureReferenceView
@@ -528,10 +556,35 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
     private var movingTextHasMoved = false
 
     private func transformableLayer(forLocation locationInView: CGPoint) -> CALayer? {
+        return canvasView.transformableLayer(forLocation: canvasLocation(forLocationInView: locationInView))
+    }
+
+    private func canvasLocation(forLocationInView locationInView: CGPoint) -> CGPoint {
         let viewBounds = self.canvasView.gestureReferenceView.bounds
         let affineTransform = self.model.currentTransform().affineTransform(viewSize: viewBounds.size)
-        let locationInCanvas = locationInView.minus(viewBounds.center).applyingInverse(affineTransform).plus(viewBounds.center)
-        return canvasView.transformableLayer(forLocation: locationInCanvas)
+        return locationInView.minus(viewBounds.center).applyingInverse(affineTransform).plus(viewBounds.center)
+    }
+
+    /// Tellomi（tellomi/tellomi#1522 E-3b）：拉柄拉到 `locationInView`。
+    private func updateShapeHandleDrag(to locationInView: CGPoint) {
+        guard var drag = shapeHandleDrag else { return }
+        let point = ImageEditorCanvasView.shapePoint(
+            fromCanvas: canvasLocation(forLocationInView: locationInView),
+            position: drag.position,
+            transform: drag.transform,
+            unit: drag.unit,
+        )
+        let result = TellomiShapeHandles.drag(drag.handle, to: point, in: drag.item.shape)
+        let imageFrame = ImageEditorCanvasView.imageFrame(
+            forViewSize: canvasView.gestureReferenceView.bounds.size,
+            imageSize: model.srcImageSizePixels,
+            transform: model.currentTransform(),
+        )
+        let newItem = drag.item.applying(result, imageAspect: imageFrame.size)
+        // 第一下记一步撤销，之后的跟着这一步。
+        model.replace(item: newItem, suppressUndo: drag.hasChanged)
+        drag.hasChanged = true
+        shapeHandleDrag = drag
     }
 
     @objc
@@ -544,6 +597,35 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
         }
 
         // We could undo an in-progress move if the gesture is cancelled, but it seems gratuitous.
+
+        // Tellomi（tellomi/tellomi#1522 E-3b）：按在选中形状的拉柄上就是拉柄，不是挪。
+        if gestureRecognizer.state == .began,
+           let locationStart = gestureRecognizer.locationFirst,
+           let handle = selectedShapeHandle(atLocationInView: locationStart),
+           let geometry = canvasView.selectedShapeGeometry()
+        {
+            canvasView.hideTooltip()
+            shapeHandleDrag = ShapeHandleDrag(
+                handle: handle,
+                item: geometry.item,
+                position: geometry.layer.position,
+                transform: geometry.layer.affineTransform(),
+                unit: geometry.unit,
+            )
+            return
+        }
+        if shapeHandleDrag != nil {
+            switch gestureRecognizer.state {
+            case .changed, .ended:
+                updateShapeHandleDrag(to: gestureRecognizer.location(in: canvasView.gestureReferenceView))
+                if gestureRecognizer.state == .ended {
+                    shapeHandleDrag = nil
+                }
+            default:
+                shapeHandleDrag = nil
+            }
+            return
+        }
 
         switch gestureRecognizer.state {
         case .began:
@@ -672,6 +754,10 @@ class ImageEditorView: UIView, AttachmentPrepContentView, UIGestureRecognizerDel
         }
 
         let location = touch.location(in: canvasView.gestureReferenceView)
+        // Tellomi（E-3b）：选中形状的拉柄可能在形状外面一点。
+        if selectedShapeHandle(atLocationInView: location) != nil {
+            return true
+        }
         guard let layer = self.transformableLayer(forLocation: location) else {
             return false
         }

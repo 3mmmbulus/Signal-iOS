@@ -452,6 +452,7 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         else {
             selectedTextFrameLayer?.removeFromSuperlayer()
             selectedTextFrameLayer = nil
+            tellomiUpdateShapeHandles()
             return
         }
 
@@ -479,8 +480,103 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
         selectedTextFrameLayer.layoutSublayers()
 
         selectedTextFrameLayer.opacity = shouldFadeTransformableItem ? 0.5 : 1
+        // Tellomi（tellomi/tellomi#1522 E-3b）：形状不用文字的选中框，画自己的框和拉柄。
+        if model.item(forId: selectedItemID) is ImageEditorShapeItem {
+            selectedTextFrameLayer.opacity = 0
+        }
+        tellomiUpdateShapeHandles()
 
         CATransaction.commit()
+    }
+
+    // MARK: - Tellomi shape handles (tellomi/tellomi#1522 E-3b)
+
+    private static let shapeHandleRadius: CGFloat = 7
+
+    private var shapeHandlesLayer: CALayer?
+
+    /// 选中的形状、它的图层、形状单位（图短边 = 1）在画布上合多少点。
+    func selectedShapeGeometry() -> (item: ImageEditorShapeItem, layer: CALayer, unit: CGFloat)? {
+        guard
+            let selectedTransformableItemID,
+            let item = model.item(forId: selectedTransformableItemID) as? ImageEditorShapeItem,
+            let layer = contentLayerMap[selectedTransformableItemID],
+            item.unitWidth > 0
+        else {
+            return nil
+        }
+        return (item, layer, layer.bounds.size.width / item.unitWidth)
+    }
+
+    /// 选中形状的每个拉柄在画布上的位置。
+    func selectedShapeHandlePositions() -> [(handle: TellomiShapeHandles.Handle, point: CGPoint)] {
+        guard let geometry = selectedShapeGeometry() else { return [] }
+        let shape = geometry.item.shape
+        return TellomiShapeHandles.handles(for: geometry.item.kind).map { handle in
+            (handle, Self.canvasPoint(TellomiShapeHandles.position(of: handle, in: shape), layer: geometry.layer, unit: geometry.unit))
+        }
+    }
+
+    /// 形状自己的坐标（中心在原点、图短边 = 1）→ 画布。
+    static func canvasPoint(_ point: CGPoint, layer: CALayer, unit: CGFloat) -> CGPoint {
+        let offset = CGPoint(x: point.x * unit, y: point.y * unit).applying(layer.affineTransform())
+        return CGPoint(x: layer.position.x + offset.x, y: layer.position.y + offset.y)
+    }
+
+    /// 画布 → 形状自己的坐标。
+    static func shapePoint(fromCanvas point: CGPoint, position: CGPoint, transform: CGAffineTransform, unit: CGFloat) -> CGPoint {
+        let offset = CGPoint(x: point.x - position.x, y: point.y - position.y).applying(transform.inverted())
+        return CGPoint(x: offset.x / max(unit, 0.0001), y: offset.y / max(unit, 0.0001))
+    }
+
+    /// 选中的形状画一圈细框（箭头不画）和拉柄；拉柄在屏幕上大小不变（除掉画布的缩放）。
+    private func tellomiUpdateShapeHandles() {
+        guard let geometry = selectedShapeGeometry() else {
+            shapeHandlesLayer?.removeFromSuperlayer()
+            shapeHandlesLayer = nil
+            return
+        }
+        let container: CALayer
+        if let shapeHandlesLayer {
+            container = shapeHandlesLayer
+        } else {
+            container = CALayer()
+            let outline = CAShapeLayer()
+            outline.fillColor = nil
+            outline.strokeColor = UIColor.white.withAlphaComponent(0.8).cgColor
+            let dots = CAShapeLayer()
+            dots.fillColor = UIColor.white.cgColor
+            dots.strokeColor = UIColor.black.withAlphaComponent(0.3).cgColor
+            container.addSublayer(outline)
+            container.addSublayer(dots)
+            container.zPosition = ImageEditorCanvasView.selectionFrameLayerZ
+            imageLayerView.layer.addSublayer(container)
+            shapeHandlesLayer = container
+        }
+        guard let outline = container.sublayers?.first as? CAShapeLayer, let dots = container.sublayers?.last as? CAShapeLayer else { return }
+        container.frame = imageLayerView.layer.bounds
+        let zoom = max(model.currentTransform().scaling, 0.0001)
+
+        let outlinePath = CGMutablePath()
+        let shape = geometry.item.shape
+        if geometry.item.kind != .arrow {
+            let halfWidth = shape.width / 2
+            let halfHeight = shape.height / 2
+            let corners = [CGPoint(x: -halfWidth, y: -halfHeight), CGPoint(x: halfWidth, y: -halfHeight), CGPoint(x: halfWidth, y: halfHeight), CGPoint(x: -halfWidth, y: halfHeight)]
+            outlinePath.addLines(between: corners.map { Self.canvasPoint($0, layer: geometry.layer, unit: geometry.unit) })
+            outlinePath.closeSubpath()
+        }
+        outline.path = outlinePath
+        outline.lineWidth = 1 / zoom
+
+        let radius = Self.shapeHandleRadius / zoom
+        let dotsPath = CGMutablePath()
+        for (_, point) in selectedShapeHandlePositions() {
+            dotsPath.addEllipse(in: CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2))
+        }
+        dots.path = dotsPath
+        dots.lineWidth = 1 / zoom
+        container.opacity = shouldFadeTransformableItem ? 0.5 : 1
     }
 
     func hideTooltip() {
@@ -833,7 +929,17 @@ class ImageEditorCanvasView: UIView, ImageEditorModelObserver {
 
         let layer = CAShapeLayer()
         layer.frame = CGRect(x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height)
-        layer.path = TellomiShapePath.path(kind: item.kind, size: size, lineWidth: lineWidth, isFilled: item.isFilled)
+        layer.path = TellomiShapePath.path(
+            kind: item.kind,
+            size: size,
+            parameters: TellomiShapePath.Parameters(
+                lineWidth: lineWidth,
+                isFilled: item.isFilled,
+                tailX: item.tailX,
+                bodyFraction: item.bodyFraction,
+                bend: item.bend,
+            ),
+        )
         if item.kind == .arrow || item.isFilled {
             layer.fillColor = item.color.cgColor
             layer.strokeColor = nil

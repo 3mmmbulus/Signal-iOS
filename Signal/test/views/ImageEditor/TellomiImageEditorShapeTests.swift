@@ -55,7 +55,7 @@ final class TellomiImageEditorShapeTests: SignalBaseTest {
         XCTAssertTrue(bubble.contains(CGPoint(x: size.width * 0.2, y: size.height * 0.9)), "the tail is on the bottom left")
         XCTAssertFalse(bubble.contains(CGPoint(x: size.width * 0.8, y: size.height * 0.9)), "nothing on the bottom right")
 
-        let arrow = TellomiShapePath.arrow(size: CGSize(width: 200, height: 60), lineWidth: 8)
+        let arrow = TellomiShapePath.path(kind: .arrow, size: CGSize(width: 200, height: 60), lineWidth: 8, isFilled: false)
         XCTAssertEqual(arrow.boundingBoxOfPath.maxX, 200, accuracy: 0.001)
         XCTAssertTrue(arrow.contains(CGPoint(x: 195, y: 30)))
         XCTAssertTrue(arrow.contains(CGPoint(x: 20, y: 30)), "the shaft")
@@ -66,6 +66,137 @@ final class TellomiImageEditorShapeTests: SignalBaseTest {
     func testArrowIsNeverFilled() {
         XCTAssertFalse(ImageEditorShapeItem(kind: .arrow, color: .red, isFilled: true, unitLineWidth: 0.02, rotationRadians: 0, scaling: 1).isFilled)
         XCTAssertTrue(ImageEditorShapeItem(kind: .star, color: .red, isFilled: true, unitLineWidth: 0.02, rotationRadians: 0, scaling: 1).isFilled)
+    }
+
+    // MARK: - Handles (E-3b)
+
+    /// 矩形拉右下角：左上角不动，宽高各自变，中心挪到新框的中间。
+    func testCornerHandleResizesFromTheOppositeCorner() {
+        let shape = Self.shape(.rectangle, width: 0.5, aspect: 0.75)
+        let result = TellomiShapeHandles.drag(.bottomRight, to: CGPoint(x: 0.35, y: 0.2875), in: shape)
+        Self.assertClose(result.shape.width, 0.6)
+        Self.assertClose(result.shape.height, 0.475)
+        Self.assertClose(result.centerOffset.x, 0.05)
+        Self.assertClose(result.centerOffset.y, 0.05)
+        Self.assertClose(result.rotation, 0)
+
+        // 拉过了对角也不翻过去，最小宽高 0.04。
+        let tiny = TellomiShapeHandles.drag(.bottomRight, to: CGPoint(x: -0.4, y: -0.4), in: shape)
+        Self.assertClose(tiny.shape.width, TellomiShapeHandles.minimumSize)
+        Self.assertClose(tiny.shape.height, TellomiShapeHandles.minimumSize)
+    }
+
+    /// 圆、星形等比：取宽高里大的那个。
+    func testCircleAndStarStaySquare() {
+        for kind in [ImageEditorShapeItem.Kind.circle, .star] {
+            let result = TellomiShapeHandles.drag(.topLeft, to: CGPoint(x: -0.45, y: -0.3), in: Self.shape(kind, width: 0.5, aspect: 1))
+            Self.assertClose(result.shape.width, 0.7)
+            Self.assertClose(result.shape.aspectRatio, 1)
+        }
+    }
+
+    /// 气泡：拉身子的角，尾巴长度不变；拉尾巴尖，左右挪、往下拉长，上边不动。
+    func testBubbleCornerKeepsTheTailAndTheTailHandleMovesTheTip() throws {
+        let shape = Self.shape(.bubble, width: 0.5, aspect: 0.7)
+        let tail = shape.height * (1 - shape.bodyFraction)
+        let bodyBottom = -shape.height / 2 + shape.height * shape.bodyFraction
+        XCTAssertEqual(TellomiShapeHandles.position(of: .bottomRight, in: shape).y, bodyBottom, accuracy: 0.0001)
+
+        let wider = TellomiShapeHandles.drag(.bottomRight, to: CGPoint(x: 0.35, y: bodyBottom), in: shape)
+        Self.assertClose(wider.shape.width, 0.6)
+        Self.assertClose(wider.shape.height * (1 - wider.shape.bodyFraction), tail, "the tail keeps its length")
+
+        let moved = TellomiShapeHandles.drag(.tail, to: CGPoint(x: 0.15, y: bodyBottom + tail * 2), in: shape)
+        Self.assertClose(moved.shape.tailX, 0.8)
+        Self.assertClose(moved.shape.height * (1 - moved.shape.bodyFraction), tail * 2)
+        Self.assertClose(moved.shape.height * moved.shape.bodyFraction, shape.height * shape.bodyFraction, "the body stays")
+        // 上边不动：新框的上边 = 旧框的上边。
+        Self.assertClose(moved.centerOffset.y - moved.shape.height / 2, -shape.height / 2)
+    }
+
+    /// 箭头：拉尖，起点不动，长度、方向跟着变；拉起点，尖不动；拉中间，弯出去（曲线穿过那一点），框跟着变高。
+    func testArrowHandles() {
+        let shape = Self.shape(.arrow, width: 0.5, aspect: TellomiShapePath.arrowAspect(bend: 0))
+        let down = TellomiShapeHandles.drag(.arrowEnd, to: CGPoint(x: -0.25, y: 0.5), in: shape)
+        Self.assertClose(down.shape.width, 0.5)
+        Self.assertClose(down.rotation, .pi / 2)
+        Self.assertClose(down.centerOffset.x, -0.25)
+        Self.assertClose(down.centerOffset.y, 0.25)
+
+        let start = TellomiShapeHandles.drag(.arrowStart, to: CGPoint(x: 0.25, y: -0.3), in: shape)
+        Self.assertClose(start.shape.width, 0.3)
+        Self.assertClose(start.rotation, .pi / 2)
+        Self.assertClose(start.centerOffset.x, 0.25)
+        Self.assertClose(start.centerOffset.y, -0.15)
+
+        let bent = TellomiShapeHandles.drag(.arrowBend, to: CGPoint(x: 0.1, y: 0.1), in: shape)
+        Self.assertClose(bent.shape.bend, 0.2)
+        Self.assertClose(bent.shape.aspectRatio, 0.7)
+        XCTAssertEqual(TellomiShapeHandles.position(of: .arrowBend, in: bent.shape), CGPoint(x: 0, y: 0.1))
+    }
+
+    /// 拉完的结果用到形状上：偏移按形状自己的转角转过去、按缩放和图的宽高换成 0…1 的中心。
+    func testApplyingAResultRotatesTheOffsetIntoTheImage() {
+        let item = ImageEditorShapeItem(kind: .rectangle, color: .red, isFilled: false, unitLineWidth: 0.02, unitCenter: CGPoint(x: 0.5, y: 0.5), rotationRadians: .pi / 2, scaling: 1)
+        let result = TellomiShapeHandles.Result(shape: item.shape, centerOffset: CGPoint(x: 0.1, y: 0), rotation: 0.2)
+        let applied = item.applying(result, imageAspect: CGSize(width: 400, height: 800))
+        Self.assertClose(applied.unitCenter.x, 0.5)
+        // 偏移 0.1 个短边（40 点）转 90° 变成往下 40 点 = 高 800 的 0.05。
+        Self.assertClose(applied.unitCenter.y, 0.55)
+        Self.assertClose(applied.rotationRadians, .pi / 2 + 0.2)
+        XCTAssertEqual(applied.itemId, item.itemId)
+    }
+
+    /// 编辑器里：选中的形状四个角有拉柄，按在角上（哪怕在形状外面一点）认得出是哪个拉柄，画笔不接这一下；
+    /// 拉柄和画布上的框角对得上。
+    @MainActor
+    func testHandlesSitOnTheSelectedShape() throws {
+        let model = try Self.model(color: .gray)
+        let editor = ImageEditorViewController(model: model, stickerSheetDelegate: nil)
+        let window = try Self.window(showing: editor)
+        defer { window.isHidden = true }
+        editor.mode = .draw
+        editor.addShape(.rectangle)
+        window.layoutIfNeeded()
+
+        let handles = editor.imageEditorView.canvasView.selectedShapeHandlePositions()
+        XCTAssertEqual(handles.map(\.handle), [.topLeft, .topRight, .bottomLeft, .bottomRight])
+        let topLeft = try XCTUnwrap(handles.first?.point)
+        let bottomRight = try XCTUnwrap(handles.last?.point)
+        let view = editor.imageEditorView.gestureReferenceView
+        // 宽 = 图短边的一半，框高 = 宽的 0.75，放在中间。
+        let shortSide = min(view.bounds.size.width, view.bounds.size.height)
+        XCTAssertEqual(bottomRight.x - topLeft.x, shortSide / 2, accuracy: 2)
+        XCTAssertEqual(bottomRight.y - topLeft.y, shortSide / 2 * 0.75, accuracy: 2)
+
+        let justOutside = CGPoint(x: topLeft.x - 10, y: topLeft.y - 10)
+        XCTAssertEqual(editor.imageEditorView.selectedShapeHandle(atLocationInView: justOutside), .topLeft)
+        XCTAssertTrue(editor.imageEditorView.isOnSelectedShape(locationInView: justOutside))
+        XCTAssertNil(editor.imageEditorView.selectedShapeHandle(atLocationInView: CGPoint(x: view.bounds.midX, y: view.bounds.midY)))
+
+        editor.imageEditorView.selectedTransformableItemID = nil
+        XCTAssertTrue(editor.imageEditorView.canvasView.selectedShapeHandlePositions().isEmpty)
+        XCTAssertNil(editor.imageEditorView.selectedShapeHandle(atLocationInView: justOutside))
+    }
+
+    /// 发出去的图：弯过的箭头中间那一点在曲线上；挪过的气泡尾巴尖在右下。
+    @MainActor
+    func testOutputDrawsABentArrowAndAMovedTail() throws {
+        let model = try Self.model(color: .gray)
+        let arrow = ImageEditorShapeItem(kind: .arrow, color: .red, isFilled: false, unitWidth: 0.6, aspectRatio: TellomiShapePath.arrowAspect(bend: 0.2), unitLineWidth: 0.03, bend: 0.2, unitCenter: CGPoint(x: 0.5, y: 0.3), rotationRadians: 0, scaling: 1)
+        model.append(item: arrow)
+        let bubble = ImageEditorShapeItem(kind: .bubble, color: .blue, isFilled: true, unitWidth: 0.5, unitLineWidth: 0.02, tailX: 0.85, unitCenter: CGPoint(x: 0.5, y: 0.75), rotationRadians: 0, scaling: 1)
+        model.append(item: bubble)
+
+        let output = try XCTUnwrap(ImageEditorCanvasView.renderForOutput(model: model, transform: model.currentTransform()))
+        let pixels = try XCTUnwrap(TellomiEyedropperPixels(image: output))
+        // 箭头：长 240，中点往下弯 0.2 × 240 = 48 点（图 400）。
+        Self.assertColor(pixels.color(atUnit: CGPoint(x: 0.5, y: 0.3 + 48.0 / 400)), .red, "the bent arrow passes through its bend point")
+        Self.assertColor(pixels.color(atUnit: CGPoint(x: 0.5, y: 0.3)), .gray, "and not through the straight line")
+        // 气泡：宽 200、高 140，尖在 x = 0.85 × 200 处、框底往上一点。
+        let tip = CGPoint(x: 0.5 + (0.85 - 0.5) * 200 / 400, y: 0.75 + (140.0 / 2 - 6) / 400)
+        Self.assertColor(pixels.color(atUnit: tip), .blue, "the tail tip moved to the right")
+        Self.assertColor(pixels.color(atUnit: CGPoint(x: 0.5 + (0.12 - 0.5) * 200 / 400, y: tip.y)), .gray, "nothing left at the old tip")
     }
 
     // MARK: - Menu
@@ -261,6 +392,14 @@ final class TellomiImageEditorShapeTests: SignalBaseTest {
     }
 
     // MARK: - Helpers
+
+    private static func shape(_ kind: ImageEditorShapeItem.Kind, width: CGFloat, aspect: CGFloat) -> TellomiShapeHandles.Shape {
+        TellomiShapeHandles.Shape(kind: kind, width: width, aspectRatio: aspect, tailX: TellomiShapePath.bubbleTailTip, bodyFraction: TellomiShapePath.bubbleBodyHeight, bend: 0)
+    }
+
+    private static func assertClose(_ actual: CGFloat, _ expected: CGFloat, _ message: String = "", file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertLessThanOrEqual(abs(actual - expected), 0.0001, "\(message) (\(actual) vs \(expected))", file: file, line: line)
+    }
 
     @MainActor
     private static func shapesMenu(_ editor: ImageEditorViewController) throws -> UIMenu {
