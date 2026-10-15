@@ -106,6 +106,12 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
     weak var sendMediaNavDelegate: SendMediaNavDelegate?
     weak var sendMediaNavDataSource: SendMediaNavDataSource?
 
+    /// Tellomi（P-6a）：相机页藏掉「相册」键（只拍，选图走「+」的相册页）。
+    var tellomiHidesPhotoLibraryButton: Bool {
+        get { captureViewController.tellomiHidesPhotoLibraryButton }
+        set { captureViewController.tellomiHidesPhotoLibraryButton = newValue }
+    }
+
     class func showingCameraFirst(hasQuotedReplyDraft: Bool, attachmentLimits: OutgoingAttachmentLimits) -> SendMediaNavigationController {
         let navController = SendMediaNavigationController(hasQuotedReplyDraft: hasQuotedReplyDraft, attachmentLimits: attachmentLimits)
         navController.setViewControllers([navController.captureViewController], animated: false)

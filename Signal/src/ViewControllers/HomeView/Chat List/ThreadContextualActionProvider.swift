@@ -204,8 +204,10 @@ extension ThreadContextualActionProvider where Self: UIViewController {
                 imageFilled: .bellSlashFill,
                 imageStroked: .bellSlash,
                 title: CommonStrings.muteButton,
-                action: { [weak self] in
-                    self?.muteThreadWithSelection(threadViewModel: threadViewModel)
+                action: {
+                    // Tellomi（owner 2026-10-16 定，照 Telegram iOS 会话列表左滑 `setPeerMuted` → `togglePeerMuted`）：
+                    // 左滑「静音」直接静音（一直静音），不再从屏幕底部弹时长选择；要选时长用长按菜单（就地展开的子菜单）。
+                    ConversationMuteManager().mute(threadViewModel, choice: .forever)
                 },
                 contextMenuChildren: muteDurationMenuChildren(threadViewModel: threadViewModel),
             )
@@ -435,34 +437,8 @@ extension ThreadContextualActionProvider where Self: UIViewController {
         }
     }
 
-    private func muteThreadWithSelection(threadViewModel: ThreadViewModel) {
-        AssertIsOnMainThread()
-
-        let alert = ActionSheetController(title: OWSLocalizedString(
-            "CONVERSATION_SETTINGS_MUTE_ACTION_SHEET_TITLE",
-            comment: "Title for the mute action sheet",
-        ))
-        let muteManager = ConversationMuteManager()
-        for option in ConversationMuteChoice.Option.all {
-            alert.addAction(ActionSheetAction(title: option.title, style: .default) { _ in
-                switch option {
-                case .preset(let preset):
-                    muteManager.mute(threadViewModel, choice: .preset(preset))
-                case .forever:
-                    muteManager.mute(threadViewModel, choice: .forever)
-                case .custom:
-                    // TODO: Present the custom mute date picker after the action sheet dismisses.
-                    owsFailDebug("Not implemented")
-                }
-            })
-        }
-        alert.addAction(OWSActionSheets.cancelAction)
-
-        presentActionSheet(alert)
-    }
-
     /// Tellomi（交互审计 A-39）：长按菜单里的「静音」就地展开时长，不再先收起菜单、再从屏幕底部另弹一个选择面板。
-    /// 左滑的「静音」按钮没有子菜单，仍走 [muteThreadWithSelection]。
+    /// 左滑的「静音」按钮没有子菜单，直接一直静音（owner 2026-10-16 定，照 Telegram）。
     private func muteDurationMenuChildren(threadViewModel: ThreadViewModel) -> [UIMenuElement] {
         let muteManager = ConversationMuteManager()
         return ConversationMuteChoice.Option.all.compactMap { option -> UIMenuElement? in

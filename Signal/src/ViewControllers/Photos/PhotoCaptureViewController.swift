@@ -413,6 +413,19 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
 
     private var cameraBottomBar = CameraBottomBar()
 
+    /// Tellomi（两端对齐清单 P-6a，owner 2026-10-16 定 a）：从会话进的相机（聊天栏相机键、附件 Sheet 的相机格）只拍、不选图：
+    /// 藏掉左下角 / 侧栏的「相册」键——它打开的是系统的 PHPicker，和 Tellomi 的选图网格是两套（没有序号、长按发送、定时……）。
+    /// 选图走「+」的相册页。别的入口（快拍等）照上游。
+    var tellomiHidesPhotoLibraryButton = false {
+        didSet { tellomiApplyPhotoLibraryButtonVisibility() }
+    }
+
+    private func tellomiApplyPhotoLibraryButtonVisibility() {
+        guard isViewLoaded else { return }
+        cameraBottomBar.photoLibraryButton.isHidden = tellomiHidesPhotoLibraryButton
+        cameraSideBar?.photoLibraryButton.isHidden = tellomiHidesPhotoLibraryButton
+    }
+
     private func updateCameraBottomBarVisibility(animated: Bool) {
         // Camera bottom bar is hidden:
         // • when camera side bar controls are visible.
@@ -1188,6 +1201,7 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         updateUIOnCameraPositionChange()
 
         isInitialUISetupComplete = true
+        tellomiApplyPhotoLibraryButtonVisibility()
     }
 
     private func initializeCameraSideBar() {
@@ -1214,6 +1228,7 @@ class PhotoCaptureViewController: OWSViewController, OWSNavigationChildControlle
         )
         view.addSubview(sideBar)
         sideBar.translatesAutoresizingMaskIntoConstraints = false
+        sideBar.photoLibraryButton.isHidden = tellomiHidesPhotoLibraryButton
 
         // Pinned to the trailing edge of camera viewfinder, shutter button centered vertically.
         NSLayoutConstraint.activate([

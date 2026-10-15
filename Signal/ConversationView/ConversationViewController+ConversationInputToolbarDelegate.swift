@@ -684,6 +684,8 @@ private extension ConversationViewController {
                 )
                 pickerModal.sendMediaNavDelegate = sendMediaNavDelegate ?? self
                 pickerModal.sendMediaNavDataSource = self
+                // Tellomi（P-6a）：从会话进的相机只拍，不出系统相册的「相册」键
+                pickerModal.tellomiHidesPhotoLibraryButton = true
                 pickerModal.modalPresentationStyle = .overFullScreen
                 // Defer hiding status bar until modal is fully onscreen
                 // to prevent unwanted shifting upwards of the entire presenter VC's view.
