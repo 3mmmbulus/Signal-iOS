@@ -11121,6 +11121,36 @@
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNLIKE" = "取消赞";
 
+/* One-time card about the new attachment panel, line 1: photos and files are pages of the same panel. */
+"TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_1" = "相册与文件：在同一个面板里随手切换，不用离开聊天";
+
+/* One-time card about the new attachment panel, line 2: location, polls and contacts are done inside the panel. */
+"TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_2" = "位置、投票、联系人：在面板里直接完成，不用跳到别的页面";
+
+/* Title of the one-time card introducing the new attachment panel (opened with '+' in a chat). */
+"TELLOMI_INTRO_ATTACHMENT_SHEET_V2_TITLE" = "全新的附件面板";
+
+/* One-time forward picker card: pick several chats at once, shown as avatars. */
+"TELLOMI_INTRO_FORWARD_GRID_V1_ITEM_1" = "一次选多个聊天，头像一目了然";
+
+/* Title of the one-time card introducing the forward picker with avatars. */
+"TELLOMI_INTRO_FORWARD_GRID_V1_TITLE" = "转发更直观";
+
+/* The only button on the one-time 'what's new' cards. Closes the card. */
+"TELLOMI_INTRO_GOT_IT" = "知道了";
+
+/* One-time photo picker card, line 1: selected photos show their order number and are sent in that order. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_ITEM_1" = "多选并按顺序发送：选中的照片会显示序号";
+
+/* One-time photo picker card, line 2: long-press the send button to schedule the message. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_ITEM_2" = "长按发送：长按发送键可以定时发送";
+
+/* One-time photo picker card, line 3: crop, draw and adjust photos before sending. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_ITEM_3" = "发送前编辑：裁剪、涂鸦、调整，一步到位";
+
+/* Title of the one-time card introducing the improved photo picker. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_TITLE" = "发送图片更方便了";
+
 /* Tellomi (ADR-0063 §5.5): toast after the link was copied because nothing could open it */
 "TELLOMI_LINKS_LINK_COPIED" = "已复制链接";
 

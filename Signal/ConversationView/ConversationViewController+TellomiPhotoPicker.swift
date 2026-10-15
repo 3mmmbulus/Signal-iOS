@@ -87,6 +87,10 @@ extension ConversationViewController {
             case .location: return self.makeTellomiLocationPage()
             }
         }
+        // 新功能提示卡（docs/product/specs/whats-new-cards.md）：面板默认是相册页，两张都满足时先弹「附件面板」，下次再弹「选图」。
+        container.onFirstAppear = { container in
+            TellomiFeatureIntro.presentFirstDue([.attachmentSheet, .photoPicker], from: container)
+        }
         container.modalPresentationStyle = .pageSheet
         if let sheet = container.sheetPresentationController {
             Self.configureAttachmentSheet(sheet)

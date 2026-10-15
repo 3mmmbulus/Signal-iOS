@@ -11295,6 +11295,36 @@
 /* Title of the privacy notice shown the first time the app is opened. */
 "TELLOMI_FIRST_LAUNCH_TITLE" = "Welcome to Tellomi";
 
+/* One-time card about the new attachment panel, line 1: photos and files are pages of the same panel. */
+"TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_1" = "Photos and files: switch between them in one panel without leaving the chat";
+
+/* One-time card about the new attachment panel, line 2: location, polls and contacts are done inside the panel. */
+"TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_2" = "Location, polls and contacts: finish right in the panel, no extra screens";
+
+/* Title of the one-time card introducing the new attachment panel (opened with '+' in a chat). */
+"TELLOMI_INTRO_ATTACHMENT_SHEET_V2_TITLE" = "A new attachment panel";
+
+/* One-time forward picker card: pick several chats at once, shown as avatars. */
+"TELLOMI_INTRO_FORWARD_GRID_V1_ITEM_1" = "Pick several chats at once and see everyone at a glance";
+
+/* Title of the one-time card introducing the forward picker with avatars. */
+"TELLOMI_INTRO_FORWARD_GRID_V1_TITLE" = "Forwarding, simplified";
+
+/* The only button on the one-time 'what's new' cards. Closes the card. */
+"TELLOMI_INTRO_GOT_IT" = "Got it";
+
+/* One-time photo picker card, line 1: selected photos show their order number and are sent in that order. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_ITEM_1" = "Pick several and send them in order: each selected photo shows its number";
+
+/* One-time photo picker card, line 2: long-press the send button to schedule the message. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_ITEM_2" = "Long-press Send to schedule the message";
+
+/* One-time photo picker card, line 3: crop, draw and adjust photos before sending. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_ITEM_3" = "Edit before sending: crop, draw and adjust in one place";
+
+/* Title of the one-time card introducing the improved photo picker. */
+"TELLOMI_INTRO_PHOTO_PICKER_V2_TITLE" = "Sending photos just got easier";
+
 /* Tellomi (card-visual §3.6): what a screen reader says for the action button at the bottom of a Tellomi card; %@ is the button's text */
 "TELLOMI_LINK_CARD_A11Y_BUTTON_FORMAT" = "button: %@";
 

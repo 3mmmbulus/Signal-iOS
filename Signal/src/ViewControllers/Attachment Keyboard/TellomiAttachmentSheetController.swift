@@ -30,6 +30,10 @@ final class TellomiAttachmentSheetController: UIViewController {
 
     private(set) var page: Page = .gallery
 
+    /// 第一次出现在屏幕上（弹出动画走完）时调一次：会话页用它弹新功能提示卡（`TellomiFeatureIntro`）。
+    var onFirstAppear: ((TellomiAttachmentSheetController) -> Void)?
+    private var hasAppeared = false
+
     init(photoPicker: TellomiPhotoPickerViewController, makePage: @escaping (Page) -> UIViewController?) {
         self.photoPicker = photoPicker
         self.makePage = makePage
@@ -52,6 +56,13 @@ final class TellomiAttachmentSheetController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .Signal.background
         embed(photoPicker)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !hasAppeared else { return }
+        hasAppeared = true
+        onFirstAppear?(self)
     }
 
     /// 选图页选了照片时不许下拉直接关（它自己按「有没有选中」设）：跟着当前页。

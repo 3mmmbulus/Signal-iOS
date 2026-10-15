@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */; };
+		01C3C09AE1F3069279AE0903 /* TellomiFeatureIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790EE117274F9B362AB474B0 /* TellomiFeatureIntro.swift */; };
 		3BFC9D7F7C62A0459587A000 /* TellomiCaptionField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4558E3D98619F28E914E122A /* TellomiCaptionField.swift */; };
 		5E96F4E5D262F344AC766415 /* TellomiImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */; };
 		4348952412156B70DFAFC047 /* ConversationViewController+TellomiSheetPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */; };
@@ -4471,6 +4473,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeatureIntroTests.swift; sourceTree = "<group>"; };
+		790EE117274F9B362AB474B0 /* TellomiFeatureIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeatureIntro.swift; sourceTree = "<group>"; };
 		4558E3D98619F28E914E122A /* TellomiCaptionField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCaptionField.swift; sourceTree = "<group>"; };
 		C0F0B750EA79F81974F2BDFF /* TellomiImageTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageTools.swift; sourceTree = "<group>"; };
 		86F8EC8E70EA8337A88B1078 /* ConversationViewController+TellomiSheetPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiSheetPages.swift"; sourceTree = "<group>"; };
@@ -10113,6 +10117,7 @@
 				C11C278029F2D2CD006779B4 /* EditHistoryTableSheetViewController.swift */,
 				340E9ABF235F876800FA362C /* ForwardMessageViewController.swift */,
 				2F37712EA17B13917BE0651D /* TellomiForwardGridCell.swift */,
+				790EE117274F9B362AB474B0 /* TellomiFeatureIntro.swift */,
 				1DA4ADE706D5E737B0816125 /* TellomiForwardGridViewController.swift */,
 				327CF66725ACE7DC00DA0A6F /* GetStartedBannerViewController.swift */,
 				340D8FFF24FEE6A9007B5504 /* GroupInviteLinksUI.swift */,
@@ -10146,6 +10151,7 @@
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
 				F9A335C9282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift */,
 				CC8AF1A5B874D4FC13BE4BCC /* TellomiNotificationPrimerTest.swift */,
+				52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */,
 				F97A2EE828247C1300610669 /* BadgeIssueSheetStateTest.swift */,
 				41815269E42B9E12DA5A1452 /* ChatListConnectionTitleTest.swift */,
 				4C6E6C6824241C00009DE948 /* ConversationViewControllerTest.swift */,
@@ -19556,6 +19562,7 @@
 				D9E43BFC2CC194140001536E /* FlipCameraTooltip.swift in Sources */,
 				88EFF4F825AD1F0D000FAFBA /* ForwardMessageViewController.swift in Sources */,
 				53388A9E28F262B10BDC20DD /* TellomiForwardGridCell.swift in Sources */,
+				01C3C09AE1F3069279AE0903 /* TellomiFeatureIntro.swift in Sources */,
 				D3F113C108BE2A452D099454 /* TellomiForwardGridViewController.swift in Sources */,
 				50A76F582AF5765000FCF02D /* FullTextSearchOptimizer.swift in Sources */,
 				327CF66825ACE7DD00DA0A6F /* GetStartedBannerViewController.swift in Sources */,
@@ -20017,6 +20024,7 @@
 				50438A8F2ECBBE1D00FCB28F /* BackupRefreshManagerTest.swift in Sources */,
 				F9A335CA282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift in Sources */,
 				865569088848A1C2ED573991 /* TellomiNotificationPrimerTest.swift in Sources */,
+				4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */,
 				F97A2EEA282578C000610669 /* BadgeIssueSheetStateTest.swift in Sources */,
 				BF61BB90117E904CAFF81F86 /* ChatListConnectionTitleTest.swift in Sources */,
 				D979DA132B8D1B65000EEAB8 /* BadgeManagerTest.swift in Sources */,

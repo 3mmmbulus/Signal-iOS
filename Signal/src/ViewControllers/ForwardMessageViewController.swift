@@ -950,6 +950,10 @@ extension ForwardMessageViewController {
             actions: TellomiForwardGridViewController.Actions(send: send, share: share, cancel: cancel),
         )
         gridReference.grid = grid
+        // 新功能提示卡「转发给多个聊天」（docs/product/specs/whats-new-cards.md），只在第一次打开时弹。
+        grid.onFirstAppear = { grid in
+            TellomiFeatureIntro.presentFirstDue([.forwardGrid], from: grid)
+        }
         fromViewController.present(grid, animated: true) {
             UIApplication.shared.hideKeyboard()
         }
