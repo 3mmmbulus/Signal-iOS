@@ -476,7 +476,7 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
                 ),
             ),
             UIKeyCommand(
-                action: #selector(openAttachmentKeyboard),
+                action: #selector(openAttachmentSheet),
                 input: "u",
                 modifierFlags: .command,
                 discoverabilityTitle: OWSLocalizedString(
@@ -626,12 +626,12 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
     }
 
     @objc
-    func openAttachmentKeyboard() {
+    func openAttachmentSheet() {
         guard let selectedConversationViewController else {
             return owsFailDebug("unexpectedly missing selected conversation")
         }
 
-        selectedConversationViewController.openAttachmentKeyboard()
+        selectedConversationViewController.openAttachmentSheet()
     }
 
     @objc

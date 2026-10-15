@@ -18,8 +18,8 @@ enum TellomiAttachmentDockItem: CaseIterable {
     case contact
     case gif
 
-    /// 附件 Sheet 的 dock 实际列出哪几格（会话页用）：GIF 只在这个部署能用 GIF 时列（#1078 `isGifAvailable`，同上游附件面板
-    /// `AttachmentFormatPickerView`）——大陆包 provider = none，入口一起关，包里才没有连境外内容代理的地方。
+    /// 附件 Sheet 的 dock 实际列出哪几格（会话页用）：GIF 只在这个部署能用 GIF 时列（#1078 `isGifAvailable`，同原来的上游附件面板
+    /// `AttachmentFormatPickerView`，2026-10-16 已删）——大陆包 provider = none，入口一起关，包里才没有连境外内容代理的地方。
     static var attachmentSheetItems: [TellomiAttachmentDockItem] {
         let isGifAvailable = RemoteConfig.current.isGifAvailable
         return allCases.filter { $0 != .gif || isGifAvailable }

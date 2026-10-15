@@ -81,19 +81,9 @@ extension ConversationViewController: AttachmentApprovalViewControllerDataSource
 
 extension ConversationViewController: UIAdaptivePresentationControllerDelegate {
     public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        switch presentationController.presentedViewController {
-        case is GifPickerNavigationViewController, is UIDocumentPickerViewController:
-            self.openAttachmentKeyboard()
-        case let navigationController as OWSNavigationController:
-            switch navigationController.viewControllers.first {
-            case is ContactPickerViewController, is LocationPicker:
-                self.openAttachmentKeyboard()
-            default:
-                break
-            }
-        default:
-            break
-        }
+        // Tellomi（2026-10-16 两端对齐清单 P-3）：上游在这里把附件键盘弹回来。附件面板现在是 Sheet，先收起它再整屏打开的
+        // GIF / 文件 / 联系人 / 位置，下滑关掉就停在聊天页，不再把 Sheet 弹回来（同 Telegram iOS：附件菜单先 dismiss
+        // 再整屏打开的页面，取消不回附件菜单，例如「文件」页的「从文件中选择」）。
     }
 }
 
@@ -102,8 +92,8 @@ extension ConversationViewController: UIAdaptivePresentationControllerDelegate {
 extension ConversationViewController: ContactPickerDelegate {
 
     public func contactPickerDidCancel(_: ContactPickerViewController) {
+        // Tellomi（P-3）：取消停在聊天页，不再弹回附件 Sheet。
         dismiss(animated: true, completion: nil)
-        self.openAttachmentKeyboard()
     }
 
     public func contactPicker(_ contactPicker: ContactPickerViewController, didSelect systemContact: SystemContact) {

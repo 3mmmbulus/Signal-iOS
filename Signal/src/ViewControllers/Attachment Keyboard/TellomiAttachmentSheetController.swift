@@ -139,7 +139,7 @@ final class TellomiAttachmentSheetController: UIViewController {
 
     var visibleChildForTesting: UIViewController? { children.last }
 
-    /// dock 的哪一格是 Sheet 里的页（在同一个 Sheet 里换）；不是的（位置、联系人、GIF）返回 nil。
+    /// dock 的哪一格是 Sheet 里的页（在同一个 Sheet 里换）；不是的（GIF）返回 nil。
     static func page(for item: TellomiAttachmentDockItem) -> Page? {
         switch item {
         case .gallery: return .gallery

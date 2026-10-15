@@ -46,12 +46,12 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
             dismiss(animated: true) { [weak self] in
                 guard let self else { return }
                 switch item {
-                case .location: self.locationButtonPressed()
-                case .poll: self.pollButtonPressed()
+                // accountIdentifierSharing 打开时的联系人（上游 RecipientPicker，还没搬进 Sheet）
                 case .contact: self.contactButtonPressed()
                 // owner 2026-09-26 临时加回的 GIF：同选图页 dock，走上游 GIF 键的处理
                 case .gif: self.gifButtonPressed()
-                case .gallery, .file: break
+                // 都在 Sheet 里换页，走不到这里（清单 C-6）
+                case .gallery, .file, .poll, .location: break
                 }
             }
         }

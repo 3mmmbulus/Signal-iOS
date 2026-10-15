@@ -1870,7 +1870,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
     }
 
     /// GIF 关着（上游开关 `global.gifSearch` 关了，或者这个部署没有 GIF 源 `global.gif.provider = none`，大陆包）：dock 里没有 GIF，
-    /// 同上游附件面板（`AttachmentFormatPickerView`，#1078 `isGifAvailable`）——入口一起关，包里才不会有连境外内容代理的地方。
+    /// 同原来的上游附件面板（`AttachmentFormatPickerView`，2026-10-16 已删；#1078 `isGifAvailable`）——入口一起关，包里才不会有连境外内容代理的地方。
     @MainActor
     func testDockHasNoGifWhenGifIsUnavailable() throws {
         for flags in [["global.gif.provider": "none"], ["global.gifSearch": "false"]] {

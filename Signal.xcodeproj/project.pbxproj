@@ -1752,8 +1752,6 @@
 		8803FF6628EF89B50023574A /* StorySharingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F5FA9528EF7E02007AA1BF /* StorySharingTests.swift */; };
 		8806EF19248DBD7200E764C7 /* NotificationPermissionReminderMegaphone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8806EF18248DBD7200E764C7 /* NotificationPermissionReminderMegaphone.swift */; };
 		8806EF1B248DBFC100E764C7 /* ContactPermissionReminderMegaphone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8806EF1A248DBFC100E764C7 /* ContactPermissionReminderMegaphone.swift */; };
-		8809CE8722F8FE6D00D38867 /* AttachmentKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8809CE8622F8FE6D00D38867 /* AttachmentKeyboard.swift */; };
-		8809CE8A22F93C2200D38867 /* RecentPhotoCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8809CE8922F93C2200D38867 /* RecentPhotoCollectionView.swift */; };
 		880B969B2880C23E00718C6D /* PrivateStorySettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 880B969A2880C23E00718C6D /* PrivateStorySettingsViewController.swift */; };
 		880B969D2880D90600718C6D /* PrivateStoryAddRecipientsSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 880B969C2880D90600718C6D /* PrivateStoryAddRecipientsSettingsViewController.swift */; };
 		880B969F2880DFDF00718C6D /* PrivateStoryNameSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 880B969E2880DFDF00718C6D /* PrivateStoryNameSettingsViewController.swift */; };
@@ -1875,7 +1873,6 @@
 		88A505F423DA16E10005C012 /* ExperienceUpgradeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A505F323DA16E10005C012 /* ExperienceUpgradeManager.swift */; };
 		88A505FA23DBA1360005C012 /* IntroducingPINsMegaphone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A505F923DBA1360005C012 /* IntroducingPINsMegaphone.swift */; };
 		88A941992409A391000E9700 /* LottieToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A941982409A391000E9700 /* LottieToggleButton.swift */; };
-		88A9729222FA5D4B004B4FBF /* AttachmentFormatPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A9729122FA5D4B004B4FBF /* AttachmentFormatPickerView.swift */; };
 		704D7F5E1343417E818B6A8F /* TellomiScannedDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B85C8E3CB9FBF6A0AE3B43C /* TellomiScannedDocument.swift */; };
 		3587922E7C45A8B2B5F3DF52 /* TellomiRecentFilesDatabaseSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395664094170BF01E1BD550 /* TellomiRecentFilesDatabaseSource.swift */; };
 		5CE7E2EDA57094378B020DF4 /* TellomiAttachmentFilesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DBFB4871F0C17176FDF3DE2 /* TellomiAttachmentFilesViewController.swift */; };
@@ -2022,7 +2019,6 @@
 		B9D65E532BAE1DA70067322A /* NicknameEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D65E522BAE1DA70067322A /* NicknameEditorViewController.swift */; };
 		B9D721762C87B8EB007EDA85 /* SwiftUI+Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D721752C87B8EB007EDA85 /* SwiftUI+Animations.swift */; };
 		B9DB91702AF46B9A0051A3FD /* BankTransferMandateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DB916F2AF46B9A0051A3FD /* BankTransferMandateViewController.swift */; };
-		B9E02DF02D974F2B00C9DDF8 /* LimitedPhotoPermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E02DEF2D974F2B00C9DDF8 /* LimitedPhotoPermissionsView.swift */; };
 		B9E322D82CD024A2006DAF3B /* linking-device-light.json in Resources */ = {isa = PBXBuildFile; fileRef = B9E322D72CD024A2006DAF3B /* linking-device-light.json */; };
 		B9E322D92CD024A2006DAF3B /* linking-device-dark.json in Resources */ = {isa = PBXBuildFile; fileRef = B9E322D62CD024A2006DAF3B /* linking-device-dark.json */; };
 		B9E322E72CD170ED006DAF3B /* SignalList.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E322E62CD170ED006DAF3B /* SignalList.swift */; };
@@ -6270,8 +6266,6 @@
 		83B9573827C9A1FA00A678FD /* CaptchaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptchaView.swift; sourceTree = "<group>"; };
 		8806EF18248DBD7200E764C7 /* NotificationPermissionReminderMegaphone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionReminderMegaphone.swift; sourceTree = "<group>"; };
 		8806EF1A248DBFC100E764C7 /* ContactPermissionReminderMegaphone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPermissionReminderMegaphone.swift; sourceTree = "<group>"; };
-		8809CE8622F8FE6D00D38867 /* AttachmentKeyboard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentKeyboard.swift; sourceTree = "<group>"; };
-		8809CE8922F93C2200D38867 /* RecentPhotoCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentPhotoCollectionView.swift; sourceTree = "<group>"; };
 		880B969A2880C23E00718C6D /* PrivateStorySettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateStorySettingsViewController.swift; sourceTree = "<group>"; };
 		880B969C2880D90600718C6D /* PrivateStoryAddRecipientsSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateStoryAddRecipientsSettingsViewController.swift; sourceTree = "<group>"; };
 		880B969E2880DFDF00718C6D /* PrivateStoryNameSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateStoryNameSettingsViewController.swift; sourceTree = "<group>"; };
@@ -6442,7 +6436,6 @@
 		88A505F923DBA1360005C012 /* IntroducingPINsMegaphone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroducingPINsMegaphone.swift; sourceTree = "<group>"; };
 		88A695BC232C18DF002F7B9B /* AudioWaveformProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformProgressView.swift; sourceTree = "<group>"; };
 		88A941982409A391000E9700 /* LottieToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieToggleButton.swift; sourceTree = "<group>"; };
-		88A9729122FA5D4B004B4FBF /* AttachmentFormatPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentFormatPickerView.swift; sourceTree = "<group>"; };
 		4B85C8E3CB9FBF6A0AE3B43C /* TellomiScannedDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScannedDocument.swift; sourceTree = "<group>"; };
 		8395664094170BF01E1BD550 /* TellomiRecentFilesDatabaseSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRecentFilesDatabaseSource.swift; sourceTree = "<group>"; };
 		9DBFB4871F0C17176FDF3DE2 /* TellomiAttachmentFilesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAttachmentFilesViewController.swift; sourceTree = "<group>"; };
@@ -6614,7 +6607,6 @@
 		B9D65E522BAE1DA70067322A /* NicknameEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NicknameEditorViewController.swift; sourceTree = "<group>"; };
 		B9D721752C87B8EB007EDA85 /* SwiftUI+Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwiftUI+Animations.swift"; sourceTree = "<group>"; };
 		B9DB916F2AF46B9A0051A3FD /* BankTransferMandateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankTransferMandateViewController.swift; sourceTree = "<group>"; };
-		B9E02DEF2D974F2B00C9DDF8 /* LimitedPhotoPermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedPhotoPermissionsView.swift; sourceTree = "<group>"; };
 		B9E322D62CD024A2006DAF3B /* linking-device-dark.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "linking-device-dark.json"; sourceTree = "<group>"; };
 		B9E322D72CD024A2006DAF3B /* linking-device-light.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "linking-device-light.json"; sourceTree = "<group>"; };
 		B9E322E62CD170ED006DAF3B /* SignalList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalList.swift; sourceTree = "<group>"; };
@@ -12030,7 +12022,6 @@
 		8809CE8822F93C0D00D38867 /* Attachment Keyboard */ = {
 			isa = PBXGroup;
 			children = (
-				88A9729122FA5D4B004B4FBF /* AttachmentFormatPickerView.swift */,
 				4B85C8E3CB9FBF6A0AE3B43C /* TellomiScannedDocument.swift */,
 				8395664094170BF01E1BD550 /* TellomiRecentFilesDatabaseSource.swift */,
 				9DBFB4871F0C17176FDF3DE2 /* TellomiAttachmentFilesViewController.swift */,
@@ -12039,9 +12030,6 @@
 				17DA552317B1248A382B6F1E /* TellomiAttachmentPollPage.swift */,
 				B42D474684F6FD03D4E8E524 /* TellomiRecentFileCell.swift */,
 				DAC115CC0CA5B9F692122B4D /* TellomiFileTypeIcon.swift */,
-				8809CE8622F8FE6D00D38867 /* AttachmentKeyboard.swift */,
-				B9E02DEF2D974F2B00C9DDF8 /* LimitedPhotoPermissionsView.swift */,
-				8809CE8922F93C2200D38867 /* RecentPhotoCollectionView.swift */,
 			);
 			path = "Attachment Keyboard";
 			sourceTree = "<group>";
@@ -19165,7 +19153,6 @@
 				D9CFB0142F20466300DFB14A /* ArcView.swift in Sources */,
 				F9B3A92D293553930071EB95 /* ASWebAuthenticationSession+Util.swift in Sources */,
 				661AEE482C2088FD0046B1D8 /* AttachmentDownloadRetryRunner.swift in Sources */,
-				88A9729222FA5D4B004B4FBF /* AttachmentFormatPickerView.swift in Sources */,
 				704D7F5E1343417E818B6A8F /* TellomiScannedDocument.swift in Sources */,
 				3587922E7C45A8B2B5F3DF52 /* TellomiRecentFilesDatabaseSource.swift in Sources */,
 				5CE7E2EDA57094378B020DF4 /* TellomiAttachmentFilesViewController.swift in Sources */,
@@ -19174,7 +19161,6 @@
 				E50557DD726BD7EB699F7BCF /* TellomiAttachmentPollPage.swift in Sources */,
 				C92DC1FB7E3BC05DF994ED29 /* TellomiRecentFileCell.swift in Sources */,
 				A1852FFCCB5AD1A3EB713F85 /* TellomiFileTypeIcon.swift in Sources */,
-				8809CE8722F8FE6D00D38867 /* AttachmentKeyboard.swift in Sources */,
 				B99CD9452DB066740035C77B /* AttachmentSaving.swift in Sources */,
 				D954A5AE2D7BA9B200F61C36 /* AttachmentSharing.swift in Sources */,
 				66DA8DFA2C91125200799E70 /* AttachmentValidationBackfillRunner.swift in Sources */,
@@ -19632,7 +19618,6 @@
 				5045F44229E0DB7100058E5F /* LaunchJobs.swift in Sources */,
 				502F187F2D5530AA00A1BD62 /* LazyDatabaseMigratorRunner.swift in Sources */,
 				D92CA9EF2F500EA500FDE32D /* LeaveGroupCoordinator.swift in Sources */,
-				B9E02DF02D974F2B00C9DDF8 /* LimitedPhotoPermissionsView.swift in Sources */,
 				B97803012DD65B0A00E9FC82 /* LinearProgressView.swift in Sources */,
 				66F98DE82DBBF25A009F1A86 /* LineWrappingStackViewTestController.swift in Sources */,
 				660FA9112CE58CD7006F9C34 /* LinkAndSyncProvisioningProgressViewController.swift in Sources */,
@@ -19832,7 +19817,6 @@
 				D9E43C0B2CC194140001536E /* ReactionsBurstView.swift in Sources */,
 				88B688B0238F0D1000286F82 /* ReactionsDetailSheet.swift in Sources */,
 				D9E43C0C2CC194140001536E /* ReactionsSink.swift in Sources */,
-				8809CE8A22F93C2200D38867 /* RecentPhotoCollectionView.swift in Sources */,
 				04E66D402DFC825B0059DBAC /* RecoveryKeyReminderMegaphone.swift in Sources */,
 				F9480121299E89F8005442BE /* RegistrationCaptchaViewController.swift in Sources */,
 				66AAC2C429CB6F1100566AD6 /* RegistrationChangeNumberSplashViewController.swift in Sources */,

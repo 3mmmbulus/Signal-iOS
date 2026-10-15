@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import AudioToolbox
 import CoreServices
 import LibSignalClient
-public import Photos
 public import SignalServiceKit
 public import SignalUI
 import UniformTypeIdentifiers
@@ -511,22 +511,10 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
         presentTellomiAttachmentSheet()
     }
 
-    public func photosButtonPressed() {
-        AssertIsOnMainThread()
-
-        chooseFromLibrary()
-    }
-
     public func gifButtonPressed() {
         AssertIsOnMainThread()
 
         showGifPicker()
-    }
-
-    public func fileButtonPressed() {
-        AssertIsOnMainThread()
-
-        showDocumentPicker()
     }
 
     public func contactButtonPressed() {
@@ -590,22 +578,6 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
         present(OWSNavigationController(rootViewController: newPollViewController), animated: true)
     }
 
-    public func didSelectRecentPhoto(asset: PHAsset, attachment: PreviewableAttachment, attachmentLimits: OutgoingAttachmentLimits) {
-        AssertIsOnMainThread()
-
-        dismissKeyBoard()
-
-        let pickerModal = SendMediaNavigationController.showingApprovalWithPickedLibraryMedia(
-            asset: asset,
-            attachment: attachment,
-            hasQuotedReplyDraft: inputToolbar?.quotedReplyDraft != nil,
-            attachmentLimits: attachmentLimits,
-            delegate: self,
-            dataSource: self,
-        )
-        let presenter = self.splitViewController ?? self
-        presenter.present(pickerModal, animated: true)
-    }
 }
 
 // MARK: -
@@ -684,24 +656,6 @@ private extension ConversationViewController {
         )
     }
 
-    // MARK: - Attachment Picking: Documents
-
-    func showDocumentPicker() {
-        AssertIsOnMainThread()
-
-        // UIDocumentPickerViewController with asCopy true copies to a temp file within our container.
-        // It uses more memory than "open" but lets us avoid working with security scoped URLs.
-        let pickerController = UIDocumentPickerViewController(
-            forOpeningContentTypes: [.item],
-            asCopy: true,
-        )
-        pickerController.delegate = self
-        pickerController.presentationController?.delegate = self
-
-        dismissKeyBoard()
-        presentFormSheet(pickerController, animated: true)
-    }
-
     // MARK: - Media Library
 
     /// Tellomi（#1261 P-8）：`presenter` / `sendMediaNavDelegate` 给选图面板的相机格用（见文件末尾 `tellomiTakePictureOrVideo`）；
@@ -746,13 +700,6 @@ private extension ConversationViewController {
                 }
             }
         }
-    }
-
-    func chooseFromLibrary() {
-        AssertIsOnMainThread()
-
-        // Tellomi（tellomi/tellomi#1261）：换成 Telegram 式的选图网格；没有「照片」权限时照旧用下面的系统选择器。
-        chooseFromLibraryWithTellomiPicker { [weak self] in self?.chooseFromLibraryWithNativePicker() }
     }
 
     func chooseFromLibraryWithNativePicker() {
@@ -828,122 +775,21 @@ extension ConversationViewController: LocationPickerDelegate {
     }
 
     public func locationPickerDidCancel() {
+        // Tellomi（P-3）：取消停在聊天页，不再弹回附件 Sheet。
         self.dismiss(animated: true)
-        self.openAttachmentKeyboard()
     }
 }
 
 // MARK: -
-
-extension ConversationViewController: UIDocumentPickerDelegate {
-    public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        self.openAttachmentKeyboard()
-    }
-
-    public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
-        let resourceValues: URLResourceValues?
-        do {
-            resourceValues = try url.resourceValues(forKeys: [.contentTypeKey, .isDirectoryKey])
-        } catch {
-            owsFailDebug("couldn't get resourceValues: \(error)")
-            resourceValues = nil
-        }
-
-        if resourceValues?.isDirectory == true {
-            DispatchQueue.main.async {
-                OWSActionSheets.showActionSheet(
-                    title: OWSLocalizedString(
-                        "ATTACHMENT_PICKER_DOCUMENTS_PICKED_DIRECTORY_FAILED_ALERT_TITLE",
-                        comment: "Alert title when picking a document fails because user picked a directory/bundle",
-                    ),
-                    message: OWSLocalizedString(
-                        "ATTACHMENT_PICKER_DOCUMENTS_PICKED_DIRECTORY_FAILED_ALERT_BODY",
-                        comment: "Alert body when picking a document fails because user picked a directory/bundle",
-                    ),
-                )
-            }
-            return
-        }
-
-        let filename: String = {
-            if let filename = url.lastPathComponent.strippedOrNil {
-                return filename
-            }
-            owsFailDebug("Unable to determine filename")
-            return OWSLocalizedString("ATTACHMENT_DEFAULT_FILENAME", comment: "Generic filename for an attachment with no known name")
-        }()
-
-        guard url.isFileURL else {
-            owsFailDebug("couldn't build data source")
-            DispatchQueue.main.async {
-                OWSActionSheets.showActionSheet(
-                    title: OWSLocalizedString(
-                        "ATTACHMENT_PICKER_DOCUMENTS_FAILED_ALERT_TITLE",
-                        comment: "Alert title when picking a document fails for an unknown reason",
-                    ),
-                )
-            }
-            return
-        }
-
-        let dataSource = DataSourcePath(fileUrl: url, ownership: .owned)
-        dataSource.sourceFilename = filename
-
-        let contentTypeIdentifier = (resourceValues?.contentType ?? .data).identifier
-
-        let attachmentLimits = OutgoingAttachmentLimits.currentLimits()
-
-        // Although we want to be able to send higher quality attachments through
-        // the document picker, it's more important that we ensure the sent format
-        // is one all clients can accept (e.g., *not* QuickTime .mov).
-        if SignalAttachment.videoUTISet.contains(contentTypeIdentifier) {
-            self.showApprovalDialogAfterProcessingVideo(dataSource: dataSource, attachmentLimits: attachmentLimits)
-            return
-        }
-
-        let attachment: PreviewableAttachment
-        do {
-            attachment = try PreviewableAttachment.buildAttachment(dataSource: dataSource, dataUTI: contentTypeIdentifier, attachmentLimits: attachmentLimits)
-        } catch {
-            DispatchQueue.main.async {
-                self.showErrorAlert(attachmentError: error as? SignalAttachmentError)
-            }
-            return
-        }
-
-        showApprovalDialog(forAttachments: [attachment], attachmentLimits: attachmentLimits)
-    }
-
-    private func showApprovalDialogAfterProcessingVideo(dataSource: DataSourcePath, attachmentLimits: OutgoingAttachmentLimits) {
-        AssertIsOnMainThread()
-
-        ModalActivityIndicatorViewController.present(
-            fromViewController: self,
-            title: CommonStrings.preparingModal,
-            canCancel: true,
-            asyncBlock: { modalActivityIndicator in
-                do {
-                    let attachment = try await PreviewableAttachment.compressVideoAsMp4(dataSource: dataSource, attachmentLimits: attachmentLimits)
-                    modalActivityIndicator.dismissIfNotCanceled(completionIfNotCanceled: {
-                        self.showApprovalDialog(forAttachments: [attachment], attachmentLimits: attachmentLimits)
-                    })
-                } catch {
-                    owsFailDebug("Error: \(error).")
-                    modalActivityIndicator.dismissIfNotCanceled(completionIfNotCanceled: {
-                        self.showErrorAlert(attachmentError: error as? SignalAttachmentError)
-                    })
-                }
-            },
-        )
-    }
-}
 
 // MARK: -
 
 extension ConversationViewController: SendMediaNavDelegate {
     func sendMediaNavDidCancel(_ sendMediaNavigationController: SendMediaNavigationController) {
+        // Tellomi（P-3）：聊天栏的相机键、没有照片权限时的系统选择器，取消都停在聊天页——上游这里会弹回附件面板，
+        // 附件面板改成 Sheet 后就变成「没开过 Sheet，取消相机却冒出 Sheet」。Sheet 里的相机格取消回 Sheet 走的是
+        // `TellomiPickerCameraRoute`，不经过这里。
         self.dismiss(animated: true, completion: nil)
-        self.openAttachmentKeyboard()
     }
 
     func sendMediaNav(

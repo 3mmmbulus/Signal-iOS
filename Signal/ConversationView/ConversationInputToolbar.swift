@@ -50,11 +50,7 @@ protocol ConversationInputToolbarDelegate: AnyObject {
 
     func cameraButtonPressed()
 
-    func photosButtonPressed()
-
     func gifButtonPressed()
-
-    func fileButtonPressed()
 
     func contactButtonPressed()
 
@@ -63,8 +59,6 @@ protocol ConversationInputToolbarDelegate: AnyObject {
     func paymentButtonPressed()
 
     func pollButtonPressed()
-
-    func didSelectRecentPhoto(asset: PHAsset, attachment: PreviewableAttachment, attachmentLimits: OutgoingAttachmentLimits)
 
     func showUnblockConversationUI(completion: ((Bool) -> Void)?)
 
@@ -1009,16 +1003,11 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             hasLayoutChanged = true
         }
 
-        // (+) attachment button can be displayed in its alternative appearance - as (X) button in two cases:
-        // * attachment keyboard is displayed.
-        // * user is editing a message.
+        // (+) attachment button can be displayed in its alternative appearance - as (X) button
+        // when the user is editing a message. (Tellomi: the attachment keyboard is gone; "+" opens the attachment sheet.)
         if let attachmentButton = leadingEdgeControl as? AttachmentButtonProtocol {
             let buttonState: AttachmentButtonState = {
-                if isEditingMessage {
-                    return .close
-                } else {
-                    return desiredKeyboardType == .attachment ? .close : .add
-                }
+                isEditingMessage ? .close : .add
             }()
             attachmentButton.setButtonState(buttonState, usingAnimator: animator)
         }
@@ -3117,7 +3106,6 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
     private enum KeyboardType {
         case system
         case sticker
-        case attachment
     }
 
     private var _desiredKeyboardType: KeyboardType = .system
@@ -3146,23 +3134,6 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         AssertIsOnMainThread()
         guard desiredKeyboardType != .sticker else { return }
         toggleKeyboardType(.sticker, animated: false)
-    }
-
-    private var _attachmentKeyboard: AttachmentKeyboard?
-
-    private var attachmentKeyboard: AttachmentKeyboard {
-        if let attachmentKeyboard = _attachmentKeyboard {
-            return attachmentKeyboard
-        }
-        let keyboard = AttachmentKeyboard(delegate: self)
-        _attachmentKeyboard = keyboard
-        return keyboard
-    }
-
-    func showAttachmentKeyboard() {
-        AssertIsOnMainThread()
-        guard desiredKeyboardType != .attachment else { return }
-        toggleKeyboardType(.attachment, animated: false)
     }
 
     private func toggleKeyboardType(_ keyboardType: KeyboardType, animated: Bool) {
@@ -3274,7 +3245,6 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         switch desiredKeyboardType {
         case .system: return nil
         case .sticker: return stickerKeyboard
-        case .attachment: return attachmentKeyboard
         }
     }
 
@@ -3476,49 +3446,6 @@ extension ConversationInputToolbar: StickerKeyboardDelegate {
     public func stickerKeyboardDidRequestPresentManageStickersView(_ stickerKeyboard: StickerKeyboard) {
         AssertIsOnMainThread()
         inputToolbarDelegate?.presentManageStickersView()
-    }
-}
-
-extension ConversationInputToolbar: AttachmentKeyboardDelegate {
-
-    func didSelectRecentPhoto(asset: PHAsset, attachment: PreviewableAttachment, attachmentLimits: OutgoingAttachmentLimits) {
-        inputToolbarDelegate?.didSelectRecentPhoto(asset: asset, attachment: attachment, attachmentLimits: attachmentLimits)
-    }
-
-    func didTapPhotos() {
-        inputToolbarDelegate?.photosButtonPressed()
-    }
-
-    func didTapCamera() {
-        inputToolbarDelegate?.cameraButtonPressed()
-    }
-
-    func didTapGif() {
-        inputToolbarDelegate?.gifButtonPressed()
-    }
-
-    func didTapFile() {
-        inputToolbarDelegate?.fileButtonPressed()
-    }
-
-    func didTapContact() {
-        inputToolbarDelegate?.contactButtonPressed()
-    }
-
-    func didTapLocation() {
-        inputToolbarDelegate?.locationButtonPressed()
-    }
-
-    func didTapPayment() {
-        inputToolbarDelegate?.paymentButtonPressed()
-    }
-
-    func didTapPoll() {
-        inputToolbarDelegate?.pollButtonPressed()
-    }
-
-    var isGroup: Bool {
-        inputToolbarDelegate?.isGroup() ?? false
     }
 }
 
