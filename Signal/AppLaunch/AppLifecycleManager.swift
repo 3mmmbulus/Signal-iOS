@@ -704,7 +704,8 @@ final class AppLifecycleManager: NSObject, UNUserNotificationCenterDelegate {
 
         cron.schedulePeriodically(
             uniqueKey: .fetchStaleProfiles,
-            approximateInterval: .day,
+            // Tellomi (tellomi/tellomi#1366): every 2 hours instead of daily.
+            approximateInterval: TellomiProfileRefresh.staleFetchInterval,
             mustBeRegistered: true,
             mustBeConnected: true,
             operation: {

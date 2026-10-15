@@ -255,6 +255,28 @@ class GRDBFinderTest: SignalBaseTest {
                     lastMessagingDate: .setTo(dateWithOffsetFromNow(-1 * TimeInterval.hour)),
                 )
             }
+
+            // Tellomi (tellomi/tellomi#1366): stale after 6 hours instead of 1 day.
+            do {
+                // This profile is expected; lastFetchDate is 7 hours ago.
+                let userProfile = buildUserProfile()
+                updateUserProfile(
+                    userProfile,
+                    lastFetchDate: .setTo(dateWithOffsetFromNow(-7 * TimeInterval.hour)),
+                    lastMessagingDate: .setTo(dateWithOffsetFromNow(-1 * TimeInterval.hour)),
+                )
+                expectedAddresses.insert(userProfile.internalAddress)
+            }
+
+            do {
+                // This profile is _not_ expected; lastFetchDate is 5 hours ago.
+                let userProfile = buildUserProfile()
+                updateUserProfile(
+                    userProfile,
+                    lastFetchDate: .setTo(dateWithOffsetFromNow(-5 * TimeInterval.hour)),
+                    lastMessagingDate: .setTo(dateWithOffsetFromNow(-1 * TimeInterval.hour)),
+                )
+            }
         }
 
         var missingAndStaleAddresses = Set<OWSUserProfile.Address>()

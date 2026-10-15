@@ -59,7 +59,8 @@ class StaleProfileFetcher {
 
         // We are only interested in stale profiles, e.g. profiles that have never
         // been fetched or haven't been fetched in the last N days.
-        let staleTimestamp = now.timeIntervalSince1970 - 1 * TimeInterval.day
+        // Tellomi (tellomi/tellomi#1366): 6 hours instead of 1 day, so avatar and name changes show up sooner.
+        let staleTimestamp = now.timeIntervalSince1970 - TellomiProfileRefresh.staleAfter
 
         // TODO: Skip if no profile key?
 

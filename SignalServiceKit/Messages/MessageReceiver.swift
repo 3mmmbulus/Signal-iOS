@@ -1005,6 +1005,15 @@ public final class MessageReceiver {
             return
         }
 
+        // Tellomi (tellomi/tellomi#1366): a 1:1 message is a cheap hint to see whether the sender changed their avatar
+        // or name; the server never tells us.
+        TellomiProfileRefresh.onIncomingMessage(
+            from: envelope.sourceAci,
+            isGroupMessage: dataMessage.groupV2 != nil,
+            localIdentifiers: localIdentifiers,
+            tx: tx,
+        )
+
         var message: TSIncomingMessage?
         if dataMessage.flags & UInt32(SSKProtoDataMessageFlags.expirationTimerUpdate.rawValue) != 0 {
             updateDisappearingMessageConfiguration(envelope: envelope, dataMessage: dataMessage, thread: thread, tx: tx)

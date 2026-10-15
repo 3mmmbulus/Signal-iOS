@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A800808F22542BA749C6EE61 /* TellomiProfileRefreshTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */; };
+		BF605D9CE68141AAB739B64F /* TellomiProfileRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F29D723E4D08A27B8FA68CE /* TellomiProfileRefresh.swift */; };
 		A28BD0467E6DDE1C378AE122 /* TellomiTestWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5509F6948AC0F21F7C03E39C /* TellomiTestWindow.swift */; };
 		AFD0E860EB2AD29124470030 /* TellomiImageEditorShapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610FA7E7B93CC555DA1EEE07 /* TellomiImageEditorShapeTests.swift */; };
 		7FBA42340140235C0E1F9C35 /* ImageEditorViewController+Shapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B560059B90389868EB9E884 /* ImageEditorViewController+Shapes.swift */; };
@@ -4467,6 +4469,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiProfileRefreshTest.swift; sourceTree = "<group>"; };
+		7F29D723E4D08A27B8FA68CE /* TellomiProfileRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiProfileRefresh.swift; sourceTree = "<group>"; };
 		5509F6948AC0F21F7C03E39C /* TellomiTestWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTestWindow.swift; sourceTree = "<group>"; };
 		610FA7E7B93CC555DA1EEE07 /* TellomiImageEditorShapeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiImageEditorShapeTests.swift; sourceTree = "<group>"; };
 		6B560059B90389868EB9E884 /* ImageEditorViewController+Shapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageEditorViewController+Shapes.swift"; sourceTree = "<group>"; };
@@ -11822,6 +11826,7 @@
 				F9C5CAFE289453B200548EEE /* OWSUserProfile.swift */,
 				F9C5CB66289453B200548EEE /* ProfileBadgeManager.swift */,
 				F9C5CB68289453B200548EEE /* ProfileFetcher.swift */,
+				7F29D723E4D08A27B8FA68CE /* TellomiProfileRefresh.swift */,
 				F9C5CB67289453B200548EEE /* ProfileFetcherJob.swift */,
 				503BD2882B44D666009624FC /* ProfileManager.swift */,
 				72901D2C2C9B1296000406DC /* ProfileManagerProtocol.swift */,
@@ -11838,6 +11843,7 @@
 			isa = PBXGroup;
 			children = (
 				508347052AABBF9900DD2EC0 /* ProfileManagerTest.swift */,
+				4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */,
 			);
 			path = Profiles;
 			sourceTree = "<group>";
@@ -20991,6 +20997,7 @@
 				725465452BA01FCC00EABFD2 /* ProfileBadgesSnapshot+Constructors.swift in Sources */,
 				D995546F2AF5668E0001E15C /* ProfileBadgesSnapshot.swift in Sources */,
 				F9C5CE39289453B400548EEE /* ProfileFetcher.swift in Sources */,
+				BF605D9CE68141AAB739B64F /* TellomiProfileRefresh.swift in Sources */,
 				F9C5CE38289453B400548EEE /* ProfileFetcherJob.swift in Sources */,
 				50D146CD2D1F4E5800D628DE /* ProfileKey.swift in Sources */,
 				50DCCBFC2F181A790024D124 /* ProfileKeyMessage.swift in Sources */,
@@ -21588,6 +21595,7 @@
 				C1E5891D2A69E77B00ECAF66 /* PreKeyTaskTestMocks.swift in Sources */,
 				C1E5891B2A66D67C00ECAF66 /* PreKeyTaskTests.swift in Sources */,
 				724D47B52B97C28F001BE973 /* ProfileManagerTest.swift in Sources */,
+				A800808F22542BA749C6EE61 /* TellomiProfileRefreshTest.swift in Sources */,
 				668A013D2C2B60A1007B8808 /* PromiseTests.swift in Sources */,
 				F97391A328EF0B20002DDE5D /* ProtoParsingTest.swift in Sources */,
 				F9FA363629F335E500C13830 /* ProvisioningCipherTests.swift in Sources */,

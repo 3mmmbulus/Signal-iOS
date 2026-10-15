@@ -221,6 +221,12 @@ class ConversationSettingsViewController: OWSTableViewController2, BadgeCollecti
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        // Tellomi (tellomi/tellomi#1366): opening a contact's details is a good moment to see whether they changed their
+        // avatar or name (upstream only refreshes when the conversation view appears).
+        if let contactThread = thread as? TSContactThread, let serviceId = contactThread.contactAddress.serviceId {
+            TellomiProfileRefresh.onProfileScreenAppear(serviceId: serviceId)
+        }
+
         if showVerificationOnAppear {
             showVerificationOnAppear = false
             if isGroupThread {
