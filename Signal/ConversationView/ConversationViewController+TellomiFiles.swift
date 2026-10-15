@@ -35,13 +35,14 @@ extension ConversationViewController: TellomiAttachmentFilesDelegate {
 
     func filesPage(_ page: TellomiAttachmentFilesViewController, didSelectDockItem item: TellomiAttachmentDockItem) {
         switch item {
-        case .gallery:
-            (page.parent as? TellomiAttachmentSheetController)?.show(.gallery)
-        case .poll:
-            (page.parent as? TellomiAttachmentSheetController)?.show(.poll)
         case .file:
             break
-        case .location, .contact, .gif:
+        case .gallery, .poll, .contact, .location:
+            if let container = page.parent as? TellomiAttachmentSheetController, tellomiOpenInSheet(item, container: container) {
+                return
+            }
+            fallthrough
+        case .gif:
             dismiss(animated: true) { [weak self] in
                 guard let self else { return }
                 switch item {

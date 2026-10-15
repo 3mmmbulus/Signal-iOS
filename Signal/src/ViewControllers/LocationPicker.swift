@@ -24,6 +24,9 @@ public protocol LocationPickerDelegate: AnyObject {
 public class LocationPicker: UIViewController {
 
     public weak var delegate: LocationPickerDelegate?
+
+    /// Tellomi（2026-10-16）：嵌在附件 Sheet 里时，发出位置之后由 Sheet 决定怎么收（收起整个 Sheet）；没设就照上游 pop / dismiss。
+    public var onFinish: (() -> Void)?
     public var location: Location? { didSet { updateAnnotation() } }
 
     private let locationManager = CLLocationManager()
@@ -326,7 +329,9 @@ extension LocationPicker: MKMapViewDelegate {
             delegate?.didPickLocation(self, location: location)
         }
 
-        if let navigation = navigationController, navigation.viewControllers.count > 1 {
+        if let onFinish {
+            onFinish()
+        } else if let navigation = navigationController, navigation.viewControllers.count > 1 {
             navigation.popViewController(animated: true)
         } else {
             presentingViewController?.dismiss(animated: true, completion: nil)

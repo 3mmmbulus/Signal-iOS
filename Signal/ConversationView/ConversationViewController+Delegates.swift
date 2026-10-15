@@ -179,7 +179,8 @@ extension ConversationViewController: ContactShareViewControllerDelegate {
         return .send
     }
 
-    private func send(contactShareDraft: ContactShareDraft) {
+    // Tellomi（2026-10-16）：附件 Sheet 的联系人页（ConversationViewController+TellomiSheetPages）也用它发，从 private 改成 internal，逻辑不变。
+    func send(contactShareDraft: ContactShareDraft) {
         let thread = self.thread
         SSKEnvironment.shared.databaseStorageRef.asyncWrite { transaction in
             let didAddToProfileWhitelist = ThreadUtil.addThreadToProfileWhitelistIfEmptyOrPendingRequest(

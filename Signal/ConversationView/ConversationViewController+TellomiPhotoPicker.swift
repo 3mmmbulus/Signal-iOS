@@ -119,6 +119,8 @@ extension ConversationViewController {
                 case .gallery: return nil
                 case .files: return self.makeTellomiFilesPage()
                 case .poll: return self.makeTellomiPollPage()
+                case .contact: return self.makeTellomiContactPage()
+                case .location: return self.makeTellomiLocationPage()
                 }
             }
             container.modalPresentationStyle = .pageSheet
@@ -143,11 +145,10 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
         dismiss(animated: true)
     }
 
-    /// dock 的「文件」「投票」：同一个 Sheet 里换页（#1121；投票 2026-10-16，照 Telegram iOS）。
-    /// 「位置 / 联系人 / GIF」：先收起 Sheet，再走上游原来的流程（取消了会经 openAttachmentKeyboard 回到 Sheet）。
+    /// dock 的「文件」「投票」「联系人」「位置」：同一个 Sheet 里换页（#1121；后三个 2026-10-16，照 Telegram iOS）。
+    /// 「GIF」：先收起 Sheet，再走上游原来的流程（取消了会经 openAttachmentKeyboard 回到 Sheet）。
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didSelectDockItem item: TellomiAttachmentDockItem) {
-        if let container = picker.parent as? TellomiAttachmentSheetController, let page = TellomiAttachmentSheetController.page(for: item) {
-            container.show(page)
+        if let container = picker.parent as? TellomiAttachmentSheetController, tellomiOpenInSheet(item, container: container) {
             return
         }
         dismiss(animated: true) { [weak self] in
