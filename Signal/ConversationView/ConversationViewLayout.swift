@@ -982,6 +982,50 @@ public class ConversationViewLayout: UICollectionViewLayout {
         delegateScrollContinuityMode = .disabled
     }
 
+    // MARK: - Tellomi（交互审计 A-05）：删掉的消息淡出并缩小
+
+    /// 删掉的消息缩到这个比例（审计 A-05 iOS：「删除 = 淡出 + 缩到 0.9」）。
+    static let tellomiDeletedItemScale: CGFloat = 0.9
+
+    /// 这一批更新里被删掉的行（更新前的 index path）。整行刷新（`.reload`）不算：旧格子换新格子不缩。
+    private var tellomiDeletedIndexPaths = Set<IndexPath>()
+
+    override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
+        super.prepare(forCollectionViewUpdates: updateItems)
+
+        tellomiDeletedIndexPaths = Set(updateItems.compactMap { updateItem in
+            updateItem.updateAction == .delete ? updateItem.indexPathBeforeUpdate : nil
+        })
+    }
+
+    override public func finalizeCollectionViewUpdates() {
+        super.finalizeCollectionViewUpdates()
+
+        tellomiDeletedIndexPaths = []
+    }
+
+    override public func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        let attributes = super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
+        guard let attributes, tellomiDeletedIndexPaths.contains(itemIndexPath) else {
+            return attributes
+        }
+        return Self.tellomiDeletedItemAttributes(attributes, reduceMotion: TellomiMotion.isReduceMotionEnabled)
+    }
+
+    /// 删掉那一行的终点：透明度到 0，同时缩到 [tellomiDeletedItemScale]（Telegram iOS `ChatMessageBubbleItemNode.animateRemoved`
+    /// 也是淡出 + 缩小）；减弱动态效果时只淡出。
+    static func tellomiDeletedItemAttributes(
+        _ attributes: UICollectionViewLayoutAttributes,
+        reduceMotion: Bool,
+    ) -> UICollectionViewLayoutAttributes {
+        let result = attributes.copy() as! UICollectionViewLayoutAttributes
+        result.alpha = 0
+        if !reduceMotion {
+            result.transform = CGAffineTransform(scaleX: tellomiDeletedItemScale, y: tellomiDeletedItemScale)
+        }
+        return result
+    }
+
     public func buildScrollContinuityToken(preferredAnchorInteractionId: String? = nil) -> CVScrollContinuityToken {
         AssertIsOnMainThread()
 

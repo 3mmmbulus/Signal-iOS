@@ -131,6 +131,7 @@ extension CVUpdate {
                 loadType: loadType,
                 updateItems: batchUpdateItems,
                 oldItemCount: oldItems.count,
+                oldItems: oldItems,
                 appearanceChangedItemIdSet: appearanceChangedItemIdSet,
             )
 
@@ -148,6 +149,7 @@ extension CVUpdate {
         loadType: CVLoadType,
         updateItems: [CVUpdate.Item],
         oldItemCount: Int,
+        oldItems: [CVRenderItem],
         appearanceChangedItemIdSet: Set<ItemId>,
     ) -> Bool {
 
@@ -190,30 +192,46 @@ extension CVUpdate {
                 }
             case .move:
                 onlyAppearanceUpdateChanges = false
-            case .update(_, let newIndex):
+            case .update(let oldIndex, _):
                 let itemId = Self.itemId(for: renderItem)
                 let didOnlyAppearanceChange = appearanceChangedItemIdSet.contains(itemId)
                 if didOnlyAppearanceChange {
                     continue
                 }
 
-                onlyAppearanceUpdateChanges = false
                 switch renderItem.interactionType {
                 case .incomingMessage, .outgoingMessage, .typingIndicator:
-                    // We skip animations for the last _two_
-                    // interactions, not one since there
-                    // may be a typing indicator.
-                    if newIndex + 2 > updateItems.count {
-                        shouldAnimateUpdate = false
+                    // Tellomi（交互审计 A-05）：上游这里是 `newIndex + 2 > updateItems.count`——拿行号去比
+                    // 「这一批有几条更新」，单条更新永远成立，所以回应胶囊、展开全文、编辑、远端删除、下载完成
+                    // 这些让气泡变高变矮的更新一条都不动画，上面的消息一下跳过去。
+                    // 改成按高度：高度变了就让这一批动画（Telegram 两端对聊天里的变化都动画）；高度没变的
+                    // （回执、计数）不表态，照旧不为它单独动画，免得每次回执都交叉淡入一下。
+                    guard
+                        Self.tellomiDidCellHeightChange(
+                            oldCellSize: oldItems[safe: oldIndex]?.cellSize,
+                            newCellSize: renderItem.cellSize,
+                        )
+                    else {
+                        continue
                     }
+                    onlyAppearanceUpdateChanges = false
                 case .collapseSet:
-                    break
+                    onlyAppearanceUpdateChanges = false
                 default:
+                    onlyAppearanceUpdateChanges = false
                     shouldAnimateUpdate = false
                 }
             }
         }
         return shouldAnimateUpdate && !onlyAppearanceUpdateChanges
+    }
+
+    /// Tellomi（交互审计 A-05）：这条消息的格子高度变没变。旧的找不到时当没变（不为它动画）。
+    static func tellomiDidCellHeightChange(oldCellSize: CGSize?, newCellSize: CGSize) -> Bool {
+        guard let oldCellSize else {
+            return false
+        }
+        return abs(oldCellSize.height - newCellSize.height) >= 0.5
     }
 }
 

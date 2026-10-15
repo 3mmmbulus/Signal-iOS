@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7DE3BB5B930D647AAE1D924A /* TellomiConversationItemAnimationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */; };
 		A800808F22542BA749C6EE61 /* TellomiProfileRefreshTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */; };
 		BF605D9CE68141AAB739B64F /* TellomiProfileRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F29D723E4D08A27B8FA68CE /* TellomiProfileRefresh.swift */; };
 		A28BD0467E6DDE1C378AE122 /* TellomiTestWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5509F6948AC0F21F7C03E39C /* TellomiTestWindow.swift */; };
@@ -4469,6 +4470,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiConversationItemAnimationTest.swift; sourceTree = "<group>"; };
 		4B7CB18E0F3DB2A250361750 /* TellomiProfileRefreshTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiProfileRefreshTest.swift; sourceTree = "<group>"; };
 		7F29D723E4D08A27B8FA68CE /* TellomiProfileRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiProfileRefresh.swift; sourceTree = "<group>"; };
 		5509F6948AC0F21F7C03E39C /* TellomiTestWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTestWindow.swift; sourceTree = "<group>"; };
@@ -10180,6 +10182,7 @@
 				B6A2F4D1C9E3A0875D2B9F01 /* TellomiOfficialBadgeContrastTests.swift */,
 				5042EAA2287F96FB00C9B19F /* VisibleBadgeResolverTest.swift */,
 				BFE84D06E4F426E60014D1ED /* ReactionFlyInTest.swift */,
+				40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */,
 				EA3E5CDCE15B919C45D88EC3 /* MediaInteractiveDismissTest.swift */,
 				91A9AE3A052D0ADE88C52BB8 /* TellomiStoryLinkComposerTest.swift */,
 				712D22414E42F9EC1D87773C /* TellomiLinkPreviewSettingsTest.swift */,
@@ -20130,6 +20133,7 @@
 				5042EAA3287F96FB00C9B19F /* VisibleBadgeResolverTest.swift in Sources */,
 				17E6049028A17BD300127680 /* ZkGroupIntegrationTest.swift in Sources */,
 				54F9459CBCF03774D85E776D /* ReactionFlyInTest.swift in Sources */,
+				7DE3BB5B930D647AAE1D924A /* TellomiConversationItemAnimationTest.swift in Sources */,
 				9CDBC349A9CF01A4B5252E7D /* MediaInteractiveDismissTest.swift in Sources */,
 				3F71D9A41FBBE09CE0EF9C45 /* TellomiGroupInviteLinkCardTest.swift in Sources */,
 				C7B2377D2432C09755B56897 /* TellomiStoryLinkComposerTest.swift in Sources */,
