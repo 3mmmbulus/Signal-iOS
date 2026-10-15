@@ -11442,6 +11442,12 @@
 /* Title of the one-time sheet shown on the chat list after registration, explaining why Tellomi asks for notification permission. */
 "TELLOMI_NOTIFICATION_PRIMER_TITLE" = "即時收到新訊息";
 
+/* Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}. */
+"TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT" = "已回應 %1$@";
+
+/* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
+"TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "已取消回應";
+
 /* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "刪除定時訊息";
 

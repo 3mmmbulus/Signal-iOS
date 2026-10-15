@@ -10492,6 +10492,12 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "撳一下替換另一個表情符號";
 
+/* Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}. */
+"TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT" = "已回應 %1$@";
+
+/* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
+"TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "已取消回應";
+
 /* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "Delete Scheduled Message";
 

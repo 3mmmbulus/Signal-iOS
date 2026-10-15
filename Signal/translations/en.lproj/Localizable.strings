@@ -11487,6 +11487,12 @@
 /* Button on the chat list banner that opens the system notification settings for Tellomi. */
 "TELLOMI_NOTIFICATIONS_DISABLED_REMINDER_ACTION" = "Go to Settings";
 
+/* Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}. */
+"TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT" = "Reacted with %1$@";
+
+/* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
+"TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "Reaction removed";
+
 /* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "Delete Scheduled Message";
 

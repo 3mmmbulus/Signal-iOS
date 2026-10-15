@@ -8,6 +8,24 @@ import UIKit
 
 extension ConversationViewController {
 
+    /// Tellomi（A-07）：菜单收起（0.25 s）之后再念回应公告。
+    static let tellomiReactionAnnouncementDelay: TimeInterval = 0.5
+
+    /// Tellomi（A-07）：读屏念的那句——加回应「已回应 ❤️」，收回自己的回应「已取消回应」。
+    static func tellomiReactionAnnouncement(emoji: String, isRemoving: Bool) -> String {
+        if isRemoving {
+            return OWSLocalizedString(
+                "TELLOMI_REACTION_REMOVED_ANNOUNCEMENT",
+                comment: "Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back.",
+            )
+        }
+        let format = OWSLocalizedString(
+            "TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT",
+            comment: "Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}.",
+        )
+        return String(format: format, emoji)
+    }
+
     func presentContextMenu(
         with messageActions: [MessageAction],
         focusedOn cell: UICollectionViewCell,
@@ -185,6 +203,15 @@ extension ConversationViewController: ContextMenuInteractionDelegate {
                         isRemoving: isRemoving,
                         tx: transaction,
                     )
+                }
+
+                // Tellomi（交互审计 A-07，「读屏公告『已回应 ❤️』」）：胶囊变化本身读屏听不到，念出这次回应做了什么。
+                // 菜单收起会让 VoiceOver 的焦点跳回，紧跟着的公告会被打断，所以等菜单收完再念。
+                if UIAccessibility.isVoiceOverRunning {
+                    let announcement = Self.tellomiReactionAnnouncement(emoji: reaction, isRemoving: isRemoving)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Self.tellomiReactionAnnouncementDelay) {
+                        UIAccessibility.post(notification: .announcement, argument: announcement)
+                    }
                 }
             }
             accessories.append(reactionBarAccessory)

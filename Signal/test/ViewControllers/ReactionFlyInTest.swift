@@ -12,6 +12,14 @@ import XCTest
 @MainActor
 final class ReactionFlyInTest: XCTestCase {
 
+    // MARK: - 读屏公告（A-07）
+
+    /// 加回应念「已回应」加表情，收回念「已取消回应」（测试跑英文界面）。
+    func testVoiceOverAnnouncementSaysWhatTheReactionDid() {
+        XCTAssertEqual(ConversationViewController.tellomiReactionAnnouncement(emoji: "❤️", isRemoving: false), "Reacted with ❤️")
+        XCTAssertEqual(ConversationViewController.tellomiReactionAnnouncement(emoji: "👍", isRemoving: true), "Reaction removed")
+    }
+
     // MARK: - 缩放
 
     /// 回应条上 32 pt 的表情飞到胶囊里 14 pt 的表情：先缩到 14 / 32，再多留 1.25 倍给落定的回弹。
