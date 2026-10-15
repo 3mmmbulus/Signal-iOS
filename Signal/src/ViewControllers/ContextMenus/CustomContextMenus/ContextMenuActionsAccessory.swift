@@ -144,9 +144,11 @@ public class ContextMenuActionsAccessory: ContextMenuTargetedPreviewAccessory, C
     }
 
     func contextMenuActionViewDidSelectAction(contextMenuAction: ContextMenuAction) {
-        delegate?.contextMenuTargetedPreviewAccessoryRequestsDismissal(self, completion: {
-            contextMenuAction.handler(contextMenuAction)
-        })
+        // Tellomi（交互审计 A-06 iOS 余项）：选项在收起**开始**时执行，不再等收起动画播完（走查实测点「复制」255 ms 后才执行）。
+        // Telegram iOS 也是先做再收（回复先设好、复制先复制，菜单同时收起）。先发收起，让收起动画把预览的起止位置
+        // 先算好，再执行选项——选项刷新了这一行、推了新页面，收起都照常收尾（见 `ContextMenuInteraction.dismissMenu`）。
+        delegate?.contextMenuTargetedPreviewAccessoryRequestsDismissal(self, completion: {})
+        contextMenuAction.handler(contextMenuAction)
     }
 }
 

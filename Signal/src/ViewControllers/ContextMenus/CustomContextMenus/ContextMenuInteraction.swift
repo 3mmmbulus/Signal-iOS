@@ -203,19 +203,39 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
         return accessory
     }
 
+    /// Tellomi（交互审计 A-06）：收起动画正在播。选项改在收起开始时执行之后，推新页面的选项（「详情」等）会让聊天页
+    /// 在 `viewWillDisappear` 里马上再要一次不带动画的收起：那一次就地收尾，动画播完时不再重复 `didEnd`。
+    private var isAnimatingOut = false
+    private var pendingDismissalCompletions: [() -> Void] = []
+
     public func dismissMenu(animated: Bool, completion: @escaping () -> Void) {
         guard let configuration = self.configuration else {
+            return
+        }
+
+        if isAnimatingOut {
+            // 已经在收了：带动画的就等那一次收完；不带动画的就地收尾。
+            pendingDismissalCompletions.append(completion)
+            if !animated {
+                finishAnimatedDismissal(configuration: configuration)
+            }
             return
         }
 
         delegate?.contextMenuInteraction(self, willEndForConfiguration: configuration)
 
         if animated {
-            contextMenuController?.animateOut({
-                self.delegate?.contextMenuInteraction(self, didEndForConfiguration: configuration)
-                self.contextMenuController?.view.removeFromSuperview()
-                self.contextMenuController = nil
-                completion()
+            guard let contextMenuController else {
+                return
+            }
+            isAnimatingOut = true
+            pendingDismissalCompletions.append(completion)
+            contextMenuController.animateOut({ [weak contextMenuController] in
+                // 已经被一次不带动画的收起提前收尾了。
+                guard self.isAnimatingOut, self.contextMenuController === contextMenuController else {
+                    return
+                }
+                self.finishAnimatedDismissal(configuration: configuration)
             })
         } else {
             targetedPreview?.view.isHidden = false
@@ -225,6 +245,18 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
             self.contextMenuController = nil
             completion()
         }
+    }
+
+    private func finishAnimatedDismissal(configuration: ContextMenuConfiguration) {
+        isAnimatingOut = false
+        targetedPreview?.view.isHidden = false
+        targetedPreview?.auxiliaryView?.isHidden = false
+        delegate?.contextMenuInteraction(self, didEndForConfiguration: configuration)
+        contextMenuController?.view.removeFromSuperview()
+        contextMenuController = nil
+        let completions = pendingDismissalCompletions
+        pendingDismissalCompletions = []
+        completions.forEach { $0() }
     }
 
     // MARK: Private
