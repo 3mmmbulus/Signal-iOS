@@ -135,6 +135,8 @@ class StoryPageViewController: UIPageViewController {
             displayLink.isPaused = false
         } else {
             let displayLink = CADisplayLink(target: self, selector: #selector(displayLinkStep))
+            // Tellomi（交互审计 A-04）：开了高刷新率的键以后，不设就会按屏幕最高刷新率跑；进度条 60 Hz 够了
+            displayLink.preferredFrameRateRange = TellomiFrameRate.ambient
             displayLink.add(to: .main, forMode: .common)
             self.displayLink = displayLink
         }

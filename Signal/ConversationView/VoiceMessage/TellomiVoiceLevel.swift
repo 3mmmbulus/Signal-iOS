@@ -54,6 +54,7 @@ final class TellomiVoiceLevelHalo: UIView {
         isHidden = false
         sync()
         let displayLink = CADisplayLink(target: self, selector: #selector(step(_:)))
+        displayLink.preferredFrameRateRange = TellomiFrameRate.ambient
         displayLink.add(to: .main, forMode: .common)
         self.displayLink = displayLink
     }

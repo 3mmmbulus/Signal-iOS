@@ -361,6 +361,7 @@ final class TellomiPhotoPickerSelectedView: UIView, UIScrollViewDelegate {
         }
         guard autoScrollLink == nil else { return }
         let link = CADisplayLink(target: self, selector: #selector(autoScrollTick))
+        link.preferredFrameRateRange = TellomiFrameRate.interactive
         link.add(to: .main, forMode: .common)
         autoScrollLink = link
     }

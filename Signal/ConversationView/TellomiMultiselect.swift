@@ -311,6 +311,7 @@ final class TellomiDragSelectState {
             return
         }
         let link = CADisplayLink(target: TellomiDisplayLinkProxy(owner: self), selector: #selector(TellomiDisplayLinkProxy.tick(_:)))
+        link.preferredFrameRateRange = TellomiFrameRate.interactive
         link.add(to: .main, forMode: .common)
         displayLink = link
     }

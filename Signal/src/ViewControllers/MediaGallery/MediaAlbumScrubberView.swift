@@ -259,6 +259,8 @@ final class MediaAlbumScrubberView: UIView {
     private func startAutoScroll() {
         stopAutoScroll()
         let link = CADisplayLink(target: self, selector: #selector(autoScrollTick))
+        // Tellomi（交互审计 A-04）：拖到边上自动滚，跟手，按需升到 120 Hz
+        link.preferredFrameRateRange = TellomiFrameRate.interactive
         link.add(to: .main, forMode: .common)
         displayLink = link
     }

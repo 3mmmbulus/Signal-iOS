@@ -64,6 +64,7 @@ final class TellomiJumpScrollAnimator {
         self.startTime = nil
         self.completion = completion
         let link = CADisplayLink(target: TellomiJumpScrollDisplayLinkProxy(owner: self), selector: #selector(TellomiJumpScrollDisplayLinkProxy.tick(_:)))
+        link.preferredFrameRateRange = TellomiFrameRate.interactive
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
