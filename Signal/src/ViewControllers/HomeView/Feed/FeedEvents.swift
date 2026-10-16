@@ -76,7 +76,7 @@ struct FeedEventsRequest: Encodable {
 }
 
 /// 事件攒批（契约 6.1）：攒满 50 条立刻发，否则由调用方每 30 秒和退到后台时 `drain()`。
-/// 一批最多 100 条；发失败的丢掉，不重试、不落盘。
+/// 一批最多 50 条（`FeedAPI.maxEvents`）；发失败的丢掉，不重试、不落盘。
 struct FeedEventBuffer {
     static let batchSize = 50
     static let flushInterval: TimeInterval = 30
@@ -94,7 +94,7 @@ struct FeedEventBuffer {
         return pending.count >= batchSize
     }
 
-    /// 取走全部待发的，按每批最多 100 条切好。
+    /// 取走全部待发的，按每批最多 50 条切好。
     mutating func drain() -> [[FeedEventPayload]] {
         guard !pending.isEmpty else { return [] }
         var batches = [[FeedEventPayload]]()

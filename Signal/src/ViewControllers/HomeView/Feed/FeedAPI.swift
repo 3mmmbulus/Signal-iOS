@@ -52,7 +52,8 @@ final class FeedAPI {
     static let tabFollowing = "following"
 
     static let maxCardIds = 100
-    static let maxEvents = 100
+    /// 引擎一次最多收 50 条，超过整批拒收（content-engine `MaxEvents`），所以和攒批的 50 一样。
+    static let maxEvents = 50
 
     enum Reaction: String {
         case like
@@ -114,7 +115,7 @@ final class FeedAPI {
         return try await send(FeedCreatePostResponse.self, self.request(path: ["v1", "feed", "posts"], method: "POST", body: body))
     }
 
-    /// 日志类事件，一批最多 100 条；失败由调用方丢弃，不重试（契约 6.1）。
+    /// 日志类事件，一批最多 50 条（引擎超过 50 条整批拒收）；失败由调用方丢弃，不重试（契约 6.1）。
     func events(_ events: [FeedEventPayload]) async throws {
         precondition(events.count <= Self.maxEvents, "at most \(Self.maxEvents) events per call")
         let body = try Self.encoder.encode(FeedEventsRequest(events: events))

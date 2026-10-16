@@ -48,7 +48,7 @@ final class TellomiFeedEventsTests: XCTestCase {
 
     // MARK: - 攒批与上报格式
 
-    /// 攒满 50 条该发；一次取走、按 100 条一批切。
+    /// 攒满 50 条该发；一次取走、按 50 条一批切（引擎一次最多收 50 条）。
     func testBufferBatches() {
         var buffer = FeedEventBuffer()
         for index in 0..<49 {
@@ -58,7 +58,7 @@ final class TellomiFeedEventsTests: XCTestCase {
         for index in 50..<230 {
             _ = buffer.add(.impression(contentId: "c\(index)", tab: .recommend, at: t0))
         }
-        XCTAssertEqual(buffer.drain().map(\.count), [100, 100, 30])
+        XCTAssertEqual(buffer.drain().map(\.count), [50, 50, 50, 50, 30])
         XCTAssertEqual(buffer.drain().count, 0)
         XCTAssertEqual(FeedEventBuffer.flushInterval, 30)
     }
