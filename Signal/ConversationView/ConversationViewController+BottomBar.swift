@@ -231,6 +231,9 @@ public extension ConversationViewController {
             bottomView = releaseNotesView
         }
 
+        // Tellomi（交互审计 A-15）：输入栏和多选操作栏互换时，旧的滑下去、新的滑上来，不硬切。
+        let tellomiOutgoingBottomBar = tellomiSnapshotOutgoingSelectionBottomBar(incoming: bottomView)
+
         bottomBarContainer.removeAllSubviews()
 
         if let bottomView {
@@ -257,6 +260,8 @@ public extension ConversationViewController {
         }
 
         updateContentInsets()
+
+        tellomiAnimateSelectionBottomBarSwap(outgoing: tellomiOutgoingBottomBar, incoming: bottomView)
     }
 
     private func blockingLegacyGroupText() -> NSAttributedString {

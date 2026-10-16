@@ -280,6 +280,9 @@ extension ConversationViewController: GroupViewHelperDelegate {
 
 extension ConversationViewController {
     func uiModeDidChange(oldValue: ConversationUIMode) {
+        // Tellomi（交互审计 A-15）：进出多选时顶栏（标题、按钮）交叉淡入，不硬切。
+        tellomiCrossfadeNavigationBarIfSelectionToggled(from: oldValue)
+
         if oldValue == .search {
             navigationItem.searchController = nil
             // HACK: For some reason at this point the OWSNavbar retains the extra space it

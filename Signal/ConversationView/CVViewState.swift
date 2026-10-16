@@ -128,6 +128,10 @@ public class CVViewState: NSObject {
     /// Tellomi（交互审计 A-09）：按下即缩：只观察触摸的手势，和它驱动的按下反馈（会话页里建）。
     let tellomiPressTouchObserver = TellomiPressTouchObserver(target: nil, action: nil)
     var tellomiPressFeedback: TellomiPressFeedback?
+    /// Tellomi（交互审计 A-15）：多选时双指拖选的手势，和一次拖选的状态（会话页里建）；多选进出时顶 / 底栏的切换动画。
+    let tellomiDragSelectRecognizer = TellomiTwoFingerPanRecognizer(target: nil, action: nil)
+    var tellomiDragSelectState: TellomiDragSelectState?
+    var tellomiBottomBarSwap: TellomiBottomBarSwap?
 
     public var collectionViewActiveContextMenuInteraction: ChatHistoryContextMenuInteraction?
     public var longPressHandler: CVLongPressHandler?

@@ -20,6 +20,19 @@ class MessageSelectionView: ManualLayoutView {
         }
     }
 
+    /// Tellomi（交互审计 A-15）：点一下 / 拖选改了选中状态时，勾那个圈弹一下（`TellomiCheckPop`，照 Telegram）、淡入淡出；
+    /// 画面重画时照旧用 `isSelected`，不弹。减弱动态效果时只淡入淡出。
+    func tellomiSetSelected(_ isSelected: Bool, animated: Bool) {
+        guard isSelected != selectionIndicatorView.isSelected else {
+            return
+        }
+        selectionIndicatorView.setIsSelected(isSelected, animated: animated)
+        guard animated, !TellomiMotion.isReduceMotionEnabled else {
+            return
+        }
+        selectionIndicatorView.layer.add(TellomiCheckPop.animation(selected: isSelected), forKey: TellomiCheckPop.animationKey)
+    }
+
     init() {
         super.init(name: "MessageSelectionView")
 

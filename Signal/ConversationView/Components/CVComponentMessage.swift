@@ -2103,19 +2103,21 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
             let itemViewModel = CVItemViewModelImpl(renderItem: renderItem)
             let selectionState = componentDelegate.selectionState
+            // Tellomi（交互审计 A-15）：勾弹一下、轻触感。
             if selectionState.isSelected(interaction.uniqueId, selectionType: selectionType) {
-                selectionView.isSelected = false
+                selectionView.tellomiSetSelected(false, animated: true)
                 componentDelegate.selectionState.remove(
                     itemViewModel: itemViewModel,
                     selectionType: selectionType,
                 )
             } else {
-                selectionView.isSelected = true
+                selectionView.tellomiSetSelected(true, animated: true)
                 componentDelegate.selectionState.add(
                     itemViewModel: itemViewModel,
                     selectionType: selectionType,
                 )
             }
+            UISelectionFeedbackGenerator().selectionChanged()
 
             // Suppress other tap handling during selection mode.
             return true
@@ -2270,9 +2272,6 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         )
     }
 
-    // For a configured & active cell, this will return the list of
-    // currently active subcomponents & their corresponding subcomponent
-    // views. This can be used for gesture dispatch, etc.
     /// Tellomi（交互审计 A-09）：手指按下的地方是不是可点的一块（引用、文件、联系人卡、回应胶囊），是就返回按下时要缩的视图和比例。
     /// 多选时不按；链接卡片有自己的按下叠层（card-visual §3.6），不在这里。
     func tellomiPressTarget(sender: UIGestureRecognizer, componentView: CVComponentView) -> TellomiPressFeedback.Target? {
@@ -2302,6 +2301,27 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         return nil
     }
 
+    /// Tellomi（交互审计 A-15）：拖选改了这条的选中状态后，把两个勾（附件 / 文字）照选中状态更新（弹一下）；不重画整条。
+    func tellomiUpdateSelectionViews(componentView: CVComponentView, selectionState: CVSelectionState, animated: Bool) {
+        guard isShowingSelectionUI, let componentView = componentView as? CVComponentViewMessage else {
+            return
+        }
+        let interactionId = interaction.uniqueId
+        componentView.primarySelectionView.tellomiSetSelected(
+            selectionState.isSelected(interactionId, selectionType: .primaryContent),
+            animated: animated,
+        )
+        if hasSecondaryContentForSelection {
+            componentView.secondarySelectionView.tellomiSetSelected(
+                selectionState.isSelected(interactionId, selectionType: .secondaryContent),
+                animated: animated,
+            )
+        }
+    }
+
+    // For a configured & active cell, this will return the list of
+    // currently active subcomponents & their corresponding subcomponent
+    // views. This can be used for gesture dispatch, etc.
     private func findComponentAndViews(
         sender: UIGestureRecognizer,
         componentView: CVComponentViewMessage,

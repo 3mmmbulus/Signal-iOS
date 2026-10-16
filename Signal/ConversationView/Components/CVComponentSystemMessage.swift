@@ -578,13 +578,15 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
             let selectionView = componentView.selectionView
             // System messages cannot be partially selected.
             let selectionState = componentDelegate.selectionState
+            // Tellomi（交互审计 A-15）：勾弹一下、轻触感。
             if selectionState.hasAnySelection(interaction: interaction) {
-                selectionView.isSelected = false
+                selectionView.tellomiSetSelected(false, animated: true)
                 selectionState.remove(interaction: interaction, hasRenderableContent: true, selectionType: .allContent)
             } else {
-                selectionView.isSelected = true
+                selectionView.tellomiSetSelected(true, animated: true)
                 selectionState.add(interaction: interaction, hasRenderableContent: true, selectionType: .allContent)
             }
+            UISelectionFeedbackGenerator().selectionChanged()
             // Suppress other tap handling during selection mode.
             return true
         }

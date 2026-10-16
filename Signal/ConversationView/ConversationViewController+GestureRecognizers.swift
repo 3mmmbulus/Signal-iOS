@@ -41,6 +41,7 @@ extension ConversationViewController: UIGestureRecognizerDelegate {
         collectionViewTapGestureRecognizer.require(toFail: collectionViewLongPressGestureRecognizer)
 
         tellomiConfigurePressFeedback()
+        tellomiConfigureDragSelect()
 
         // Allow panning with trackpad
         collectionViewPanGestureRecognizer.allowedScrollTypesMask = .continuous
