@@ -289,6 +289,14 @@ public extension CVRootComponentHost {
 #endif
     }
 
+    /// Tellomi（交互审计 A-09）：按下时要缩一下的那一块（只有消息气泡里才有）。
+    internal func tellomiPressTarget(sender: UIGestureRecognizer) -> TellomiPressFeedback.Target? {
+        guard let componentView, let message = renderItem?.rootComponent as? CVComponentMessage else {
+            return nil
+        }
+        return message.tellomiPressTarget(sender: sender, componentView: componentView)
+    }
+
     func handleTap(sender: UIGestureRecognizer, componentDelegate: CVComponentDelegate) -> Bool {
         guard let renderItem else {
             owsFailDebug("Missing renderItem.")

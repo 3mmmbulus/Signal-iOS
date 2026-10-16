@@ -2273,6 +2273,35 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
     // For a configured & active cell, this will return the list of
     // currently active subcomponents & their corresponding subcomponent
     // views. This can be used for gesture dispatch, etc.
+    /// Tellomi（交互审计 A-09）：手指按下的地方是不是可点的一块（引用、文件、联系人卡、回应胶囊），是就返回按下时要缩的视图和比例。
+    /// 多选时不按；链接卡片有自己的按下叠层（card-visual §3.6），不在这里。
+    func tellomiPressTarget(sender: UIGestureRecognizer, componentView: CVComponentView) -> TellomiPressFeedback.Target? {
+        guard !isShowingSelectionUI, let componentView = componentView as? CVComponentViewMessage else {
+            return nil
+        }
+        let keys: [CVComponentKey] = [.quotedReply, .genericAttachment, .contactShare, .reactions]
+        for key in keys {
+            guard
+                let componentAndView = findActiveComponentAndView(key: key, messageView: componentView, ignoreMissing: true),
+                componentAndView.componentView.rootView.containsGestureLocation(sender)
+            else {
+                continue
+            }
+            if key == .reactions {
+                // 回应：按下的那一个胶囊缩（点哪个都打开同一个回应列表）
+                guard
+                    let reactionsView = componentAndView.componentView.rootView as? CVReactionCountsView,
+                    let pill = reactionsView.tellomiPill(at: sender.location(in: reactionsView))
+                else {
+                    return nil
+                }
+                return TellomiPressFeedback.Target(view: pill, scale: TellomiPressFeedback.reactionScale)
+            }
+            return TellomiPressFeedback.Target(view: componentAndView.componentView.rootView, scale: TellomiPressFeedback.contentScale)
+        }
+        return nil
+    }
+
     private func findComponentAndViews(
         sender: UIGestureRecognizer,
         componentView: CVComponentViewMessage,

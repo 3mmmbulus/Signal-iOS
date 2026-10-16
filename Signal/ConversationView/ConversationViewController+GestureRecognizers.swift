@@ -40,6 +40,8 @@ extension ConversationViewController: UIGestureRecognizerDelegate {
         collectionViewTapGestureRecognizer.require(toFail: collectionViewPanGestureRecognizer)
         collectionViewTapGestureRecognizer.require(toFail: collectionViewLongPressGestureRecognizer)
 
+        tellomiConfigurePressFeedback()
+
         // Allow panning with trackpad
         collectionViewPanGestureRecognizer.allowedScrollTypesMask = .continuous
 
@@ -194,6 +196,10 @@ extension ConversationViewController {
 
     @objc
     func handleLongPressGesture(_ sender: UILongPressGestureRecognizer) {
+        // Tellomi（交互审计 A-09）：长按拿起整条消息，菜单里的预览是此刻的快照，按下的缩放立刻还原、不带进去
+        if sender.state == .began {
+            viewState.tellomiPressFeedback?.cancel(animated: false)
+        }
 
         let resetLongPress = {
             self.longPressHandler = nil
@@ -534,5 +540,38 @@ public class CVPanHandler {
             componentDelegate: delegate,
             messageSwipeActionState: messageSwipeActionState,
         )
+    }
+}
+
+// MARK: - Tellomi：按下即缩（交互审计 A-09）
+
+extension ConversationViewController {
+
+    /// 引用、文件、联系人卡、回应胶囊一按下就缩一下（`TellomiPressFeedback`），不用等抬手。只观察触摸的手势挂在列表上，
+    /// 不和点击 / 长按 / 滑动 / 滚动抢：别的手势一认出来它就被挤掉、弹回。
+    func tellomiConfigurePressFeedback() {
+        let feedback = viewState.tellomiPressFeedback ?? TellomiPressFeedback()
+        viewState.tellomiPressFeedback = feedback
+        let observer = viewState.tellomiPressTouchObserver
+        observer.onBegan = { [weak self, weak observer] touch in
+            guard let self, let observer, !self.isShowingSelectionUI else {
+                return
+            }
+            let point = observer.location(in: self.collectionView)
+            guard
+                let cell = self.collectionView.indexPathForItem(at: point).flatMap({ self.collectionView.cellForItem(at: $0) }) as? CVCell,
+                let target = cell.tellomiPressTarget(sender: observer)
+            else {
+                return
+            }
+            feedback.press(target, at: touch.location(in: target.view), pointInWindow: touch.location(in: nil))
+        }
+        observer.onMoved = { touch in
+            feedback.moved(toWindowPoint: touch.location(in: nil))
+        }
+        observer.onEnded = {
+            feedback.release()
+        }
+        collectionView.addGestureRecognizer(observer)
     }
 }

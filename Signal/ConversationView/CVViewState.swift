@@ -125,6 +125,9 @@ public class CVViewState: NSObject {
     public let collectionViewContextMenuGestureRecognizer = UILongPressGestureRecognizer()
     public var collectionViewContextMenuSecondaryClickRecognizer = UITapGestureRecognizer()
     public let collectionViewPanGestureRecognizer = UIPanGestureRecognizer()
+    /// Tellomi（交互审计 A-09）：按下即缩：只观察触摸的手势，和它驱动的按下反馈（会话页里建）。
+    let tellomiPressTouchObserver = TellomiPressTouchObserver(target: nil, action: nil)
+    var tellomiPressFeedback: TellomiPressFeedback?
 
     public var collectionViewActiveContextMenuInteraction: ChatHistoryContextMenuInteraction?
     public var longPressHandler: CVLongPressHandler?

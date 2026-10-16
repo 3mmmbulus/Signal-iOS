@@ -172,6 +172,13 @@ class CVReactionCountsView: ManualStackView {
     }
 
     /// Tellomi（交互审计 A-07）：回应飞入的落点——显示着「我」这次回应的那一格里的表情字。
+    /// Tellomi（交互审计 A-09）：`point`（本视图坐标）下面的那个胶囊；落在胶囊之间就是 nil。
+    func tellomiPill(at point: CGPoint) -> UIView? {
+        [pill1, pill2, pill3].first { pill in
+            pill.superview === self && !pill.isHidden && pill.frame.contains(point)
+        }
+    }
+
     func emojiLabel(for emoji: String) -> UILabel? {
         [pill1, pill2, pill3]
             .first { $0.superview === self && Self.isFlyInTarget($0.displayedPillState, emoji: emoji) }?
