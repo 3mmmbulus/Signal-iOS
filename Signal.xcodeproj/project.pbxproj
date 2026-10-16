@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E3E83EBFE134E0797E8656E4 /* TellomiAvatarHeroTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE022D87F8E5EBF4A1B0888 /* TellomiAvatarHeroTests.swift */; };
+		DE24433D6896B271B6770FC2 /* TellomiAvatarHero.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C180DE10BAB8E8E6E62A628 /* TellomiAvatarHero.swift */; };
 		9951DACC3B2DCFE5CF03EDD2 /* TellomiLinkPressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA12110CE50BF64117FA5C86 /* TellomiLinkPressTests.swift */; };
 		8786864EF279448360DB6842 /* TellomiConversationHeaderPressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C7DE7426C7E7D2AA1F5AFA /* TellomiConversationHeaderPressTests.swift */; };
 		C8E69D3633C3F8702521EEB9 /* TellomiToastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF417A834F7F9042D211BF27 /* TellomiToastTests.swift */; };
@@ -4489,6 +4491,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EEE022D87F8E5EBF4A1B0888 /* TellomiAvatarHeroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAvatarHeroTests.swift; sourceTree = "<group>"; };
+		4C180DE10BAB8E8E6E62A628 /* TellomiAvatarHero.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiAvatarHero.swift; sourceTree = "<group>"; };
 		BA12110CE50BF64117FA5C86 /* TellomiLinkPressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkPressTests.swift; sourceTree = "<group>"; };
 		C1C7DE7426C7E7D2AA1F5AFA /* TellomiConversationHeaderPressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiConversationHeaderPressTests.swift; sourceTree = "<group>"; };
 		CF417A834F7F9042D211BF27 /* TellomiToastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiToastTests.swift; sourceTree = "<group>"; };
@@ -9566,6 +9570,7 @@
 				6F9FDDC93E1D87CA6E5EC0B5 /* TellomiPressFeedback.swift */,
 				71644BDC1D2013D676001D5A /* TellomiMultiselect.swift */,
 				1C8F2A5FB151389276083135 /* TellomiJumpToMessage.swift */,
+				4C180DE10BAB8E8E6E62A628 /* TellomiAvatarHero.swift */,
 				500FE4DF288A11AF00FA090C /* ConversationViewController+GiftBadges.swift */,
 				88411B5F249B0757005D10AA /* ConversationViewController+LastVisibleSortId.swift */,
 				34A4D87E2677B23100A794E7 /* ConversationViewController+MessageActions.swift */,
@@ -10192,6 +10197,7 @@
 				8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */,
 				1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */,
 				CF417A834F7F9042D211BF27 /* TellomiToastTests.swift */,
+				EEE022D87F8E5EBF4A1B0888 /* TellomiAvatarHeroTests.swift */,
 				A8E86147BD15FA0FE2C49E91 /* TellomiPressFeedbackTests.swift */,
 				BA12110CE50BF64117FA5C86 /* TellomiLinkPressTests.swift */,
 				CDDE9A9A4C02B06EB9F0493B /* TellomiMultiselectTests.swift */,
@@ -19433,6 +19439,7 @@
 				ED3CFD57008778FD1E612B76 /* TellomiPressFeedback.swift in Sources */,
 				CE8EB77AD7C72486BAE847E3 /* TellomiMultiselect.swift in Sources */,
 				2199488408B2CA63AEA463C3 /* TellomiJumpToMessage.swift in Sources */,
+				DE24433D6896B271B6770FC2 /* TellomiAvatarHero.swift in Sources */,
 				500FE4E0288A11B000FA090C /* ConversationViewController+GiftBadges.swift in Sources */,
 				88411B60249B0759005D10AA /* ConversationViewController+LastVisibleSortId.swift in Sources */,
 				34A4D87F2677B23100A794E7 /* ConversationViewController+MessageActions.swift in Sources */,
@@ -20082,6 +20089,7 @@
 				20A791C65863CF5320F857B1 /* TellomiScrollButtonBadgeTests.swift in Sources */,
 				CC4B2233689610A8AB2A9D32 /* TellomiChatListArchiveUndoTests.swift in Sources */,
 				C8E69D3633C3F8702521EEB9 /* TellomiToastTests.swift in Sources */,
+				E3E83EBFE134E0797E8656E4 /* TellomiAvatarHeroTests.swift in Sources */,
 				0CE44FA9D8B733D5F762BBA2 /* TellomiPressFeedbackTests.swift in Sources */,
 				9951DACC3B2DCFE5CF03EDD2 /* TellomiLinkPressTests.swift in Sources */,
 				A07CBCD0BF7D0868153194EF /* TellomiMultiselectTests.swift in Sources */,

@@ -243,6 +243,16 @@ extension ConversationViewController {
 
         dismissKeyBoard()
         navigationController?.setViewControllers(viewControllers, animated: true)
+
+        // Tellomi（交互审计 A-19）：直接进设置页时，顶栏的小头像沿着推入动画飞到设置页的大头像
+        if mode == .default {
+            TellomiAvatarHero.flyAlongPush(
+                from: headerView.avatarView,
+                coordinator: navigationController?.transitionCoordinator,
+            ) { [weak settingsView] in
+                settingsView?.avatarView
+            }
+        }
     }
 
     private var viewControllersUpToSelf: [UIViewController]? {
