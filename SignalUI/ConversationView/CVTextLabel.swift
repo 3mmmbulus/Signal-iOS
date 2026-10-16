@@ -261,6 +261,29 @@ public class CVTextLabel {
         label.animate(selectedItem: selectedItem)
     }
 
+    /// Tellomi（交互审计 A-09）：手指按在链接 / 提及上就高亮，不等抬手（原来点完才闪 0.25 s）。松开、取消、挪走用 [tellomiReleasePressedItem] 收回。
+    public func tellomiPress(item: Item) {
+        label.tellomiPress(item: item)
+    }
+
+    /// 松开：稍后收回高亮（真点到了的话，点按处理接着 `animate(selectedItem:)` 再亮 0.25 s，接得上不闪）。
+    public func tellomiReleasePressedItem() {
+        label.tellomiReleasePressedItem()
+    }
+
+    /// 测试用：现在画出来的文字（含高亮）。
+    var tellomiRenderedTextForTesting: NSAttributedString { label.tellomiRenderedTextForTesting }
+
+    /// 只有链接、提及、被引用的人按下时高亮（剧透、删除者不管，同 `animate(selectedItem:)`）。
+    public static func tellomiHighlightsOnPress(_ item: Item) -> Bool {
+        switch item {
+        case .dataItem, .mention, .referencedUser:
+            return true
+        case .unrevealedSpoiler, .deleteAuthor:
+            return false
+        }
+    }
+
     // MARK: - Linkification
 
     public static func linkifyData(
@@ -521,6 +544,25 @@ public class CVTextLabel {
         }
 
         // MARK: - Animation
+
+        var tellomiRenderedTextForTesting: NSAttributedString { textStorage }
+
+        func tellomiPress(item: Item) {
+            AssertIsOnMainThread()
+
+            animationTimer?.invalidate()
+            animationTimer = nil
+            updateAttributesForSelection(selectedItem: item)
+        }
+
+        func tellomiReleasePressedItem() {
+            AssertIsOnMainThread()
+
+            animationTimer?.invalidate()
+            animationTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { [weak self] _ in
+                self?.updateAttributesForSelection()
+            }
+        }
 
         func animate(selectedItem: Item) {
             AssertIsOnMainThread()

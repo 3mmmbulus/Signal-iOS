@@ -40,6 +40,22 @@ final class TellomiPressFeedback {
 
     var isPressed: Bool { pressedView != nil }
 
+    /// 按着的正文链接 / 提及（高亮的是文字本身，不缩）。
+    private(set) weak var pressedTextLabel: CVTextLabel?
+
+    /// 按下正文里的链接 / 提及：马上高亮；松开、挪出 [moveSlop]、长按拿起时收回。
+    func pressText(label: CVTextLabel, item: CVTextLabel.Item, pointInWindow: CGPoint) {
+        cancel(animated: false)
+        label.tellomiPress(item: item)
+        pressedTextLabel = label
+        startInWindow = pointInWindow
+    }
+
+    private func releaseText() {
+        pressedTextLabel?.tellomiReleasePressedItem()
+        pressedTextLabel = nil
+    }
+
     /// 按下：`point` 是手指在 `target.view` 里的位置（支点），`pointInWindow` 用来算挪了多远。
     func press(_ target: Target, at point: CGPoint, pointInWindow: CGPoint, reduceMotion: Bool = TellomiMotion.isReduceMotionEnabled) {
         cancel(animated: false)
@@ -60,7 +76,7 @@ final class TellomiPressFeedback {
 
     /// 手指挪动：挪出 [moveSlop] 就弹回（这次触摸之后不再按）。
     func moved(toWindowPoint point: CGPoint) {
-        guard isPressed, let start = startInWindow else {
+        guard isPressed || pressedTextLabel != nil, let start = startInWindow else {
             return
         }
         if hypot(point.x - start.x, point.y - start.y) > Self.moveSlop {
@@ -70,7 +86,9 @@ final class TellomiPressFeedback {
 
     /// 松开 / 取消：弹回原样（`release` 弹簧，从当前的样子起步）。
     func release(reduceMotion: Bool = TellomiMotion.isReduceMotionEnabled) {
+        releaseText()
         guard let view = pressedView else {
+            startInWindow = nil
             return
         }
         let usesAlpha = pressedUsesAlpha
@@ -89,6 +107,7 @@ final class TellomiPressFeedback {
 
     /// 立刻还原、不播动画：长按拿起整条消息时，菜单里的预览是此刻的快照，不能带着缩放。
     func cancel(animated: Bool) {
+        releaseText()
         guard animated else {
             animator?.stopAnimation(true)
             animator = nil

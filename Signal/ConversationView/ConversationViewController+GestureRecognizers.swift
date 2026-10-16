@@ -559,13 +559,15 @@ extension ConversationViewController {
                 return
             }
             let point = observer.location(in: self.collectionView)
-            guard
-                let cell = self.collectionView.indexPathForItem(at: point).flatMap({ self.collectionView.cellForItem(at: $0) }) as? CVCell,
-                let target = cell.tellomiPressTarget(sender: observer)
-            else {
+            guard let cell = self.collectionView.indexPathForItem(at: point).flatMap({ self.collectionView.cellForItem(at: $0) }) as? CVCell else {
                 return
             }
-            feedback.press(target, at: touch.location(in: target.view), pointInWindow: touch.location(in: nil))
+            if let target = cell.tellomiPressTarget(sender: observer) {
+                feedback.press(target, at: touch.location(in: target.view), pointInWindow: touch.location(in: nil))
+            } else if let pressed = cell.tellomiPressedTextItem(sender: observer) {
+                // 正文里的链接 / 提及：按下即高亮（原来点完才闪 0.25 s）
+                feedback.pressText(label: pressed.label, item: pressed.item, pointInWindow: touch.location(in: nil))
+            }
         }
         observer.onMoved = { touch in
             feedback.moved(toWindowPoint: touch.location(in: nil))

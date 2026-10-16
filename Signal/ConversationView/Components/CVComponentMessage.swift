@@ -2301,6 +2301,20 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         return nil
     }
 
+    /// Tellomi（交互审计 A-09）：手指按在正文里的链接 / 提及上：返回那段文字和这一项，按下即高亮。多选时不按。
+    func tellomiPressedTextItem(sender: UIGestureRecognizer, componentView: CVComponentView) -> (label: CVTextLabel, item: CVTextLabel.Item)? {
+        guard
+            !isShowingSelectionUI,
+            let componentView = componentView as? CVComponentViewMessage,
+            let componentAndView = findActiveComponentAndView(key: .bodyText, messageView: componentView, ignoreMissing: true),
+            componentAndView.componentView.rootView.containsGestureLocation(sender),
+            let bodyText = componentAndView.component as? CVComponentBodyText
+        else {
+            return nil
+        }
+        return bodyText.tellomiPressedTextItem(sender: sender, componentView: componentAndView.componentView)
+    }
+
     /// Tellomi（交互审计 A-15）：拖选改了这条的选中状态后，把两个勾（附件 / 文字）照选中状态更新（弹一下）；不重画整条。
     func tellomiUpdateSelectionViews(componentView: CVComponentView, selectionState: CVSelectionState, animated: Bool) {
         guard isShowingSelectionUI, let componentView = componentView as? CVComponentViewMessage else {

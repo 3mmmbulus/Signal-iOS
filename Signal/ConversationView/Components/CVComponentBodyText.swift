@@ -796,6 +796,18 @@ public class CVComponentBodyText: CVComponentBase, CVComponent {
         return false
     }
 
+    /// Tellomi（交互审计 A-09）：手指下面是不是正文里的链接 / 提及：是就返回它所在的文字和这一项（按下即高亮）。
+    func tellomiPressedTextItem(sender: UIGestureRecognizer, componentView: CVComponentView) -> (label: CVTextLabel, item: CVTextLabel.Item)? {
+        guard !shouldIgnoreEvents, let componentView = componentView as? CVComponentViewBodyText else {
+            return nil
+        }
+        let bodyTextLabel = componentView.bodyTextLabel
+        guard let item = bodyTextLabel.itemForGesture(sender: sender), CVTextLabel.tellomiHighlightsOnPress(item) else {
+            return nil
+        }
+        return (bodyTextLabel, item)
+    }
+
     override public func findLongPressHandler(
         sender: UIGestureRecognizer,
         componentDelegate: CVComponentDelegate,
