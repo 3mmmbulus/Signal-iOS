@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8786864EF279448360DB6842 /* TellomiConversationHeaderPressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C7DE7426C7E7D2AA1F5AFA /* TellomiConversationHeaderPressTests.swift */; };
 		C8E69D3633C3F8702521EEB9 /* TellomiToastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF417A834F7F9042D211BF27 /* TellomiToastTests.swift */; };
 		71C64DF40A491ED398633AE5 /* TellomiToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE112168A189DAB229443D41 /* TellomiToast.swift */; };
 		56AEDB9325D50D88EE328847 /* TellomiJumpToMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04AFEDBBCF8BF4637142913 /* TellomiJumpToMessageTests.swift */; };
@@ -4487,6 +4488,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C1C7DE7426C7E7D2AA1F5AFA /* TellomiConversationHeaderPressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiConversationHeaderPressTests.swift; sourceTree = "<group>"; };
 		CF417A834F7F9042D211BF27 /* TellomiToastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiToastTests.swift; sourceTree = "<group>"; };
 		DE112168A189DAB229443D41 /* TellomiToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiToast.swift; sourceTree = "<group>"; };
 		F04AFEDBBCF8BF4637142913 /* TellomiJumpToMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiJumpToMessageTests.swift; sourceTree = "<group>"; };
@@ -10190,6 +10192,7 @@
 				CF417A834F7F9042D211BF27 /* TellomiToastTests.swift */,
 				A8E86147BD15FA0FE2C49E91 /* TellomiPressFeedbackTests.swift */,
 				CDDE9A9A4C02B06EB9F0493B /* TellomiMultiselectTests.swift */,
+				C1C7DE7426C7E7D2AA1F5AFA /* TellomiConversationHeaderPressTests.swift */,
 				F04AFEDBBCF8BF4637142913 /* TellomiJumpToMessageTests.swift */,
 				2A3175D1A64919BA376445E2 /* TellomiCameraSendLongPressTests.swift */,
 				52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */,
@@ -20078,6 +20081,7 @@
 				C8E69D3633C3F8702521EEB9 /* TellomiToastTests.swift in Sources */,
 				0CE44FA9D8B733D5F762BBA2 /* TellomiPressFeedbackTests.swift in Sources */,
 				A07CBCD0BF7D0868153194EF /* TellomiMultiselectTests.swift in Sources */,
+				8786864EF279448360DB6842 /* TellomiConversationHeaderPressTests.swift in Sources */,
 				56AEDB9325D50D88EE328847 /* TellomiJumpToMessageTests.swift in Sources */,
 				45542A13DA4150B8CD4DCE01 /* TellomiCameraSendLongPressTests.swift in Sources */,
 				4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */,

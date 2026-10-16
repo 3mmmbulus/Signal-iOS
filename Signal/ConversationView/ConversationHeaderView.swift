@@ -80,6 +80,7 @@ class ConversationHeaderView: UIView {
         titleColumns.heightAnchor.constraint(greaterThanOrEqualToConstant: titleLabel.font.lineHeight.rounded(.up)).isActive = true
 
         let textRows = UIStackView(arrangedSubviews: [titleColumns, subtitleLabel])
+        tellomiTextRows = textRows
         textRows.axis = .vertical
         textRows.alignment = .leading
         textRows.distribution = .fillProportionally
@@ -143,7 +144,73 @@ class ConversationHeaderView: UIView {
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapView))
         rootStack.addGestureRecognizer(tapGesture)
+
+        tellomiConfigurePressFeedback(on: rootStack)
     }
+
+    // MARK: - Tellomi：按下态（交互审计 A-09「顶栏标题没有按下态」）
+
+    /// 名字和副标题那一列（按下时变淡）。
+    private var tellomiTextRows: UIView?
+    private let tellomiPressObserver = TellomiPressTouchObserver(target: nil, action: nil)
+    private weak var tellomiPressedView: UIView?
+    private var tellomiPressStart: CGPoint?
+
+    /// 按下时变到这个透明度、松开 0.2 s 淡回（照 Telegram iOS `ChatTitleView`：标题、副标题按下 0.4，松开 0.2 s）。
+    static let tellomiPressedAlpha: CGFloat = 0.4
+    static let tellomiReleaseDuration: TimeInterval = 0.2
+
+    private func tellomiConfigurePressFeedback(on rootStack: UIView) {
+        tellomiPressObserver.onBegan = { [weak self, weak rootStack] touch in
+            guard let self, let rootStack else {
+                return
+            }
+            self.tellomiPressBegan(at: touch.location(in: rootStack), in: rootStack)
+        }
+        tellomiPressObserver.onMoved = { [weak self] touch in
+            guard let self, let start = self.tellomiPressStart else {
+                return
+            }
+            let point = touch.location(in: nil)
+            if hypot(point.x - start.x, point.y - start.y) > TellomiPressFeedback.moveSlop {
+                self.tellomiPressEnded()
+            }
+        }
+        tellomiPressObserver.onEnded = { [weak self] in
+            self?.tellomiPressEnded()
+        }
+        rootStack.addGestureRecognizer(tellomiPressObserver)
+    }
+
+    /// 按在头像上淡头像（点头像是另一件事），按在别处淡名字那一列（点了进会话设置）。
+    func tellomiPressBegan(at point: CGPoint, in rootStack: UIView) {
+        let target: UIView? = avatarView.frame.contains(point) ? avatarView : tellomiTextRows
+        guard let target else {
+            return
+        }
+        tellomiPressEnded(animated: false)
+        tellomiPressedView = target
+        tellomiPressStart = rootStack.convert(point, to: nil)
+        target.layer.removeAnimation(forKey: "opacity")
+        target.alpha = Self.tellomiPressedAlpha
+    }
+
+    func tellomiPressEnded(animated: Bool = true) {
+        guard let view = tellomiPressedView else {
+            return
+        }
+        tellomiPressedView = nil
+        tellomiPressStart = nil
+        guard animated else {
+            view.alpha = 1
+            return
+        }
+        UIView.animate(withDuration: Self.tellomiReleaseDuration, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+            view.alpha = 1
+        }
+    }
+
+    var tellomiTextRowsForTesting: UIView? { tellomiTextRows }
 
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
