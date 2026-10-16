@@ -112,6 +112,17 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
         set { captureViewController.tellomiHidesPhotoLibraryButton = newValue }
     }
 
+    /// Tellomi（P-6d，owner 2026-10-16）：会话页给了，预览页的发送键就能长按（`SendMediaNavigationController+Tellomi.swift`）；
+    /// nil = 不挂（拍快拍等别的入口）。
+    var tellomiSendMenuContext: TellomiMediaSendMenuContext?
+
+    /// Tellomi（P-6d）：长按发送菜单里切的「说明文字上移 / 下移」，会话页发的时候读（同选图页的 `isCaptionAboveMedia`）。
+    var tellomiCaptionAboveMedia = false
+
+    /// Tellomi（P-6d）：这次是长按发送里「定时发送」发出来的（预览页的 `tellomiApprovedScheduledAt`），
+    /// 会话页在 `sendMediaNav(_:didApproveAttachments:messageBody:)` 里读；普通发送是 nil。
+    private(set) var tellomiApprovedScheduledAt: Date?
+
     class func showingCameraFirst(hasQuotedReplyDraft: Bool, attachmentLimits: OutgoingAttachmentLimits) -> SendMediaNavigationController {
         let navController = SendMediaNavigationController(hasQuotedReplyDraft: hasQuotedReplyDraft, attachmentLimits: attachmentLimits)
         navController.setViewControllers([navController.captureViewController], animated: false)
@@ -242,6 +253,7 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
         if let initialItem, let index = pendingAttachments.firstIndex(where: { $0.approvalItem.isIdenticalTo(initialItem) }) {
             approvalViewController.tellomiShowItem(at: index)
         }
+        tellomiAttachSendLongPress(to: approvalViewController)
 
         self.view.layer.opacity = 1
 
@@ -615,6 +627,7 @@ class SendMediaNavigationController: OWSNavigationController, AttachmentApproval
         didApproveAttachments approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
     ) {
+        tellomiApprovedScheduledAt = attachmentApproval.tellomiApprovedScheduledAt
         sendMediaNavDelegate?.sendMediaNav(
             self,
             didApproveAttachments: approvedAttachments,

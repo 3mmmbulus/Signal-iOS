@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		45542A13DA4150B8CD4DCE01 /* TellomiCameraSendLongPressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3175D1A64919BA376445E2 /* TellomiCameraSendLongPressTests.swift */; };
+		9EC3D84480E29B9ACC206F92 /* SendMediaNavigationController+Tellomi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A389C08095C67A69ABF8B2E /* SendMediaNavigationController+Tellomi.swift */; };
 		2937434CAE119ACF897FC71F /* TellomiVoiceLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */; };
 		58434A95C1B6B76DC3012C46 /* TellomiVoiceLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F8FEC9116A64477AA3CEF1 /* TellomiVoiceLevel.swift */; };
 		20A791C65863CF5320F857B1 /* TellomiScrollButtonBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */; };
@@ -4477,6 +4479,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2A3175D1A64919BA376445E2 /* TellomiCameraSendLongPressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiCameraSendLongPressTests.swift; sourceTree = "<group>"; };
+		9A389C08095C67A69ABF8B2E /* SendMediaNavigationController+Tellomi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendMediaNavigationController+Tellomi.swift"; sourceTree = "<group>"; };
 		D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiVoiceLevelTests.swift; sourceTree = "<group>"; };
 		B1F8FEC9116A64477AA3CEF1 /* TellomiVoiceLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiVoiceLevel.swift; sourceTree = "<group>"; };
 		8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiScrollButtonBadgeTests.swift; sourceTree = "<group>"; };
@@ -9654,6 +9658,7 @@
 				4558E3D98619F28E914E122A /* TellomiCaptionField.swift */,
 				0532E3135A6D469CEC78A953 /* TellomiPhotoPickerLibrary.swift */,
 				4C4AE69F224AF21900D4AF6F /* SendMediaNavigationController.swift */,
+				9A389C08095C67A69ABF8B2E /* SendMediaNavigationController+Tellomi.swift */,
 			);
 			path = Photos;
 			sourceTree = "<group>";
@@ -10162,6 +10167,7 @@
 				D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */,
 				8868FBC87514516047AB249E /* TellomiScrollButtonBadgeTests.swift */,
 				1A2D039A00D5F3C7680D70FB /* TellomiChatListArchiveUndoTests.swift */,
+				2A3175D1A64919BA376445E2 /* TellomiCameraSendLongPressTests.swift */,
 				52F30456BDFC0F3F63C95747 /* TellomiFeatureIntroTests.swift */,
 				F97A2EE828247C1300610669 /* BadgeIssueSheetStateTest.swift */,
 				41815269E42B9E12DA5A1452 /* ChatListConnectionTitleTest.swift */,
@@ -19900,6 +19906,7 @@
 				88C659B024688335002AC115 /* SelfSignedIdentity.swift in Sources */,
 				502D9AA4303CC73700FA0D7D /* SenderKeyExpirationJob.swift in Sources */,
 				4C4AE6A1224AF35700D4AF6F /* SendMediaNavigationController.swift in Sources */,
+				9EC3D84480E29B9ACC206F92 /* SendMediaNavigationController+Tellomi.swift in Sources */,
 				346EAA1225013CDF00E8AB6F /* SendMessageFlow.swift in Sources */,
 				3497972025DAA86100E99FA4 /* SendPaymentCompletionActionSheet.swift in Sources */,
 				3497972325DAAE3800E99FA4 /* SendPaymentHelper.swift in Sources */,
@@ -20040,6 +20047,7 @@
 				2937434CAE119ACF897FC71F /* TellomiVoiceLevelTests.swift in Sources */,
 				20A791C65863CF5320F857B1 /* TellomiScrollButtonBadgeTests.swift in Sources */,
 				CC4B2233689610A8AB2A9D32 /* TellomiChatListArchiveUndoTests.swift in Sources */,
+				45542A13DA4150B8CD4DCE01 /* TellomiCameraSendLongPressTests.swift in Sources */,
 				4E211AEA2E16CF8DD01757A1 /* TellomiFeatureIntroTests.swift in Sources */,
 				F97A2EEA282578C000610669 /* BadgeIssueSheetStateTest.swift in Sources */,
 				BF61BB90117E904CAFF81F86 /* ChatListConnectionTitleTest.swift in Sources */,

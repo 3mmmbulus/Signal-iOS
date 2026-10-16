@@ -1239,7 +1239,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         return sendActions + [UIMenu(title: "", options: .displayInline, children: toggleActions)]
     }
 
-    private static func title(for item: MoreMenuItem, selectedCount: Int, isNoteToSelf: Bool = false) -> String {
+    /// 会话页拍完照的预览页（P-6d）也用这几项的字和图标。
+    static func title(for item: MoreMenuItem, selectedCount: Int, isNoteToSelf: Bool = false) -> String {
         switch item {
         case .sendAsFile where selectedCount > 1:
             String.nonPluralLocalizedStringWithFormat(
@@ -1263,7 +1264,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         }
     }
 
-    private static func image(for item: MoreMenuItem) -> UIImage? {
+    static func image(for item: MoreMenuItem) -> UIImage? {
         switch item {
         case .sendAsFile: UIImage(named: "file-28")
         case .sendHighQuality: UIImage(named: "hd")

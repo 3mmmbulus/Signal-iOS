@@ -686,6 +686,8 @@ private extension ConversationViewController {
                 pickerModal.sendMediaNavDataSource = self
                 // Tellomi（P-6a）：从会话进的相机只拍，不出系统相册的「相册」键
                 pickerModal.tellomiHidesPhotoLibraryButton = true
+                // Tellomi（P-6d）：拍完的预览页发送键能长按（定时发送、说明位置）
+                self.tellomiInstallSendLongPress(on: pickerModal)
                 pickerModal.modalPresentationStyle = .overFullScreen
                 // Defer hiding status bar until modal is fully onscreen
                 // to prevent unwanted shifting upwards of the entire presenter VC's view.
@@ -713,6 +715,8 @@ private extension ConversationViewController {
         )
         pickerModal.sendMediaNavDelegate = self
         pickerModal.sendMediaNavDataSource = self
+        // Tellomi（P-6d）：选完的预览页发送键能长按（定时发送、说明位置）
+        tellomiInstallSendLongPress(on: pickerModal)
 
         self.dismissKeyBoard()
         let presenter = self.splitViewController ?? self
@@ -799,18 +803,38 @@ extension ConversationViewController: SendMediaNavDelegate {
         didApproveAttachments approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
     ) {
+        // Tellomi（P-6d）：长按发送里切的说明位置、选的「定时发送」（普通发送是 false / nil，同上游）。
+        let captionAboveMedia = sendMediaNavigationController.tellomiCaptionAboveMedia
+        let scheduledAt = sendMediaNavigationController.tellomiApprovedScheduledAt
+        // 排不排得下按拆成几条精确查（同选图页）；排不下就在预览页上说、一条都不排。
+        if scheduledAt != nil, Self.tellomiScheduledMessageCount(for: approvedAttachments, separately: false) > tellomiScheduledMessageCapacity() {
+            OWSActionSheets.showActionSheet(
+                message: TellomiScheduledMessageSender.ScheduleError.tooManyScheduled.localizedDescription,
+                fromViewController: sendMediaNavigationController,
+            )
+            return
+        }
         ModalActivityIndicatorViewController.present(
             fromViewController: sendMediaNavigationController,
             title: CommonStrings.preparingModal,
             asyncBlock: { modal in
+                let startedAt = Date()
                 await self.sendAttachments(
                     approvedAttachments,
                     messageBody: messageBody,
                     from: sendMediaNavigationController,
                     attachmentLimits: sendMediaNavigationController.attachmentLimits,
+                    captionAboveMedia: captionAboveMedia,
+                    tellomiScheduledAt: scheduledAt,
                 )
+                let scheduledSome = scheduledAt != nil && self.tellomiHasScheduledMessages(since: startedAt)
                 modal.dismiss(completion: {
-                    self.dismiss(animated: true)
+                    self.dismiss(animated: true) {
+                        // 同选图页（Telegram 两端）：排好了就打开这个会话的定时消息。
+                        if scheduledSome {
+                            self.tellomiOpenScheduledMessages()
+                        }
+                    }
                 })
             },
         )

@@ -37,6 +37,11 @@ extension AttachmentApprovalViewController {
         TellomiSendLongPressGestureRecognizer.install(on: mediaCaptionToolbar.proceedButton, handler: handler)
     }
 
+    /// 两端对齐清单 P-6d：这一页现在要发的几张（这一页里删掉的已经不在了），长按发送的预览气泡用。
+    public var tellomiApprovalItems: [AttachmentApprovalItem] {
+        attachmentApprovalItems
+    }
+
     /// tellomi/tellomi#1519 M-4：长按发送里选了「定时发送」：照常发送（编辑画进去、选的画质、一次性查看），只是交给 delegate 时
     /// `tellomiApprovedScheduledAt` 是这个时间，由它排成定时消息。
     public func tellomiProceed(scheduledAt: Date) {

@@ -136,4 +136,17 @@ extension ConversationViewController {
         }
         return TellomiMutedVideoSending.messageGroups(approvedAttachments)?.groups.count ?? 1
     }
+
+    // MARK: - 拍完 / 系统选择器选完的预览页（P-6d）
+
+    /// Tellomi（两端对齐清单 P-6d，owner 2026-10-16）：聊天栏相机键、附件 Sheet 的相机格拍完、系统选择器选完的预览页，
+    /// 发送键长按出「定时发送」「说明文字上移 / 下移」（`SendMediaNavigationController+Tellomi.swift`）；发出来时会话页在
+    /// `sendMediaNav(_:didApproveAttachments:messageBody:)` 里按它带的时间排成定时消息。
+    func tellomiInstallSendLongPress(on sendMediaNavigationController: SendMediaNavigationController) {
+        sendMediaNavigationController.tellomiSendMenuContext = TellomiMediaSendMenuContext(
+            isNoteToSelf: thread.isNoteToSelf,
+            bubbleColor: viewState.conversationStyle.bubbleChatColorOutgoing,
+            scheduledMessageCapacity: { [weak self] in self?.tellomiScheduledMessageCapacity() ?? 0 },
+        )
+    }
 }
