@@ -132,6 +132,11 @@ public class CVViewState: NSObject {
     let tellomiDragSelectRecognizer = TellomiTwoFingerPanRecognizer(target: nil, action: nil)
     var tellomiDragSelectState: TellomiDragSelectState?
     var tellomiBottomBarSwap: TellomiBottomBarSwap?
+    /// Tellomi（交互审计 A-08）：跳到某条消息的滚动动画、点引用时记下的来处、滚到底按钮记住的来处、新开聊天时那条有没有高亮过。
+    var tellomiJumpScrollAnimator: TellomiJumpScrollAnimator?
+    var tellomiPendingJumpSource: TellomiPendingJumpSource?
+    var tellomiJumpBackStack = TellomiJumpBackStack()
+    var tellomiDidHighlightInitialFocus = false
 
     public var collectionViewActiveContextMenuInteraction: ChatHistoryContextMenuInteraction?
     public var longPressHandler: CVLongPressHandler?

@@ -448,6 +448,8 @@ public final class ConversationViewController: OWSViewController {
 
         scrollToInitialPosition(animated: false)
         if viewState.hasAppliedFirstLoad {
+            // Tellomi（交互审计 A-08）：从搜索结果 / 通知进来的那条，页面出现时高亮一下。
+            tellomiHighlightInitialFocusMessageIfNeeded()
             self.clearInitialScrollState()
         }
 

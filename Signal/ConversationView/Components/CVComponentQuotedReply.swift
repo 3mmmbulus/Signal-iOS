@@ -82,6 +82,8 @@ public class CVComponentQuotedReply: CVComponentBase, CVComponent {
         renderItem: CVRenderItem,
     ) -> Bool {
 
+        // Tellomi（交互审计 A-08）：先记下来处（这一条），跳完以后滚到底按钮第一下回到这里。
+        componentDelegate.tellomiWillJumpFromQuotedReply(inInteractionId: renderItem.interactionUniqueId)
         componentDelegate.didTapQuotedReply(quotedReplyModel)
         return true
     }

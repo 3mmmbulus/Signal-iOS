@@ -432,6 +432,8 @@ extension ConversationViewController: CVLoadCoordinatorDelegate {
 
         scrollToInitialPosition(animated: false)
         if self.hasViewDidAppearEverCompleted {
+            // Tellomi（交互审计 A-08）：页面先出现、第一次加载后到：这时才能高亮那条。
+            tellomiHighlightInitialFocusMessageIfNeeded()
             clearInitialScrollState()
         }
         updateViewToReflectLoad(loadedRenderState: self.renderState)

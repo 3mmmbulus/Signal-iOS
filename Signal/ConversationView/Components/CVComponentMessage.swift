@@ -2831,9 +2831,13 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             } else if chatColorView.superview != nil {
                 dimmableBubbleView = chatColorView
             }
-            guard let dimmableBubbleView else { return }
+            // Tellomi（交互审计 A-08）：淡入 0.2 s、停 0.7 s、ease-out 淡出 0.3 s；没有气泡的（贴纸、大表情）整条压暗一下，原来什么都没有。
+            guard let dimmableBubbleView else {
+                contentViewSwipeToReplyWrapper.layer.add(TellomiJumpHighlight.contentDimAnimation(), forKey: TellomiJumpHighlight.animationKey)
+                return
+            }
             dimmableBubbleView.dimmerColor = Theme.isDarkThemeEnabled ? .ows_whiteAlpha25 : .ows_blackAlpha25
-            dimmableBubbleView.performDimmingAnimation(animationDuration: 0.4, dimDuration: 0.8)
+            dimmableBubbleView.tellomiPerformJumpHighlight()
         }
     }
 

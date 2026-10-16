@@ -210,6 +210,9 @@ extension ConversationViewController: UIScrollViewDelegate {
         if !isUserScrolling, !isWaitingForDeceleration {
             saveLastVisibleSortIdAndOnScreenPercentage()
         }
+
+        // Tellomi（交互审计 A-08）：滚到（或滚过）滚到底按钮记着的来处，就不记了。
+        tellomiFilterJumpBackStack()
     }
 
     public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {

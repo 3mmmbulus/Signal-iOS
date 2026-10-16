@@ -142,6 +142,9 @@ public protocol CVComponentDelegate: AnyObject, AudioMessageViewDelegate, CVPoll
 
     func didTapQuotedReply(_ quotedReply: QuotedReplyModel)
 
+    /// Tellomi（交互审计 A-08）：点了 `interactionId` 那条里的引用、要跳去原消息：会话页记下来处，滚到底按钮第一下回到这里。
+    func tellomiWillJumpFromQuotedReply(inInteractionId interactionId: String)
+
     func didTapLinkPreview(url: URL)
 
     func didTapContactShare(_ contactShare: ContactShareViewModel)
@@ -409,4 +412,11 @@ struct CVMessageAction: Equatable {
             }
         }
     }
+}
+
+// MARK: - Tellomi
+
+public extension CVComponentDelegate {
+    /// 只有会话页需要；别的地方（编辑记录、消息详情等）点引用不跳。
+    func tellomiWillJumpFromQuotedReply(inInteractionId interactionId: String) {}
 }

@@ -138,10 +138,11 @@ extension ConversationViewController {
                 scrollToLastVisibleInteraction(animated: animated)
                 return
             } else if let indexPath = indexPath(forInteractionUniqueId: focusMessageId) {
+                // Tellomi（交互审计 A-08）：从搜索结果 / 通知进来的那条放在中间（原来贴在顶上），高亮在页面出现以后。
                 scrollToInteraction(
                     indexPath: indexPath,
                     interactionUniqueId: focusMessageId,
-                    alignment: .top,
+                    alignment: .center,
                     animated: animated,
                 )
                 return
@@ -232,6 +233,9 @@ extension ConversationViewController {
     ) {
         guard !isUserScrolling else { return }
 
+        // Tellomi（交互审计 A-08）：点引用时记下的来处，跳完交给滚到底按钮（这次没滚就不记）。
+        let tellomiJumpSource = tellomiTakePendingJumpSource()
+
         view.layoutIfNeeded()
 
         guard let attributes = layout.layoutAttributesForItem(at: indexPath) else {
@@ -271,8 +275,8 @@ extension ConversationViewController {
         guard indexPath != lastIndexPathInLoadedWindow || !onScreenPercentage.isEqual(to: 1) else {
             // If we're scrolling to the last index AND we want it entirely on screen,
             // scroll directly to the bottom regardless of the requested destination.
-            let contentOffset = CGPoint(x: 0, y: bottomDestinationY)
-            collectionView.setContentOffset(contentOffset, animated: animated)
+            // Tellomi（交互审计 A-08）：近的滑过去，远的先停到一屏外再滑完最后一屏。
+            tellomiJumpScroll(toY: bottomDestinationY, animated: animated, jumpSource: tellomiJumpSource)
             updateLastKnownDistanceFromBottom()
             focusVoiceoverElementAfterScroll()
             return
@@ -302,8 +306,8 @@ extension ConversationViewController {
         // the bottom of the collection view, scroll to bottom
         else if destinationY > bottomDestinationY { destinationY = bottomDestinationY }
 
-        let contentOffset = CGPoint(x: 0, y: destinationY)
-        collectionView.setContentOffset(contentOffset, animated: animated)
+        // Tellomi（交互审计 A-08）：近的滑过去，远的先停到一屏外再滑完最后一屏。
+        tellomiJumpScroll(toY: destinationY, animated: animated, jumpSource: tellomiJumpSource)
         updateLastKnownDistanceFromBottom()
     }
 
@@ -455,6 +459,11 @@ extension ConversationViewController {
 
     func scrollDownButtonTapped() {
         AssertIsOnMainThread()
+
+        // Tellomi（交互审计 A-08）：刚从引用跳上来：第一下先回到引用它的那条。
+        if tellomiJumpBackIfPossible() {
+            return
+        }
 
         // TODO: I'm not sure this will do the right thing if there's an unread indicator
         // below current scroll position but outside the load window, e.g. if we entered
