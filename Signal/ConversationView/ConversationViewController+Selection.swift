@@ -650,5 +650,7 @@ extension ConversationViewController: CVSelectionStateDelegate {
         AssertIsOnMainThread()
 
         updateSelectionButtons()
+        // Tellomi（交互审计 A-15）：读屏念「已选 N 条」。
+        tellomiAnnounceSelectionCountIfNeeded()
     }
 }

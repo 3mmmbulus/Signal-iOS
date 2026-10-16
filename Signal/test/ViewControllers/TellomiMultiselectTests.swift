@@ -141,6 +141,14 @@ final class TellomiMultiselectTests: XCTestCase {
         XCTAssertNil(indicator.layer.animation(forKey: TellomiCheckPop.animationKey), "重画时照旧赋值，不弹")
     }
 
+    // MARK: - 读屏公告
+
+    func testSelectionCountIsReadOut() {
+        let text = TellomiSelectionAnnouncement.text(selectedCount: 3)
+        XCTAssertTrue(text.contains("3"), text)
+        XCTAssertNotEqual(text, "IMAGE_PICKER_TELLOMI_SELECTED_FORMAT", "要有译文，不能念出键名")
+    }
+
     // MARK: - 进出多选换栏
 
     func testOnlyNormalSelectionTogglesAnimateTheBars() {

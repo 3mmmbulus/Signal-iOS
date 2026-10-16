@@ -502,6 +502,43 @@ extension ConversationViewController {
     }
 }
 
+// MARK: - 读屏公告
+
+enum TellomiSelectionAnnouncement {
+    /// 「已选 N 条」。用相册选择器那句「%@ selected / 已选 %@ 项」（47 种语言都有，附件 Sheet 的文件页也用它），不另加要翻 47 种语言的新句子。
+    static func text(selectedCount: Int) -> String {
+        String.nonPluralLocalizedStringWithFormat(
+            OWSLocalizedString("IMAGE_PICKER_TELLOMI_SELECTED_FORMAT", comment: "Accessibility label of the selected-count pill in the photo picker. Embeds {{ number selected }}."),
+            OWSFormat.formatInt(selectedCount),
+        )
+    }
+}
+
+extension ConversationViewController {
+
+    /// 多选里每改一次选中，旁白念一遍现在选了几条。同一轮里连着改好几下（拖选一下改几条、文字和附件两部分）只念最后的数。
+    /// 退出多选时清空选中不念。
+    func tellomiAnnounceSelectionCountIfNeeded() {
+        guard UIAccessibility.isVoiceOverRunning, uiMode == .selection, !viewState.tellomiSelectionAnnouncementPending else {
+            return
+        }
+        viewState.tellomiSelectionAnnouncementPending = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self else {
+                return
+            }
+            self.viewState.tellomiSelectionAnnouncementPending = false
+            guard self.uiMode == .selection else {
+                return
+            }
+            UIAccessibility.post(
+                notification: .announcement,
+                argument: TellomiSelectionAnnouncement.text(selectedCount: self.selectionState.interactionCount),
+            )
+        }
+    }
+}
+
 // MARK: - 进出多选：顶栏 / 底栏
 
 enum TellomiSelectionBars {
