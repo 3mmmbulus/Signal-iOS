@@ -10,7 +10,11 @@ import XCTest
 import SignalUI
 
 /// Tellomi（ADR-0066 §6.1b，owner 2026-09-27）：用户名一律小写——显示、保留 / hash / 链接用小写；别的非法字符照旧报错、不删。
-final class TellomiUsernameLowercaseTest: XCTestCase {
+///
+/// 用 `SignalBaseTest`（2026-10-17）：这里有用例把输入框放进窗口，UIKit 这时会问同一个窗口场景里前面用例留下的视图控制器
+/// （例如选图测试弹过的 `AttachmentApprovalViewController`）要不要藏状态栏，它会读 `DependenciesBridge.shared`；
+/// 没搭依赖时那里 `owsFail`，整个测试进程崩掉，这条用例按顺序时好时坏。
+final class TellomiUsernameLowercaseTest: SignalBaseTest {
 
     // MARK: 显示
 
@@ -71,9 +75,9 @@ final class TellomiUsernameLowercaseTest: XCTestCase {
             XCTAssertEqual(bundle.localizedString(forKey: "USERNAME_SELECTION_RULE_HINT_TELLOMI", value: nil, table: nil), hint, localization)
             XCTAssertEqual(bundle.localizedString(forKey: "USERNAME_SELECTION_AUTO_LOWERCASED_TELLOMI", value: nil, table: nil), notice, localization)
         }
-        // 页面上实际用的那句（测试按 en 跑）；键名写错时 OWSLocalizedString 原样返回键名
-        XCTAssertEqual(TellomiUsernameInput.ruleHint, expected[0].hint)
-        XCTAssertEqual(TellomiUsernameInput.autoLowercasedNotice, expected[0].notice)
+        // 页面上实际用的那句，按当前语言取同一个键（中文系统上跑也对）；键名写错时 OWSLocalizedString 原样返回键名，这里就不相等
+        XCTAssertEqual(TellomiUsernameInput.ruleHint, OWSLocalizedString("USERNAME_SELECTION_RULE_HINT_TELLOMI", comment: ""))
+        XCTAssertEqual(TellomiUsernameInput.autoLowercasedNotice, OWSLocalizedString("USERNAME_SELECTION_AUTO_LOWERCASED_TELLOMI", comment: ""))
     }
 
     @MainActor
@@ -352,7 +356,7 @@ final class TellomiUsernameSelectionLowercaseTest: SignalBaseTest {
         XCTAssertTrue(viewController.textField(field, shouldChangeCharactersIn: NSRange(location: 9, length: 0), replacementString: "-"))
         field.text = "kaixin2go-"
         field.sendActions(for: .editingChanged)
-        let invalidCharactersMessage = "Usernames may only contain a-z, 0-9, and _"
+        let invalidCharactersMessage = OWSLocalizedString("USERNAME_SELECTION_INVALID_CHARACTERS_ERROR_MESSAGE", comment: "")
         await waitUntil { self.find(UITextView.self, in: viewController.view) { $0.text == invalidCharactersMessage } != nil }
         let errorView = try XCTUnwrap(find(UITextView.self, in: viewController.view) { $0.text == invalidCharactersMessage })
         let red = UIColor.Signal.red

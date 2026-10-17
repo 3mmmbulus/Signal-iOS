@@ -29,7 +29,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         let picker = hosted.picker
 
-        XCTAssertEqual(picker.titleForTesting, "Recents")
+        XCTAssertEqual(picker.titleForTesting, Strings.recents)
         XCTAssertFalse(picker.isCountPillShownForTesting)
         XCTAssertFalse(picker.isMoreButtonShownForTesting)
         XCTAssertFalse(picker.isSendBarShownForTesting)
@@ -214,7 +214,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         limited.isAccessLimited = true
         let hosted = host(library: limited)
         defer { hosted.tearDown() }
-        XCTAssertEqual(hosted.picker.limitedAccessBannerTextForTesting, "You’ve limited Tellomi’s access to your photos.")
+        XCTAssertEqual(hosted.picker.limitedAccessBannerTextForTesting, Strings.limitedAccess)
         XCTAssertEqual(frame(of: 0, in: hosted.picker).minY, 56, accuracy: 0.01, "横幅在网格里，第一格在它下面")
         let manage = try XCTUnwrap(hosted.picker.limitedAccessManageButtonFrameForTesting)
         XCTAssertEqual(manage.size.height, 28, accuracy: 0.01, "「管理」胶囊高 28")
@@ -237,17 +237,17 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendHighQuality])
-        XCTAssertEqual(picker.moreMenuTitlesForTesting, ["Send in High Quality"])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendHighQuality])
 
         picker.tapCheckForTesting(itemIndex: 3)
         XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendHighQuality, .sendSeparately])
-        XCTAssertEqual(picker.moreMenuTitlesForTesting, ["Send in High Quality", "Send Separately"])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendHighQuality, Strings.sendSeparately])
 
         let high = host(defaultImageQuality: .high)
         defer { high.tearDown() }
         high.picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertEqual(high.picker.moreMenuItemsForTesting, [.sendStandardQuality])
-        XCTAssertEqual(high.picker.moreMenuTitlesForTesting, ["Send in Standard Quality"])
+        XCTAssertEqual(high.picker.moreMenuTitlesForTesting, [Strings.sendStandardQuality])
 
         let videos = host()
         defer { videos.tearDown() }
@@ -316,11 +316,11 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality])
-        XCTAssertEqual(picker.moreMenuTitlesForTesting, ["Send as File", "Send in High Quality"])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendAsFile, Strings.sendHighQuality])
 
         picker.tapCheckForTesting(itemIndex: 3)
         XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality, .sendSeparately])
-        XCTAssertEqual(picker.moreMenuTitlesForTesting, ["Send as 2 Files", "Send in High Quality", "Send Separately"])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendAsFiles(2), Strings.sendHighQuality, Strings.sendSeparately])
 
         let videos = host(canSendAsFile: true)
         defer { videos.tearDown() }
@@ -450,11 +450,11 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let picker = hosted.picker
         picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionUp)
-        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, "Move Caption Up")
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, Strings.moveCaptionUp)
 
         picker.performMoreMenuItemForTesting(.moveCaptionUp)
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown)
-        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, "Move Caption Down")
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, Strings.moveCaptionDown)
         XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
 
         picker.performMoreMenuItemForTesting(.sendHighQuality)
@@ -472,7 +472,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         hosted.picker.tapCheckForTesting(itemIndex: 0)
         XCTAssertFalse(hosted.picker.moreMenuItemsForTesting.contains(.moveCaptionUp))
-        XCTAssertEqual(hosted.picker.sendMenuTitlesForTesting, ["Schedule Message"], "没有说明时长按只有定时发送（M-4）")
+        XCTAssertEqual(hosted.picker.sendMenuTitlesForTesting, [Strings.scheduleMessage], "没有说明时长按只有定时发送（M-4）")
     }
 
     /// #1263（ADR-0068 §4.7 P3）：发送键长按菜单的「说明文字上移 / 下移」——条件同「···」那项，和它是同一个开关；
@@ -483,13 +483,13 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         let picker = hosted.picker
         picker.tapCheckForTesting(itemIndex: 0)
-        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Schedule Message"])
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, [Strings.scheduleMessage])
 
         picker.typeCaptionForTesting("说明")
-        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Up", "Schedule Message"])
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, [Strings.moveCaptionUp, Strings.scheduleMessage])
 
         picker.performSendMenuCaptionItemForTesting()
-        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Move Caption Down", "Schedule Message"])
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, [Strings.moveCaptionDown, Strings.scheduleMessage])
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
         XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
 
@@ -499,16 +499,16 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         editor.tellomiLongPressSendForTesting()
         let preview = try await presentedPreview(picker)
         XCTAssertTrue(preview.presentingViewController === editor.navigationController, "盖在预览 / 编辑页上面")
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down", "Schedule Message"])
+        XCTAssertEqual(preview.actionTitlesForTesting, [Strings.moveCaptionDown, Strings.scheduleMessage])
         picker.performMoreMenuItemForTesting(.moveCaptionDown)
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up", "Schedule Message"])
+        XCTAssertEqual(preview.actionTitlesForTesting, [Strings.moveCaptionUp, Strings.scheduleMessage])
         preview.tapBackgroundForTesting()
         let previewClosed = await waitUntil { picker.sendPreviewForTesting == nil }
         XCTAssertTrue(previewClosed)
         await closeEditor(picker)
 
         picker.typeCaptionForTesting("")
-        XCTAssertEqual(picker.sendMenuTitlesForTesting, ["Schedule Message"])
+        XCTAssertEqual(picker.sendMenuTitlesForTesting, [Strings.scheduleMessage])
     }
 
     /// #1519 M-5（照 Telegram iOS `ChatSendMessageContextScreen`）：长按发送键 = 发送键左边一个「发出去是什么样」的气泡、下面是菜单，
@@ -525,7 +525,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         picker.longPressSendForTesting()
         let preview = try await presentedPreview(picker)
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Up", "Schedule Message"])
+        XCTAssertEqual(preview.actionTitlesForTesting, [Strings.moveCaptionUp, Strings.scheduleMessage])
         XCTAssertEqual(preview.captionTextForTesting, "Trip")
         XCTAssertEqual(preview.captionIsAboveMediaForTesting, false)
 
@@ -545,7 +545,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         preview.performActionForTesting(at: 0)
         XCTAssertTrue(picker.sendPreviewForTesting === preview, "点了不收")
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Move Caption Down", "Schedule Message"])
+        XCTAssertEqual(preview.actionTitlesForTesting, [Strings.moveCaptionDown, Strings.scheduleMessage])
         XCTAssertEqual(preview.captionIsAboveMediaForTesting, true)
         XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
 
@@ -630,7 +630,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         picker.longPressSendForTesting()
         let preview = try await presentedPreview(picker)
-        XCTAssertEqual(preview.actionTitlesForTesting.last, "Schedule Message")
+        XCTAssertEqual(preview.actionTitlesForTesting.last, Strings.scheduleMessage)
         preview.performActionForTesting(at: preview.actionTitlesForTesting.count - 1)
         let sheet = try await presentedScheduleSheet(over: picker)
         XCTAssertNil(picker.sendPreviewForTesting, "预览收起，换成选时间")
@@ -661,7 +661,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertTrue(editor.tellomiSendLongPressEnabledForTesting, "没写说明也能长按（有定时发送）")
         editor.tellomiLongPressSendForTesting()
         let preview = try await presentedPreview(picker)
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Schedule Message"])
+        XCTAssertEqual(preview.actionTitlesForTesting, [Strings.scheduleMessage])
         preview.performActionForTesting(at: 0)
         let sheet = try await presentedScheduleSheet(over: picker)
         let at = TellomiScheduleTimeSheet.defaultDate(now: Date()).addingTimeInterval(3600)
@@ -704,7 +704,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let hosted = host(canSendAsFile: true, isNoteToSelf: true)
         defer { hosted.tearDown() }
         hosted.picker.tapCheckForTesting(itemIndex: 0)
-        XCTAssertEqual(hosted.picker.sendMenuTitlesForTesting, ["Set a Reminder"])
+        XCTAssertEqual(hosted.picker.sendMenuTitlesForTesting, [Strings.setReminder])
     }
 
     // MARK: - P-9 / P-10 在网格里直接发
@@ -752,25 +752,25 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(field.maxX - button.maxX, 4, accuracy: 0.5)
         XCTAssertEqual(field.maxY - button.maxY, 4, accuracy: 0.5)
         XCTAssertGreaterThanOrEqual(picker.captionTextContainerInsetForTesting.right, field.maxX - button.minX, "字不压到表情键下面")
-        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, "Emoji")
+        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, Strings.emoji)
         XCTAssertNil(picker.captionInputViewForTesting)
         XCTAssertFalse(picker.isCaptionEditingForTesting)
 
         picker.tapCaptionEmojiButtonForTesting()
         XCTAssertNotNil(picker.captionEmojiKeyboardForTesting, "说明框换成表情键盘")
         XCTAssertTrue(picker.isCaptionEditingForTesting, "点表情键直接进入编辑")
-        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, "Keyboard")
+        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, Strings.keyboard)
 
         picker.tapCaptionEmojiButtonForTesting()
         XCTAssertNil(picker.captionInputViewForTesting, "再点回到文字键盘")
         XCTAssertTrue(picker.isCaptionEditingForTesting)
-        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, "Emoji")
+        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, Strings.emoji)
 
         picker.tapCaptionEmojiButtonForTesting()
         XCTAssertNotNil(picker.captionEmojiKeyboardForTesting)
         picker.endCaptionEditingForTesting()
         XCTAssertNil(picker.captionInputViewForTesting, "收起键盘后回到文字键盘")
-        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, "Emoji")
+        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, Strings.emoji)
     }
 
     /// 表情键盘里点一个 emoji：插在光标处（不是接在末尾），会话输入框跟着变；退格删掉光标前的整个 emoji。
@@ -832,7 +832,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         keyboard.tapKeyboardForTesting()
         XCTAssertNil(picker.captionInputViewForTesting, "点「键盘」回到文字键盘")
         XCTAssertTrue(picker.isCaptionEditingForTesting)
-        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, "Emoji")
+        XCTAssertEqual(picker.captionEmojiButtonAccessibilityLabelForTesting, Strings.emoji)
     }
 
     /// 按住退格连着删（先删一个，0.5 秒后每 0.1 秒一个），松手就停。
@@ -970,7 +970,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         viewer.longPressSendForTesting()
         let preview = try await presentedPreview(picker)
         XCTAssertTrue(preview.presentingViewController === viewer, "预览盖在查看器上")
-        XCTAssertEqual(preview.actionTitlesForTesting, ["Schedule Message"])
+        XCTAssertEqual(preview.actionTitlesForTesting, [Strings.scheduleMessage])
         preview.tapBackgroundForTesting()
         let previewClosed = await waitUntil { picker.sendPreviewForTesting == nil }
         XCTAssertTrue(previewClosed)
@@ -1209,7 +1209,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             picker.tapCheckForTesting(itemIndex: index)
         }
         XCTAssertEqual(picker.selectedIdsForTesting, ["r0", "r1", "r2"])
-        XCTAssertEqual(toastTexts(in: picker.view), ["You can select up to 3 items at a time"])
+        XCTAssertEqual(toastTexts(in: picker.view), [Strings.atMost(3)])
         XCTAssertNil(picker.cellForTesting(itemIndex: 3)?.numberTextForTesting)
 
         let rowTwo = center(of: 3, in: picker)
@@ -1235,7 +1235,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let asked = await waitUntil { picker.presentedViewController is ActionSheetController }
         XCTAssertTrue(asked)
         let sheet = try XCTUnwrap(picker.presentedViewController as? ActionSheetController)
-        XCTAssertEqual(sheet.actions.map { $0.button.configuration?.title }, ["Discard Media", CommonStrings.cancelButton])
+        XCTAssertEqual(sheet.actions.map { $0.button.configuration?.title }, [Strings.discardMedia, CommonStrings.cancelButton])
     }
 
     // MARK: - 相册
@@ -1246,7 +1246,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let hosted = host()
         defer { hosted.tearDown() }
         let picker = hosted.picker
-        XCTAssertEqual(picker.albumTitlesForTesting, ["Recents", "Screenshots"])
+        XCTAssertEqual(picker.albumTitlesForTesting, [Strings.recents, "Screenshots"])
 
         picker.tapCheckForTesting(itemIndex: 0)
         picker.switchAlbumForTesting(title: "Screenshots")
@@ -1328,7 +1328,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let preview = picker.selectedViewForTesting
         preview.layoutIfNeeded()
         XCTAssertTrue(preview.backgroundViewForTesting === background, "铺会话的聊天背景")
-        XCTAssertEqual(preview.chipTextsForTesting, ["Drag to reorder"])
+        XCTAssertEqual(preview.chipTextsForTesting, [Strings.dragToReorder])
         XCTAssertEqual(preview.cardIdsForTesting, ["r3", "r0", "r5"])
         XCTAssertEqual(preview.cardNumbersForTesting, ["1", "2", "3"])
 
@@ -1471,11 +1471,11 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         preview.tapCheckForTesting("r0")
         XCTAssertEqual(picker.selectedIdsForTesting, ["r3", "r5"])
-        XCTAssertEqual(picker.undoBarTextForTesting, "1 deselected")
+        XCTAssertEqual(picker.undoBarTextForTesting, Strings.deselected(1))
         XCTAssertEqual(picker.undoBarFrameForTesting.maxY, picker.sendBarFrameForTesting.minY - 8, accuracy: 0.01, "在说明栏上面")
 
         preview.tapCheckForTesting("r5")
-        XCTAssertEqual(picker.undoBarTextForTesting, "2 deselected")
+        XCTAssertEqual(picker.undoBarTextForTesting, Strings.deselected(2))
         XCTAssertEqual(preview.cardIdsForTesting, ["r3"])
         XCTAssertEqual(preview.chipTextsForTesting, [], "只剩一张就不提示拖动")
 
@@ -1505,7 +1505,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(picker.selectedIdsForTesting, [])
         let back = await waitUntil { picker.displayMode == .all }
         XCTAssertTrue(back, "全部取消自动回网格")
-        XCTAssertEqual(picker.undoBarTextForTesting, "1 deselected")
+        XCTAssertEqual(picker.undoBarTextForTesting, Strings.deselected(1))
         XCTAssertFalse(picker.isSendBarShownForTesting)
 
         picker.tapUndoForTesting()
@@ -1633,7 +1633,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertGreaterThan(camera.stops, stopsBefore, "看不见就停")
 
         let startsBefore = camera.starts
-        picker.switchAlbumForTesting(title: "Recents")
+        picker.switchAlbumForTesting(title: Strings.recents)
         picker.collectionViewForTesting.layoutIfNeeded()
         XCTAssertNotNil(picker.cameraFrameForTesting)
         XCTAssertGreaterThan(camera.starts, startsBefore, "又露出来就重新取景")
@@ -1826,7 +1826,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         defer { hosted.tearDown() }
         let picker = hosted.picker
         let dock = try XCTUnwrap(picker.dockForTesting)
-        XCTAssertEqual(dock.items.map(\.title), ["Gallery", "File", "Location", "Poll", "Contact", "GIF"])
+        XCTAssertEqual(dock.items.map(\.title), [TellomiAttachmentDockItem.gallery, .file, .location, .poll, .contact, .gif].map(\.title))
         XCTAssertEqual(
             dock.items.map(\.imageName),
             ["album-tilt-28", "file-28", "location-28", "poll-28", "person-circle-28", "gif-28"],
@@ -1985,7 +1985,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             let hosted = host(dockItems: TellomiAttachmentDockItem.attachmentSheetItems)
             defer { hosted.tearDown() }
             let dock = try XCTUnwrap(hosted.picker.dockForTesting)
-            XCTAssertEqual(dock.items.map(\.title), ["Gallery", "File", "Location", "Poll", "Contact"], "\(flags)")
+            XCTAssertEqual(dock.items.map(\.title), [TellomiAttachmentDockItem.gallery, .file, .location, .poll, .contact].map(\.title), "\(flags)")
         }
     }
 
@@ -2009,7 +2009,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             dock.tapForTesting(item)
         }
         dock.tapForTesting(.gallery)
-        XCTAssertEqual(hosted.delegate.dockSelections.map(\.title), ["File", "Location", "Poll", "Contact", "GIF"])
+        XCTAssertEqual(hosted.delegate.dockSelections.map(\.title), [TellomiAttachmentDockItem.file, .location, .poll, .contact, .gif].map(\.title))
     }
 
     /// 重复点「相册」：Sheet 从收起展开到全屏（同 Telegram 重复点当前格），不交给会话页。
@@ -2061,7 +2061,9 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let denied = FakePhotoLibrary()
         denied.isAccessDenied = true
         let photos = OWSLocalizedString("ATTACHMENT_KEYBOARD_PHOTOS", comment: "")
-        XCTAssertEqual(photos, "Photos")
+        if Bundle.main.preferredLocalizations.first == "en" {
+            XCTAssertEqual(photos, "Photos", "上游的同一个词（权限清单 §7.2 写的「全部相册」入口）")
+        }
         let cameras: [TellomiPhotoPickerCamera?] = [FakeCamera(access: .authorized), nil]
         for camera in cameras {
             let hosted = host(library: denied, camera: camera, dockItems: TellomiAttachmentDockItem.attachmentSheetItems)
@@ -2403,6 +2405,36 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 // MARK: - Fakes
 
 /// 内存里的相册：「最近」24 项（第 2、8 项是视频，第 3 项是实况照片），「Screenshots」3 项；缩略图是纯色块。
+/// 界面上的字，取 App 自己用的同一个 key、同一个格式化（测试在模拟器当前的语言下跑，中文系统上也要过）。
+private enum Strings {
+    static let recents = OWSLocalizedString("IMAGE_PICKER_TELLOMI_RECENTS", comment: "")
+    static let sendHighQuality = OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY", comment: "")
+    static let sendStandardQuality = OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY", comment: "")
+    static let sendSeparately = OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_SEPARATELY", comment: "")
+    static let sendAsFile = OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_AS_FILE", comment: "")
+    static let moveCaptionUp = OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP", comment: "")
+    static let moveCaptionDown = OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN", comment: "")
+    static let scheduleMessage = OWSLocalizedString("TELLOMI_SCHEDULE_MESSAGE", comment: "")
+    static let setReminder = OWSLocalizedString("TELLOMI_SCHEDULE_SET_REMINDER", comment: "")
+    static let emoji = OWSLocalizedString("IMAGE_PICKER_TELLOMI_CAPTION_EMOJI_BUTTON", comment: "")
+    static let keyboard = OWSLocalizedString("INPUT_TOOLBAR_KEYBOARD_BUTTON_ACCESSIBILITY_LABEL", comment: "")
+    static let discardMedia = OWSLocalizedString("SEND_MEDIA_CONFIRM_ABANDON_ALBUM", comment: "")
+    static let dragToReorder = OWSLocalizedString("IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER", comment: "")
+    static let limitedAccess = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIMITED_ACCESS", comment: "")
+
+    static func sendAsFiles(_ count: Int) -> String {
+        String.nonPluralLocalizedStringWithFormat(OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_AS_FILES_FORMAT", comment: ""), OWSFormat.formatInt(count))
+    }
+
+    static func deselected(_ count: Int) -> String {
+        String.nonPluralLocalizedStringWithFormat(OWSLocalizedString("IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT", comment: ""), OWSFormat.formatInt(count))
+    }
+
+    static func atMost(_ count: Int) -> String {
+        String.nonPluralLocalizedStringWithFormat(OWSLocalizedString("IMAGE_PICKER_TELLOMI_AT_MOST_FORMAT", comment: ""), OWSFormat.formatInt(count))
+    }
+}
+
 private final class FakePhotoLibrary: TellomiPhotoPickerLibrary {
     var isAccessLimited = false
     var isAccessDenied = false

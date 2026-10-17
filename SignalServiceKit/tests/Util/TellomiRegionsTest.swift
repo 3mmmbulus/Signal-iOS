@@ -699,7 +699,10 @@ class TellomiRegionsTest: XCTestCase {
         }
         XCTAssertEqual(provider.generation, 10)
 
-        let deadline = Date().addingTimeInterval(10)
+        // 等到退役完、线程数回落。数的是进程里所有叫 libsignal-tokio-worker 的线程，其中有 tokio 按需开的阻塞线程
+        // （spawn_blocking，和工作线程同名），空闲 10 秒才退出（tokio `thread_keep_alive` 默认值）；
+        // 只等 10 秒会和它赛跑，偶尔差一两个（2026-10-17 复测报告：28 > 26）。等过它的两倍，判据本身不放宽。
+        let deadline = Date().addingTimeInterval(20)
         while provider.retiredCount > 0 || TellomiRegionDrill.tokioThreadCount() > before, Date() < deadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
