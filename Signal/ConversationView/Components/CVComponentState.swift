@@ -572,6 +572,10 @@ public struct CVComponentState: Equatable {
     /// 标记为真（`TellomiCaptionAbove`）。一次性查看、带链接预览的不适用。
     let tellomiCaptionAboveMedia: Bool
 
+    /// Tellomi（spec attachment-files-location L-11）：认出来的位置消息（正好一张图 + 文字最后一行是地图链接）。
+    /// 有它时气泡画成地图（宽 × 半宽）+ 名称 / 地址，不画图片 + 说明文字；消息内容本身不变（转发、复制照旧）。
+    let tellomiLocation: TellomiLocationMessage?
+
     fileprivate init(
         messageCellType: CVMessageCellType,
         senderName: SenderName?,
@@ -606,8 +610,10 @@ public struct CVComponentState: Equatable {
         hasRenderableContent: Bool,
         poll: Poll?,
         tellomiCaptionAboveMedia: Bool = false,
+        tellomiLocation: TellomiLocationMessage? = nil,
     ) {
         self.tellomiCaptionAboveMedia = tellomiCaptionAboveMedia
+        self.tellomiLocation = tellomiLocation
         self.messageCellType = messageCellType
         self.senderName = senderName
         self.senderAvatar = senderAvatar
@@ -674,7 +680,8 @@ public struct CVComponentState: Equatable {
             lhs.bottomLabel == rhs.bottomLabel &&
             lhs.skippedDownloads == rhs.skippedDownloads &&
             lhs.sendFailureBadge == rhs.sendFailureBadge &&
-            lhs.poll == rhs.poll
+            lhs.poll == rhs.poll &&
+            lhs.tellomiLocation == rhs.tellomiLocation
     }
 
     // MARK: - Building
@@ -760,12 +767,13 @@ public struct CVComponentState: Equatable {
                 bottomButtons = BottomButtons(actions: bottomButtonsActions)
             }
 
+            let tellomiLocation = self.tellomiLocation
             return CVComponentState(
                 messageCellType: messageCellType,
                 senderName: senderName,
                 senderAvatar: senderAvatar,
                 bodyText: bodyText,
-                bodyMedia: bodyMedia,
+                bodyMedia: tellomiLocation != nil ? bodyMedia.map(Self.tellomiLocationMap) : bodyMedia,
                 genericAttachment: genericAttachment,
                 paymentAttachment: paymentAttachment,
                 archivedPaymentAttachment: archivedPaymentAttachment,
@@ -793,8 +801,49 @@ public struct CVComponentState: Equatable {
                 messageHasBodyAttachments: messageHasBodyAttachments,
                 hasRenderableContent: hasRenderableContent,
                 poll: poll,
-                tellomiCaptionAboveMedia: bodyText != nil && bodyMedia != nil && viewOnce == nil && linkPreview == nil
+                tellomiCaptionAboveMedia: bodyText != nil && bodyMedia != nil && viewOnce == nil && linkPreview == nil && tellomiLocation == nil
                     && TellomiCaptionAbove.isCaptionAboveMedia(messageUniqueId: interaction.uniqueId, tx: itemBuildingContext.transaction),
+                tellomiLocation: tellomiLocation,
+            )
+        }
+
+        /// Tellomi（L-11）：只有「一张图 + 地图链接结尾的正文」、别的什么都没有（一次性、贴纸、联系人、投票、链接预览、付款、
+        /// 礼物）时才当位置消息。图还没下载也算：地图位置先画占位，名称 / 地址照常显示。
+        private var tellomiLocation: TellomiLocationMessage? {
+            guard
+                let message = interaction as? TSMessage,
+                !message.wasRemotelyDeleted,
+                viewOnce == nil, sticker == nil, contactShare == nil, poll == nil, linkPreview == nil,
+                paymentAttachment == nil, archivedPaymentAttachment == nil, giftBadge == nil,
+                genericAttachment == nil, audioAttachment == nil, undownloadableAttachment == nil,
+                let bodyMedia, bodyMedia.items.count == 1,
+                case .image = bodyMedia.items[0].attachment.contentType,
+                case .bodyText = bodyText,
+                let body = message.body
+            else {
+                return nil
+            }
+            return TellomiLocationMessage.parse(body: body)
+        }
+
+        /// 地图按 宽 × 半宽 排（Telegram `ChatMessageMapBubbleContentNode`：`fitWidth * 0.5`）；图片按「填满」画，所以发来的
+        /// 方图（上游 iOS 256×256、大头针尖在正中）被居中裁成 2:1，大头针还在中间。尺寸只用来排版，取大一点免得被当成小图不放大。
+        fileprivate static func tellomiLocationMap(_ bodyMedia: BodyMedia) -> BodyMedia {
+            BodyMedia(
+                items: bodyMedia.items.map { item in
+                    var mapItem = CVMediaAlbumItem(
+                        attachment: item.attachment,
+                        attachmentStream: item.attachmentStream,
+                        hasCaption: item.hasCaption,
+                        mediaSize: CGSize(width: 2000, height: 1000),
+                        isBroken: item.isBroken,
+                        threadHasPendingMessageRequest: item.threadHasPendingMessageRequest,
+                    )
+                    mapItem.isTellomiSpoilerCovered = item.isTellomiSpoilerCovered
+                    return mapItem
+                },
+                mediaAlbumHasFailedAttachment: bodyMedia.mediaAlbumHasFailedAttachment,
+                mediaAlbumHasSkippedAttachment: bodyMedia.mediaAlbumHasSkippedAttachment,
             )
         }
 
@@ -990,6 +1039,11 @@ public struct CVComponentState: Equatable {
     }
 
     var isBodyMediaOnlyMessage: Bool {
+        var activeComponentStateKeys = activeComponentStateKeys
+        // Tellomi（L-11）：普通位置（没有名称）只画地图，正文（地址 + 链接）不画，算「只有媒体」（没有小尾巴，同 Telegram 不画气泡底）。
+        if tellomiLocation?.isPlace == false {
+            activeComponentStateKeys.remove(.bodyText)
+        }
         let validKeys: [CVComponentKey] = [
             .senderName,
             .senderAvatar,
@@ -1066,7 +1120,8 @@ public struct CVComponentState: Equatable {
             }
         }
 
-        let hasSecondaryContent = bodyText != nil
+        // Tellomi（L-11）：位置消息是一整块（地图和名称 / 地址），多选时不分成「图」和「文字」两半。
+        let hasSecondaryContent = bodyText != nil && tellomiLocation == nil
 
         return hasPrimaryContent && hasSecondaryContent
     }

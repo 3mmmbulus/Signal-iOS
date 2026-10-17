@@ -149,6 +149,9 @@ public protocol CVComponentDelegate: AnyObject, AudioMessageViewDelegate, CVPoll
 
     func didTapContactShare(_ contactShare: ContactShareViewModel)
 
+    /// Tellomi（spec attachment-files-location L-11）：点了位置消息（地图或名称 / 地址）。
+    func tellomiDidTapLocation(_ location: TellomiLocationMessage, itemViewModel: CVItemViewModelImpl)
+
     func didTapSendMessage(to phoneNumbers: [String])
 
     func didTapSendInvite(toContactShare contactShare: ContactShareViewModel)
@@ -419,4 +422,7 @@ struct CVMessageAction: Equatable {
 public extension CVComponentDelegate {
     /// 只有会话页需要；别的地方（编辑记录、消息详情等）点引用不跳。
     func tellomiWillJumpFromQuotedReply(inInteractionId interactionId: String) {}
+
+    /// 只有会话页打开位置详情；别的地方（编辑记录、消息详情等）点了不动。
+    func tellomiDidTapLocation(_ location: TellomiLocationMessage, itemViewModel: CVItemViewModelImpl) {}
 }

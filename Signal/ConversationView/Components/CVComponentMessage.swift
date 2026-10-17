@@ -301,7 +301,12 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         // isn't present.
         // Tellomi（card-visual §3.5）：消息除了一条链接什么都没有时只画卡片，不画链接文字（完整链接在长按菜单里能复制）。
         let isLinkCardOnly = (componentState.linkPreview?.state as? TellomiLinkPreviewCardState)?.isCardOnly == true
-        if let bodyTextState = itemViewState.bodyTextState, componentState.paymentAttachment == nil, !isLinkCardOnly {
+        if let tellomiLocation = componentState.tellomiLocation {
+            // Tellomi（spec L-11）：位置消息不画原文（地址 + 地图链接）；地点在地图下写名称 + 地址，普通位置只有地图（时间压在图上）。
+            if tellomiLocation.isPlace {
+                bodyText = CVComponentTellomiLocationText(itemModel: itemModel, location: tellomiLocation)
+            }
+        } else if let bodyTextState = itemViewState.bodyTextState, componentState.paymentAttachment == nil, !isLinkCardOnly {
             bodyText = CVComponentBodyText(itemModel: itemModel, bodyTextState: bodyTextState)
         }
         if let contactShareState = componentState.contactShare {
@@ -425,7 +430,12 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 }
             }
 
-            bodyMedia = CVComponentBodyMedia(itemModel: itemModel, bodyMedia: bodyMediaState, footerOverlay: footerOverlay)
+            bodyMedia = CVComponentBodyMedia(
+                itemModel: itemModel,
+                bodyMedia: bodyMediaState,
+                footerOverlay: footerOverlay,
+                tellomiLocation: componentState.tellomiLocation,
+            )
         }
 
         let hasStandaloneFooter = (footerOverlay == nil && !itemViewState.shouldHideFooter)
@@ -1736,6 +1746,9 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
     private static let measurementKey_reactions = "CVComponentMessage.measurementKey_reactions"
     private static let measurementKey_bottomNestedTextSpacing = "CVComponentMessage.measurementKey_bottomNestedTextSpacing"
 
+    /// Tellomi（spec L-11）：位置消息的地图最宽多少（Telegram 手机上 `ChatMessageItemImageLayoutConstants.maxDimensions.width`）。
+    static let tellomiLocationMapMaxWidth: CGFloat = 300
+
     public func measure(maxWidth: CGFloat, measurementBuilder: CVCellMeasurement.Builder) -> CGSize {
         owsAssertDebug(maxWidth > 0)
 
@@ -1770,6 +1783,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         )
         if shouldUseNarrowMaxWidth {
             contentMaxWidth = max(0, min(conversationStyle.maxMediaMessageWidth, contentMaxWidth))
+            if componentState.tellomiLocation != nil {
+                // Tellomi（spec L-11）：地图最宽 300 pt（Telegram 手机上 `image.maxDimensions.width`），名称 / 地址不比地图宽。
+                contentMaxWidth = min(Self.tellomiLocationMapMaxWidth, contentMaxWidth)
+            }
         } else {
             contentMaxWidth = max(0, min(conversationStyle.maxMessageWidth, contentMaxWidth))
         }
@@ -1983,6 +2000,41 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 )
             }
             tryToOverlapBodyTextAndFooter()
+
+            /// Tellomi（spec L-11）：地点的名称 / 地址照上面同一个办法把时间压在最后一行右边（Telegram 也是右下角）；放不下另起一行。
+            func tryToOverlapTellomiLocationTextAndFooter() {
+                guard
+                    keys == [.bodyText, .footer],
+                    let locationText = self.bodyText as? CVComponentTellomiLocationText,
+                    let standaloneFooter = self.standaloneFooter,
+                    !standaloneFooter.tapForMoreState.shouldShowFooter,
+                    let footerMeasurement = CVComponentFooter.footerMeasurement(measurementBuilder: measurementBuilder),
+                    let lastLine = CVComponentTellomiLocationText.lastLineForFooterOverlap(measurementBuilder: measurementBuilder),
+                    lastLine.lastLineWidth > 0,
+                    let textSize = subviewSizes.first
+                else {
+                    return
+                }
+                let font = locationText.lastLineFontForFooterOverlap
+                let lineHeight = max(0, font.lineHeight)
+                let capHeight = max(0, font.capHeight)
+                let descender = max(0, -font.descender)
+                let minOverlapSpacing = 6 * max(1, lineHeight / 20)
+
+                let footerSize = footerMeasurement.measuredSize
+                let overlappedContentWidth = max(textSize.width, lastLine.lastLineWidth + minOverlapSpacing + footerSize.width)
+                guard overlappedContentWidth <= lastLine.maxWidth else {
+                    return
+                }
+
+                let fontOuterSpacing = max(0, lineHeight - (capHeight + descender)) * 0.5
+                let baselineSpacing = max(0, fontOuterSpacing + descender)
+                let bottomNestedTextSpacing = -(footerSize.height * 0.5 + baselineSpacing)
+                stackConfig = stackConfig.withSpacing(bottomNestedTextSpacing)
+                measurementBuilder.setValue(key: Self.measurementKey_bottomNestedTextSpacing, value: bottomNestedTextSpacing)
+                subviewSizes[0] = CGSize(width: overlappedContentWidth, height: textSize.height)
+            }
+            tryToOverlapTellomiLocationTextAndFooter()
 
             let subviewInfos: [ManualStackSubviewInfo] = subviewSizes.map { subviewSize in
                 subviewSize.asManualSubviewInfo

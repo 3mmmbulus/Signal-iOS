@@ -19,6 +19,9 @@ class MockConversationView: UIView {
 
     let hasWallpaper: Bool
 
+    /// Tellomi（spec L-11）：测试里看点位置消息走没走到代理。
+    var tellomiOnTapLocation: ((TellomiLocationMessage) -> Void)?
+
     enum MockItem {
         case date
         case outgoing(text: String)
@@ -322,6 +325,10 @@ public class MockOutgoingMessage: TSOutgoingMessage {
 extension MockConversationView: CVComponentDelegate {
 
     func enqueueReload() {}
+
+    func tellomiDidTapLocation(_ location: TellomiLocationMessage, itemViewModel: CVItemViewModelImpl) {
+        tellomiOnTapLocation?(location)
+    }
 
     func enqueueReloadWithoutCaches() {}
 

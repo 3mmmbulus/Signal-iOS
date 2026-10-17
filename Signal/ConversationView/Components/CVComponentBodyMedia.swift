@@ -26,9 +26,13 @@ class CVComponentBodyMedia: CVComponentBase, CVComponent {
 
     private let footerOverlay: CVComponent?
 
-    init(itemModel: CVItemModel, bodyMedia: CVComponentState.BodyMedia, footerOverlay: CVComponent?) {
+    /// Tellomi（spec attachment-files-location L-11）：这张图是位置消息的地图——点它打开位置详情，不打开看图。
+    private let tellomiLocation: TellomiLocationMessage?
+
+    init(itemModel: CVItemModel, bodyMedia: CVComponentState.BodyMedia, footerOverlay: CVComponent?, tellomiLocation: TellomiLocationMessage? = nil) {
         self.bodyMedia = bodyMedia
         self.footerOverlay = footerOverlay
+        self.tellomiLocation = tellomiLocation
 
         super.init(itemModel: itemModel)
     }
@@ -455,6 +459,10 @@ class CVComponentBodyMedia: CVComponentBase, CVComponent {
             }
         case .stream(let referencedAttachmentStream, isUploading: _, imageMetadata: _):
             let itemViewModel = CVItemViewModelImpl(renderItem: renderItem)
+            if let tellomiLocation {
+                componentDelegate.tellomiDidTapLocation(tellomiLocation, itemViewModel: itemViewModel)
+                return true
+            }
             if let item = items.first(where: { $0.attachment.attachment.attachment.id == referencedAttachmentStream.attachment.id }), item.isBroken {
                 componentDelegate.didTapBrokenVideo()
                 return true
@@ -467,6 +475,10 @@ class CVComponentBodyMedia: CVComponentBase, CVComponent {
             return true
         case .backupThumbnail(let thumbnail):
             let itemViewModel = CVItemViewModelImpl(renderItem: renderItem)
+            if let tellomiLocation {
+                componentDelegate.tellomiDidTapLocation(tellomiLocation, itemViewModel: itemViewModel)
+                return true
+            }
             componentDelegate.didTapBodyMedia(
                 itemViewModel: itemViewModel,
                 attachment: thumbnail,
