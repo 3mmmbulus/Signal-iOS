@@ -139,8 +139,13 @@ final class TellomiLocationBubbleTests: XCTestCase {
 
     @MainActor
     func testTheMapIsWidthByHalfWidth_atMost300() async throws {
-        // 402: room for 326 pt of media → capped at 300; 320: 244 pt of media → the whole width.
-        for width: CGFloat in [402, 320, 440] {
+        // 402: room for 326 pt of media → capped at 300; 320: 244 pt of media → the whole width; and the simulator's own width
+        // (440 on a Pro Max). Never wider than the simulator's screen: a test window wider than the screen lays every media
+        // bubble out 50 pt lower and 72 pt shorter (an ordinary photo too), which a chat on a device never is.
+        let screenWidth = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.screen.bounds.size.width ?? 402
+        let widths = Set([320, 402, screenWidth].filter { $0 <= screenWidth }).sorted()
+        XCTAssertTrue(widths.contains(320))
+        for width: CGFloat in widths {
             let thread = makeThread()
             let message = try await insertLocation(body: Self.tellomiPlaceBody, thread: thread)
             let hosted = try await host(message: message, thread: thread, width: width)
