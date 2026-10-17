@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Átalakítás JPEG-be";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Átalakítod a fotókat JPEG formátumba?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Kiválasztás megszüntetve: %@";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Spoiler eltávolítása";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Húzd át az átrendezéshez";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Szerkesztés";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Elrejtés spoilerként";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC megtartása";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Korlátoztad a Tellomi hozzáférését a fotóidhoz.";
 "IMAGE_PICKER_TELLOMI_MORE" = "További lehetőségek";

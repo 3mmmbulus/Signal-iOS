@@ -19,6 +19,8 @@ public struct SendableAttachment {
     public let sourceFilename: FilteredFilename?
     public let mimeType: String
     public let renderingFlag: AttachmentReference.RenderingFlag
+    /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/isTellomiSpoiler``.
+    public private(set) var isTellomiSpoiler = false
 
     private init(
         dataSource: DataSourcePath,
@@ -44,6 +46,17 @@ public struct SendableAttachment {
 
     @concurrent
     public static func forPreviewableAttachment(
+        _ attachment: PreviewableAttachment,
+        imageQualityLevel: ImageQualityLevel,
+    ) async throws -> Self {
+        var result = try await _forPreviewableAttachment(attachment, imageQualityLevel: imageQualityLevel)
+        // Tellomi (ADR-0068 §4.4): the picker's marks ride along to the message.
+        result.isTellomiSpoiler = attachment.rawValue.isTellomiSpoiler
+        return result
+    }
+
+    @concurrent
+    private static func _forPreviewableAttachment(
         _ attachment: PreviewableAttachment,
         imageQualityLevel: ImageQualityLevel,
     ) async throws -> Self {
@@ -186,10 +199,13 @@ public struct SendableAttachment {
     public struct ForSending {
         public let dataSource: AttachmentDataSource
         public let renderingFlag: AttachmentReference.RenderingFlag
+        /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/isTellomiSpoiler``.
+        public let isTellomiSpoiler: Bool
 
-        public init(dataSource: AttachmentDataSource, renderingFlag: AttachmentReference.RenderingFlag) {
+        public init(dataSource: AttachmentDataSource, renderingFlag: AttachmentReference.RenderingFlag, isTellomiSpoiler: Bool = false) {
             self.dataSource = dataSource
             self.renderingFlag = renderingFlag
+            self.isTellomiSpoiler = isTellomiSpoiler
         }
     }
 
@@ -198,6 +214,7 @@ public struct SendableAttachment {
         return ForSending(
             dataSource: dataSource,
             renderingFlag: self.renderingFlag,
+            isTellomiSpoiler: self.isTellomiSpoiler,
         )
     }
 }

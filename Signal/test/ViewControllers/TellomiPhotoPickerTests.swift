@@ -305,6 +305,121 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(standard.approved.imageQuality, .standard)
     }
 
+    // MARK: - P-5 / P-6「罩住图片」（#1263，ADR-0068 §4.4）
+
+    /// 「···」分隔线下面的开关：有一张没罩是「罩住图片」（罩上全部已选），全罩了是「取消遮罩」；罩了就没有「以文件发送」
+    /// （同 Telegram 两端）；之后新勾的不自动罩；取消勾选就拿掉。
+    @MainActor
+    func testHideWithSpoilerCoversTheWholeSelection() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 1)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .hideWithSpoiler)
+
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
+        XCTAssertEqual(picker.spoileredIds, ["r0", "r1"])
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 0)?.isSpoilerShown, true)
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 1)?.isSpoilerShown, true, "视频也罩")
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 3)?.isSpoilerShown, false)
+        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendSeparately, .disableSpoiler], "罩了就没有以文件发送")
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, Strings.removeSpoiler)
+
+        // 新勾的不自动罩，有一张没罩又是「罩住图片」；以文件发送照样没有（已选里还有罩着的）。
+        picker.tapCheckForTesting(itemIndex: 3)
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 3)?.isSpoilerShown, false)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .hideWithSpoiler)
+        XCTAssertFalse(picker.moreMenuItemsForTesting.contains(.sendAsFile))
+
+        // 取消勾选就拿掉：再勾上是没罩的。
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertEqual(picker.spoileredIds, ["r1"])
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 0)?.isSpoilerShown, false)
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 0)?.isSpoilerShown, false)
+
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        XCTAssertEqual(picker.spoileredIds, ["r0", "r1", "r3"])
+        picker.performMoreMenuItemForTesting(.disableSpoiler)
+        XCTAssertTrue(picker.spoileredIds.isEmpty)
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 1)?.isSpoilerShown, false)
+        XCTAssertTrue(picker.moreMenuItemsForTesting.contains(.sendAsFile), "拿掉遮罩，以文件发送回来")
+    }
+
+    /// 不是会话里的选图（没有以文件发送那些）没有遮罩。
+    @MainActor
+    func testNoSpoilerOutsideConversations() async throws {
+        let hosted = host()
+        defer { hosted.tearDown() }
+        hosted.picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertFalse(hosted.picker.moreMenuItemsForTesting.contains(.hideWithSpoiler))
+    }
+
+    /// spec P-6：格子上的遮罩 0.2 秒淡入（同 Telegram iOS `SpoilerOverlayNode`），编号勾照常在上面；配格子时不动画。
+    @MainActor
+    func testSpoilerOverlayFadesInUnderTheCheck() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        let cell = try XCTUnwrap(picker.cellForTesting(itemIndex: 0))
+        let cover = try XCTUnwrap(cell.spoilerCoverForTesting)
+        let fade = try XCTUnwrap(cover.layer.animation(forKey: "opacity"))
+        XCTAssertEqual(fade.duration, 0.2, accuracy: 0.001)
+        XCTAssertFalse(cover.isHidden)
+        XCTAssertFalse(cover.isUserInteractionEnabled, "选图面板里不能揭示：点照片照旧打开查看器")
+        XCTAssertEqual(cell.numberTextForTesting, "1")
+        XCTAssertTrue(cell.isCheckHitForTesting(at: CGPoint(x: cell.bounds.size.width - 10, y: 10)), "勾在遮罩上面")
+
+        // 滚走再回来（重新配格子）：直接罩着，不再淡入。
+        let reused = TellomiPhotoPickerCell(frame: cell.frame)
+        reused.setSpoiler(true, animated: false)
+        XCTAssertNil(reused.spoilerCoverForTesting?.layer.animation(forKey: "opacity"))
+        XCTAssertEqual(reused.spoilerCoverForTesting?.alpha, 1)
+    }
+
+    /// 发送：罩住的那几张的附件带遮罩标记（会话页一路带到 `AttachmentPointer.tellomi.spoiler`），没罩的不带；
+    /// 「只看已选」的卡片也罩着（照 Telegram iOS `MediaPickerSelectedListNode`）。
+    @MainActor
+    func testCoveredItemsAreSentWithTheSpoilerMark() async throws {
+        let library = FakePhotoLibrary()
+        let hosted = host(library: library, canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 3)
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        picker.tapCheckForTesting(itemIndex: 4)
+
+        picker.tapCountPillForTesting()
+        XCTAssertEqual(picker.selectedViewForTesting.spoileredCardIdsForTesting, ["r0", "r3"])
+
+        picker.tapSendForTesting()
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(library.ids(of: sent.approved), ["r0", "r3", "r4"])
+        XCTAssertEqual(sent.approved.attachments.map(\.rawValue.isTellomiSpoiler), [true, true, false])
+        XCTAssertFalse(sent.approved.isViewOnce)
+    }
+
+    /// 单独发送也带（一张一条，各自带自己的标记）。
+    @MainActor
+    func testSendingSeparatelyKeepsEachSpoiler() async throws {
+        let library = FakePhotoLibrary()
+        let hosted = host(library: library, canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        picker.tapCheckForTesting(itemIndex: 3)
+        picker.performMoreMenuItemForTesting(.sendSeparately)
+        let sent = try await nextSend(hosted, count: 1)
+        XCTAssertTrue(sent.separately)
+        XCTAssertEqual(sent.approved.attachments.map(\.rawValue.isTellomiSpoiler), [true, false])
+    }
+
     // MARK: - P-5「以文件发送」（#1263）
 
     /// 会话里「···」第一项是「以文件发送」，多张时「以文件发送（N 个）」；只有视频也有（视频也能按文件发）。不是会话的没有。
@@ -315,17 +430,17 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let picker = hosted.picker
 
         picker.tapCheckForTesting(itemIndex: 0)
-        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality])
-        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendAsFile, Strings.sendHighQuality])
+        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality, .hideWithSpoiler])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendAsFile, Strings.sendHighQuality, Strings.hideWithSpoiler])
 
         picker.tapCheckForTesting(itemIndex: 3)
-        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality, .sendSeparately])
-        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendAsFiles(2), Strings.sendHighQuality, Strings.sendSeparately])
+        XCTAssertEqual(picker.moreMenuItemsForTesting, [.sendAsFile, .sendHighQuality, .sendSeparately, .hideWithSpoiler])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting, [Strings.sendAsFiles(2), Strings.sendHighQuality, Strings.sendSeparately, Strings.hideWithSpoiler])
 
         let videos = host(canSendAsFile: true)
         defer { videos.tearDown() }
         videos.picker.tapCheckForTesting(itemIndex: 1)
-        XCTAssertEqual(videos.picker.moreMenuItemsForTesting, [.sendAsFile])
+        XCTAssertEqual(videos.picker.moreMenuItemsForTesting, [.sendAsFile, .hideWithSpoiler])
         XCTAssertTrue(videos.picker.isMoreButtonShownForTesting)
 
         let notConversation = host()
@@ -442,19 +557,20 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(properties[kCGImagePropertyOrientation] as? Int, 6)
     }
 
-    /// M-2（ADR-0068 §4.7）：写了说明才有「说明文字上移」，在最后；点了换成「下移」；之后发出去带着它，按文件发的不带。
+    /// M-2（ADR-0068 §4.7）：写了说明才有「说明文字上移」，在分隔线下面、「罩住图片」前面（照 Telegram iOS 的次序）；
+    /// 点了换成「下移」；之后发出去带着它，按文件发的不带。
     @MainActor
     func testCaptionCanBeMovedAbove() async throws {
         let hosted = host(canSendAsFile: true, initialText: "说明")
         defer { hosted.tearDown() }
         let picker = hosted.picker
         picker.tapCheckForTesting(itemIndex: 0)
-        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionUp)
-        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, Strings.moveCaptionUp)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.suffix(2), [.moveCaptionUp, .hideWithSpoiler])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.suffix(2), [Strings.moveCaptionUp, Strings.hideWithSpoiler])
 
         picker.performMoreMenuItemForTesting(.moveCaptionUp)
-        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown)
-        XCTAssertEqual(picker.moreMenuTitlesForTesting.last, Strings.moveCaptionDown)
+        XCTAssertEqual(picker.moreMenuItemsForTesting.suffix(2), [.moveCaptionDown, .hideWithSpoiler])
+        XCTAssertEqual(picker.moreMenuTitlesForTesting.suffix(2), [Strings.moveCaptionDown, Strings.hideWithSpoiler])
         XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
 
         picker.performMoreMenuItemForTesting(.sendHighQuality)
@@ -490,7 +606,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         picker.performSendMenuCaptionItemForTesting()
         XCTAssertEqual(picker.sendMenuTitlesForTesting, [Strings.moveCaptionDown, Strings.scheduleMessage])
-        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
+        XCTAssertTrue(picker.moreMenuItemsForTesting.contains(.moveCaptionDown), "和「···」里那项是同一个开关")
         XCTAssertTrue(hosted.delegate.sent.isEmpty, "开关不发送")
 
         // 预览 / 编辑页的发送键挂同一个长按：弹出来的菜单跟着「···」里那项变（#1519 M-5 起是预览 + 菜单）。
@@ -547,7 +663,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertTrue(picker.sendPreviewForTesting === preview, "点了不收")
         XCTAssertEqual(preview.actionTitlesForTesting, [Strings.moveCaptionDown, Strings.scheduleMessage])
         XCTAssertEqual(preview.captionIsAboveMediaForTesting, true)
-        XCTAssertEqual(picker.moreMenuItemsForTesting.last, .moveCaptionDown, "和「···」里那项是同一个开关")
+        XCTAssertTrue(picker.moreMenuItemsForTesting.contains(.moveCaptionDown), "和「···」里那项是同一个开关")
 
         preview.tapBackgroundForTesting()
         let closed = await waitUntil { picker.presentedViewController == nil }
@@ -2421,6 +2537,8 @@ private enum Strings {
     static let discardMedia = OWSLocalizedString("SEND_MEDIA_CONFIRM_ABANDON_ALBUM", comment: "")
     static let dragToReorder = OWSLocalizedString("IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER", comment: "")
     static let limitedAccess = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIMITED_ACCESS", comment: "")
+    static let hideWithSpoiler = OWSLocalizedString("IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER", comment: "")
+    static let removeSpoiler = OWSLocalizedString("IMAGE_PICKER_TELLOMI_DISABLE_SPOILER", comment: "")
 
     static func sendAsFiles(_ count: Int) -> String {
         String.nonPluralLocalizedStringWithFormat(OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_AS_FILES_FORMAT", comment: ""), OWSFormat.formatInt(count))

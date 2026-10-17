@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Tiontaigh go JPEG";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "An bhfuil fonn ort na grianghraif a thiontú go JPEG?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ díroghnaithe";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Bain an spoiler";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Tarraing chun an t-ord a athrú";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Eagar";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Folaigh le spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Coinnigh HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Tá rochtain Tellomi ar do ghrianghraif teoranta agat.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Tuilleadh roghanna";

@@ -92,8 +92,12 @@ final class TellomiPhotoPickerSelectedView: UIView, UIScrollViewDelegate {
     // MARK: - Content
 
     /// 已选（按发出去的顺序）与说明。拖动排序进行中时忽略（顺序以拖动为准，结束时会报出去）。
-    func update(items newItems: [TellomiPhotoPickerItem], caption newCaption: String?, animated: Bool) {
+    /// `spoileredIds`（#1263 spec P-6）：罩住的那几张，卡片上同网格一样罩着（照 Telegram iOS `MediaPickerSelectedListNode`）。
+    func update(items newItems: [TellomiPhotoPickerItem], caption newCaption: String?, spoileredIds: Set<String> = [], animated: Bool) {
         caption = newCaption?.nilIfEmpty
+        for (id, card) in cards {
+            card.setSpoiler(spoileredIds.contains(id), animated: animated)
+        }
         guard reorder == nil else {
             setNeedsLayout()
             return
@@ -113,6 +117,7 @@ final class TellomiPhotoPickerSelectedView: UIView, UIScrollViewDelegate {
         }
         for item in newItems where cards[item.id] == nil {
             let card = TellomiPhotoPickerSelectedCard(item: item)
+            card.setSpoiler(spoileredIds.contains(item.id), animated: false)
             card.onCheckTapped = { [weak self] in self?.onDeselect?(item.id) }
             card.onTapped = { [weak self] in self?.onOpen?(item.id) }
             rowScrollView.addSubview(card)
@@ -402,6 +407,8 @@ private final class TellomiPhotoPickerSelectedCard: UIView {
     private let check = TellomiNumberedCheck()
     private let durationLabel = UILabel()
     private var thumbnailRequest: TellomiPhotoPickerRequest?
+    private var spoilerCover: TellomiSpoilerCoverView?
+    private(set) var isSpoilerShown = false
 
     init(item: TellomiPhotoPickerItem) {
         self.item = item
@@ -443,6 +450,7 @@ private final class TellomiPhotoPickerSelectedCard: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         imageView.frame = bounds
+        spoilerCover?.frame = bounds
         check.frame = CGRect(
             x: bounds.width - TellomiNumberedCheck.touchSize - 6,
             y: 6,
@@ -457,9 +465,38 @@ private final class TellomiPhotoPickerSelectedCard: UIView {
         let size = CGSize(width: max(bounds.width, 120) * scale, height: max(bounds.height, 120) * scale)
         thumbnailRequest?.cancel()
         thumbnailRequest = library.requestThumbnail(for: item, targetSize: size) { [weak self] image in
-            if let image {
-                self?.imageView.image = image
+            guard let self, let image else { return }
+            self.imageView.image = image
+            if self.isSpoilerShown {
+                self.spoilerCover?.cover(image: image, key: self.item.id)
             }
+        }
+    }
+
+    /// 同网格的格子（`TellomiPhotoPickerCell.setSpoiler`）：0.2 秒淡入淡出，不能揭示。
+    func setSpoiler(_ shown: Bool, animated: Bool) {
+        guard shown != isSpoilerShown else { return }
+        isSpoilerShown = shown
+        if shown {
+            let cover = spoilerCover ?? {
+                let cover = TellomiSpoilerCoverView()
+                insertSubview(cover, aboveSubview: imageView)
+                spoilerCover = cover
+                return cover
+            }()
+            cover.frame = bounds
+            cover.layer.removeAllAnimations()
+            cover.cover(image: imageView.image, key: item.id)
+            cover.alpha = animated ? 0 : 1
+            if animated {
+                UIView.animate(withDuration: TellomiPhotoPickerCell.spoilerFadeDuration) { cover.alpha = 1 }
+            }
+        } else if let cover = spoilerCover {
+            UIView.animate(withDuration: animated ? TellomiPhotoPickerCell.spoilerFadeDuration : 0, animations: { cover.alpha = 0 }, completion: { [weak self] _ in
+                guard self?.isSpoilerShown == false else { return }
+                cover.uncover()
+                cover.alpha = 1
+            })
         }
     }
 
@@ -582,6 +619,8 @@ extension TellomiPhotoPickerSelectedView {
     var backgroundViewForTesting: UIView { backgroundView }
 
     var cardNumbersForTesting: [String?] { items.map { cards[$0.id]?.numberTextForTesting } }
+
+    var spoileredCardIdsForTesting: [String] { items.map(\.id).filter { cards[$0]?.isSpoilerShown == true } }
 
     /// 每张卡片在这一行里的位置（内容坐标）。
     var cardFramesForTesting: [CGRect] { items.compactMap { cards[$0.id]?.frame } }

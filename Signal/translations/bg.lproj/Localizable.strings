@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Преобразуване в JPEG";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Да се преобразуват ли снимките в JPEG?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Отменен избор: %@";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Премахване на спойлера";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Плъзнете, за да пренаредите";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Редактиране";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Скриване като спойлер";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Запазване на HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ограничили сте достъпа на Tellomi до снимките си.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Още опции";

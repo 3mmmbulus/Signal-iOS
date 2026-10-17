@@ -9,6 +9,8 @@ import SignalUI
 /// Tellomi（tellomi/tellomi#1261 P-8，照 Telegram `MediaPickerGridItem` 的格子）：正方形缩略图；右上角编号勾
 /// （29 的圆区，离上、右各 3；右上角 44 × 44 整块都算点勾；白色 1.5 描边 + 阴影，选中填强调色并显示第几张）；视频右下角时长；实况照片左上角小图标。
 /// 点勾选上 / 取消；点照片本身由网格决定（打开整本相册的查看器，V-1）。
+/// 罩住的已选格（#1263 spec P-6，照 Telegram iOS `MediaPickerGridItem` 的 `SpoilerOverlayNode`）：模糊 + 白色细粒子，0.2 秒淡入淡出，
+/// 编号勾、时长、种类图标照常在上面；在选图面板里不能揭示（点照片照旧打开查看器，查看器里是原图）。
 final class TellomiPhotoPickerCell: UICollectionViewCell {
 
     static let reuseIdentifier = "TellomiPhotoPickerCell"
@@ -26,6 +28,11 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
     /// `MediaPickerGridItem` 的 typeIconNode）。图标是系统的 SF Symbols。
     private let livePhotoBadge = UIImageView()
     private let check = TellomiNumberedCheck()
+    /// 罩住时才建（大多数格子用不到粒子层）。
+    private var spoilerCover: TellomiSpoilerCoverView?
+    private(set) var isSpoilerShown = false
+
+    static let spoilerFadeDuration: TimeInterval = 0.2
 
     /// 点了右上角的勾。
     var onCheckTapped: (() -> Void)?
@@ -74,6 +81,7 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         imageView.frame = contentView.bounds
+        spoilerCover?.frame = contentView.bounds
         let size = contentView.bounds.size
         check.frame = CGRect(
             x: size.width - TellomiNumberedCheck.touchSize - Metrics.checkInset,
@@ -95,6 +103,7 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
         thumbnailRequest = nil
         imageView.image = nil
         itemId = nil
+        setSpoiler(false, animated: false)
     }
 
     func configure(
@@ -127,9 +136,48 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
             guard let self, self.itemId == item.id else { return }
             if let image {
                 self.imageView.image = image
+                if self.isSpoilerShown {
+                    self.spoilerCover?.cover(image: image, key: item.id)
+                }
             }
         }
         setNeedsLayout()
+    }
+
+    /// 罩上 / 拿掉遮罩（spec P-6）。动画是 0.2 秒的淡入淡出（Telegram iOS `SpoilerOverlayNode`），刚配好格子时不动画。
+    func setSpoiler(_ shown: Bool, animated: Bool) {
+        guard shown != isSpoilerShown else { return }
+        isSpoilerShown = shown
+        if shown {
+            let cover = spoilerCover ?? {
+                let cover = TellomiSpoilerCoverView()
+                // 盖在图上面、编号勾和角标下面
+                contentView.insertSubview(cover, aboveSubview: imageView)
+                spoilerCover = cover
+                return cover
+            }()
+            cover.frame = contentView.bounds
+            cover.layer.removeAllAnimations()
+            cover.cover(image: imageView.image, key: itemId ?? "")
+            cover.alpha = animated ? 0 : 1
+            if animated {
+                UIView.animate(withDuration: Self.spoilerFadeDuration) { cover.alpha = 1 }
+            }
+        } else if let cover = spoilerCover {
+            let hide = {
+                cover.uncover()
+                cover.alpha = 1
+            }
+            guard animated else {
+                cover.layer.removeAllAnimations()
+                hide()
+                return
+            }
+            UIView.animate(withDuration: Self.spoilerFadeDuration, animations: { cover.alpha = 0 }, completion: { [weak self] _ in
+                guard self?.isSpoilerShown == false else { return }
+                hide()
+            })
+        }
     }
 
     private(set) var typeBadgeSymbol: String?
@@ -245,6 +293,7 @@ extension TellomiPhotoPickerCell {
     var numberTextForTesting: String? { check.numberTextForTesting }
     var durationTextForTesting: String? { durationLabel.isHidden ? nil : durationLabel.text }
     var isShowingLivePhotoBadgeForTesting: Bool { !livePhotoBadge.isHidden }
+    var spoilerCoverForTesting: TellomiSpoilerCoverView? { spoilerCover }
     var livePhotoBadgeFrameForTesting: CGRect { livePhotoBadge.frame }
 
     func tapCheckForTesting() {

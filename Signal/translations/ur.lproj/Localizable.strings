@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "JPEG میں تبدیل کریں";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "کیا تصاویر کو JPEG میں تبدیل کرنا ہے؟";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ کا انتخاب ختم کر دیا گیا";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "اسپوائلر ہٹائیں";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "ترتیب بدلنے کے لیے گھسیٹیں";
 "IMAGE_PICKER_TELLOMI_EDIT" = "ترتیب دیں";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "اسپوائلر سے چھپائیں";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC رکھیں";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "آپ نے Tellomi کی تصاویر تک رسائی محدود کر دی ہے۔";
 "IMAGE_PICKER_TELLOMI_MORE" = "مزید اختیارات";

@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Muunna JPEG-muotoon";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Muunnetaanko kuvat JPEG-muotoon?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ poistettu valinnasta";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Poista spoiler";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Muuta järjestystä vetämällä";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Muokkaa";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Piilota spoilerina";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Säilytä HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Olet rajoittanut Tellomin pääsyä kuviisi.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Lisää vaihtoehtoja";

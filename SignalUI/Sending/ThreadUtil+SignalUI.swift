@@ -24,6 +24,7 @@ extension ThreadUtil {
         let benchEventId = sendMessageBenchEventStart(messageTimestamp: messageTimestamp)
         self.enqueueSendQueue.enqueue {
             let unpreparedMessage: UnpreparedOutgoingMessage
+            let tellomiMedia: TellomiOutgoingMedia
             do {
                 let messageBody = try await messageBody.mapAsync {
                     try await DependenciesBridge.shared.attachmentContentValidator
@@ -36,6 +37,7 @@ extension ThreadUtil {
                 let attachmentsForSending = try await attachments.0.mapAsync {
                     try await $0.forSending(attachmentContentValidator: attachmentContentValidator)
                 }
+                tellomiMedia = TellomiOutgoingMedia(spoilers: attachmentsForSending.map(\.isTellomiSpoiler))
                 let quotedReplyDraft = try await quotedReplyDraft.mapAsync {
                     try await DependenciesBridge.shared.quotedReplyManager.prepareDraftForSending($0)
                 }
@@ -62,6 +64,7 @@ extension ThreadUtil {
                 benchEventId: benchEventId,
                 thread: thread,
                 tellomiCaptionAboveMedia: tellomiCaptionAboveMedia,
+                tellomiMedia: tellomiMedia,
                 persistenceCompletionHandler: persistenceCompletion,
             )
         }
@@ -138,6 +141,7 @@ extension ThreadUtil {
         benchEventId: String,
         thread: TSThread,
         tellomiCaptionAboveMedia: Bool = false,
+        tellomiMedia: TellomiOutgoingMedia = TellomiOutgoingMedia(),
         tellomiClaim: TellomiEnqueueClaim? = nil,
         persistenceCompletionHandler persistenceCompletion: PersistenceCompletion? = nil,
     ) async -> TellomiEnqueueOutcome {
@@ -156,6 +160,8 @@ extension ThreadUtil {
             if tellomiCaptionAboveMedia {
                 TellomiCaptionAbove.mark(preparedMessage, tx: writeTransaction)
             }
+            // Tellomi（#1263，ADR-0068 §4.4）：罩住的图；回复被罩住的图时引用缩略图也罩着。同一个事务里、进发送队列之前。
+            TellomiOutgoingMedia.mark(preparedMessage, media: tellomiMedia, tx: writeTransaction)
             let promise = SSKEnvironment.shared.messageSenderJobQueueRef.add(
                 .promise,
                 message: preparedMessage,
@@ -252,6 +258,7 @@ extension ThreadUtil {
                 benchEventId: benchEventId,
                 thread: thread,
                 tellomiCaptionAboveMedia: captionAboveMedia && messageBody != nil,
+                tellomiMedia: TellomiOutgoingMedia(spoilers: attachments.map(\.isTellomiSpoiler)),
                 tellomiClaim: claim,
             )
         }

@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Convertește în JPEG";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Convertești fotografiile în JPEG?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Deselectat: %@";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Elimină spoilerul";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Trage pentru a reordona";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Editează";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Ascunde ca spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Păstrează HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ai limitat accesul Tellomi la fotografiile tale.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Mai multe opțiuni";

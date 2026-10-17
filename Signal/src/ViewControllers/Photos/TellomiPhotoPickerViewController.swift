@@ -88,9 +88,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case moveCaptionDown
         /// M-4（#1519）：定时发送（长按发送里，收藏里叫「设置提醒」）。
         case scheduleSend
+        /// #1263（spec P-5，ADR-0068 §4.4）：罩住图片 ⇄ 取消遮罩（开关，作用于全部已选）。
+        case hideWithSpoiler
+        case disableSpoiler
 
         var isToggle: Bool {
-            self == .moveCaptionUp || self == .moveCaptionDown
+            switch self {
+            case .moveCaptionUp, .moveCaptionDown, .hideWithSpoiler, .disableSpoiler: true
+            case .sendAsFile, .sendHighQuality, .sendStandardQuality, .sendSeparately, .scheduleSend: false
+            }
         }
     }
 
@@ -125,6 +131,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     /// 勾的顺序就是发出去的顺序。
     private var selectedIds = [String]()
     private var selectedItems = [String: TellomiPhotoPickerItem]()
+    /// #1263（spec P-5 / P-6）：「罩住图片」罩上的已选。取消勾选就拿掉，之后新勾的不自动罩（同 Telegram 安卓 `addToSelectedPhotos`）。
+    private(set) var spoileredIds = Set<String>()
 
     /// 进上游预览页时每张附件对应网格里的哪一项：在那里删掉一张，网格里也取消勾选。
     private var editingItems = [(itemId: String, attachment: SignalAttachment)]()
@@ -676,6 +684,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         cell.onCheckTapped = { [weak self] in
             self?.toggleSelection(item)
         }
+        cell.setSpoiler(spoileredIds.contains(item.id), animated: false)
         return cell
     }
 
@@ -835,6 +844,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         } else {
             selectedIds.removeAll { $0 == item.id }
             selectedItems[item.id] = nil
+            if spoileredIds.remove(item.id) != nil {
+                refreshVisibleSpoilers(animated: true)
+            }
         }
         refreshVisibleSelectionNumbers(animatedItemId: selected ? item.id : nil)
         updateSelectionChrome(animated: true)
@@ -859,6 +871,13 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 setSelection(item: item, selected: selected)
                 return
             }
+        }
+    }
+
+    private func refreshVisibleSpoilers(animated: Bool) {
+        for case let cell as TellomiPhotoPickerCell in collectionView.visibleCells {
+            guard let itemId = cell.itemId else { continue }
+            cell.setSpoiler(spoileredIds.contains(itemId), animated: animated)
         }
     }
 
@@ -1033,6 +1052,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         selectedView.update(
             items: selectedIds.compactMap { selectedItems[$0] },
             caption: messageBodyForSending?.text,
+            spoileredIds: spoileredIds,
             animated: animated,
         )
     }
@@ -1113,11 +1133,13 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     // MARK: - More menu (P-5)
 
-    /// 按这个顺序：「以文件发送」（#1263，会话里、有选中）；已选全是静态图时「以高清质量发送」（默认已是高时换成「以标准质量发送」）；
-    /// 已选 ≥ 2 且是单个会话时「单独发送」。网格里没有一次性查看（那在预览页），遮罩那一刀再加「开了遮罩就没有以文件发送」。
+    /// 按这个顺序：「以文件发送」（#1263，会话里、有选中、已选里没有罩住的——同 Telegram 两端，按文件发的不带遮罩）；
+    /// 已选全是静态图时「以高清质量发送」（默认已是高时换成「以标准质量发送」）；已选 ≥ 2 且是单个会话时「单独发送」。
+    /// 分隔线下面是开关：「说明文字上移 / 下移」，然后「罩住图片 ⇄ 取消遮罩」（照 Telegram iOS `MediaPickerScreen` 的次序）。
+    /// 网格里没有一次性查看（那在预览页）。
     private func moreMenuItems() -> [MoreMenuItem] {
         var items = [MoreMenuItem]()
-        if canSendAsFile, !selectedIds.isEmpty {
+        if canSendAsFile, !selectedIds.isEmpty, !hasSpoileredSelection {
             items.append(.sendAsFile)
         }
         // V-7 / O4（tellomi/tellomi#1518，取 Telegram 安卓 `ChatAttachAlertPhotoLayout` 的规则：已选数 = `getSelectedPhotosCount()`）：
@@ -1132,7 +1154,29 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         if canMoveCaption {
             items.append(isCaptionAboveMedia ? .moveCaptionDown : .moveCaptionUp)
         }
+        // spec P-5：会话里、有选中就一直有（ADR-0068「能收」那一版已经发出去，2026-10-17 开「能发」）。
+        // 有一张没罩就是「罩住图片」（罩上全部），全罩了是「取消遮罩」（同 Telegram iOS `hasGeneric`）。
+        if canSendAsFile, !selectedIds.isEmpty {
+            items.append(selectedIds.allSatisfy(spoileredIds.contains) ? .disableSpoiler : .hideWithSpoiler)
+        }
         return items
+    }
+
+    private var hasSpoileredSelection: Bool {
+        selectedIds.contains(where: spoileredIds.contains)
+    }
+
+    /// 「罩住图片」：已选的全部罩上；「取消遮罩」：全部拿掉。格子 0.2 秒淡入淡出。
+    private func setSpoilerForSelection(_ covered: Bool) {
+        if covered {
+            spoileredIds.formUnion(selectedIds)
+        } else {
+            spoileredIds.subtract(selectedIds)
+        }
+        refreshVisibleSpoilers(animated: true)
+        if displayMode == .selected {
+            refreshSelectedView(animated: false)
+        }
     }
 
     /// 「说明文字上移 / 下移」现在给不给（「···」和长按发送里同一个条件）：会话里、有选中、写了说明。
@@ -1294,6 +1338,10 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN", comment: "Photo picker more-menu item: show the caption below the photos in the sent message (the default).")
         case .scheduleSend:
             TellomiScheduleTimeSheet.title(isReminder: isNoteToSelf)
+        case .hideWithSpoiler:
+            OWSLocalizedString("IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER", comment: "Photo picker more-menu item: cover all selected photos and videos with a spoiler; the receiver taps to reveal them.")
+        case .disableSpoiler:
+            OWSLocalizedString("IMAGE_PICKER_TELLOMI_DISABLE_SPOILER", comment: "Photo picker more-menu item, shown when every selected photo is covered: take the spoiler off all of them.")
         }
     }
 
@@ -1306,6 +1354,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         case .moveCaptionUp: UIImage(named: "arrow-up")
         case .moveCaptionDown: UIImage(named: "arrow-down")
         case .scheduleSend: UIImage(systemName: "calendar.badge.clock")
+        case .hideWithSpoiler: UIImage(named: "text-format-spoiler")
+        case .disableSpoiler: UIImage(systemName: "eye")
         }
     }
 
@@ -1324,6 +1374,10 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             isCaptionAboveMedia.toggle()
         case .scheduleSend:
             presentScheduleSheet(sendingWith: sendButton)
+        case .hideWithSpoiler:
+            setSpoilerForSelection(true)
+        case .disableSpoiler:
+            setSpoilerForSelection(false)
         }
     }
 
@@ -1492,6 +1546,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let messageBody = messageBodyForSending
         prepareAttachments(for: items, applyingEditsFrom: approvalItems) { [weak self] attachments in
             guard let self else { return }
+            self.applySpoilers(to: attachments, itemIds: items.map(\.id))
             self.delegate?.photoPicker(
                 self,
                 send: ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: quality),
@@ -1726,6 +1781,14 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         }
     }
 
+    /// #1263（ADR-0068 §4.4）：罩住的那几张的附件标上遮罩，跟着消息发出去。只有图片 / 视频罩（§4.1），一次性查看的不罩。
+    private func applySpoilers(to attachments: [PreviewableAttachment], itemIds: [String]) {
+        guard attachments.count == itemIds.count else { return }
+        for (attachment, itemId) in zip(attachments, itemIds) {
+            attachment.rawValue.isTellomiSpoiler = spoileredIds.contains(itemId) && attachment.isVisualMedia && !attachment.rawValue.isTellomiAsFile
+        }
+    }
+
     // MARK: - AttachmentApprovalViewControllerDelegate（点照片进的上游预览 / 编辑页）
 
     func attachmentApproval(
@@ -1733,6 +1796,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         didApproveAttachments approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
     ) {
+        // 预览页发出来的附件按还勾着的那几张排（在那里删掉的已经取消勾选了）；一次性查看的不带遮罩（ADR-0068 §4.4）。
+        if !approvedAttachments.isViewOnce {
+            let itemIds = editingItems.map(\.itemId).filter { selectedItems[$0] != nil }
+            applySpoilers(to: approvedAttachments.attachments, itemIds: itemIds)
+        }
         delegate?.photoPicker(
             self,
             send: approvedAttachments,

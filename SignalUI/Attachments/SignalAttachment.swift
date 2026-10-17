@@ -207,6 +207,9 @@ public class SignalAttachment: CustomDebugStringConvertible {
     public var isLoopingVideo = false
     /// Tellomi (ADR-0068): sent as a file; see ``PreviewableAttachment/tellomiAsFileAttachment(dataSource:dataUTI:attachmentLimits:)``.
     public var isTellomiAsFile = false
+    /// Tellomi (ADR-0068 §4.4, spec P-5): covered for the receiver until tapped ("Hide with Spoiler" in the photo picker).
+    /// Only images and videos; never together with `isTellomiAsFile` or view once.
+    public var isTellomiSpoiler = false
 
     // Returns the MIME type for this attachment or nil if no MIME type
     // can be identified.

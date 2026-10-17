@@ -415,4 +415,14 @@ extension PreparedOutgoingMessage {
             return nil
         }
     }
+
+    /// Tellomi（#1263，ADR-0068 §4.4）：新发的这条（不是编辑、故事、临时消息）和它在库里的行号。
+    var tellomiPersistedMessage: (TSOutgoingMessage, Int64)? {
+        switch messageType {
+        case .persisted(let persisted):
+            return (persisted.message, persisted.rowId)
+        case .editMessage, .story, .transient:
+            return nil
+        }
+    }
 }

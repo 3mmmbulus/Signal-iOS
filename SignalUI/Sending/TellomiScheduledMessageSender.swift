@@ -289,6 +289,7 @@ public final class TellomiScheduledMessageSender {
                 mimeType: attachment.mimeType,
                 sourceFilename: attachment.sourceFilename?.rawValue ?? attachment.defaultFilename,
                 renderingFlag: attachment.renderingFlag,
+                tellomiSpoiler: attachment.isTellomiSpoiler,
             )
         }
     }
@@ -391,7 +392,11 @@ public final class TellomiScheduledMessageSender {
                     renderingFlag: attachment.renderingFlag,
                     sourceFilename: attachment.sourceFilename,
                 )
-                return SendableAttachment.ForSending(dataSource: .pendingAttachment(pendingAttachment), renderingFlag: attachment.renderingFlag)
+                return SendableAttachment.ForSending(
+                    dataSource: .pendingAttachment(pendingAttachment),
+                    renderingFlag: attachment.renderingFlag,
+                    isTellomiSpoiler: attachment.isTellomiSpoiler,
+                )
             }
 
             ThreadUtil.addThreadToProfileWhitelistIfEmptyOrPendingRequestAndSetDefaultTimerWithSneakyTransaction(thread)

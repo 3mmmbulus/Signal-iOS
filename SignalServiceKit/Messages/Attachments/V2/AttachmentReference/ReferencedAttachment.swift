@@ -257,7 +257,10 @@ extension ReferencedAttachment {
 
     /// Builds a `SSKProtoAttachmentPointer` representing this reference to an
     /// attachment, suitable for sending with a message.
-    func asProtoForSending() -> SSKProtoAttachmentPointer? {
+    ///
+    /// Tellomi (ADR-0068 §4.4): `tellomiSpoiler` covers it for the receiver (a body attachment or a quote thumbnail;
+    /// `TellomiMediaSpoiler.isSpoiler(_:tx:)`).
+    func asProtoForSending(tellomiSpoiler: Bool = false) -> SSKProtoAttachmentPointer? {
         guard let pointer = AttachmentTransitPointer(attachment: attachment) else {
             return nil
         }
@@ -278,6 +281,7 @@ extension ReferencedAttachment {
         reference.sourceFilename.map(builder.setFileName(_:))
 
         var flags: SSKProtoAttachmentPointerFlags?
+        var tellomiAsFile = false
         switch reference.owner {
         case .message(.bodyAttachment(let metadata)):
             if let caption = metadata.caption {
@@ -287,12 +291,7 @@ extension ReferencedAttachment {
                 builder.setClientUuid(idInOwner.data)
             }
             flags = metadata.renderingFlag.toProto()
-            if metadata.renderingFlag == .tellomiAsFile {
-                // Tellomi (ADR-0068 §4.1): only written when true, so other pointers stay byte-identical to upstream.
-                let tellomi = SSKProtoTellomiAttachment.builder()
-                tellomi.setAsFile(true)
-                builder.setTellomi(tellomi.buildInfallibly())
-            }
+            tellomiAsFile = metadata.renderingFlag == .tellomiAsFile
         case .message(.quotedReply(let metadata)):
             flags = metadata.renderingFlag.toProto()
         case .storyMessage(.media(let metadata)):
@@ -306,6 +305,18 @@ extension ReferencedAttachment {
             builder.setFlags(UInt32(flags.rawValue))
         } else {
             builder.setFlags(0)
+        }
+
+        // Tellomi (ADR-0068 §4.1): only written when something is set, so other pointers stay byte-identical to upstream.
+        // Sent as a file wins (the receiver ignores a spoiler on it anyway, rule 1).
+        if tellomiAsFile || tellomiSpoiler {
+            let tellomi = SSKProtoTellomiAttachment.builder()
+            if tellomiAsFile {
+                tellomi.setAsFile(true)
+            } else {
+                tellomi.setSpoiler(true)
+            }
+            builder.setTellomi(tellomi.buildInfallibly())
         }
 
         let pixelSize: CGSize?

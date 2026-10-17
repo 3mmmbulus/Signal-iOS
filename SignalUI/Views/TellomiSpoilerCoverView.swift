@@ -110,6 +110,34 @@ public final class TellomiSpoilerCoverView: UIView {
         }
     }
 
+    /// 发送前罩上一张本机的图（选图面板里罩住的格子，spec P-6）：同一套模糊 + 粒子，图在这里模糊。
+    /// [key] 用来认出是不是同一张（缩略图先糊后清楚地来，换了才重新模糊）。
+    public func cover(image: UIImage?, key: String) {
+        if !isCovering || isHidden {
+            resetReveal()
+            isHidden = false
+        }
+        let cacheKey = "local:\(key):\(image.map { "\(Int($0.size.width))x\(Int($0.size.height))" } ?? "-")" as NSString
+        guard cacheKey as String != loadingKey else { return }
+        loadingKey = cacheKey as String
+        if let cached = Self.blurredCache.object(forKey: cacheKey) {
+            imageView.image = cached
+            return
+        }
+        guard let image else {
+            imageView.image = nil
+            return
+        }
+        Task { [weak self] in
+            guard let blurred = try? await image.withGaussianBlurAsync(radius: 6, resizeToMaxPixelDimension: 72) else { return }
+            Self.blurredCache.setObject(blurred, forKey: cacheKey)
+            await MainActor.run {
+                guard let self, self.loadingKey == cacheKey as String, self.isCovering else { return }
+                self.imageView.image = blurred
+            }
+        }
+    }
+
     /// 不罩（没有遮罩，或者已经揭示过）。
     public func uncover() {
         resetReveal()

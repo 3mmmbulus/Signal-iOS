@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "JPEG માં બદલો";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "ફોટાને JPEG માં બદલવા છે?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ પસંદગી દૂર કરી";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "સ્પોઇલર દૂર કરો";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "ક્રમ બદલવા માટે ખેંચો";
 "IMAGE_PICKER_TELLOMI_EDIT" = "ફેરફાર કરો";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "સ્પોઇલરથી છુપાવો";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC રાખો";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "તમે Tellomi ની તમારા ફોટા સુધીની ઍક્સેસ મર્યાદિત કરી છે.";
 "IMAGE_PICKER_TELLOMI_MORE" = "વધુ વિકલ્પો";

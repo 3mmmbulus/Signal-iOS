@@ -19,14 +19,27 @@ public struct TellomiScheduledMessage: Codable, Equatable {
         public let mimeType: String
         public let sourceFilename: String?
         public let renderingFlag: AttachmentReference.RenderingFlag
+        /// Tellomi（#1263，ADR-0068 §4.4）：选图时罩住的。旧记录里没有这一项（nil = 不罩）。
+        public let tellomiSpoiler: Bool?
 
-        public init(fileName: String, dataUTI: String, mimeType: String, sourceFilename: String?, renderingFlag: AttachmentReference.RenderingFlag) {
+        public init(
+            fileName: String,
+            dataUTI: String,
+            mimeType: String,
+            sourceFilename: String?,
+            renderingFlag: AttachmentReference.RenderingFlag,
+            tellomiSpoiler: Bool = false,
+        ) {
             self.fileName = fileName
             self.dataUTI = dataUTI
             self.mimeType = mimeType
             self.sourceFilename = sourceFilename
             self.renderingFlag = renderingFlag
+            // 只在罩住时写，别的记录编码出来和以前一样。
+            self.tellomiSpoiler = tellomiSpoiler ? true : nil
         }
+
+        public var isTellomiSpoiler: Bool { tellomiSpoiler == true }
     }
 
     /// `OWSLinkPreviewDraft` 的字段（排定时已经取好，到点不再上网取）。预览图另存成记录目录里的文件（`imageFileName`），

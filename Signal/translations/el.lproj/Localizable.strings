@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Μετατροπή σε JPEG";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Μετατροπή των φωτογραφιών σε JPEG;";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Αποεπιλέχθηκαν %@";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Αφαίρεση spoiler";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Σύρε για αλλαγή σειράς";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Επεξεργασία";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Απόκρυψη ως spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Διατήρηση HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Έχεις περιορίσει την πρόσβαση του Tellomi στις φωτογραφίες σου.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Περισσότερες επιλογές";

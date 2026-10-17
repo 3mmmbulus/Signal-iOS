@@ -5349,11 +5349,17 @@
 /* Undo bar in the photo picker after unselecting photos in the selected-only view. Embeds {{ number unselected }}. */
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "已取消選取 %@ 張";
 
+/* Photo picker more-menu item, shown when every selected photo is covered: take the spoiler off all of them. */
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "取消遮罩";
+
 /* Hint in the photo picker's selected-only view that the photos can be dragged to change their order. */
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "拖曳可調整順序";
 
 /* Button in the album viewer of the photo picker that opens the preview and editing screen for the photo being viewed. */
 "IMAGE_PICKER_TELLOMI_EDIT" = "編輯";
+
+/* Photo picker more-menu item: cover all selected photos and videos with a spoiler; the receiver taps to reveal them. */
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "罩住圖片";
 
 /* Option when sending photos as files: send the HEIC photos as they are. */
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "保留 HEIC";

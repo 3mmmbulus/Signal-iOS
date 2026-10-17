@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Претвори у JPEG";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Претворити фотографије у JPEG?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Поништен избор: %@";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Уклони спојлер";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Превуците да промените редослед";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Уреди";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Сакриј као спојлер";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Задржи HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ограничили сте приступ сликама за Tellomi.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Више опција";

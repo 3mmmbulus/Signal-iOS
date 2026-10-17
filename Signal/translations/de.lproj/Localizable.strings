@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "In JPEG umwandeln";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Fotos in JPEG umwandeln?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "%@ abgewählt";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Spoiler entfernen";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Zum Sortieren ziehen";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Bearbeiten";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Als Spoiler verbergen";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC beibehalten";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Du hast den Zugriff von Tellomi auf deine Fotos eingeschränkt.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Weitere Optionen";

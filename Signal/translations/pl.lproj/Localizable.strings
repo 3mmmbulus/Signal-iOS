@@ -11182,8 +11182,10 @@
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG" = "Konwertuj na JPEG";
 "IMAGE_PICKER_TELLOMI_CONVERT_TO_JPEG_QUESTION" = "Przekonwertować zdjęcia na JPEG?";
 "IMAGE_PICKER_TELLOMI_DESELECTED_FORMAT" = "Odznaczono: %@";
+"IMAGE_PICKER_TELLOMI_DISABLE_SPOILER" = "Usuń spoiler";
 "IMAGE_PICKER_TELLOMI_DRAG_TO_REORDER" = "Przeciągnij, aby zmienić kolejność";
 "IMAGE_PICKER_TELLOMI_EDIT" = "Edytuj";
+"IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Ukryj jako spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Zachowaj HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Dostęp aplikacji Tellomi do Twoich zdjęć został ograniczony.";
 "IMAGE_PICKER_TELLOMI_MORE" = "Więcej opcji";

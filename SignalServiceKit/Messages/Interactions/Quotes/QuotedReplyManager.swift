@@ -933,7 +933,10 @@ class QuotedReplyManagerImpl: QuotedReplyManager {
         case .thumbnail(let referencedAttachment):
             mimeType = referencedAttachment.attachment.mimeType
             sourceFilename = referencedAttachment.reference.sourceFilename
-            attachmentProto = referencedAttachment.asProtoForSending()
+            // Tellomi（ADR-0068 §4.4「引用回复」）：回复的是被罩住的图，缩略图也罩着发（`TellomiOutgoingMedia.mark`）。
+            attachmentProto = referencedAttachment.asProtoForSending(
+                tellomiSpoiler: TellomiMediaSpoiler.isSpoiler(referencedAttachment.reference, tx: tx),
+            )
         case .stub(let stub):
             mimeType = stub.mimeType
             sourceFilename = stub.sourceFilename

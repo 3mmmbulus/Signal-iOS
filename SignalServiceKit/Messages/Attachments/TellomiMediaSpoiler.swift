@@ -25,7 +25,7 @@ public enum TellomiMediaSpoiler {
         guard let tellomi = proto.tellomi, tellomi.spoiler, !tellomi.asFile else {
             return false
         }
-        return mimeType.hasPrefix("image/") || mimeType.hasPrefix("video/")
+        return isVisualMedia(mimeType: mimeType)
     }
 
     /// 收到 / 同步来的指针落库时调：罩着的记下来（没揭示过）。
@@ -39,6 +39,77 @@ public enum TellomiMediaSpoiler {
             return
         }
         store.setBool(false, key: key, transaction: tx)
+    }
+
+    // MARK: - Sending (ADR-0068 §4.4, spec P-5)
+
+    /// 选图「···」里罩住的那几张：这条要发的消息在这些位置（`orderInMessage`）的正文附件记成罩着。
+    /// 发送时写进 `AttachmentPointer.tellomi.spoiler`（`isSpoiler(_:tx:)`）；自己这边也先罩着、点了才揭示（同 Telegram 两端：
+    /// 自己发出的遮罩图在自己的会话里也罩着）。只有图片 / 视频算（§4.1），别的位置不记。
+    static func markOutgoing(
+        messageRowId: Int64,
+        orders: Set<UInt32>,
+        attachmentStore: AttachmentStore = DependenciesBridge.shared.attachmentStore,
+        tx: DBWriteTransaction,
+    ) {
+        let attachments = attachmentStore.fetchReferencedAttachments(
+            owners: [.messageBodyAttachment(messageRowId: messageRowId)],
+            tx: tx,
+        )
+        for referenced in attachments {
+            guard
+                case .message(.bodyAttachment(let metadata)) = referenced.reference.owner,
+                orders.contains(metadata.orderInMessage),
+                metadata.renderingFlag != .tellomiAsFile,
+                isVisualMedia(mimeType: referenced.attachment.mimeType)
+            else {
+                continue
+            }
+            store.setBool(false, key: bodyKey(messageRowId: messageRowId, orderInMessage: metadata.orderInMessage), transaction: tx)
+        }
+    }
+
+    /// 回复一张被罩住的图（不管是谁发的）：这条回复的引用缩略图也罩着发、自己这边也罩着（§4.4「引用回复」、spec R-1）。
+    static func markOutgoingQuote(
+        messageRowId: Int64,
+        quotedMessage: TSQuotedMessage,
+        threadUniqueId: String,
+        tx: DBWriteTransaction,
+    ) {
+        guard
+            let timestamp = quotedMessage.timestampValue?.uint64Value,
+            let original = InteractionFinder.findMessage(
+                withTimestamp: timestamp,
+                threadId: threadUniqueId,
+                author: quotedMessage.authorAddress,
+                transaction: tx,
+            ),
+            let originalRowId = original.sqliteRowId,
+            let originalReference = DependenciesBridge.shared.attachmentStore.attachmentToUseInQuote(
+                originalMessageRowId: originalRowId,
+                tx: tx,
+            )
+        else {
+            return
+        }
+        markOutgoingQuote(messageRowId: messageRowId, quoting: originalReference, tx: tx)
+    }
+
+    static func markOutgoingQuote(messageRowId: Int64, quoting originalReference: AttachmentReference, tx: DBWriteTransaction) {
+        guard isSpoiler(originalReference, tx: tx) else { return }
+        store.setBool(false, key: quoteKey(messageRowId: messageRowId), transaction: tx)
+    }
+
+    /// 要发的 DataMessage 里有没有带遮罩的指针（正文附件或引用缩略图）：有就要求版本 9（§4.2–§4.3），认不得遮罩的老版本
+    /// 显示「需要新版本」，不会把原图露出来。
+    static func needsSpoilerProtocolVersion(attachments: [SSKProtoAttachmentPointer], quote: SSKProtoDataMessageQuote?) -> Bool {
+        attachments.contains { $0.tellomi?.spoiler == true }
+            || (quote?.attachments ?? []).contains { $0.thumbnail?.tellomi?.spoiler == true }
+    }
+
+    static func isVisualMedia(mimeType: String) -> Bool {
+        let mimeType = mimeType.lowercased()
+        return mimeType.hasPrefix("image/") || mimeType.hasPrefix("video/")
     }
 
     // MARK: - Local state

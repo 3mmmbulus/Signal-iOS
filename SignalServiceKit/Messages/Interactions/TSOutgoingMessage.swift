@@ -438,6 +438,10 @@ extension TSOutgoingMessage {
             if grdbId != nil {
                 let attachments = buildProtosForBodyAttachments(tx: tx)
                 builder.setAttachments(attachments)
+                // Tellomi（ADR-0068 §4.2–§4.3）：带遮罩的消息要求版本 9，认不得遮罩的老版本不会把原图露出来。
+                if TellomiMediaSpoiler.needsSpoilerProtocolVersion(attachments: attachments, quote: nil) {
+                    requiredProtocolVersion = max(requiredProtocolVersion, SSKProtoDataMessageProtocolVersion.tellomiMediaSpoiler.rawValue)
+                }
             } else {
                 owsFailDebug("Saved message uninserted at proto build time!")
             }
@@ -450,6 +454,10 @@ extension TSOutgoingMessage {
                 builder.setQuote(quoteProto)
                 if !quoteProto.bodyRanges.isEmpty {
                     requiredProtocolVersion = max(requiredProtocolVersion, SSKProtoDataMessageProtocolVersion.mentions.rawValue)
+                }
+                // Tellomi（ADR-0068 §4.4）：引用缩略图带遮罩也一样（「任何 AttachmentPointer」）。
+                if TellomiMediaSpoiler.needsSpoilerProtocolVersion(attachments: [], quote: quoteProto) {
+                    requiredProtocolVersion = max(requiredProtocolVersion, SSKProtoDataMessageProtocolVersion.tellomiMediaSpoiler.rawValue)
                 }
             } catch {
                 owsFailDebug("Could not build quote protobuf: \(error)")
@@ -656,7 +664,9 @@ extension TSOutgoingMessage {
         } ?? []
 
         return referencedAttachments.compactMap { referencedAttachment in
-            guard let attachmentProto = referencedAttachment.asProtoForSending() else {
+            // Tellomi（ADR-0068 §4.4）：选图时罩住的（`TellomiOutgoingMedia`）；一次性查看的不带遮罩。
+            let tellomiSpoiler = !isViewOnceMessage && TellomiMediaSpoiler.isSpoiler(referencedAttachment.reference, tx: tx)
+            guard let attachmentProto = referencedAttachment.asProtoForSending(tellomiSpoiler: tellomiSpoiler) else {
                 owsFailDebug("Failed to generate proto for body attachment!")
                 return nil
             }
