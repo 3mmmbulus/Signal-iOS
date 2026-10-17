@@ -50,7 +50,6 @@ final class ReactionFlyInTest: XCTestCase {
         XCTAssertTrue(CVReactionCountsView.isFlyInTarget(.emoji(emoji: "❤️", count: 2, fromLocalUser: true), emoji: "❤️"))
         XCTAssertFalse(CVReactionCountsView.isFlyInTarget(.emoji(emoji: "❤️", count: 1, fromLocalUser: false), emoji: "❤️"))
         XCTAssertFalse(CVReactionCountsView.isFlyInTarget(.emoji(emoji: "👍", count: 1, fromLocalUser: true), emoji: "❤️"))
-        XCTAssertFalse(CVReactionCountsView.isFlyInTarget(.moreCount(count: 3, fromLocalUser: true), emoji: "❤️"))
         XCTAssertFalse(CVReactionCountsView.isFlyInTarget(nil, emoji: "❤️"))
     }
 

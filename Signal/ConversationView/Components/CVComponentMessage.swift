@@ -1690,8 +1690,14 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
     // How far the reactions bubble protrudes below the message content.
     private var reactionsVProtrusion: CGFloat {
-        let reactionsHeight = CVReactionCountsView.height
+        // Tellomi（交互审计 A-07）：回应换成几行，就往下伸出几行。
+        let reactionsHeight = (reactions as? CVComponentReactions)?.measuredHeight(maxWidth: reactionsWrapWidth) ?? CVReactionCountsView.height
         return max(0, reactionsHeight - reactionsVOverlap)
+    }
+
+    /// Tellomi（交互审计 A-07）：回应排在多宽里换行：气泡的最大宽度（Telegram 在气泡宽度内换行）。
+    private var reactionsWrapWidth: CGFloat {
+        conversationStyle.maxMessageWidth
     }
 
     /// - Returns: Bubble background color for the current message.
@@ -1848,8 +1854,9 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         )
 
         if let reactionsSubcomponent = subcomponent(forKey: .reactions) {
+            // Tellomi（交互审计 A-07）：回应全部显示，超过气泡最大宽度就换行。
             let reactionsSize = reactionsSubcomponent.measure(
-                maxWidth: maxWidth,
+                maxWidth: reactionsWrapWidth,
                 measurementBuilder: measurementBuilder,
             )
             measurementBuilder.setSize(key: Self.measurementKey_reactions, size: reactionsSize)

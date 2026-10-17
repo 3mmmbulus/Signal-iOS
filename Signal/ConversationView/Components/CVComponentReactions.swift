@@ -44,9 +44,12 @@ public class CVComponentReactions: CVComponentBase, CVComponent, CVAccessibility
         }
 
         let reactionCountsView = componentView.reactionCountsView
+        // Tellomi（交互审计 A-07）：同一条消息的回应变了才动；换行时各行朝屏幕中间那一侧对齐（和整排的摆法一样）。
         reactionCountsView.configure(
             state: viewState,
             cellMeasurement: cellMeasurement,
+            messageId: interaction.uniqueId,
+            alignRowsRight: (interaction is TSIncomingMessage) != CurrentAppContext().isRTL,
         )
     }
 
@@ -55,8 +58,14 @@ public class CVComponentReactions: CVComponentBase, CVComponent, CVAccessibility
 
         return CVReactionCountsView.measure(
             state: viewState,
+            maxWidth: maxWidth,
             measurementBuilder: measurementBuilder,
         )
+    }
+
+    /// Tellomi（交互审计 A-07）：在 [maxWidth] 内换行后整排有多高。
+    func measuredHeight(maxWidth: CGFloat) -> CGFloat {
+        CVReactionCountsView.measuredHeight(state: viewState, maxWidth: maxWidth)
     }
 
     // MARK: - Events
@@ -80,31 +89,17 @@ public class CVComponentReactions: CVComponentBase, CVComponent, CVAccessibility
 
     public var accessibilityDescription: String {
         var fullString = ""
-        let pills = [viewState.pill1, viewState.pill2, viewState.pill3].compactMap { $0 }
 
-        for pill in pills {
-            let string: String
-            switch pill {
-            case .emoji(let emoji, let count, _):
-                string = String.localizedStringWithFormat(
-                    OWSLocalizedString(
-                        "MESSAGE_REACTIONS_ACCESSIBILITY_LABEL_%d",
-                        tableName: "PluralAware",
-                        comment: "Accessibility label reading out a reaction to a message and its count. Embeds {{ count }} and {{ emoji name }}.",
-                    ),
-                    count,
-                    emoji,
-                )
-            case .moreCount(let count, _):
-                string = String.localizedStringWithFormat(
-                    OWSLocalizedString(
-                        "OVERFLOW_REACTIONS_ACCESSIBILITY_LABEL_%d",
-                        tableName: "PluralAware",
-                        comment: "Accessibility label stating that there are additional reactions to a message that couldn't be displayed. Embeds {{ count of additional reactions }}",
-                    ),
-                    count,
-                )
-            }
+        for pill in viewState.pills {
+            let string = String.localizedStringWithFormat(
+                OWSLocalizedString(
+                    "MESSAGE_REACTIONS_ACCESSIBILITY_LABEL_%d",
+                    tableName: "PluralAware",
+                    comment: "Accessibility label reading out a reaction to a message and its count. Embeds {{ count }} and {{ emoji name }}.",
+                ),
+                pill.count,
+                pill.emoji,
+            )
             fullString.append(string)
             fullString.append(" ")
         }
