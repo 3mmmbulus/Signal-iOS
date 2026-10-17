@@ -547,6 +547,47 @@ class TellomiBubbleTailTest: XCTestCase {
         return BubbleConfiguration(corners: corners, tail: tail).bubblePath(for: rect)
     }
 
+    /// 尾巴在哪边，轮廓都是顺时针：媒体的内阴影靠「轮廓 + 反向外框」按非零环绕填色，方向错了气泡里面整块是黑的
+    /// （2026-10-17 对方发的带说明的图片 / 地点消息的地图）。
+    func testTheOutlineIsClockwiseOnBothSides() {
+        for tailOnRight in [true, false, nil] as [Bool?] {
+            XCTAssertGreaterThan(Self.signedArea(path(tailOnRight: tailOnRight)), 0, "tail on right: \(String(describing: tailOnRight))")
+        }
+    }
+
+    /// The inner shadow the media view draws (`OWSBubbleShapeView` `.innerShadow`): outline + the outer rect reversed, filled
+    /// non-zero. Inside the bubble must stay empty.
+    func testTheMediaInnerShadowLeavesTheInsideEmptyOnBothSides() {
+        for tailOnRight in [true, false] {
+            let shadow = path(tailOnRight: tailOnRight).copy() as! UIBezierPath
+            shadow.append(UIBezierPath(rect: rect.insetBy(dx: -2, dy: -2)).reversing())
+            shadow.usesEvenOddFillRule = false
+            XCTAssertFalse(shadow.contains(CGPoint(x: rect.midX, y: rect.midY)), "tail on right: \(tailOnRight)")
+            XCTAssertTrue(shadow.contains(CGPoint(x: rect.midX, y: rect.minY - 1)), "tail on right: \(tailOnRight)")
+        }
+    }
+
+    /// Shoelace area of the path's points (curves by their end points), y down: positive = clockwise on screen.
+    private static func signedArea(_ path: UIBezierPath) -> CGFloat {
+        var points = [CGPoint]()
+        path.cgPath.applyWithBlock { element in
+            let e = element.pointee
+            switch e.type {
+            case .moveToPoint, .addLineToPoint: points.append(e.points[0])
+            case .addQuadCurveToPoint: points.append(e.points[1])
+            case .addCurveToPoint: points.append(e.points[2])
+            case .closeSubpath: break
+            @unknown default: break
+            }
+        }
+        var area: CGFloat = 0
+        for i in points.indices {
+            let a = points[i], b = points[(i + 1) % points.count]
+            area += a.x * b.y - b.x * a.y
+        }
+        return area / 2
+    }
+
     func testTailOnTheRightReplacesTheBottomRightCorner() {
         let path = path(tailOnRight: true)
         let body = BubbleConfiguration.Tail(isOnRight: true).bodyRect(in: rect)

@@ -253,6 +253,9 @@ public struct BubbleConfiguration {
 
             if !isOnRight {
                 path.apply(CGAffineTransform(translationX: body.minX + body.maxX, y: 0).scaledBy(x: -1, y: 1))
+                // 镜像会把顺时针翻成逆时针：翻回来。媒体的内阴影（`OWSBubbleShapeView` `.innerShadow`）把这条轮廓和一个反向的外框
+                // 拼起来按非零环绕填黑，只有两者方向相反时气泡里面才是空的；方向一样，左边带尾巴的气泡（对方发的）整张图都会被涂黑。
+                return path.reversing()
             }
             return path
         }
