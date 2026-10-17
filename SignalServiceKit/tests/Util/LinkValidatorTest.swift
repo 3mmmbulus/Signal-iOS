@@ -113,6 +113,12 @@ class LinkValidatorTest: XCTestCase {
             ("https://www.163.com/news/article/ABC123.html网易新闻", "https://www.163.com/news/article/ABC123.html"),
             ("https://signal.org/hello世界", "https://signal.org/hello"),
             ("https://signal.org/v2很好 https://signal.org/other", "https://signal.org/v2"),
+            ("https://signal.org/hello?q=1世界", "https://signal.org/hello?q=1"),
+            // Tellomi: full-width punctuation right after the link ends it
+            ("看这个https://b23.tv/abc，很好", "https://b23.tv/abc"),
+            ("看这个https://b23.tv/abc。", "https://b23.tv/abc"),
+            ("（https://b23.tv/abc）", "https://b23.tv/abc"),
+            ("「https://b23.tv/abc」", "https://b23.tv/abc"),
             // Tellomi: a cut right after a URL delimiter would point at another page, so no preview (as upstream)
             ("https://zh.wikipedia.org/wiki/中国", nil),
             ("https://v.douyin.com/iABC/复制此链接", nil),

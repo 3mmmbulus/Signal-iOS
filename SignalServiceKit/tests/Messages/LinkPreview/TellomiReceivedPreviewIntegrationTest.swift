@@ -210,4 +210,14 @@ final class TellomiReceivedPreviewIntegrationTest: SSKBaseTest {
         XCTAssertNil(message.linkPreview)
         XCTAssertEqual(message.body, "看这个 http://www.wikipedia.org/wiki/Tellomi")
     }
+
+    /// 2026-10-17（build 18 复测报告第 5 条：接收端没有「收到紧贴中文的消息」的专门用例）：正文里链接后面紧贴中文或全角标点，
+    /// 预览照收（rust/links 把非 ASCII 当链接的结尾）。
+    func testAPreviewOfALinkWithTextGluedAfterItIsKept() async throws {
+        try XCTSkipUnless(TellomiLinkRegistry.classifier.isAvailable, "随包注册表没加载")
+        for body in ["看这个https://b23.tv/BV1GJ411x7h7很好", "看这个https://b23.tv/BV1GJ411x7h7，很好", "（https://b23.tv/BV1GJ411x7h7）"] {
+            let message = try await receive(Sent(url: "https://b23.tv/BV1GJ411x7h7", title: "视频标题", body: body))
+            XCTAssertEqual(message.linkPreview?.title, "视频标题", body)
+        }
+    }
 }
