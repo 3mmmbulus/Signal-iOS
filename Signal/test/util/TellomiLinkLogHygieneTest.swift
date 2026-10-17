@@ -29,12 +29,14 @@ final class TellomiLinkLogHygieneTest: XCTestCase {
     ]
 
     private var repository: URL {
-        // 本文件在 <仓库>/Signal/test/util/ 下
+        // 本文件在 <仓库>/Signal/test/util/ 下。解析符号链接：检出在 /tmp 下时 #filePath 和目录遍历给出的
+        // 一个带 /private、一个不带，按长度截相对路径会截错（同 TellomiRegionsTest 的做法）。
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
+            .resolvingSymlinksInPath()
     }
 
     // MARK: - 检测器
@@ -166,7 +168,12 @@ final class TellomiLinkLogHygieneTest: XCTestCase {
                 let name = file.lastPathComponent
                 // 测试文件不扫（`*Test.swift` / `*Tests.swift`）
                 guard !name.hasSuffix("Test.swift"), !name.hasSuffix("Tests.swift") else { continue }
-                paths.append(String(file.path.dropFirst(repository.path.count + 1)))
+                let path = file.resolvingSymlinksInPath().path
+                guard path.hasPrefix(repository.path + "/") else {
+                    XCTFail("\(path) is outside \(repository.path)")
+                    continue
+                }
+                paths.append(String(path.dropFirst(repository.path.count + 1)))
             }
         }
         XCTAssertGreaterThan(paths.count, 25, "扫的文件数不对：\(paths.count)")
