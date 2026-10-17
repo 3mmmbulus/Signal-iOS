@@ -193,3 +193,52 @@ final class ReactionFlyInTest: XCTestCase {
         }
     }
 }
+
+/// Tellomi（交互审计 A-07，owner 2026-10-17）：回应落到胶囊上的「爆开」。
+@MainActor
+final class TellomiReactionBurstTest: XCTestCase {
+
+    /// 十颗粒子：方向两两不同（黄金角错开），远近在表情字号 × 2.2 的 0.8–1.2 倍，大小 0.35–0.5，最多晚 0.04 s。
+    func testParticlesSpreadDeterministically() {
+        let particles = TellomiReactionBurst.particles(emojiSize: 14)
+        XCTAssertEqual(particles.count, 10)
+        XCTAssertEqual(particles, TellomiReactionBurst.particles(emojiSize: 14), "每次一样，录屏可复现")
+        let reach = 14 * TellomiReactionBurst.reachFactor
+        for particle in particles {
+            XCTAssertGreaterThanOrEqual(particle.distance, reach * 0.8 - 1e-9)
+            XCTAssertLessThanOrEqual(particle.distance, reach * 1.2 + 1e-9)
+            XCTAssertGreaterThanOrEqual(particle.scale, 0.35)
+            XCTAssertLessThanOrEqual(particle.scale, 0.5)
+            XCTAssertLessThanOrEqual(particle.delay, 0.04 + 1e-9)
+        }
+        let directions = Set(particles.map { Int((atan2(sin($0.angle), cos($0.angle)) * 100).rounded()) })
+        XCTAssertEqual(directions.count, particles.count)
+    }
+
+    /// 爆开在飞行的 75% 开始（Telegram iOS 0.15 / 0.2 s、Android 70%），整段 0.7 s 以内。
+    func testBurstStartsBeforeTheEmojiLands() {
+        XCTAssertEqual(ReactionFlyIn.burstDelay, ReactionFlyIn.verticalSpring.duration * 0.75, accuracy: 1e-9)
+        XCTAssertLessThan(ReactionFlyIn.burstDelay, ReactionFlyIn.verticalSpring.duration)
+        XCTAssertLessThanOrEqual(TellomiReactionBurst.duration, 0.7)
+    }
+
+    /// 播的时候窗口上多一层不挡触摸、不进读屏的视图，播完自己摘掉。
+    func testBurstIsAPassiveOverlayThatRemovesItself() throws {
+        try XCTSkipUnless(TellomiReactionBurst.shouldPlay, "减弱动态效果或低电量模式下不播")
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.isHidden = false
+        let before = window.subviews.count
+        TellomiReactionBurst.play(emoji: "❤️", at: CGPoint(x: 200, y: 400), in: window, emojiSize: 14)
+        XCTAssertEqual(window.subviews.count, before + 1)
+        let overlay = try XCTUnwrap(window.subviews.last)
+        XCTAssertFalse(overlay.isUserInteractionEnabled)
+        XCTAssertTrue(overlay.accessibilityElementsHidden)
+        XCTAssertEqual(overlay.layer.sublayers?.count, 1 + TellomiReactionBurst.particleCount, "一个环 + 十颗粒子")
+
+        let done = expectation(description: "burst finished")
+        DispatchQueue.main.asyncAfter(deadline: .now() + TellomiReactionBurst.duration + 0.2) { done.fulfill() }
+        wait(for: [done], timeout: 3)
+        XCTAssertEqual(window.subviews.count, before)
+        window.isHidden = true
+    }
+}

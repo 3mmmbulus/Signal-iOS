@@ -41,6 +41,8 @@ final class ReactionFlyIn {
     static let horizontalSpring = TellomiMotion.snap.withoutBounce
     /// 纵向：比横向慢一点、带一点回弹，后落；和横向的时间差就是弧线。
     static let verticalSpring = TellomiMotion.large
+    /// 起飞后多久在落点播「爆开」（交互审计 A-07）：飞行的 75%，和 Telegram 两端一样在快落下时就开始。
+    static let burstDelay: TimeInterval = verticalSpring.duration * 0.75
 
     private let overlayView = UIView()
     /// 只管横向位置。
@@ -140,6 +142,12 @@ final class ReactionFlyIn {
         vertical.addCompletion { [weak self] _ in self?.didArrive() }
         horizontal.startAnimation()
         vertical.startAnimation()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.burstDelay) { [weak self, weak targetView] in
+            guard let self, let targetView, let window = targetView.window else { return }
+            let center = targetView.convert(CGPoint(x: targetView.bounds.midX, y: targetView.bounds.midY), to: window)
+            TellomiReactionBurst.play(emoji: self.emoji, at: center, in: window, emojiSize: targetFontSize)
+        }
     }
 
     /// 横纵两条弹簧都到了才算落到胶囊上。

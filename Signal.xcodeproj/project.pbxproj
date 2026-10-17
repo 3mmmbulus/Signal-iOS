@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC119A6289A1333C0B1D18D8 /* TellomiReactionBurst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03522613C079A545C952E703 /* TellomiReactionBurst.swift */; };
 		D98FD2341C126A5F84A8338B /* TellomiReactionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F309B2B2F331098F485957 /* TellomiReactionPanel.swift */; };
 		E8981A997A8652D2C38AED29 /* TellomiReactionBarTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509F00653629A8EA63754812 /* TellomiReactionBarTest.swift */; };
 		E33674E0E545DC181638A823 /* TellomiReactionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AD8F99D0817666FBD35986 /* TellomiReactionBar.swift */; };
@@ -4500,6 +4501,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		03522613C079A545C952E703 /* TellomiReactionBurst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionBurst.swift; sourceTree = "<group>"; };
 		84F309B2B2F331098F485957 /* TellomiReactionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionPanel.swift; sourceTree = "<group>"; };
 		509F00653629A8EA63754812 /* TellomiReactionBarTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionBarTest.swift; sourceTree = "<group>"; };
 		E2AD8F99D0817666FBD35986 /* TellomiReactionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionBar.swift; sourceTree = "<group>"; };
@@ -10893,6 +10895,7 @@
 				88BCCC8023837B7D00CE5FE6 /* InteractionReactionState.swift */,
 				88B688AF238F0D1000286F82 /* ReactionsDetailSheet.swift */,
 				D54FB2B6AC8509FD6ABC02CC /* ReactionFlyIn.swift */,
+				03522613C079A545C952E703 /* TellomiReactionBurst.swift */,
 			);
 			path = Reactions;
 			sourceTree = "<group>";
@@ -20088,6 +20091,7 @@
 				C1CDD49E2F604F4200F5C3D5 /* WiFiAware+Extensions.swift in Sources */,
 				76616C9D2A266A05005F7001 /* WindowManager.swift in Sources */,
 				D149B68A2D00C9D6F2249B44 /* ReactionFlyIn.swift in Sources */,
+				AC119A6289A1333C0B1D18D8 /* TellomiReactionBurst.swift in Sources */,
 				36CEEA01C004890A1AEC05E6 /* ConversationViewController+ReactionFlyIn.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
