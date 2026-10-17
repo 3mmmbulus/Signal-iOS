@@ -88,6 +88,8 @@ class TellomiUpdateRequiredMonitoringManager {
     private func applicationDidBecomeActive() {
         updateIsBlocked()
         refreshManifestThenUpdate()
+        // Tellomi（ADR-0078 §3.4）：顺便问一次有没有人工处置（至多每 6 小时一次）
+        Task { await TellomiRestrictions.refresh(force: false) }
     }
 
     /// 拉一次更新清单再重新判断（需求 §3.2：启动 + 回到前台；阻断页盖着时不节流，撤销才能尽快生效）。

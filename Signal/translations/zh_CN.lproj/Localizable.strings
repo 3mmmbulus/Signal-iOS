@@ -12224,3 +12224,8 @@
 "LOCATION_VIEW_TELLOMI_OPEN_IN" = "打开方式";
 "LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "显示这个位置";
 "LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "你在这里";
+"TELLOMI_RESTRICTION_ALL" = "你的账号因违反《Tellomi 社区规范与平台公约》，暂时不能发送消息，%@ 恢复。你仍然可以接收消息、查看聊天记录。";
+"TELLOMI_RESTRICTION_APPEAL" = "如有异议，请发邮件到 %@ 申诉。";
+"TELLOMI_RESTRICTION_APPEAL_CASE" = "如有异议，请发邮件到 %1$@ 申诉，并附上处置编号 %2$@。";
+"TELLOMI_RESTRICTION_STRANGER" = "你的账号因违反《Tellomi 社区规范与平台公约》，暂时不能给还不是你联系人的人发消息，%@ 恢复。已经互相加过的联系人不受影响。";
+"TELLOMI_RESTRICTION_SUSPENDED_REGISTRATION" = "这个号码的 Tellomi 账号因违反《Tellomi 社区规范与平台公约》已被暂停，%@ 之前不能重新注册。";

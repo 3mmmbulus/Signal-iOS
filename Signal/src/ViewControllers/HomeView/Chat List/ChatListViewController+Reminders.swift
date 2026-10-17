@@ -28,6 +28,8 @@ public class CLVReminderViews {
     fileprivate var notificationsDisabledReminderView = UIView()
     /// Tellomi（tellomi/tellomi#1491）：推荐更新的「Tellomi x 可用 · 立即更新」；点了给「立即更新 / 3 天后再提醒」。
     fileprivate let updateAvailableReminderView = ReminderView(style: .info, text: "")
+    /// Tellomi（tellomi/tellomi ADR-0078 §3.4）：账号被人工处置时的说明（为什么发不出去、到什么时候、去哪申诉）。不能关，到期自己消失。
+    fileprivate let tellomiRestrictionReminderView = ReminderView(style: .warning, text: "")
 
     public weak var chatListViewController: ChatListViewController?
 
@@ -143,6 +145,25 @@ public class CLVReminderViews {
         updateAvailableReminderView.isHidden = true
         reminderStackView.addArrangedSubview(updateAvailableReminderView)
         updateAvailableReminderView.accessibilityIdentifier = "updateAvailableReminderView"
+
+        // Tellomi（ADR-0078 §3.4）：先藏着，读到生效的处置再显示
+        tellomiRestrictionReminderView.isHidden = true
+        reminderStackView.insertArrangedSubview(tellomiRestrictionReminderView, at: 0)
+        tellomiRestrictionReminderView.accessibilityIdentifier = "tellomiRestrictionReminderView"
+    }
+
+    /// 有生效的处置就挂说明，否则收起。返回显示状态有没有变。
+    func configureTellomiRestriction(_ restriction: TellomiRestriction?) -> Bool {
+        let wasHidden = tellomiRestrictionReminderView.isHidden
+        guard let restriction else {
+            tellomiRestrictionReminderView.isHidden = true
+            return !wasHidden
+        }
+        let text = TellomiRestrictionUI.notice(restriction)
+        let textChanged = tellomiRestrictionReminderView.text != text
+        tellomiRestrictionReminderView.text = text
+        tellomiRestrictionReminderView.isHidden = false
+        return wasHidden || textChanged
     }
 
     /// 推荐档挂提示，否则（没有新版本、只是可选、只读、「3 天后再提醒」期间）收起。返回显示状态有没有变。
@@ -283,7 +304,8 @@ public class CLVReminderViews {
             !self.usernameCorruptedReminderView.isHidden ||
             !self.usernameLinkCorruptedReminderView.isHidden ||
             !self.notificationsDisabledReminderView.isHidden ||
-            !self.updateAvailableReminderView.isHidden
+            !self.updateAvailableReminderView.isHidden ||
+            !self.tellomiRestrictionReminderView.isHidden
 
     }
 }
@@ -349,6 +371,14 @@ extension ChatListViewController {
         }
         let shouldShow = TellomiUpdateManifests.shouldShowBanner(offer: offer, snoozedAt: snoozedAt, now: now)
         if reminderViews.configureUpdateAvailable(offer: shouldShow ? offer : nil) {
+            loadCoordinator.loadIfNecessary()
+        }
+    }
+
+    /// Tellomi（ADR-0078 §3.4）：人工处置的说明（看本机记着的那条；过期的不算）。
+    public func updateTellomiRestrictionReminderView() {
+        let restriction = TellomiRestrictions.active(db: DependenciesBridge.shared.db)
+        if reminderViews.configureTellomiRestriction(restriction) {
             loadCoordinator.loadIfNecessary()
         }
     }

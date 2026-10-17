@@ -11655,6 +11655,21 @@
 /* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
 "TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "Reaction removed";
 
+/* Tellomi (ADR-0078): chat list notice while the account may not send any messages. Embeds the date and time the restriction ends. */
+"TELLOMI_RESTRICTION_ALL" = "Your account can't send messages until %@ because it broke the Tellomi Community Guidelines. You can still receive messages and read your chats.";
+
+/* Tellomi (ADR-0078): second sentence of a restriction notice when there is no case number. Embeds the appeal email address. */
+"TELLOMI_RESTRICTION_APPEAL" = "If you think this is a mistake, email %@.";
+
+/* Tellomi (ADR-0078): second sentence of a restriction notice. Embeds the appeal email address, then the case number to quote. */
+"TELLOMI_RESTRICTION_APPEAL_CASE" = "If you think this is a mistake, email %1$@ and include case number %2$@.";
+
+/* Tellomi (ADR-0078): chat list notice while the account may not message non-contacts. Embeds the date and time the restriction ends. */
+"TELLOMI_RESTRICTION_STRANGER" = "Your account can't message people who aren't your contacts until %@ because it broke the Tellomi Community Guidelines. Contacts you've already connected with aren't affected.";
+
+/* Tellomi (ADR-0078): shown when registering a suspended number. Embeds the date and time the suspension ends. */
+"TELLOMI_RESTRICTION_SUSPENDED_REGISTRATION" = "The Tellomi account for this number is suspended until %@ for breaking the Tellomi Community Guidelines, so it can't be registered again before then.";
+
 /* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "Delete Scheduled Message";
 

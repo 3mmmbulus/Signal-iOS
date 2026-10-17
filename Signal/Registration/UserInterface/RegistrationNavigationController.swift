@@ -482,6 +482,9 @@ public class RegistrationNavigationController: OWSNavigationController {
             case .sessionInvalidated, .genericError:
                 title = nil
                 message = CommonStrings.somethingWentWrongTryAgainLaterError
+            case .tellomiSuspended(let restriction):
+                title = nil
+                message = TellomiRestrictionUI.suspendedAtRegistration(restriction)
             }
             let actionSheet = ActionSheetController(title: title, message: message)
             actionSheet.addAction(.init(title: CommonStrings.okButton, style: .default, handler: { [weak self] _ in

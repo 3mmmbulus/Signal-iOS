@@ -12224,3 +12224,8 @@
 "LOCATION_VIEW_TELLOMI_OPEN_IN" = "開啟方式";
 "LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "顯示這個位置";
 "LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "你在這裡";
+"TELLOMI_RESTRICTION_ALL" = "你的帳戶因違反《Tellomi 社群規範與平台公約》，暫時不能傳送訊息，%@ 恢復。你仍然可以接收訊息、查看聊天記錄。";
+"TELLOMI_RESTRICTION_APPEAL" = "如有異議，請寄電子郵件到 %@ 申訴。";
+"TELLOMI_RESTRICTION_APPEAL_CASE" = "如有異議，請寄電子郵件到 %1$@ 申訴，並附上處置編號 %2$@。";
+"TELLOMI_RESTRICTION_STRANGER" = "你的帳戶因違反《Tellomi 社群規範與平台公約》，暫時不能傳訊息給還不是你聯絡人的人，%@ 恢復。已經互相加過的聯絡人不受影響。";
+"TELLOMI_RESTRICTION_SUSPENDED_REGISTRATION" = "這個號碼的 Tellomi 帳戶因違反《Tellomi 社群規範與平台公約》已被暫停，%@ 之前不能重新註冊。";

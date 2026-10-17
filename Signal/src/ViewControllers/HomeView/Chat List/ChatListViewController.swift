@@ -104,6 +104,7 @@ public class ChatListViewController: OWSViewController, HomeTabViewController {
         updateUsernameReminderView()
         updateNotificationsDisabledReminderView() // Tellomi（#1218 F-01）
         updateUpdateAvailableReminderView() // Tellomi（#1491）
+        updateTellomiRestrictionReminderView() // Tellomi（ADR-0078 §3.4）
         updateTableViewPaddingIfNeeded()
         observeNotifications()
     }

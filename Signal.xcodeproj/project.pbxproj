@@ -19,6 +19,9 @@
 		F8135118AE919C265CAC3C0A /* tellomi_reaction_1f44e.json in Resources */ = {isa = PBXBuildFile; fileRef = 0381D04E2664592388B4E563 /* tellomi_reaction_1f44e.json */; };
 		CE7D9FC40F90CF13B95CB58B /* tellomi_reaction_2764_fe0f.json in Resources */ = {isa = PBXBuildFile; fileRef = B726966AC2A3898C2EABC24F /* tellomi_reaction_2764_fe0f.json */; };
 		E1550879579F7D76C7108C16 /* tellomi_reaction_1f44d.json in Resources */ = {isa = PBXBuildFile; fileRef = DC7451A5DE1367AAB9AFC85E /* tellomi_reaction_1f44d.json */; };
+		586767BEC586794DE496262C /* TellomiRestrictionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C94345C4002401D1D9641B /* TellomiRestrictionTest.swift */; };
+		E455999DBAF21C1F0B0F9419 /* TellomiRestrictionUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AF7A7F178D35926414AF62 /* TellomiRestrictionUI.swift */; };
+		5A3374DB3534D1DB7E4EA26A /* TellomiRestrictions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B67BCD91F1D0F6B484DE16 /* TellomiRestrictions.swift */; };
 		CE018DE773E8BF2C23932082 /* TellomiLocationViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC9B4DEAE90D2F66EA59777B /* TellomiLocationViewTests.swift */; };
 		8BA088D2767428011FF07A59 /* TellomiLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAB33FE5AF0AF9B388CF8E9 /* TellomiLocationViewController.swift */; };
 		7A11CE211A87B17BA0CD6553 /* TellomiOpenInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16DCB0DA91641669CA56070 /* TellomiOpenInSheet.swift */; };
@@ -4545,6 +4548,9 @@
 		0381D04E2664592388B4E563 /* tellomi_reaction_1f44e.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = tellomi_reaction_1f44e.json; sourceTree = "<group>"; };
 		B726966AC2A3898C2EABC24F /* tellomi_reaction_2764_fe0f.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = tellomi_reaction_2764_fe0f.json; sourceTree = "<group>"; };
 		DC7451A5DE1367AAB9AFC85E /* tellomi_reaction_1f44d.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = tellomi_reaction_1f44d.json; sourceTree = "<group>"; };
+		61C94345C4002401D1D9641B /* TellomiRestrictionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRestrictionTest.swift; sourceTree = "<group>"; };
+		75AF7A7F178D35926414AF62 /* TellomiRestrictionUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRestrictionUI.swift; sourceTree = "<group>"; };
+		C6B67BCD91F1D0F6B484DE16 /* TellomiRestrictions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRestrictions.swift; sourceTree = "<group>"; };
 		EC9B4DEAE90D2F66EA59777B /* TellomiLocationViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLocationViewTests.swift; sourceTree = "<group>"; };
 		8CAB33FE5AF0AF9B388CF8E9 /* TellomiLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLocationViewController.swift; sourceTree = "<group>"; };
 		E16DCB0DA91641669CA56070 /* TellomiOpenInSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiOpenInSheet.swift; sourceTree = "<group>"; };
@@ -11120,6 +11126,7 @@
 			children = (
 				661278062996BA7800A1D5A1 /* RegistrationCoordinatorTest.swift */,
 				03069F6E820E2D197B8FA925 /* TellomiRegistrationUsernameTest.swift */,
+				61C94345C4002401D1D9641B /* TellomiRestrictionTest.swift */,
 				010B9F50A78F39CB99637CDA /* TellomiUsernameLowercaseTest.swift */,
 				661278092996BAB400A1D5A1 /* RegistrationCoordinatorTestShims.swift */,
 				0AD293D7430DDF7D6EBDD3CD /* TellomiVerificationCodeTest.swift */,
@@ -12305,6 +12312,7 @@
 				D91FBCF32E2E9E9E00D0BCDB /* ChatListFYISheetCoordinator.swift */,
 				E5C5F9B376A0C61A853783B1 /* TellomiNotificationPrimer.swift */,
 				FD3BF67DC104899D92531288 /* TellomiUpdateRecommended.swift */,
+				75AF7A7F178D35926414AF62 /* TellomiRestrictionUI.swift */,
 				05B411242C62845000A1EDBC /* ChatListInboxFilterSection.swift */,
 				2B81A481B618D2B7F74FAC86 /* ChatListConnectionTitle.swift */,
 				50101FB32B08447000C648E4 /* ChatListProxyButtonCreator.swift */,
@@ -16661,6 +16669,7 @@
 				724329682BE3A0C60089206A /* AppContext.swift */,
 				F9C5CB6F289453B200548EEE /* AppExpiry.swift */,
 				A69A82BFC1C0A4DC3E822D84 /* TellomiUpdateManifests.swift */,
+				C6B67BCD91F1D0F6B484DE16 /* TellomiRestrictions.swift */,
 				9B73768DA48F80BA8D3B1B07 /* TellomiUpdateManifest.swift */,
 				F9C5CB81289453B200548EEE /* AppReadiness.swift */,
 				F972180528DE37A200113D9F /* AppVersion.swift */,
@@ -19498,6 +19507,7 @@
 				D91FBCF42E2E9EA200D0BCDB /* ChatListFYISheetCoordinator.swift in Sources */,
 				268FEB66C9E0A43BF02E0405 /* TellomiNotificationPrimer.swift in Sources */,
 				F82E582811570D59B8DB6D76 /* TellomiUpdateRecommended.swift in Sources */,
+				E455999DBAF21C1F0B0F9419 /* TellomiRestrictionUI.swift in Sources */,
 				05B411252C62845000A1EDBC /* ChatListInboxFilterSection.swift in Sources */,
 				9EDB47182FD066D7352194E2 /* ChatListConnectionTitle.swift in Sources */,
 				50101FB42B08447000C648E4 /* ChatListProxyButtonCreator.swift in Sources */,
@@ -20349,6 +20359,7 @@
 				E16B440E2BBF242C00D2583E /* ReactionsModelTest.swift in Sources */,
 				661278082996BA8900A1D5A1 /* RegistrationCoordinatorTest.swift in Sources */,
 				4E2A0DE1BA698D5D31CABA93 /* TellomiRegistrationUsernameTest.swift in Sources */,
+				586767BEC586794DE496262C /* TellomiRestrictionTest.swift in Sources */,
 				BEE092208BA8FAA212EB2A1D /* TellomiUsernameLowercaseTest.swift in Sources */,
 				6612780D2996BD0300A1D5A1 /* RegistrationCoordinatorTestShims.swift in Sources */,
 				1B60EB20DE2DD3F5052321B6 /* TellomiVerificationCodeTest.swift in Sources */,
@@ -20415,6 +20426,7 @@
 				724329692BE3A0C60089206A /* AppContext.swift in Sources */,
 				F9C5CE40289453B400548EEE /* AppExpiry.swift in Sources */,
 				5D24AF865D30E1687821D5EA /* TellomiUpdateManifests.swift in Sources */,
+				5A3374DB3534D1DB7E4EA26A /* TellomiRestrictions.swift in Sources */,
 				A7E949506E56B5E62D2F9FA4 /* TellomiUpdateManifest.swift in Sources */,
 				F9C5CE52289453B400548EEE /* AppReadiness.swift in Sources */,
 				725465642BA0369D00EABFD2 /* AppSetup.swift in Sources */,

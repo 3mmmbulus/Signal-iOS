@@ -2405,6 +2405,9 @@ public class RegistrationCoordinatorImpl: RegistrationCoordinator {
 
         case .genericError:
             return .showErrorSheet(.genericError)
+
+        case .tellomiSuspended(let restriction):
+            return .showErrorSheet(.tellomiSuspended(restriction))
         }
     }
 
@@ -3147,6 +3150,8 @@ public class RegistrationCoordinatorImpl: RegistrationCoordinator {
             return .showErrorSheet(.networkError)
         case .genericError:
             return .showErrorSheet(.genericError)
+        case .tellomiSuspended(let restriction):
+            return .showErrorSheet(.tellomiSuspended(restriction))
         }
     }
 
@@ -4733,7 +4738,7 @@ public class RegistrationCoordinatorImpl: RegistrationCoordinator {
                     }
                 case .deviceTransferPossible:
                     owsFailBeta("Should't get device transfer response on change number request.")
-                case .networkError, .genericError:
+                case .networkError, .genericError, .tellomiSuspended:
                     // We don't know what went wrong, so PNI state
                     // may be set server side. Don't wipe PNI state
                     // so we try and recover.
@@ -4825,7 +4830,8 @@ public class RegistrationCoordinatorImpl: RegistrationCoordinator {
             .reglockFailure,
             .networkError,
             .genericError,
-            .deviceTransferPossible: false
+            .deviceTransferPossible,
+            .tellomiSuspended: false
         }
         await deps.preKeyManager.finalizeRegistrationPreKeys(
             prekeyBundles,
@@ -5114,6 +5120,8 @@ public class RegistrationCoordinatorImpl: RegistrationCoordinator {
         case retryAfter(TimeInterval?)
         case networkError
         case genericError
+        /// Tellomi（ADR-0078 §3.4）：这个号码被人工暂停了，号码验证过之后服务端回 422 + 说明（Signal-Server#29）。
+        case tellomiSuspended(TellomiRestriction)
     }
 
     // MARK: - Step State Generation Helpers

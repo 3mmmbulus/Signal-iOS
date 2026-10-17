@@ -80,6 +80,13 @@ extension ChatListViewController {
             name: TellomiUpdateManifests.didChangeNotification,
             object: nil,
         )
+        // Tellomi（ADR-0078 §3.4）：人工处置的说明变了（有了、没了、到期）
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(tellomiRestrictionDidChange),
+            name: TellomiRestrictions.didChangeNotification,
+            object: nil,
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(significantTimeChangeNotification),
@@ -263,6 +270,13 @@ extension ChatListViewController {
     }
 
     @objc
+    private func tellomiRestrictionDidChange(_ notification: NSNotification) {
+        AssertIsOnMainThread()
+
+        updateTellomiRestrictionReminderView()
+    }
+
+    @objc
     private func significantTimeChangeNotification(_ notification: NSNotification) {
         AssertIsOnMainThread()
 
@@ -287,6 +301,8 @@ extension ChatListViewController {
         updateNotificationsDisabledReminderView()
         // Tellomi（#1491）：「3 天后再提醒」可能刚好到期
         updateUpdateAvailableReminderView()
+        // Tellomi（ADR-0078 §3.4）：处置可能刚好到期
+        updateTellomiRestrictionReminderView()
     }
 
     @objc

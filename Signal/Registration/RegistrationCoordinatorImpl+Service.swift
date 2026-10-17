@@ -160,6 +160,11 @@ extension RegistrationCoordinatorImpl {
                 return .rejectedVerificationMethod
 
             case .invalidArgument:
+                // Tellomi（ADR-0078 §3.4）：被暂停的号码回 422 + 说明（到什么时候、去哪申诉），别的 422 照旧
+                if let restriction = TellomiRestriction.parse(bodyData), restriction.level == .suspended {
+                    Logger.warn("This number is suspended")
+                    return .tellomiSuspended(restriction)
+                }
                 Logger.warn("Got invalid argument response for create account")
                 return .genericError
 

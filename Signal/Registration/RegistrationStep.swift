@@ -4,6 +4,7 @@
 //
 
 import Foundation
+public import SignalServiceKit
 
 public enum RegistrationStep: Equatable {
 
@@ -129,6 +130,9 @@ public enum RegistrationStep: Equatable {
 
         /// A generic error occurred. Prefer to use other error types.
         case genericError
+
+        /// Tellomi（ADR-0078 §3.4）：这个号码被人工暂停了，到截止时间之前不能重新注册。
+        case tellomiSuspended(TellomiRestriction)
     }
 
     /// Special cases; should display an error on the current screen, whatever it is.

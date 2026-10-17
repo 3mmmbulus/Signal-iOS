@@ -1959,6 +1959,8 @@ public class MessageSenderImpl: MessageSender, DeviceMessageBuilder {
             // marked as "pending"
             throw responseError
         default:
+            // Tellomi（ADR-0078 §3.4）：账号被人工处置时服务端回 403，问一次原因（会话列表顶上显示）
+            TellomiRestrictions.onSendFailure(responseError)
             throw responseError
         }
     }

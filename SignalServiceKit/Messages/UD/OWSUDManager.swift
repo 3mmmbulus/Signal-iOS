@@ -308,6 +308,8 @@ public class OWSUDManagerImpl: OWSUDManager {
         } catch {
             Logger.warn("Couldn't fetch Sealed Sender certificate: \(error)")
             SSKEnvironment.shared.notificationPresenterRef.notifyTestPopulation(ofErrorMessage: "Couldn't parse Sealed Sender certificate")
+            // Tellomi（ADR-0078 §3.4）：「限制全部发送」时服务端不签证书（403 自带说明）
+            TellomiRestrictions.onSenderCertificateFailure(error)
             throw error
         }
         await self.setSenderCertificate(aciOnly: aciOnly, certificateData: senderCertificate.serialize())
