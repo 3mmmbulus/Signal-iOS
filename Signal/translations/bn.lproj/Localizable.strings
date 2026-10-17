@@ -11498,3 +11498,8 @@
 "LOCATION_PICKER_TELLOMI_SEARCH_PLACES" = "কাছাকাছি জায়গা";
 "LOCATION_PICKER_TELLOMI_DISTANCE_FROM_HERE_FORMAT" = "এখান থেকে %@";
 "LOCATION_PICKER_TELLOMI_SEARCH_NO_RESULTS_FORMAT" = "“%@”-এর জন্য কিছু পাওয়া যায়নি। অন্য শব্দ দিয়ে চেষ্টা করুন।";
+"LOCATION_VIEW_TELLOMI_COPY_ADDRESS" = "ঠিকানা কপি করুন";
+"LOCATION_VIEW_TELLOMI_GET_DIRECTIONS" = "দিকনির্দেশ পান";
+"LOCATION_VIEW_TELLOMI_OPEN_IN" = "এতে খুলুন";
+"LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "এই অবস্থানটি দেখান";
+"LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "আপনি এখানে আছেন";

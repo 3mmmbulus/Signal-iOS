@@ -6044,6 +6044,21 @@
 /* The title for the location picker view */
 "LOCATION_PICKER_TITLE" = "Select Location";
 
+/* Action on the location details page that copies the shared location's address. */
+"LOCATION_VIEW_TELLOMI_COPY_ADDRESS" = "Copy Address";
+
+/* Button on the location details page that lists the map apps to get directions to the shared location in. */
+"LOCATION_VIEW_TELLOMI_GET_DIRECTIONS" = "Get Directions";
+
+/* Title of the sheet that lists the map apps on this device to open a shared location in. */
+"LOCATION_VIEW_TELLOMI_OPEN_IN" = "Open in";
+
+/* Accessibility label of the button that moves the map back to the shared location on the location details page. */
+"LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "Show this location";
+
+/* On the location details page, shown instead of a distance when the user is at the shared location. */
+"LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "You are here";
+
 /* Title for the 'logging' help section. */
 "LOGGING_SECTION" = "Logging";
 

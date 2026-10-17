@@ -11498,3 +11498,8 @@
 "LOCATION_PICKER_TELLOMI_SEARCH_PLACES" = "Áiteanna in aice láimhe";
 "LOCATION_PICKER_TELLOMI_DISTANCE_FROM_HERE_FORMAT" = "%@ as seo";
 "LOCATION_PICKER_TELLOMI_SEARCH_NO_RESULTS_FORMAT" = "Níor aimsíodh aon rud do “%@”. Bain triail as focal eile.";
+"LOCATION_VIEW_TELLOMI_COPY_ADDRESS" = "Cóipeáil an seoladh";
+"LOCATION_VIEW_TELLOMI_GET_DIRECTIONS" = "Faigh treoracha";
+"LOCATION_VIEW_TELLOMI_OPEN_IN" = "Oscail i";
+"LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "Taispeáin an suíomh seo";
+"LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "Tá tú anseo";

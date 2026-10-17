@@ -11498,3 +11498,8 @@
 "LOCATION_PICKER_TELLOMI_SEARCH_PLACES" = "Месцы паблізу";
 "LOCATION_PICKER_TELLOMI_DISTANCE_FROM_HERE_FORMAT" = "%@ адсюль";
 "LOCATION_PICKER_TELLOMI_SEARCH_NO_RESULTS_FORMAT" = "Па запыце «%@» нічога не знойдзена. Паспрабуйце іншае слова.";
+"LOCATION_VIEW_TELLOMI_COPY_ADDRESS" = "Скапіяваць адрас";
+"LOCATION_VIEW_TELLOMI_GET_DIRECTIONS" = "Пракласці маршрут";
+"LOCATION_VIEW_TELLOMI_OPEN_IN" = "Адкрыць у";
+"LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "Паказаць гэта месца";
+"LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "Вы тут";

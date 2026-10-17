@@ -11498,3 +11498,8 @@
 "LOCATION_PICKER_TELLOMI_SEARCH_PLACES" = "Места наблизо";
 "LOCATION_PICKER_TELLOMI_DISTANCE_FROM_HERE_FORMAT" = "На %@ оттук";
 "LOCATION_PICKER_TELLOMI_SEARCH_NO_RESULTS_FORMAT" = "Няма резултати за „%@“. Опитайте друга дума.";
+"LOCATION_VIEW_TELLOMI_COPY_ADDRESS" = "Копиране на адреса";
+"LOCATION_VIEW_TELLOMI_GET_DIRECTIONS" = "Упътвания";
+"LOCATION_VIEW_TELLOMI_OPEN_IN" = "Отваряне в";
+"LOCATION_VIEW_TELLOMI_SHOW_LOCATION" = "Показване на това местоположение";
+"LOCATION_VIEW_TELLOMI_YOU_ARE_HERE" = "Вие сте тук";

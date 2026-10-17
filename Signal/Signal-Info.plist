@@ -62,6 +62,9 @@
 		<string>maps</string>
 		<string>comgooglemaps</string>
 		<string>mailto</string>
+		<string>iosamap</string>
+		<string>baidumap</string>
+		<string>qqmap</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
