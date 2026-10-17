@@ -71,6 +71,14 @@ public class CVColorOrGradientView: ManualLayoutViewWithLayer, CVDimmableView {
         updateAppearance()
     }
 
+    /// Tellomi（M9 发送动画）：飞的那个气泡照这一个配置（同样的颜色 / 渐变、渐变的参照、形状和尾巴）。
+    var tellomiAppearance: (value: ColorOrGradientValue, referenceView: UIView, bubbleConfig: BubbleConfiguration?)? {
+        guard let value, let referenceView else {
+            return nil
+        }
+        return (value, referenceView, bubbleConfig)
+    }
+
     public func updateAppearance() {
 
         guard let value, let referenceView else {

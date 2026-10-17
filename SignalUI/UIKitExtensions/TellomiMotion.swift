@@ -111,6 +111,80 @@ public enum TellomiMotion {
     /// `UIKitUtils.m` `make26SpringAnimationImpl`），换成这里的「感知时长 + 回弹」就是 0.267 s、不回弹。
     public static let reactionPanelExpand = Spring(duration: 2 * .pi / 555.027.squareRoot(), bounce: 0)
 
+    // MARK: - 发送动画（M9）
+
+    /// 一条三次贝塞尔时间曲线（CSS `cubic-bezier(x1, y1, x2, y2)`），逐帧取值用。
+    public struct CubicBezier: Equatable, Sendable {
+        public let x1: Double
+        public let y1: Double
+        public let x2: Double
+        public let y2: Double
+
+        public init(_ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double) {
+            self.x1 = x1
+            self.y1 = y1
+            self.x2 = x2
+            self.y2 = y2
+        }
+
+        /// 时间进度 [x]（0…1）对应的动画进度。先按 x 解出曲线参数（牛顿法，退化时二分），再取 y。
+        public func value(at x: Double) -> Double {
+            let x = min(max(x, 0), 1)
+            func component(_ p1: Double, _ p2: Double, _ t: Double) -> Double {
+                let u = 1 - t
+                return 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t
+            }
+            func slope(_ p1: Double, _ p2: Double, _ t: Double) -> Double {
+                let u = 1 - t
+                return 3 * u * u * p1 + 6 * u * t * (p2 - p1) + 3 * t * t * (1 - p2)
+            }
+            var t = x
+            for _ in 0..<8 {
+                let error = component(x1, x2, t) - x
+                if abs(error) < 1e-7 {
+                    return component(y1, y2, t)
+                }
+                let d = slope(x1, x2, t)
+                if abs(d) < 1e-6 {
+                    break
+                }
+                t -= error / d
+            }
+            var low = 0.0
+            var high = 1.0
+            t = x
+            for _ in 0..<40 {
+                let value = component(x1, x2, t)
+                if abs(value - x) < 1e-7 {
+                    break
+                }
+                if value < x { low = t } else { high = t }
+                t = (low + high) / 2
+            }
+            return component(y1, y2, t)
+        }
+    }
+
+    /// 发送动画（设计规范 `bubbles-and-motion-design.md` 第 4 节）：点发送后，新气泡从输入框飞到会话里它的位置。
+    ///
+    /// 时长是 owner 2026-09-26 在 #1204 演示页选的 280 ms（Telegram 安卓 250、iOS 300）。其余照 Telegram 两端（只读机制，
+    /// owner 2026-10-14「聊天类照 Telegram，两端都有就做」）：横向、纵向各一条曲线，横向前快、纵向跟列表，走出一道弧线；
+    /// 输入框的框变成气泡的框；气泡底色连同尾巴很快淡入，输入框里的字和气泡里的字交叉淡入淡出。
+    /// Android `TellomiMotion.SendFlight` 同一组数。
+    public enum SendFlight {
+        public static let duration: TimeInterval = 0.28
+        /// 气泡底色（连同尾巴）由透明到不透明；同一段时间里输入框的字淡出、气泡的字淡入（Telegram 两端约 0.1 s）。
+        public static let bubbleFadeIn: TimeInterval = 0.12
+        /// 横向：前快后慢（Telegram iOS `horizontalAnimationCurve`）。
+        public static let horizontalCurve = CubicBezier(0.23, 1, 0.32, 1)
+        /// 纵向：Telegram 两端列表插入新消息用的同一条曲线（iOS `verticalAnimationControlPoints`、安卓 `ChatListItemAnimator`）。
+        public static let verticalCurve = CubicBezier(0.19919, 0.01064, 0.27921, 0.91025)
+        /// 等新的一条进列表最多等这么久；等不到就不飞。
+        public static let waitForRow: TimeInterval = 0.6
+        /// 不飞的时候（等不到、页面要走），留在原处的输入框和字淡掉。
+        public static let cancelFade: TimeInterval = 0.15
+    }
+
     /// 纯透明度变化：淡入 ease-out、淡出 ease-in。
     public static let fadeInDuration: TimeInterval = 0.2
     public static let fadeOutDuration: TimeInterval = 0.15

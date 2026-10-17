@@ -152,7 +152,9 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
                 },
             )
         } else {
-            ThreadUtil.enqueueMessage(
+            // Tellomi（M9 发送动画）：清空输入框之前记下它的样子；消息进了列表就从输入框飞过去。
+            let tellomiFlightSource = tellomiSendFlightSourceIfEligible(inputToolbar)
+            let messageTimestamp = ThreadUtil.enqueueMessage(
                 body: messageBody,
                 thread: self.thread,
                 quotedReplyDraft: inputToolbar.quotedReplyDraft,
@@ -162,6 +164,9 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
                     self.loadCoordinator.enqueueReload()
                 },
             )
+            if let tellomiFlightSource {
+                beginTellomiSendFlight(messageTimestamp: messageTimestamp, source: tellomiFlightSource)
+            }
         }
 
         messageWasSent()

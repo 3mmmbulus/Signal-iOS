@@ -529,6 +529,50 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         TellomiSendLongPressGestureRecognizer.installed(on: sendButton)?.isEnabled = tellomiHasSendLongPress && tellomiSendLongPressAllowed
     }
 
+    /// Tellomi（M9 发送动画）：输入框那个圆角框（iOS 26 是玻璃，之前是灰底）。
+    private weak var tellomiTextBoxView: UIView?
+
+    /// Tellomi（M9 发送动画）：装着输入框和框里那几个按钮（表情 / 贴纸、相机、语音、定时消息）的那一层。
+    private weak var tellomiInputTextViewContainer: UIView?
+
+    /// Tellomi（M9 发送动画）：点发送、清空之前，输入框里那几行字的样子和位置（窗口坐标）。字多到输入框自己在滚动（看不全）、
+    /// 还没上屏时为 nil（不飞）。
+    func tellomiSendFlightSource() -> TellomiSendFlight.Source? {
+        guard
+            inputTextView.window != nil,
+            let box = tellomiTextBoxView,
+            inputTextView.bounds.width > 0,
+            inputTextView.contentSize.height <= inputTextView.bounds.height + 1,
+            inputTextView.contentOffset.y <= 0.5
+        else {
+            return nil
+        }
+        // 光标藏掉再拍（Telegram iOS 拍输入框快照时同样先把光标颜色设成透明）。
+        let tintColor = inputTextView.tintColor
+        inputTextView.tintColor = .clear
+        let snapshot = inputTextView.snapshotView(afterScreenUpdates: true)
+        inputTextView.tintColor = tintColor
+        guard let snapshot else {
+            return nil
+        }
+        let inset = inputTextView.textContainerInset
+        let padding = inputTextView.textContainer.lineFragmentPadding
+        return TellomiSendFlight.Source(
+            textSnapshot: snapshot,
+            textSnapshotFrame: inputTextView.convert(inputTextView.bounds, to: nil),
+            textOrigin: inputTextView.convert(CGPoint(x: inset.left + padding, y: inset.top - inputTextView.contentOffset.y), to: nil),
+            fontSize: inputTextView.font?.pointSize ?? UIFont.dynamicTypeBody.pointSize,
+            box: box.convert(box.bounds, to: nil),
+        )
+    }
+
+    /// Tellomi（M9 发送动画）：输入框里的字、占位字和框里那几个按钮一起的透明度：等着飞时 0（清空后冒出来的按钮
+    /// 不会从字底下透出来），随飞行进度淡回。设在外面那一层上，不和按钮自己的显隐动画抢透明度。
+    var tellomiInputTextAlpha: CGFloat {
+        get { tellomiInputTextViewContainer?.alpha ?? inputTextView.alpha }
+        set { (tellomiInputTextViewContainer ?? inputTextView).alpha = newValue }
+    }
+
     /// 发送键（iOS 26 起它就是右边那个键；之前在右边那一组里）。
     var tellomiSendButton: UIButton? {
         if let button = trailingEdgeControl as? UIButton {
@@ -745,6 +789,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
 
         // This container allows to vertically center short text views in standard sized box.
         let inputTextViewContainer = UIView.container()
+        tellomiInputTextViewContainer = inputTextViewContainer
         inputTextViewContainer.semanticContentAttribute = .forceLeftToRight
         inputTextViewContainer.addSubview(inputTextView)
         inputTextView.translatesAutoresizingMaskIntoConstraints = false
@@ -819,6 +864,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             messageContentView.addSubview(backgroundView)
             messageContentView.addSubview(messageComponentsView)
         }
+        tellomiTextBoxView = backgroundView
 
         let vMargin = 0.5 * (LayoutMetrics.initialToolbarHeight - LayoutMetrics.initialTextBoxHeight)
         let hMargin: CGFloat = iOS26Layout ? 12 : 0 // iOS 26 needs space between leading/trailing buttons and text view background.

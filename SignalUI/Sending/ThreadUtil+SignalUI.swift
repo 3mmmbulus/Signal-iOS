@@ -10,6 +10,9 @@ extension ThreadUtil {
 
     // MARK: - Durable Message Enqueue
 
+    /// - Returns: the new message's timestamp. Tellomi (M9 send animation): the chat page uses it to find the row the message
+    ///   lands in, so the bubble can fly there from the input field.
+    @discardableResult
     public class func enqueueMessage(
         body messageBody: MessageBody?,
         attachments: ([SendableAttachment], isViewOnce: Bool) = ([], isViewOnce: false),
@@ -18,7 +21,7 @@ extension ThreadUtil {
         linkPreviewDraft: OWSLinkPreviewDraft? = nil,
         tellomiCaptionAboveMedia: Bool = false,
         persistenceCompletionHandler persistenceCompletion: PersistenceCompletion? = nil,
-    ) {
+    ) -> UInt64 {
         let messageTimestamp = MessageTimestampGenerator.sharedInstance.generateTimestamp()
 
         let benchEventId = sendMessageBenchEventStart(messageTimestamp: messageTimestamp)
@@ -73,6 +76,7 @@ extension ThreadUtil {
                 persistenceCompletionHandler: persistenceCompletion,
             )
         }
+        return messageTimestamp
     }
 
     public class func enqueueEditMessage(

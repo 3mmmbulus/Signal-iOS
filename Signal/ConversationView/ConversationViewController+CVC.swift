@@ -671,6 +671,9 @@ extension ConversationViewController: CVLoadCoordinatorDelegate {
             }
         }
 
+        // Tellomi（M9 发送动画）：刚发出、正等着飞过来的那一条从第一次配置格子起就藏着，出现时也不再淡入。
+        layout.tellomiSendFlightInsertions = tellomiClaimSendFlights(items: items)
+
         // We use an obj-c free function so that we can handle NSException.
         self.collectionView.cvc_performBatchUpdates(
             batchUpdatesBlock,

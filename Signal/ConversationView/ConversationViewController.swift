@@ -474,6 +474,8 @@ public final class ConversationViewController: OWSViewController {
         self.isViewCompletelyAppeared = false
 
         dismissMessageContextMenu(animated: false)
+        // Tellomi（M9 发送动画）：飞的那一层在窗口上，不能留到下一页上面。
+        tellomiCancelSendFlights()
 
         self.dismissReactionsDetailSheet(animated: false)
         self.saveLastVisibleSortIdAndOnScreenPercentage(async: true)

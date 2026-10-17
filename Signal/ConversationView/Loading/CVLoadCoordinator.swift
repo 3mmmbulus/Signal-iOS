@@ -739,6 +739,10 @@ extension CVLoadCoordinator: UICollectionViewDataSource {
             componentDelegate: componentDelegate,
             messageSwipeActionState: messageSwipeActionState,
         )
+        // Tellomi（M9 发送动画）：飞行中这一条被整行刷新（送达状态变了）时换了新格子，新格子也藏着。
+        cell.tellomiIsHeldForSendFlight = delegate.viewState.tellomiSendFlights.contains {
+            $0.isHoldingRow(interactionUniqueId: renderItem.interactionUniqueId)
+        }
         return cell
 
         //        // This must happen after load for display, since the tap

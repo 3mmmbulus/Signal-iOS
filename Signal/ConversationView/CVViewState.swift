@@ -107,6 +107,8 @@ public class CVViewState: NSObject {
 
     /// Tellomi（交互审计 A-07）：选了回应、还在等聊天列表把它画出来的那一次「回应飞入」。
     var pendingReactionFlyIn: ReactionFlyIn?
+    /// Tellomi（M9 发送动画）：还在等、还在飞的那几次发送（连着发时不止一个）。
+    var tellomiSendFlights: [TellomiSendFlight] = []
     public var focusedMessageId: String?
 
     public var actionOnOpen: ConversationViewAction = .none

@@ -42,6 +42,13 @@ public class CVCell: UICollectionViewCell, CVRootComponentHost {
 
     private var messageSwipeActionState: CVMessageSwipeActionState?
 
+    /// Tellomi（M9 发送动画）：刚从输入框发出、正由 `TellomiSendFlight` 飞过来的这一条先藏着，落定后再露出。
+    var tellomiIsHeldForSendFlight = false {
+        didSet {
+            contentView.alpha = tellomiIsHeldForSendFlight ? 0 : 1
+        }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -183,6 +190,7 @@ public class CVCell: UICollectionViewCell, CVRootComponentHost {
         messageSwipeActionState = nil
         lastLayoutAttributes = nil
         layer.zPosition = 0
+        tellomiIsHeldForSendFlight = false
     }
 }
 

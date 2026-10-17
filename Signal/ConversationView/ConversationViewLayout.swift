@@ -1002,6 +1002,23 @@ public class ConversationViewLayout: UICollectionViewLayout {
         super.finalizeCollectionViewUpdates()
 
         tellomiDeletedIndexPaths = []
+        tellomiSendFlightInsertions = []
+    }
+
+    // MARK: - Tellomi（M9 发送动画）
+
+    /// 这一批更新里插进来、由发送动画飞过来的那几格（更新后的 index path）。它们藏着等飞（`CVCell.tellomiIsHeldForSendFlight`），
+    /// 出现时不再按默认从透明淡入：飞的那一层落定时这一格要已经是不透明的，换过去才不闪。
+    var tellomiSendFlightInsertions = Set<IndexPath>()
+
+    override public func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        let attributes = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
+        guard tellomiSendFlightInsertions.contains(itemIndexPath), let finalAttributes = layoutAttributesForItem(at: itemIndexPath) else {
+            return attributes
+        }
+        let result = finalAttributes.copy() as! UICollectionViewLayoutAttributes
+        result.alpha = 1
+        return result
     }
 
     override public func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {

@@ -2641,6 +2641,16 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             (reactionsView as? CVComponentReactions.CVComponentViewReactions)?.emojiLabel(for: emoji)
         }
 
+        /// Tellomi（M9 发送动画）：气泡那一块（底色、形状和尾巴都在它身上）；壁纸模糊气泡（只有收到的消息用）和没有气泡时为 nil。
+        var tellomiSendFlightBubbleView: CVColorOrGradientView? {
+            chatColorView.superview != nil ? chatColorView : nil
+        }
+
+        /// Tellomi（M9 发送动画）：正文那几行字。
+        var tellomiSendFlightBodyTextView: UIView? {
+            (bodyTextView as? CVComponentBodyText.CVComponentViewBodyText)?.bodyTextLabel.view
+        }
+
         fileprivate func subcomponentView(key: CVComponentKey) -> CVComponentView? {
             switch key {
             case .senderName:

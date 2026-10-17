@@ -83,6 +83,47 @@ final class TellomiConversationItemAnimationTest: SignalBaseTest {
         XCTAssertFalse(deletedCell.layer.animationKeys()?.isEmpty ?? true, "是动画过去的，不是一下变过去")
         XCTAssertEqual(reloadedCell.transform, .identity, "整行刷新的旧格子不缩")
     }
+
+    // MARK: - 发送动画（M9）
+
+    /// 由发送动画飞过来的那一格出现时不从透明淡入（落定那一刻它已经是不透明的）；别的新格子照旧淡入。
+    func testASendFlightInsertionAppearsOpaque_otherInsertionsFadeIn() throws {
+        let thread = ContactThreadFactory().create()
+        let style = ConversationStyle(
+            type: .`default`,
+            thread: thread,
+            viewWidth: 390,
+            hasWallpaper: false,
+            shouldDimWallpaperInDarkMode: false,
+            chatColor: ChatColorSettingStore.Constants.defaultColor.colorSetting,
+        )
+        let source = FakeConversationSource(heights: [60, 60, 60])
+        let layout = ConversationViewLayout(conversationStyle: style)
+        layout.delegate = source
+        let collectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: 390, height: 600), collectionViewLayout: layout)
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: FakeConversationSource.reuseIdentifier)
+        collectionView.dataSource = source
+
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 600))
+        window.addSubview(collectionView)
+        window.isHidden = false
+        defer { window.isHidden = true }
+        collectionView.layoutIfNeeded()
+
+        source.append(height: 60)
+        source.append(height: 60)
+        layout.tellomiSendFlightInsertions = [IndexPath(row: 3, section: 0)]
+        collectionView.performBatchUpdates {
+            collectionView.insertItems(at: [IndexPath(row: 3, section: 0), IndexPath(row: 4, section: 0)])
+        }
+
+        let flown = try XCTUnwrap(collectionView.cellForItem(at: IndexPath(row: 3, section: 0)))
+        let other = try XCTUnwrap(collectionView.cellForItem(at: IndexPath(row: 4, section: 0)))
+        XCTAssertEqual(flown.layer.presentation()?.opacity ?? Float(flown.alpha), 1, "飞过来的那一格不淡入")
+        XCTAssertLessThan(other.layer.presentation()?.opacity ?? 0, 1, "别的新格子照旧淡入")
+        layout.finalizeCollectionViewUpdates()
+        XCTAssertTrue(layout.tellomiSendFlightInsertions.isEmpty, "一批更新完就清掉")
+    }
 }
 
 // MARK: -
@@ -110,6 +151,11 @@ private final class FakeConversationSource: NSObject, ConversationViewLayoutDele
 
     func delete(row: Int) {
         items.remove(at: row)
+        renderStateId += 1
+    }
+
+    func append(height: CGFloat) {
+        items.append(FakeConversationLayoutItem(interactionUniqueId: "m\(items.count)", cellSize: CGSize(width: 390, height: height)))
         renderStateId += 1
     }
 
