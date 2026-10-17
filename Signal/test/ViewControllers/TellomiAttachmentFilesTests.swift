@@ -468,6 +468,74 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         XCTAssertEqual(container.children.count, 1)
     }
 
+    /// 2026-10-17（TestFlight (16)「换页有闪动」）：照 Telegram `AttachmentController.animateSwitchTransition` 换页——新页不透明地放在
+    /// 旧页底下，只有旧页淡出；两页的 dock 换页期间藏起来，由 Sheet 上面一条临时 dock 接手，镜片从「相册」滑到「文件」，滑完换回新页自己的 dock。
+    @MainActor
+    func testSwitchingPagesKeepsTheDockStillAndSlidesTheLens() async throws {
+        let picker = TellomiPhotoPickerViewController(
+            library: EmptyPhotoLibrary(),
+            initialMessageBody: nil,
+            defaultImageQuality: .standard,
+            canSendSeparately: true,
+            hasQuotedReplyDraft: false,
+            attachmentLimits: .currentLimits(),
+            approvalDataSource: FilesTestApprovalDataSource(),
+            stickerSheetDelegate: nil,
+            dockItems: TellomiAttachmentDockItem.allCases,
+        )
+        let filesPage = TellomiAttachmentFilesViewController(source: FakeRecentFiles(files: []), maxFileSizeText: "1 MB", canScan: false, dockItems: TellomiAttachmentDockItem.allCases)
+        let container = TellomiAttachmentSheetController(photoPicker: picker) { page in page == .files ? filesPage : nil }
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        window.rootViewController = container
+        window.isHidden = false
+        defer { window.isHidden = true }
+        container.view.layoutIfNeeded()
+        let pickerDock = try XCTUnwrap(picker.attachmentDock)
+        XCTAssertFalse(pickerDock.isHidden)
+
+        container.show(.files, animated: true)
+        let filesDock = try XCTUnwrap(filesPage.attachmentDock)
+        let subviews = container.view.subviews
+        let filesIndex = try XCTUnwrap(subviews.firstIndex(of: filesPage.view))
+        let pickerIndex = try XCTUnwrap(subviews.firstIndex(of: picker.view))
+        XCTAssertLessThan(filesIndex, pickerIndex, "新页在旧页底下")
+        XCTAssertEqual(filesPage.view.alpha, 1, "新页不淡入（里面的玻璃不跟着动 alpha）")
+        let transitionDock = try XCTUnwrap(container.transitionDockForTesting, "换页期间有一条临时 dock")
+        XCTAssertTrue(pickerDock.isHidden)
+        XCTAssertTrue(filesDock.isHidden)
+        XCTAssertEqual(transitionDock.selectedItem, .file)
+        XCTAssertTrue(transitionDock.isLensAnimatingForTesting, "镜片在滑")
+        XCTAssertTrue(transitionDock.superview === window, "临时 dock 在窗口上（Sheet 展开时不跟着动）")
+        XCTAssertEqual(transitionDock.frame, filesDock.convert(filesDock.bounds, to: window), "临时 dock 和新页的 dock 重合")
+        XCTAssertEqual(transitionDock.alpha, 1)
+
+        try await Task.sleep(nanoseconds: 700_000_000)
+        XCTAssertNil(container.transitionDockForTesting, "滑完拿掉")
+        XCTAssertFalse(filesDock.isHidden, "换回新页自己的 dock")
+        XCTAssertFalse(pickerDock.isHidden, "旧页（相册页会再用）的 dock 恢复")
+        XCTAssertNil(picker.parent)
+        XCTAssertTrue(container.visibleChildForTesting === filesPage)
+        XCTAssertEqual(picker.view.alpha, 1)
+
+        // 连着点两格：上一次的临时 dock 立刻交接完，这次接着走，屏幕上始终只有一条临时 dock
+        container.show(.gallery, animated: true)
+        let first = try XCTUnwrap(container.transitionDockForTesting)
+        container.show(.files, animated: true)
+        let second = try XCTUnwrap(container.transitionDockForTesting)
+        XCTAssertNil(first.superview, "上一条拿掉了")
+        XCTAssertFalse(first === second)
+        XCTAssertEqual(window.subviews.filter { $0 is TellomiAttachmentDock }.count, 1)
+        XCTAssertEqual(second.selectedItem, .file)
+        // 点回刚淡出的那一页：上一次的收尾不会把它拿掉
+        try await Task.sleep(nanoseconds: 700_000_000)
+        XCTAssertTrue(filesPage.parent === container, "「文件」页还在")
+        XCTAssertTrue(filesPage.view.superview === container.view)
+        XCTAssertEqual(filesPage.view.alpha, 1)
+        XCTAssertNil(picker.parent)
+        XCTAssertFalse(filesDock.isHidden)
+        XCTAssertNil(container.transitionDockForTesting)
+    }
+
     // MARK: - Poll page in the sheet (2026-10-16)
 
     func testContainerShowsThePollPageInsideTheSameSheetAndBuildsItFreshEachTime() throws {

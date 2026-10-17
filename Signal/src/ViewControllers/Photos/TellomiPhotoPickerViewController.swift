@@ -64,7 +64,8 @@ extension TellomiPhotoPickerDelegate {
 ///
 /// Telegram 的实现只读机制、一行都没搬（GPLv2）。
 final class TellomiPhotoPickerViewController: OWSViewController, UICollectionViewDataSource, UICollectionViewDelegate,
-    BodyRangesTextViewDelegate, AttachmentApprovalViewControllerDelegate, UIAdaptivePresentationControllerDelegate
+    BodyRangesTextViewDelegate, AttachmentApprovalViewControllerDelegate, UIAdaptivePresentationControllerDelegate,
+    TellomiAttachmentDockHosting
 {
 
     private enum Metrics {
@@ -192,8 +193,16 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
     private let topBar = UIView()
 
+    /// 顶栏两个圆键（✕ / ···）：iOS 26 用系统玻璃键（同 Telegram iOS `MediaPickerScreen` 顶栏左右两组 glass 按钮），之前是灰底圆。
+    private static func roundButtonConfiguration() -> UIButton.Configuration {
+        if #available(iOS 26, *) {
+            return .glass()
+        }
+        return .gray()
+    }
+
     private lazy var closeButton: UIButton = {
-        var configuration = UIButton.Configuration.gray()
+        var configuration = Self.roundButtonConfiguration()
         configuration.image = Theme.iconImage(.buttonX)
         configuration.baseForegroundColor = .Signal.label
         configuration.cornerStyle = .capsule
@@ -231,7 +240,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     }()
 
     private lazy var moreButton: UIButton = {
-        var configuration = UIButton.Configuration.gray()
+        var configuration = Self.roundButtonConfiguration()
         configuration.image = Theme.iconImage(.buttonMore)
         configuration.baseForegroundColor = .Signal.label
         configuration.cornerStyle = .capsule
@@ -518,6 +527,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private var isDockVisible: Bool {
         dock != nil && selectedIds.isEmpty && displayMode == .all
     }
+
+    /// 附件 Sheet 换页时接手 dock 用（`TellomiAttachmentDockHosting`）。
+    var attachmentDock: TellomiAttachmentDock? { isViewLoaded ? dock : nil }
 
     private func didSelectDockItem(_ item: TellomiAttachmentDockItem) {
         guard item != .gallery else {
@@ -862,7 +874,17 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private func animateBottomBarSwap(_ bar: UIView, wasShown: Bool, snapshot: UIView?, fadeOutDuration: TimeInterval, hiddenTransform: CGAffineTransform) {
         let isShown = !bar.isHidden
         guard isShown != wasShown else { return }
-        if isShown {
+        if isShown, let dock = bar as? TellomiAttachmentDock {
+            // dock 是玻璃：不动 alpha，让玻璃「凝结」出来（见 `TellomiAttachmentDock.prepareToAppear`）
+            dock.layer.removeAllAnimations()
+            dock.alpha = 1
+            dock.transform = hiddenTransform
+            dock.prepareToAppear()
+            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut, .beginFromCurrentState]) {
+                dock.finishAppearing()
+                dock.transform = .identity
+            }
+        } else if isShown {
             bar.layer.removeAllAnimations()
             bar.alpha = 0
             bar.transform = hiddenTransform

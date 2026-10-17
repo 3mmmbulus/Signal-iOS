@@ -52,7 +52,7 @@ protocol TellomiAttachmentFilesDelegate: AnyObject {
 ///   已不在本机的置灰、点了只提示；长按「选择」进多选（F-8），底栏换成「说明 + 发送」、藏 🔍。
 /// - 搜索（F-10）：藏 dock、展开全屏、搜索框贴底；本机文件名、大小写与全半角不敏感、0.6 秒防抖；分组「我发送的文件」；
 ///   超过 4 条先显示 3 条 +「显示更多」；搜不到写「没有找到」（不照 Telegram 骨架一直闪的缺陷）。
-final class TellomiAttachmentFilesViewController: UIViewController {
+final class TellomiAttachmentFilesViewController: UIViewController, TellomiAttachmentDockHosting {
 
     enum Entry: Equatable {
         case gallery
@@ -148,6 +148,9 @@ final class TellomiAttachmentFilesViewController: UIViewController {
         dock.onSelect = { [weak self] item in self?.didSelectDockItem(item) }
         return dock
     }()
+
+    /// 附件 Sheet 换页时接手 dock 用（`TellomiAttachmentDockHosting`）。
+    var attachmentDock: TellomiAttachmentDock? { isViewLoaded ? dock : nil }
 
     private lazy var captionField: UITextField = {
         let field = UITextField()

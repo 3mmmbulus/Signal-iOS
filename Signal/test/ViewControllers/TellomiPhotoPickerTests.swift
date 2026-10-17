@@ -1869,6 +1869,73 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertGreaterThanOrEqual(picker.bottomBarFadingOutCountForTesting, 1, "说明栏的截图在淡出")
     }
 
+    /// 2026-10-17（TestFlight (16)「「+」菜单没有液态玻璃」）：选中那格底下是一块镜片（离胶囊边 3 pt，同 Telegram `AttachmentPanel`），
+    /// 换选中项时镜片弹簧滑过去，不是瞬移。
+    @MainActor
+    func testDockLensSitsUnderTheSelectedItemAndSlidesToTheNewOne() throws {
+        let (dock, window) = Self.dockInWindow()
+        defer { window.isHidden = true }
+        let gallery = try XCTUnwrap(dock.buttonFrameForTesting(.gallery))
+        XCTAssertEqual(dock.lensFrameForTesting.midX, gallery.midX, accuracy: 0.5)
+        XCTAssertEqual(dock.lensFrameForTesting.size.height, TellomiAttachmentDock.height - 2 * TellomiAttachmentDock.lensInset, accuracy: 0.5)
+        XCTAssertGreaterThanOrEqual(dock.lensFrameForTesting.minX, TellomiAttachmentDock.lensInset - 0.5, "镜片不出胶囊")
+
+        dock.select(.location, animated: true)
+        XCTAssertTrue(dock.isLensAnimatingForTesting, "镜片滑过去")
+        let location = try XCTUnwrap(dock.buttonFrameForTesting(.location))
+        XCTAssertEqual(dock.lensFrameForTesting.midX, location.midX, accuracy: 0.5, "滑到「位置」那格")
+        XCTAssertEqual(dock.selectedItem, .location)
+        XCTAssertEqual(dock.selectedItemTintForTesting?.resolvedColor(with: dock.traitCollection), UIColor.Signal.accent.resolvedColor(with: dock.traitCollection))
+    }
+
+    /// 按住 dock 左右拖（同 Telegram `TabSelectionRecognizer`）：松手时手指下那一格交给页面；拖过两头算最边上那格；
+    /// 页面真正换页之前镜片回到当前选中的那格。
+    @MainActor
+    func testDraggingAcrossTheDockSelectsTheItemUnderTheFinger() throws {
+        let (dock, window) = Self.dockInWindow()
+        defer { window.isHidden = true }
+        var picked = [TellomiAttachmentDockItem]()
+        dock.onSelect = { picked.append($0) }
+        let gallery = try XCTUnwrap(dock.buttonFrameForTesting(.gallery))
+        let poll = try XCTUnwrap(dock.buttonFrameForTesting(.poll))
+
+        dock.dragForTesting(fromX: gallery.midX, toX: poll.midX)
+        XCTAssertEqual(picked, [.poll])
+        XCTAssertNil(dock.highlightedItemForTesting, "松手后不再高亮拖到的那格")
+        XCTAssertEqual(dock.lensFrameForTesting.midX, gallery.midX, accuracy: 0.5, "选中项由页面来换，镜片先回原位")
+
+        dock.dragForTesting(fromX: gallery.midX, toX: dock.bounds.size.width + 200)
+        dock.dragForTesting(fromX: poll.midX, toX: -200)
+        let last = try XCTUnwrap(dock.items.last)
+        XCTAssertEqual(picked, [.poll, last, .gallery])
+    }
+
+    /// G-6 反过来（全部取消、dock 回来）：玻璃「凝结」出来——dock 的 alpha 一直是 1（玻璃的 alpha 不是 1 就画不对，淡入到最后会跳一下）。
+    @MainActor
+    func testDockComesBackWithoutFadingItsGlass() async throws {
+        let hosted = host(dockItems: TellomiAttachmentDockItem.attachmentSheetItems)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        try await settle()
+        picker.tapCheckForTesting(itemIndex: 0)
+        try await settle()
+        picker.tapCheckForTesting(itemIndex: 0)
+        let dock = try XCTUnwrap(picker.dockForTesting)
+        XCTAssertTrue(picker.isDockFadingInForTesting, "dock 在出现（缩放）")
+        XCTAssertEqual(dock.alpha, 1, "不动玻璃的 alpha")
+    }
+
+    @MainActor
+    private static func dockInWindow() -> (TellomiAttachmentDock, UIWindow) {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 120))
+        window.isHidden = false
+        let dock = TellomiAttachmentDock(items: TellomiAttachmentDockItem.allCases, selectedItem: .gallery)
+        dock.frame = CGRect(x: TellomiAttachmentDock.sideMargin, y: 20, width: 402 - 2 * TellomiAttachmentDock.sideMargin, height: TellomiAttachmentDock.height)
+        window.addSubview(dock)
+        dock.layoutIfNeeded()
+        return (dock, window)
+    }
+
     /// GIF 关着（上游开关 `global.gifSearch` 关了，或者这个部署没有 GIF 源 `global.gif.provider = none`，大陆包）：dock 里没有 GIF，
     /// 同原来的上游附件面板（`AttachmentFormatPickerView`，2026-10-16 已删；#1078 `isGifAvailable`）——入口一起关，包里才不会有连境外内容代理的地方。
     @MainActor

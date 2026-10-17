@@ -17,7 +17,7 @@ protocol TellomiAttachmentNavigationPageDelegate: AnyObject {
 ///
 /// 照 Telegram iOS：`ChatControllerOpenAttachmentMenu` 的 `requestController` 把这些页面换进附件菜单，底部 tab 一直在、
 /// 键盘出来时收起；进来展开到全屏；✕ / 发完收起整个菜单（由页面自己的回调交给会话页，不赖子控制器的 dismiss）。
-class TellomiAttachmentNavigationPage: UIViewController, TellomiAttachmentSheetPage {
+class TellomiAttachmentNavigationPage: UIViewController, TellomiAttachmentSheetPage, TellomiAttachmentDockHosting {
 
     weak var delegate: TellomiAttachmentNavigationPageDelegate?
 
@@ -89,6 +89,9 @@ class TellomiAttachmentNavigationPage: UIViewController, TellomiAttachmentSheetP
     }
 
     var isDockShownForTesting: Bool { dock.map { !$0.isHidden } ?? false }
+
+    /// 附件 Sheet 换页时接手 dock 用（`TellomiAttachmentDockHosting`）。
+    var attachmentDock: TellomiAttachmentDock? { isViewLoaded ? dock : nil }
 
     @objc
     private func keyboardWillShow() {
