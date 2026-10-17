@@ -58,8 +58,19 @@ class StickerPackInfoTest: XCTestCase {
         let packInfo = StickerPackInfo(packId: .init([1, 2, 3, 4]), packKey: .init(1...32))
         XCTAssertEqual(
             packInfo.shareUrl(),
-            "https://signal.art/addstickers/#pack_id=01020304&pack_key=0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
+            "https://tell.cc/s#pack_id=01020304&pack_key=0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
         )
+    }
+
+    /// Tellomi (#1687): the link we share opens the same pack once it is routed the way in-chat links are.
+    func testShareUrlRoundTripsThroughTellomiLinks() throws {
+        let packInfo = StickerPackInfo(packId: .init([1, 2, 3, 4]), packKey: .init(1...32))
+        let shared = try XCTUnwrap(URL(string: packInfo.shareUrl()))
+        let legacy = TellomiLinks.legacyEquivalent(of: shared)
+        XCTAssertTrue(StickerPackInfo.isStickerPackShare(legacy))
+        let parsed = try XCTUnwrap(StickerPackInfo.parseStickerPackShare(legacy))
+        XCTAssertEqual(parsed.packId, packInfo.packId)
+        XCTAssertEqual(parsed.packKey, packInfo.packKey)
     }
 
     func testIsStickerPackShareUrl() throws {

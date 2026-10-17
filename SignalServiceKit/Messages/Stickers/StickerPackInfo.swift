@@ -84,10 +84,13 @@ public final class StickerPackInfo: NSObject, NSSecureCoding, NSCopying {
         return StickerPackInfo(packId: packId, packKey: packKey)
     }
 
+    /// Tellomi (tellomi/tellomi#1687): shared links are `https://tell.cc/s#…`. Every client already accepts that shape
+    /// (in-chat links go through `TellomiLinks.legacyEquivalent` before `isStickerPackShare`), and old
+    /// `signal.art/addstickers` links keep working.
     public func shareUrl() -> String {
         let packIdHex = packId.hexadecimalString
         let packKeyHex = packKey.hexadecimalString
-        return "https://signal.art/addstickers/#pack_id=\(packIdHex)&pack_key=\(packKeyHex)"
+        return "https://tell.cc/s#pack_id=\(packIdHex)&pack_key=\(packKeyHex)"
     }
 
     @objc(isStickerPackShareUrl:)
