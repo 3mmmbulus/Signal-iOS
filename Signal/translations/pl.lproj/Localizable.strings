@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Zamknie się po %@ s";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Pogrubienie";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Wyślij w wysokiej jakości";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Wyślij osobno";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Wyślij w standardowej jakości";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Licznik autodestrukcji";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Nie usuwaj";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Wybierz, jak długo multimedia będą dostępne po otwarciu.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ s";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Zdjęcie pozostanie na czacie.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Zdjęcie zostanie usunięte %@ s po otwarciu.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Zdjęcie ustawiono do jednorazowego wyświetlenia.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Wideo pozostanie na czacie.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Wideo zostanie usunięte %@ s po otwarciu.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Wideo ustawiono do jednorazowego wyświetlenia.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Wyświetlanie jednorazowe";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Cofnij";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Wideo, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Ten kod QR wygasł lub nie jest kodem Tellomi. Zeskanuj kod QR wyświetlany teraz w aplikacji Tellomi na komputerze.";

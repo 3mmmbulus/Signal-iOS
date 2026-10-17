@@ -525,6 +525,178 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(library.liveVideoRequests, ["r2", "r4"])
     }
 
+    // MARK: - #1714 计时（ADR-0079 §4.4）
+
+    /// 一对一会话里，查看器说明框右侧（表情键左边）有计时键；写说明时藏起；不是一对一的（群、收藏）没有。
+    @MainActor
+    func testTimerButtonIsInTheCaptionFieldInOneToOneChats() async throws {
+        let hosted = host(canSendAsFile: true, canSetViewOnceTimer: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapItemForTesting(itemIndex: 3)
+        let viewer = try await presentedViewer(picker)
+        XCTAssertTrue(viewer.isTimerButtonShownForTesting)
+        let field = viewer.captionFieldFrameForTesting
+        let button = viewer.timerButtonFrameForTesting
+        XCTAssertTrue(field.contains(button), "在说明框里")
+        XCTAssertGreaterThan(button.midX, field.midX, "在右侧")
+        XCTAssertNil(viewer.timerBadgeTextForTesting, "没设时是计时图标")
+
+        XCTAssertTrue(viewer.beginCaptionEditingForTesting())
+        XCTAssertFalse(viewer.isTimerButtonShownForTesting, "写说明时藏起（照 Telegram 两端）")
+
+        let group = host(canSendAsFile: true, canSetViewOnceTimer: false)
+        defer { group.tearDown() }
+        group.picker.tapItemForTesting(itemIndex: 3)
+        let groupViewer = try await presentedViewer(group.picker)
+        XCTAssertFalse(groupViewer.isTimerButtonShownForTesting, "不是一对一会话没有")
+    }
+
+    /// 菜单：最上面一句说明，下面五项——一次性查看 / 3 秒 / 10 秒 / 30 秒 / 不删除，当前那项打勾；设了键上显示秒数。
+    @MainActor
+    func testTimerMenuHasFiveChoicesAndChecksTheCurrentOne() async throws {
+        let hosted = host(canSendAsFile: true, canSetViewOnceTimer: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapItemForTesting(itemIndex: 3)
+        let viewer = try await presentedViewer(picker)
+
+        let menu = try XCTUnwrap(viewer.timerMenuForTesting)
+        XCTAssertEqual(menu.title, Strings.timerMenuTitle)
+        XCTAssertEqual(menu.children.map(\.title), [Strings.timerViewOnce, Strings.timerSeconds(3), Strings.timerSeconds(10), Strings.timerSeconds(30), Strings.timerDoNotDelete])
+        XCTAssertEqual(menu.children.compactMap { ($0 as? UIAction)?.state }, [.off, .off, .off, .off, .on])
+
+        viewer.selectTimerForTesting(.seconds(10))
+        let updated = try XCTUnwrap(viewer.timerMenuForTesting)
+        XCTAssertEqual(updated.children.compactMap { ($0 as? UIAction)?.state }, [.off, .off, .on, .off, .off])
+        XCTAssertEqual(viewer.timerBadgeTextForTesting, "10")
+        viewer.selectTimerForTesting(.viewOnce)
+        XCTAssertEqual(viewer.timerBadgeTextForTesting, "1")
+    }
+
+    /// 逐张记：设了就勾上；值变了才提示（照片、视频各自的话）；「不删除」拿掉；取消勾选也拿掉。
+    @MainActor
+    func testSettingATimerSelectsTheItemAndSaysSo() async throws {
+        let hosted = host(canSendAsFile: true, canSetViewOnceTimer: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapItemForTesting(itemIndex: 3)
+        let viewer = try await presentedViewer(picker)
+        XCTAssertTrue(picker.selectedIdsForTesting.isEmpty, "点开查看不自动选中")
+
+        viewer.selectTimerForTesting(.seconds(3))
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3"], "设了就勾上（Telegram 两端）")
+        XCTAssertEqual(picker.viewOnceChoices["r3"], .seconds(3))
+        XCTAssertEqual(picker.lastLiveToastText, Strings.timerToastPhotoSeconds(3))
+        XCTAssertEqual(picker.timerToastCount, 1)
+
+        viewer.selectTimerForTesting(.seconds(3))
+        XCTAssertEqual(picker.timerToastCount, 1, "值没变不提示")
+
+        viewer.selectTimerForTesting(nil)
+        XCTAssertNil(picker.viewOnceChoices["r3"])
+        XCTAssertEqual(picker.lastLiveToastText, Strings.timerToastPhotoKeep)
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r3"], "「不删除」不取消勾选")
+
+        viewer.selectTimerForTesting(.viewOnce)
+        XCTAssertEqual(picker.lastLiveToastText, Strings.timerToastPhotoViewOnce)
+        viewer.tapCheckForTesting()
+        XCTAssertNil(picker.viewOnceChoices["r3"], "取消勾选就拿掉")
+
+        viewer.scrollToItemForTesting(1)
+        viewer.selectTimerForTesting(.viewOnce)
+        XCTAssertEqual(picker.lastLiveToastText, Strings.timerToastVideoViewOnce, "视频说视频")
+    }
+
+    /// 有计时的：「···」里没有「以文件发送」、长按发送里没有「定时发送」（ADR-0079 §4.4 第 6、7 条，TG 两端同）。
+    @MainActor
+    func testTimedSelectionCannotBeScheduledOrSentAsFiles() async throws {
+        let hosted = host(canSendAsFile: true, canSetViewOnceTimer: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 3)
+        XCTAssertTrue(picker.moreMenuItemsForTesting.contains(.sendAsFile))
+        XCTAssertTrue(picker.sendMenuItemsForTesting.contains(.scheduleSend))
+
+        picker.tapItemForTesting(itemIndex: 3)
+        let viewer = try await presentedViewer(picker)
+        viewer.selectTimerForTesting(.seconds(30))
+        XCTAssertFalse(picker.moreMenuItemsForTesting.contains(.sendAsFile))
+        XCTAssertFalse(picker.sendMenuItemsForTesting.contains(.scheduleSend))
+
+        viewer.selectTimerForTesting(nil)
+        XCTAssertTrue(picker.moreMenuItemsForTesting.contains(.sendAsFile))
+        XCTAssertTrue(picker.sendMenuItemsForTesting.contains(.scheduleSend))
+    }
+
+    /// 发：有计时的整批一张一条（照 Telegram 两端）。没计时的照常，说明挂在没计时的最后一张；计时的发成一次性查看、带秒数，
+    /// 不带遮罩、不带实况、不带说明（ADR-0079 §4.4 第 4、5、7 条）。
+    @MainActor
+    func testTimedPhotosAreSentOneByOne() async throws {
+        let library = FakePhotoLibrary(liveIndexes: [2, 3])
+        let hosted = host(library: library, canSendAsFile: true, canSetViewOnceTimer: true, initialText: "说明")
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 2)
+        picker.tapCheckForTesting(itemIndex: 3)
+        picker.tapCheckForTesting(itemIndex: 4)
+        picker.tapLiveButtonForTesting()
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        picker.tapItemForTesting(itemIndex: 3)
+        let viewer = try await presentedViewer(picker)
+        viewer.selectTimerForTesting(.seconds(10))
+        viewer.tapSendForTesting()
+
+        let parts = try await nextParts(hosted)
+        XCTAssertTrue(hosted.delegate.sent.isEmpty, "不走整组发送")
+        XCTAssertEqual(parts.count, 3)
+        guard
+            case .media(let first, let firstBody) = parts[0],
+            case .media(let timed, let timedBody) = parts[1],
+            case .media(let last, let lastBody) = parts[2]
+        else {
+            return XCTFail("三张各一条：\(parts)")
+        }
+        XCTAssertEqual(library.ids(of: first) + library.ids(of: timed) + library.ids(of: last), ["r2", "r3", "r4"])
+        XCTAssertFalse(first.isViewOnce)
+        XCTAssertNil(firstBody)
+        XCTAssertNotNil(first.attachments[0].rawValue.tellomiLivePhotoVideo, "没计时的照常带实况")
+        XCTAssertTrue(first.attachments[0].rawValue.isTellomiSpoiler)
+
+        XCTAssertTrue(timed.isViewOnce)
+        XCTAssertNil(timedBody)
+        XCTAssertEqual(timed.attachments[0].rawValue.tellomiViewOnceSeconds, 10)
+        XCTAssertFalse(timed.attachments[0].rawValue.isTellomiSpoiler, "计时的不带遮罩")
+        XCTAssertNil(timed.attachments[0].rawValue.tellomiLivePhotoVideo, "计时的不带实况")
+        XCTAssertFalse(library.liveVideoRequests.contains("r3"), "也不去取")
+
+        XCTAssertFalse(last.isViewOnce)
+        XCTAssertEqual(lastBody?.text, "说明", "说明挂在没计时的最后一张")
+    }
+
+    /// 全都计时（含一次性查看）时：说明是最前面单独一条文字；一次性查看的没有秒数。
+    @MainActor
+    func testAllTimedSendsTheCaptionAsTextFirst() async throws {
+        let library = FakePhotoLibrary()
+        func attachment(_ index: Int) async throws -> PreviewableAttachment {
+            try await library.attachment(for: library.recents[index], attachmentLimits: .currentLimits())
+        }
+        let body = MessageBody(text: "看完就没了", ranges: .empty)
+        let parts = TellomiPhotoPickerSending.timedParts([try await attachment(0), try await attachment(3)], choices: [.viewOnce, .seconds(30)], imageQuality: .standard, messageBody: body)
+        XCTAssertEqual(parts.count, 3)
+        guard case .text(let text) = parts[0], case .media(let a, nil) = parts[1], case .media(let b, nil) = parts[2] else {
+            return XCTFail("文字在前，两张一次性查看在后：\(parts)")
+        }
+        XCTAssertEqual(text.text, "看完就没了")
+        XCTAssertTrue(a.isViewOnce && b.isViewOnce)
+        XCTAssertNil(a.attachments[0].rawValue.tellomiViewOnceSeconds)
+        XCTAssertEqual(b.attachments[0].rawValue.tellomiViewOnceSeconds, 30)
+
+        let noCaption = TellomiPhotoPickerSending.timedParts([try await attachment(4)], choices: [.seconds(3)], imageQuality: .standard, messageBody: nil)
+        XCTAssertEqual(noCaption.count, 1, "没说明就没有文字那条")
+    }
+
     // MARK: - P-5「以文件发送」（#1263）
 
     /// 会话里「···」第一项是「以文件发送」，多张时「以文件发送（N 个）」；只有视频也有（视频也能按文件发）。不是会话的没有。
@@ -2392,6 +2564,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         canSendSeparately: Bool = true,
         canSendAsFile: Bool = false,
         isNoteToSelf: Bool = false,
+        canSetViewOnceTimer: Bool = false,
         maxSelection: Int = 32,
         initialText: String? = nil,
         chatBackground: UIView? = nil,
@@ -2410,6 +2583,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
             canSendSeparately: canSendSeparately,
             canSendAsFile: canSendAsFile,
             isNoteToSelf: isNoteToSelf,
+            canSetViewOnceTimer: canSetViewOnceTimer,
             hasQuotedReplyDraft: false,
             attachmentLimits: .currentLimits(),
             approvalDataSource: dataSource,
@@ -2549,6 +2723,12 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
     }
 
     @MainActor
+    private func nextParts(_ hosted: Hosted) async throws -> [TellomiPhotoPickerSending.Part] {
+        let arrived = await waitUntil { !hosted.delegate.sentParts.isEmpty }
+        XCTAssertTrue(arrived, "一张一条地交给了会话页")
+        return try XCTUnwrap(hosted.delegate.sentParts.last?.parts)
+    }
+
     private func nextSend(_ hosted: Hosted, count: Int) async throws -> RecordingPickerDelegate.Sent {
         let arrived = await waitUntil { hosted.delegate.sent.count >= count }
         XCTAssertTrue(arrived, "发送交给了会话页")
@@ -2637,6 +2817,18 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 /// 内存里的相册：「最近」24 项（第 2、8 项是视频，第 3 项是实况照片），「Screenshots」3 项；缩略图是纯色块。
 /// 界面上的字，取 App 自己用的同一个 key、同一个格式化（测试在模拟器当前的语言下跑，中文系统上也要过）。
 private enum Strings {
+    static let timerMenuTitle = OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE", comment: "")
+    static let timerViewOnce = OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE", comment: "")
+    static let timerDoNotDelete = OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE", comment: "")
+    static func timerSeconds(_ seconds: Int) -> String {
+        String(format: OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT", comment: ""), "\(seconds)")
+    }
+    static func timerToastPhotoSeconds(_ seconds: Int) -> String {
+        String(format: OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT", comment: ""), "\(seconds)")
+    }
+    static let timerToastPhotoViewOnce = OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE", comment: "")
+    static let timerToastVideoViewOnce = OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE", comment: "")
+    static let timerToastPhotoKeep = OWSLocalizedString("IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP", comment: "")
     static let recents = OWSLocalizedString("IMAGE_PICKER_TELLOMI_RECENTS", comment: "")
     static let sendHighQuality = OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY", comment: "")
     static let sendStandardQuality = OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY", comment: "")
@@ -2870,6 +3062,12 @@ private final class RecordingPickerDelegate: TellomiPhotoPickerDelegate {
 
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?) {
         bodies.append(messageBody)
+    }
+
+    var sentParts = [(parts: [TellomiPhotoPickerSending.Part], captionAboveMedia: Bool)]()
+
+    func photoPicker(_ picker: TellomiPhotoPickerViewController, sendParts parts: [TellomiPhotoPickerSending.Part], captionAboveMedia: Bool) {
+        sentParts.append((parts, captionAboveMedia))
     }
 
     var scheduledMessageCapacity = 100

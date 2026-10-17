@@ -281,6 +281,8 @@ public struct CVComponentState: Equatable {
 
     struct ViewOnce: Equatable {
         let viewOnceState: ViewOnceState
+        /// Tellomi（tellomi/tellomi#1714，ADR-0079 §4.3 第 4 条）：计时的一次性查看打开后看几秒；nil = 普通一次性查看。
+        var tellomiSeconds: UInt32? = nil
     }
 
     let viewOnce: ViewOnce?
@@ -1539,8 +1541,9 @@ private extension CVComponentState.Builder {
     mutating func buildViewOnceMessage(message: TSMessage) throws -> CVComponentState {
         owsAssertDebug(message.isViewOnceMessage)
 
+        let tellomiSeconds = TellomiViewOnceTimer.seconds(messageUniqueId: message.uniqueId, tx: transaction)
         func buildViewOnce(viewOnceState: ViewOnceState) -> CVComponentState {
-            self.viewOnce = ViewOnce(viewOnceState: viewOnceState)
+            self.viewOnce = ViewOnce(viewOnceState: viewOnceState, tellomiSeconds: tellomiSeconds)
             return self.build()
         }
 

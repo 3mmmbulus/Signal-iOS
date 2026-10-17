@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Užsidarys po %@ sek.";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Paryškintas";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Siųsti aukštos kokybės";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Siųsti atskirai";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Siųsti standartinės kokybės";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Savaiminio sunaikinimo laikmatis";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Neištrinti";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Pasirinkite, kiek laiko medija išliks atidarius.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ sek.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Nuotrauka liks pokalbyje.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Nuotrauka bus ištrinta praėjus %@ sek. po atidarymo.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Nuotrauka nustatyta vienkartinei peržiūrai.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Vaizdo įrašas liks pokalbyje.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Vaizdo įrašas bus ištrintas praėjus %@ sek. po atidarymo.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Vaizdo įrašas nustatytas vienkartinei peržiūrai.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Vienkartinė peržiūra";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Atšaukti";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Vaizdo įrašas, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Šio QR kodo galiojimas pasibaigė arba tai nėra Tellomi kodas. Nuskenuokite QR kodą, šiuo metu rodomą Tellomi jūsų kompiuteryje.";

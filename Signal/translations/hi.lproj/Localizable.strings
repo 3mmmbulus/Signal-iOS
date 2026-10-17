@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ सेकंड बाद बंद होगा";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ से";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "बोल्ड";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "हाई क्वालिटी में भेजें";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "अलग-अलग भेजें";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "स्टैंडर्ड क्वालिटी में भेजें";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "सेल्फ़-डिस्ट्रक्ट टाइमर";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "न हटाएं";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "चुनें कि खोलने के बाद मीडिया कितनी देर रखा जाए।";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ सेकंड";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "फ़ोटो चैट में रहेगी।";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "फ़ोटो खोलने के %@ सेकंड बाद हटा दी जाएगी।";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "फ़ोटो को व्यू वन्स पर सेट किया गया।";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "वीडियो चैट में रहेगा।";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "वीडियो खोलने के %@ सेकंड बाद हटा दिया जाएगा।";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "वीडियो को व्यू वन्स पर सेट किया गया।";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "व्यू वन्स";
 "IMAGE_PICKER_TELLOMI_UNDO" = "पहले जैसा करें";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "वीडियो, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "यह QR कोड एक्सपायर हो गया है या Tellomi का कोड नहीं है। अपने कंप्यूटर पर Tellomi में अभी दिख रहा QR कोड स्कैन करें।";

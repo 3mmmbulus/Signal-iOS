@@ -339,6 +339,7 @@ public class OWSIncomingSentMessageTranscript: SentMessageTranscript {
             storyAuthorAci: storyAuthorAci,
             tellomiCaptionAboveMedia: dataMessage.tellomi?.captionAboveMedia == true,
             tellomiMessageCaption: dataMessage.tellomi?.messageCaption?.nilIfEmpty,
+            tellomiViewOnceSeconds: TellomiViewOnceTimer.seconds(from: dataMessage),
         )
     }
 

@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Закроется через %@ секунд";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ с";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Жирный";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Отправить в высоком качестве";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Отправить по отдельности";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Отправить в стандартном качестве";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Таймер самоуничтожения";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Не удалять";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Выберите, сколько медиафайл будет храниться после открытия.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ секунд";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Фото останется в чате.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Фото удалится через %@ секунд после открытия.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Фото будет доступно для одноразового просмотра.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Видео останется в чате.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Видео удалится через %@ секунд после открытия.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Видео будет доступно для одноразового просмотра.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Одноразовый просмотр";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Отменить";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Видео, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Этот QR-код истёк или не является кодом Tellomi. Отсканируйте QR-код, который сейчас показан в Tellomi на вашем компьютере.";

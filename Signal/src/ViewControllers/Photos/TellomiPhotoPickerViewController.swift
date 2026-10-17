@@ -29,6 +29,10 @@ protocol TellomiPhotoPickerDelegate: AnyObject {
         scheduledAt: Date?,
     )
 
+    /// #1714（ADR-0079 §4.4）：已选里有计时的（含一次性查看）：一张一条，按 [parts] 的先后发（照 Telegram 两端整批不分组）；
+    /// 说明在没计时的最后一条上，全都计时时是最前面单独一条文字。发完由接收方把面板收起。
+    func photoPicker(_ picker: TellomiPhotoPickerViewController, sendParts parts: [TellomiPhotoPickerSending.Part], captionAboveMedia: Bool)
+
     /// 说明和会话输入框是同一段字（同上游的预览页）。
     func photoPicker(_ picker: TellomiPhotoPickerViewController, didChangeMessageBody messageBody: MessageBody?)
 
@@ -117,6 +121,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private let hasQuotedReplyDraft: Bool
     /// M-4：收藏（给自己）里「定时发送」叫「设置提醒」（同 Telegram 两端）。
     private let isNoteToSelf: Bool
+    /// #1714（ADR-0079 §4.4 第 3 条）：查看器里的计时键只在一对一会话里有（TG 两端同）；有引用草稿时没有（一次性查看不能带引用，
+    /// 同上游预览页有引用时不给一次性查看）。
+    private let canSetViewOnceTimer: Bool
+    /// #1714：逐张的计时（没有 = 不删除）。选了就勾上，取消勾选就拿掉。
+    private(set) var viewOnceChoices = [String: TellomiViewOnceChoice]()
     private let maxSelection: Int
     let attachmentLimits: OutgoingAttachmentLimits
     private let initialMessageBody: MessageBody?
@@ -174,6 +183,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         canSendSeparately: Bool,
         canSendAsFile: Bool = false,
         isNoteToSelf: Bool = false,
+        canSetViewOnceTimer: Bool = false,
         hasQuotedReplyDraft: Bool,
         attachmentLimits: OutgoingAttachmentLimits,
         approvalDataSource: AttachmentApprovalViewControllerDataSource,
@@ -190,6 +200,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         self.canSendSeparately = canSendSeparately
         self.canSendAsFile = canSendAsFile
         self.isNoteToSelf = isNoteToSelf
+        self.canSetViewOnceTimer = canSetViewOnceTimer && !hasQuotedReplyDraft
         self.hasQuotedReplyDraft = hasQuotedReplyDraft
         self.attachmentLimits = attachmentLimits
         self.approvalDataSource = approvalDataSource
@@ -806,6 +817,12 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             guard let self else { return }
             self.setLive(!self.isLiveOn(item), for: item)
         }
+        // #1714（ADR-0079 §4.4）：说明框右侧的计时键。
+        viewer.canSetViewOnceTimer = canSetViewOnceTimer
+        viewer.viewOnceChoice = { [weak self] item in self?.viewOnceChoices[item.id] }
+        viewer.onSetViewOnceChoice = { [weak self] item, choice in
+            self?.setViewOnceChoice(choice, for: item)
+        }
         viewer.modalPresentationStyle = .overFullScreen
         albumViewer = viewer
         updateSendMenus()
@@ -901,6 +918,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 refreshVisibleSpoilers(animated: true)
             }
             liveOverrides[item.id] = nil
+            if viewOnceChoices.removeValue(forKey: item.id) != nil {
+                updateSendMenus()
+            }
         }
         refreshVisibleSelectionNumbers(animatedItemId: selected ? item.id : nil)
         updateSelectionChrome(animated: true)
@@ -990,8 +1010,47 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         liveButton.accessibilityValue = isOn ? CommonStrings.switchOn : CommonStrings.switchOff
     }
 
+    // MARK: - View once timer (#1714, ADR-0079)
+
+    private var hasTimedSelection: Bool {
+        selectedIds.contains { viewOnceChoices[$0] != nil }
+    }
+
+    /// 查看器里给这一张设计时（nil = 不删除）：设了就勾上（照 Telegram 两端）；值变了才提示（ADR-0079 §4.4 第 1 条）。
+    private func setViewOnceChoice(_ choice: TellomiViewOnceChoice?, for item: TellomiPhotoPickerItem) {
+        guard canSetViewOnceTimer else { return }
+        if choice != nil, selectionNumber(for: item.id) == nil {
+            guard setSelection(item: item, selected: true) else { return }
+        }
+        let previous = viewOnceChoices[item.id]
+        viewOnceChoices[item.id] = choice
+        albumViewer?.refreshSelection()
+        updateSendMenus()
+        if previous != choice {
+            timerToastCount += 1
+            showPickerToast(text: TellomiViewOnceChoice.toastText(for: choice, isVideo: item.isVideo), image: UIImage(systemName: "timer"))
+        }
+    }
+
+    private(set) var timerToastCount = 0
+
+    /// 这几张发出去时各自的计时（按 [items] 的先后）。
+    private func viewOnceChoices(for items: [TellomiPhotoPickerItem]) -> [TellomiViewOnceChoice?] {
+        items.map { viewOnceChoices[$0.id] }
+    }
+
     private var liveToast: ToastController?
     static let liveToastDuration: TimeInterval = 2.5
+
+    /// 计时的提示和实况的提示同一种（底部深色胶囊，2.5 秒、碰一下就消失）。
+    private func showPickerToast(text: String, image: UIImage?) {
+        liveToast?.tellomiDismiss()
+        let toast = ToastController(text: text, image: image)
+        let host: UIView = topmostPresenter.view
+        toast.presentToastView(from: .bottom, of: host, inset: host.safeAreaInsets.bottom + 80, dismissAfter: .milliseconds(Int(Self.liveToastDuration * 1000)))
+        liveToast = toast
+        lastLiveToastText = text
+    }
 
     /// 底部深色胶囊，图标 +「实况照片已启用 / 已关闭」，2.5 秒消失、碰一下屏幕就消失（照 Telegram iOS `TooltipInfoScreen`）。
     private func showLiveToast(isOn: Bool) {
@@ -1292,7 +1351,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     /// 网格里没有一次性查看（那在预览页）。
     private func moreMenuItems() -> [MoreMenuItem] {
         var items = [MoreMenuItem]()
-        if canSendAsFile, !selectedIds.isEmpty, !hasSpoileredSelection {
+        // #1714：有计时的不能按文件发（ADR-0079 §4.4 第 7 条，照 TG 安卓 `PhotoViewer`）。
+        if canSendAsFile, !selectedIds.isEmpty, !hasSpoileredSelection, !hasTimedSelection {
             items.append(.sendAsFile)
         }
         // V-7 / O4（tellomi/tellomi#1518，取 Telegram 安卓 `ChatAttachAlertPhotoLayout` 的规则：已选数 = `getSelectedPhotosCount()`）：
@@ -1353,9 +1413,9 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         return items
     }
 
-    /// M-4：会话里（同「以文件发送」，由会话页发）、有选中。
+    /// M-4：会话里（同「以文件发送」，由会话页发）、有选中。#1714：有计时的不能定时发送（ADR-0079 §4.4 第 6 条，TG 两端同）。
     private var canSchedule: Bool {
-        canSendAsFile && !selectedIds.isEmpty
+        canSendAsFile && !selectedIds.isEmpty && !hasTimedSelection
     }
 
     private func sendPreviewActions() -> [TellomiSendPreviewViewController.Action] {
@@ -1697,9 +1757,20 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let items = selectedIds.compactMap { selectedItems[$0] }
         guard !items.isEmpty else { return }
         let messageBody = messageBodyForSending
-        prepareAttachments(for: items, applyingEditsFrom: approvalItems, liveItemIds: liveItemIdsForSending(items)) { [weak self] attachments in
+        // #1714：有计时的不带实况（一次性查看的查看器不播实况，ADR-0079 §4.4 第 7 条）。
+        let choices = viewOnceChoices(for: items)
+        let liveItemIds = liveItemIdsForSending(zip(items, choices).filter { $0.1 == nil }.map(\.0))
+        prepareAttachments(for: items, applyingEditsFrom: approvalItems, liveItemIds: liveItemIds) { [weak self] attachments in
             guard let self else { return }
             self.applySpoilers(to: attachments, itemIds: items.map(\.id))
+            if choices.contains(where: { $0 != nil }) {
+                self.delegate?.photoPicker(
+                    self,
+                    sendParts: TellomiPhotoPickerSending.timedParts(attachments, choices: choices, imageQuality: quality, messageBody: messageBody),
+                    captionAboveMedia: self.isCaptionAboveMedia,
+                )
+                return
+            }
             self.delegate?.photoPicker(
                 self,
                 send: ApprovedAttachments(nonViewOnceAttachments: attachments, imageQuality: quality),
@@ -1992,6 +2063,16 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             return
         }
         applySpoilers(to: approvedAttachments.attachments, itemIds: itemIds)
+        // #1714：有计时的一张一条（同网格直接发）；计时的不带实况。
+        let choices = itemIds.map { viewOnceChoices[$0] }
+        if choices.contains(where: { $0 != nil }) {
+            delegate?.photoPicker(
+                self,
+                sendParts: TellomiPhotoPickerSending.timedParts(approvedAttachments.attachments, choices: choices, imageQuality: approvedAttachments.imageQuality, messageBody: messageBody),
+                captionAboveMedia: isCaptionAboveMedia,
+            )
+            return
+        }
         // 在预览页里改过的不带实况（同网格直接发）。
         let liveIds = Set(itemIds.filter { id in
             selectedItems[id].map(isLiveOn) == true && approvalItems[id].map(AttachmentApprovalViewController.tellomiHasImageEdits) != true
@@ -2297,6 +2378,7 @@ extension TellomiPhotoPickerViewController {
     var countPillFrameForTesting: CGRect { countPill.convert(countPill.bounds, to: view) }
     var isMoreButtonShownForTesting: Bool { !moreButton.isHidden && !rightCapsule.isHidden }
     var isLiveButtonShownForTesting: Bool { !liveButton.isHidden && !rightCapsule.isHidden }
+    var sendMenuItemsForTesting: [MoreMenuItem] { sendMenuItems() }
     var liveButtonSymbolForTesting: String { liveButtonSymbol }
     var liveButtonFrameForTesting: CGRect { liveButton.convert(liveButton.bounds, to: view) }
     var moreButtonFrameForTesting: CGRect { moreButton.convert(moreButton.bounds, to: view) }

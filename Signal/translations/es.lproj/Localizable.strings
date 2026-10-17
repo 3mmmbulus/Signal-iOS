@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Se cierra tras %@ segundos";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Negrita";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Enviar en alta calidad";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Enviar por separado";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Enviar en calidad estándar";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Temporizador de autodestrucción";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "No eliminar";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Elige cuánto tiempo se conservará el archivo después de abrirlo.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ segundos";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "La foto se conservará en el chat.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "La foto se eliminará %@ segundos después de abrirla.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Foto configurada para visualización única.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "El vídeo se conservará en el chat.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "El vídeo se eliminará %@ segundos después de abrirlo.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Vídeo configurado para visualización única.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Visualización única";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Deshacer";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Vídeo, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Este código QR ha caducado o no es un código de Tellomi. Escanea el código QR que se muestra ahora mismo en Tellomi en tu ordenador.";

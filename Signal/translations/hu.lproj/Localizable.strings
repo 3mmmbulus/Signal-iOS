@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ másodperc múlva bezárul";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ mp";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Félkövér";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Küldés magas minőségben";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Küldés külön-külön";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Küldés normál minőségben";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Önmegsemmisítő időzítő";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Ne törlődjön";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Válaszd ki, meddig maradjon meg a média megnyitás után.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ másodperc";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "A fotó a csevegésben marad.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "A fotó a megnyitás után %@ másodperccel törlődik.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "A fotó egyszer megtekinthető.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "A videó a csevegésben marad.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "A videó a megnyitás után %@ másodperccel törlődik.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "A videó egyszer megtekinthető.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Megtekintés egyszer";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Visszavonás";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Videó, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Ez a QR-kód lejárt, vagy nem Tellomi-kód. Olvasd be a számítógépeden a Tellomiban éppen megjelenő QR-kódot.";

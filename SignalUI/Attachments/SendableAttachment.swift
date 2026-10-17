@@ -23,6 +23,8 @@ public struct SendableAttachment {
     public private(set) var isTellomiSpoiler = false
     /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/tellomiLivePhotoVideo``.
     public private(set) var tellomiLivePhotoVideo: URL?
+    /// Tellomi (ADR-0079): see ``SignalAttachment/tellomiViewOnceSeconds``.
+    public private(set) var tellomiViewOnceSeconds: UInt32?
 
     private init(
         dataSource: DataSourcePath,
@@ -55,6 +57,7 @@ public struct SendableAttachment {
         // Tellomi (ADR-0068 §4.4): the picker's marks ride along to the message.
         result.isTellomiSpoiler = attachment.rawValue.isTellomiSpoiler
         result.tellomiLivePhotoVideo = attachment.rawValue.tellomiLivePhotoVideo
+        result.tellomiViewOnceSeconds = attachment.rawValue.tellomiViewOnceSeconds
         return result
     }
 
@@ -206,17 +209,21 @@ public struct SendableAttachment {
         public let isTellomiSpoiler: Bool
         /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/tellomiLivePhotoVideo``.
         public let tellomiLivePhotoVideo: URL?
+        /// Tellomi (ADR-0079): see ``SignalAttachment/tellomiViewOnceSeconds``.
+        public let tellomiViewOnceSeconds: UInt32?
 
         public init(
             dataSource: AttachmentDataSource,
             renderingFlag: AttachmentReference.RenderingFlag,
             isTellomiSpoiler: Bool = false,
             tellomiLivePhotoVideo: URL? = nil,
+            tellomiViewOnceSeconds: UInt32? = nil,
         ) {
             self.dataSource = dataSource
             self.renderingFlag = renderingFlag
             self.isTellomiSpoiler = isTellomiSpoiler
             self.tellomiLivePhotoVideo = tellomiLivePhotoVideo
+            self.tellomiViewOnceSeconds = tellomiViewOnceSeconds
         }
     }
 
@@ -227,6 +234,7 @@ public struct SendableAttachment {
             renderingFlag: self.renderingFlag,
             isTellomiSpoiler: self.isTellomiSpoiler,
             tellomiLivePhotoVideo: self.tellomiLivePhotoVideo,
+            tellomiViewOnceSeconds: self.tellomiViewOnceSeconds,
         )
     }
 }

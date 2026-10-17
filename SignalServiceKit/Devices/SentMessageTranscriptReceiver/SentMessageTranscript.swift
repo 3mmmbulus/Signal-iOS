@@ -49,6 +49,8 @@ public enum SentMessageTranscriptType {
         public var tellomiCaptionAboveMedia: Bool = false
         /// ADR-0075：`DataMessage.tellomi.messageCaption`（整条消息的说明）。
         public var tellomiMessageCaption: String? = nil
+        /// ADR-0079：`DataMessage.tellomi.viewOnceSeconds`（计时的一次性查看）。
+        public var tellomiViewOnceSeconds: UInt32? = nil
     }
 
     public struct PaymentNotification {

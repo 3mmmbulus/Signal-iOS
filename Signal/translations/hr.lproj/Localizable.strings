@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Zatvara se nakon %@ sekundi";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Podebljano";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Pošalji u visokoj kvaliteti";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Pošalji zasebno";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Pošalji u standardnoj kvaliteti";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Mjerač samouništenja";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Ne briši";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Odaberite koliko dugo medij ostaje nakon otvaranja.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ sekundi";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Fotografija će ostati u razgovoru.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Fotografija će se izbrisati %@ sekundi nakon otvaranja.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Fotografija je postavljena da nestane nakon prikaza.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Videozapis će ostati u razgovoru.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Videozapis će se izbrisati %@ sekundi nakon otvaranja.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Videozapis je postavljen da nestane nakon prikaza.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Nestaje nakon prikaza";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Poništi";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Video, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Ovaj je QR kôd istekao ili nije Tellomi kôd. Skenirajte QR kôd koji se trenutačno prikazuje u Tellomiju na vašem računalu.";

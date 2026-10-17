@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Закрыецца праз %@ секунд";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ с";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Тоўсты";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Адправіць у высокай якасці";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Адправіць асобна";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Адправіць у стандартнай якасці";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Таймер самазнішчэння";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Не выдаляць";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Выберыце, колькі медыяфайл будзе захоўвацца пасля адкрыцця.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ секунд";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Фота застанецца ў чаце.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Фота выдаліцца праз %@ секунд пасля адкрыцця.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Фота наладжана на аднаразовы прагляд.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Відэа застанецца ў чаце.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Відэа выдаліцца праз %@ секунд пасля адкрыцця.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Відэа наладжана на аднаразовы прагляд.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Аднаразовы прагляд";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Адмяніць";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Відэа, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Тэрмін дзеяння гэтага QR-кода скончыўся, або гэта не код Tellomi. Праскануйце QR-код, які зараз паказаны ў Tellomi на вашым камп'ютары.";

@@ -114,6 +114,17 @@ public class CVComponentViewOnce: CVComponentBase, CVComponent {
         super.init(itemModel: itemModel)
     }
 
+    /// Tellomi（#1714，ADR-0079 §4.3 第 4 条）：计时的在「照片 / 视频」字样旁边写秒数（「照片 · 3 秒」），收发两边都写；
+    /// 看过的照旧「已查看」。
+    static func tellomiAppendingSeconds(_ seconds: UInt32?, to text: String) -> String {
+        guard let seconds else { return text }
+        let secondsText = String.nonPluralLocalizedStringWithFormat(
+            OWSLocalizedString("TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT", comment: "How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}."),
+            OWSFormat.formatUInt32(seconds),
+        )
+        return "\(text) · \(secondsText)"
+    }
+
     public func buildComponentView(componentDelegate: CVComponentDelegate) -> CVComponentView {
         CVComponentViewViewOnce()
     }
@@ -376,7 +387,7 @@ private extension CVComponentViewOnce {
                 owsFailDebug("unexpected viewOnceMessageType for IncomingFailed.")
                 text = MessageStrings.viewOnceViewPhoto
             }
-            return buildDefaultConfig(text: text)
+            return buildDefaultConfig(text: Self.tellomiAppendingSeconds(viewOnce.tellomiSeconds, to: text))
         case .outgoingFailed:
             let text = CommonStrings.retryButton
             return buildDefaultConfig(text: text)
@@ -386,7 +397,7 @@ private extension CVComponentViewOnce {
                 "PER_MESSAGE_EXPIRATION_OUTGOING_MESSAGE",
                 comment: "Label for outgoing view-once messages.",
             )
-            return buildDefaultConfig(text: text)
+            return buildDefaultConfig(text: Self.tellomiAppendingSeconds(viewOnce.tellomiSeconds, to: text))
         case .incomingInvalidContent:
             let text = OWSLocalizedString(
                 "PER_MESSAGE_EXPIRATION_INVALID_CONTENT",

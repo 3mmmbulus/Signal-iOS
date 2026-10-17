@@ -2489,12 +2489,24 @@ nonisolated struct SignalServiceProtos_TellomiDataMessage: Sendable {
   /// Clears the value of `messageCaption`. Subsequent reads from it will return its default value.
   mutating func clearMessageCaption() {self._messageCaption = nil}
 
+  /// ADR-0079: how many seconds the media stays open after the first view (3, 10 or 30). Only meaningful
+  /// together with DataMessage.isViewOnce = true; any other value is ignored (a plain view-once message).
+  var viewOnceSeconds: UInt32 {
+    get {_viewOnceSeconds ?? 0}
+    set {_viewOnceSeconds = newValue}
+  }
+  /// Returns true if `viewOnceSeconds` has been explicitly set.
+  var hasViewOnceSeconds: Bool {self._viewOnceSeconds != nil}
+  /// Clears the value of `viewOnceSeconds`. Subsequent reads from it will return its default value.
+  mutating func clearViewOnceSeconds() {self._viewOnceSeconds = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _captionAboveMedia: Bool? = nil
   fileprivate var _messageCaption: String? = nil
+  fileprivate var _viewOnceSeconds: UInt32? = nil
 }
 
 nonisolated struct SignalServiceProtos_NullMessage: Sendable {
@@ -7537,7 +7549,7 @@ nonisolated extension SignalServiceProtos_DataMessage.AdminDelete: SwiftProtobuf
 
 nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".TellomiDataMessage"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0\u{1}messageCaption\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0\u{1}messageCaption\0\u{1}viewOnceSeconds\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7547,6 +7559,7 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self._captionAboveMedia) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._messageCaption) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._viewOnceSeconds) }()
       default: break
       }
     }
@@ -7563,12 +7576,16 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
     try { if let v = self._messageCaption {
       try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._viewOnceSeconds {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: SignalServiceProtos_TellomiDataMessage, rhs: SignalServiceProtos_TellomiDataMessage) -> Bool {
     if lhs._captionAboveMedia != rhs._captionAboveMedia {return false}
     if lhs._messageCaption != rhs._messageCaption {return false}
+    if lhs._viewOnceSeconds != rhs._viewOnceSeconds {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

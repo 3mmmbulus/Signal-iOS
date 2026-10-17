@@ -10333,6 +10333,15 @@ public class SSKProtoTellomiDataMessage: NSObject, Codable, NSSecureCoding {
         return proto.hasMessageCaption
     }
 
+    @objc
+    public var viewOnceSeconds: UInt32 {
+        return proto.viewOnceSeconds
+    }
+    @objc
+    public var hasViewOnceSeconds: Bool {
+        return proto.hasViewOnceSeconds
+    }
+
     public var hasUnknownFields: Bool {
         return !proto.unknownFields.data.isEmpty
     }
@@ -10412,6 +10421,9 @@ extension SSKProtoTellomiDataMessage {
         if let _value = messageCaption {
             builder.setMessageCaption(_value)
         }
+        if hasViewOnceSeconds {
+            builder.setViewOnceSeconds(viewOnceSeconds)
+        }
         if let _value = unknownFields {
             builder.setUnknownFields(_value)
         }
@@ -10441,6 +10453,11 @@ public class SSKProtoTellomiDataMessageBuilder: NSObject {
 
     public func setMessageCaption(_ valueParam: String) {
         proto.messageCaption = valueParam
+    }
+
+    @objc
+    public func setViewOnceSeconds(_ valueParam: UInt32) {
+        proto.viewOnceSeconds = valueParam
     }
 
     public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {

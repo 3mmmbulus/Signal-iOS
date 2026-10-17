@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Sulkeutuu %@ sekunnin kuluttua";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Lihavointi";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Lähetä korkealaatuisena";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Lähetä erikseen";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Lähetä vakiolaatuisena";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Itsetuhoajastin";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Älä poista";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Valitse, kuinka kauan media säilyy avaamisen jälkeen.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ sekuntia";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Kuva säilyy keskustelussa.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Kuva poistetaan %@ sekuntia avaamisen jälkeen.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Kuva asetettu kerran katsottavaksi.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Video säilyy keskustelussa.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Video poistetaan %@ sekuntia avaamisen jälkeen.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Video asetettu kerran katsottavaksi.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Kerran katsottava sisältö";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Kumoa";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Video, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Tämä QR-koodi on vanhentunut tai se ei ole Tellomi-koodi. Skannaa QR-koodi, joka näkyy parhaillaan tietokoneesi Tellomissa.";

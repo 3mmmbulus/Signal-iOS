@@ -10567,6 +10567,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ 秒之後關閉";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ 秒";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "粗體";
 
@@ -11212,6 +11218,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "以高畫質傳送";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "分開傳送";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "以標準畫質傳送";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "自毀計時器";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "唔刪除";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "揀吓打開之後媒體保留幾耐。";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ 秒";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "相片會留喺聊天入面。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "相片會喺打開 %@ 秒之後刪除。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "相片已經設為閱後即焚。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "影片會留喺聊天入面。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "影片會喺打開 %@ 秒之後刪除。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "影片已經設為閱後即焚。";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "閱後即焚";
 "IMAGE_PICKER_TELLOMI_UNDO" = "撤銷";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "影片，%@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "呢個二維碼已經過期，或者唔係 Tellomi 嘅二維碼。請掃描電腦上 Tellomi 而家顯示嘅二維碼。";

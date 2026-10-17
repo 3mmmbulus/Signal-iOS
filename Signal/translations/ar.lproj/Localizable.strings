@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "يُغلق بعد %@ ثانية";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ ث";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "خط عريض";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "إرسال بجودة عالية";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "إرسال بشكل منفصل";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "إرسال بجودة قياسية";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "مؤقت التدمير الذاتي";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "عدم الحذف";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "اختر مدة الاحتفاظ بالوسائط بعد فتحها.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ ثانية";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "ستبقى الصورة في الدردشة.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "سيتم حذف الصورة بعد %@ ثانية من فتحها.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "تم ضبط الصورة على العرض لمرة واحدة.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "سيبقى الفيديو في الدردشة.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "سيتم حذف الفيديو بعد %@ ثانية من فتحه.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "تم ضبط الفيديو على العرض لمرة واحدة.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "عرض لمرة واحدة";
 "IMAGE_PICKER_TELLOMI_UNDO" = "تراجع";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "فيديو، %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "انتهت صلاحية كود الـ QR هذا، أو أنه ليس كود Tellomi. امسح كود الـ QR المعروض الآن في Tellomi على جهاز الكمبيوتر الخاص بك.";

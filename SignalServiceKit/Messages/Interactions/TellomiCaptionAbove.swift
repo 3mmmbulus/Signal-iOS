@@ -111,11 +111,19 @@ public enum TellomiCaptionAbove {
         setCaptionAboveMedia(true, messageUniqueId: uniqueId, tx: tx)
     }
 
-    /// 发出去的 DataMessage 里的 `tellomi = 1000`；不在上方就是 nil（字节和上游一样）。
-    static func proto(messageUniqueId: String, tx: DBReadTransaction) -> SSKProtoTellomiDataMessage? {
-        guard isCaptionAboveMedia(messageUniqueId: messageUniqueId, tx: tx) else { return nil }
+    /// 发出去的 DataMessage 里的 `tellomi = 1000`：说明在上方、计时一次性查看的秒数（ADR-0079，只在有时写）。
+    /// 都没有就是 nil（字节和上游一样）。
+    static func proto(messageUniqueId: String, viewOnceSeconds: UInt32? = nil, tx: DBReadTransaction) -> SSKProtoTellomiDataMessage? {
+        let captionAboveMedia = isCaptionAboveMedia(messageUniqueId: messageUniqueId, tx: tx)
+        let seconds = viewOnceSeconds.flatMap { TellomiViewOnceTimer.isAllowed($0) ? $0 : nil }
+        guard captionAboveMedia || seconds != nil else { return nil }
         let builder = SSKProtoTellomiDataMessage.builder()
-        builder.setCaptionAboveMedia(true)
+        if captionAboveMedia {
+            builder.setCaptionAboveMedia(true)
+        }
+        if let seconds {
+            builder.setViewOnceSeconds(seconds)
+        }
         return builder.buildInfallibly()
     }
 }

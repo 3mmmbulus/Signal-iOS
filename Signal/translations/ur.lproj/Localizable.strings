@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ سیکنڈ بعد بند ہو جائے گا";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ سیکنڈ";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "بولڈ کریں";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "ہائی کوالٹی میں بھیجیں";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "الگ الگ بھیجیں";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "اسٹینڈرڈ کوالٹی میں بھیجیں";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "خود تباہی ٹائمر";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "حذف نہ کریں";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "منتخب کریں کہ کھولنے کے بعد میڈیا کتنی دیر رکھا جائے۔";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ سیکنڈ";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "تصویر چیٹ میں رہے گی۔";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "تصویر کھولنے کے %@ سیکنڈ بعد حذف ہو جائے گی۔";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "تصویر ایک بار دیکھنے کے لیے سیٹ ہو گئی۔";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "ویڈیو چیٹ میں رہے گی۔";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "ویڈیو کھولنے کے %@ سیکنڈ بعد حذف ہو جائے گی۔";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "ویڈیو ایک بار دیکھنے کے لیے سیٹ ہو گئی۔";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "ایک بار دیکھیں";
 "IMAGE_PICKER_TELLOMI_UNDO" = "واپس کریں";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "ویڈیو، %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "اس QR کوڈ کی میعاد ختم ہو چکی ہے، یا یہ Tellomi کا کوڈ نہیں ہے۔ اپنے کمپیوٹر پر Tellomi میں اس وقت دکھایا گیا QR کوڈ اسکین کریں۔";

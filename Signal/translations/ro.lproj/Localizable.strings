@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Se închide după %@ secunde";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Aldin";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Trimite în calitate înaltă";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Trimite separat";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Trimite în calitate standard";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Cronometru de autodistrugere";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Nu șterge";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Alege cât timp rămâne media după deschidere.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ secunde";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Fotografia va rămâne în chat.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Fotografia va fi ștearsă la %@ secunde după deschidere.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Fotografia este setată pentru vizualizare o singură dată.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Clipul video va rămâne în chat.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Clipul video va fi șters la %@ secunde după deschidere.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Clipul video este setat pentru vizualizare o singură dată.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Vizualizare o singură dată";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Anulează";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Videoclip, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Acest cod QR a expirat sau nu este un cod Tellomi. Scanează codul QR afișat chiar acum în Tellomi pe computerul tău.";

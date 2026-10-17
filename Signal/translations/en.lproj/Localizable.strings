@@ -5435,6 +5435,39 @@
 /* Photo picker more-menu item: send the selection right away in standard quality (this time only). */
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Send in Standard Quality";
 
+/* Accessibility label of the self-destruct timer button in the photo picker's album viewer. */
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Self-Destruct Timer";
+
+/* Item in the photo picker's self-destruct timer menu: the photo or video is sent normally and stays in the chat. */
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Do Not Delete";
+
+/* Explanation at the top of the photo picker's self-destruct timer menu. */
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Choose how long the media will be kept after opening.";
+
+/* Item in the photo picker's self-destruct timer menu: the photo or video stays open this many seconds after it is opened. Embeds {{ number of seconds }}. */
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ Seconds";
+
+/* Toast after turning the self-destruct timer off for a photo in the photo picker: it stays in the chat. */
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Photo will be kept in the chat.";
+
+/* Toast after setting a self-destruct timer on a photo in the photo picker. Embeds {{ number of seconds }}. */
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Photo will be deleted %@ seconds after opening.";
+
+/* Toast after setting a photo in the photo picker to view once. */
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Photo set to view once.";
+
+/* Toast after turning the self-destruct timer off for a video in the photo picker: it stays in the chat. */
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Video will be kept in the chat.";
+
+/* Toast after setting a self-destruct timer on a video in the photo picker. Embeds {{ number of seconds }}. */
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Video will be deleted %@ seconds after opening.";
+
+/* Toast after setting a video in the photo picker to view once. */
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Video set to view once.";
+
+/* Item in the photo picker's self-destruct timer menu: the photo or video can be opened once. */
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "View Once";
+
 /* Button in the photo picker's undo bar that puts unselected photos back. */
 "IMAGE_PICKER_TELLOMI_UNDO" = "Undo";
 
@@ -11711,6 +11744,12 @@
 
 /* Tellomi: title of the card shown once on the chat list, the chat list reminder and the About row when a newer version is available. Embeds {{ version number, e.g. 0.1.5 }}. */
 "TELLOMI_UPDATE_AVAILABLE_TITLE" = "Tellomi %@ is available";
+
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Closes after %@ seconds";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
 
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Bold";

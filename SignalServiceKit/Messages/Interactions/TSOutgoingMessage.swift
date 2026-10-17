@@ -503,8 +503,10 @@ extension TSOutgoingMessage {
             builder.setGiftBadge(giftBadgeBuilder.buildInfallibly())
         }
 
-        // Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：只在说明在上方时写 `tellomi = 1000`，别的消息字节和上游一样；不提协议版本。
-        if let tellomi = TellomiCaptionAbove.proto(messageUniqueId: self.uniqueId, tx: tx) {
+        // Tellomi（tellomi/tellomi#1263，ADR-0068 §4.7）：只在说明在上方、或是计时的一次性查看（ADR-0079 §4.1）时写 `tellomi = 1000`，
+        // 别的消息字节和上游一样；都不提协议版本。
+        let tellomiViewOnceSeconds = isViewOnceMessage ? TellomiViewOnceTimer.seconds(messageUniqueId: self.uniqueId, tx: tx) : nil
+        if let tellomi = TellomiCaptionAbove.proto(messageUniqueId: self.uniqueId, viewOnceSeconds: tellomiViewOnceSeconds, tx: tx) {
             builder.setTellomi(tellomi)
         }
 

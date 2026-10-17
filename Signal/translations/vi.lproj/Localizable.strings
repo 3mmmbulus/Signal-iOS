@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Đóng sau %@ giây";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ giây";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Đậm";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Gửi chất lượng cao";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Gửi riêng từng ảnh";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Gửi chất lượng tiêu chuẩn";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Hẹn giờ tự hủy";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Không xóa";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Chọn thời gian lưu giữ nội dung sau khi mở.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ giây";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Ảnh sẽ được giữ lại trong cuộc trò chuyện.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Ảnh sẽ bị xóa %@ giây sau khi mở.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Ảnh đã được đặt để xem một lần.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Video sẽ được giữ lại trong cuộc trò chuyện.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Video sẽ bị xóa %@ giây sau khi mở.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Video đã được đặt để xem một lần.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Xem một lần";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Hoàn tác";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Video, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Mã QR này đã hết hạn hoặc không phải là mã của Tellomi. Hãy quét mã QR đang hiển thị ngay lúc này trong Tellomi trên máy tính của bạn.";

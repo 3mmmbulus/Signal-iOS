@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ सेकंदांनी बंद होईल";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ से";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "बोल्ड";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "उच्च गुणवत्तेत पाठवा";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "स्वतंत्रपणे पाठवा";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "मानक गुणवत्तेत पाठवा";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "स्व-नाश टायमर";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "हटवू नका";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "उघडल्यानंतर मीडिया किती वेळ ठेवायचा ते निवडा.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ सेकंद";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "फोटो चॅटमध्ये राहील.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "फोटो उघडल्यानंतर %@ सेकंदांनी हटवला जाईल.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "फोटो एकदा पाहण्यासाठी सेट केला.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "व्हिडिओ चॅटमध्ये राहील.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "व्हिडिओ उघडल्यानंतर %@ सेकंदांनी हटवला जाईल.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "व्हिडिओ एकदा पाहण्यासाठी सेट केला.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "एकदा पाहा";
 "IMAGE_PICKER_TELLOMI_UNDO" = "पूर्ववत करा";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "व्हिडिओ, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "हा QR कोड कालबाह्य झाला आहे किंवा तो Tellomi चा कोड नाही. तुमच्या कॉम्प्युटरवरील Tellomi मध्ये आत्ता दिसणारा QR कोड स्कॅन करा.";

@@ -31,6 +31,16 @@ class ViewOnceMessageViewController: OWSViewController {
     private var accessoryView: UIView?
     private var scrollView: ZoomableMediaView!
 
+    /// Tellomi（tellomi/tellomi#1714，ADR-0079 §4.3）：计时的一次性查看只开这么久（照片 N 秒，视频 max(时长, N)），右上角倒计时环，
+    /// 到点自己关。打开那一刻照 Signal 的流程已经「看过」了，提前关也一样没了。nil = 普通一次性查看（不限时）。
+    var tellomiOpenDuration: TimeInterval? {
+        tellomiSeconds.map { TellomiViewOnceTimer.viewerDuration(seconds: $0, videoDuration: tellomiVideoDuration) }
+    }
+    private let tellomiSeconds: UInt32?
+    private var tellomiVideoDuration: TimeInterval?
+    private let tellomiCountdownView = TellomiViewOnceCountdownView()
+    private var tellomiCloseTimer: Timer?
+
     // MARK: - Initializers
 
     init?(interaction: TSInteraction) {
@@ -42,6 +52,9 @@ class ViewOnceMessageViewController: OWSViewController {
         }
 
         self.content = content
+        self.tellomiSeconds = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            TellomiViewOnceTimer.seconds(messageUniqueId: message.uniqueId, tx: tx)
+        }
 
         super.init()
 
@@ -107,6 +120,10 @@ class ViewOnceMessageViewController: OWSViewController {
             },
             .flexibleSpace(),
         ]
+        if tellomiOpenDuration != nil {
+            tellomiCountdownView.frame = CGRect(origin: .zero, size: tellomiCountdownView.intrinsicContentSize)
+            toolbar.items?.append(UIBarButtonItem(customView: tellomiCountdownView))
+        }
         view.addSubview(toolbar)
         toolbar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -156,6 +173,21 @@ class ViewOnceMessageViewController: OWSViewController {
         super.viewDidAppear(animated)
 
         videoPlayer?.play()
+        tellomiStartCountdownIfNeeded()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        tellomiCloseTimer?.invalidate()
+        tellomiCloseTimer = nil
+    }
+
+    private func tellomiStartCountdownIfNeeded() {
+        guard let tellomiOpenDuration, tellomiCloseTimer == nil else { return }
+        tellomiCountdownView.start(duration: tellomiOpenDuration)
+        tellomiCloseTimer = Timer.scheduledTimer(withTimeInterval: tellomiOpenDuration, repeats: false) { [weak self] _ in
+            self?.dismiss(animated: true)
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -216,6 +248,9 @@ class ViewOnceMessageViewController: OWSViewController {
 
         case .video:
             let asset = try content.loadAVAsset()
+            // Tellomi（ADR-0079 §4.3）：计时的视频开 max(时长, N) 秒。
+            let durationSeconds = asset.duration.seconds
+            tellomiVideoDuration = durationSeconds.isFinite && durationSeconds > 0 ? durationSeconds : nil
 
             let player = VideoPlayer(avPlayer: .init(playerItem: .init(asset: asset)), shouldLoop: true)
             self.videoPlayer = player

@@ -47,6 +47,10 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     /// #1263（spec P-4）：这一张的实况开不开（nil = 不是实况照片，没有那个键）；点了交给选图页切。
     var liveState: (TellomiPhotoPickerItem) -> Bool? = { _ in nil }
     var onToggleLive: ((TellomiPhotoPickerItem) -> Void)?
+    /// #1714（ADR-0079 §4.4）：说明框右侧的计时键——只在一对一会话里有（选图页给）。点开五项菜单，选了交给选图页记（逐张记、选了就勾上）。
+    var canSetViewOnceTimer = false
+    var viewOnceChoice: (TellomiPhotoPickerItem) -> TellomiViewOnceChoice? = { _ in nil }
+    var onSetViewOnceChoice: ((TellomiPhotoPickerItem, TellomiViewOnceChoice?) -> Void)?
 
     private let library: TellomiPhotoPickerLibrary
     private let items: [TellomiPhotoPickerItem]
@@ -208,6 +212,18 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         return field
     }()
 
+    /// #1714：说明框里、表情键左边的计时键（照 Telegram 两端说明框右侧的 timeout 键）。没设是计时图标，设了是强调色圆里的「1 / 3 / 10 / 30」。
+    private lazy var timerButton: UIButton = {
+        let button = UIButton(configuration: .plain())
+        button.showsMenuAsPrimaryAction = true
+        // 键在屏幕底部，系统默认把菜单倒过来排（第一项挨着键）；固定成说明在上、一次性查看在前（同 Telegram）。
+        if #available(iOS 16, *) {
+            button.preferredMenuElementOrder = .fixed
+        }
+        button.accessibilityLabel = TellomiViewOnceChoice.buttonAccessibilityLabel
+        return button
+    }()
+
     /// 文件模式的说明框（「文件」页的说明是纯文字）。
     private lazy var fileCaptionField: UITextField = {
         let field = UITextField()
@@ -352,6 +368,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             // 黑底上用深色外观（说明框的底色、字色、占位字都是随外观变的颜色）。
             bottomBar.overrideUserInterfaceStyle = .dark
             captionView = captionField
+            captionField.setTrailingAccessory(timerButton)
         }
 
         let sendContainer = UIView()
@@ -424,6 +441,9 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     private func setEditingDimmed(_ dimmed: Bool) {
         guard dimmed != isEditingCaption else { return }
         isEditingCaption = dimmed
+        if items.indices.contains(currentIndex) {
+            refreshTimerButton(for: items[currentIndex])
+        }
         if dimmed {
             editingDimView.isHidden = false
         }
@@ -586,6 +606,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
                     ? OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE", comment: "Button in the photo picker's album viewer on a live photo that is sent with its motion. Tap to send it as a still.")
                     : OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_OFF", comment: "Button in the photo picker's album viewer on a live photo that is sent as a still. Tap to send it with its motion.")
             }
+            refreshTimerButton(for: item)
             if let fileMode {
                 let name = fileMode.fileName(item)
                 fileNameLabel.text = name
@@ -606,6 +627,54 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             OWSLocalizedString("IMAGE_PICKER_TELLOMI_SELECTED_FORMAT", comment: "Accessibility label of the selected-count pill in the photo picker. Embeds {{ number selected }}."),
             OWSFormat.formatInt(count),
         )
+    }
+
+    /// #1714：计时键跟着正在看的这一张；写说明时藏起（照 Telegram 两端）。
+    private func refreshTimerButton(for item: TellomiPhotoPickerItem) {
+        let isShown = fileMode == nil && canSetViewOnceTimer && !isEditingCaption && (item.isVideo || !item.isAnimatedImage)
+        timerButton.isHidden = !isShown
+        guard isShown else {
+            captionField.updateTrailingAccessoryInset()
+            return
+        }
+        let choice = viewOnceChoice(item)
+        var configuration: UIButton.Configuration
+        if let choice {
+            configuration = .filled()
+            configuration.baseBackgroundColor = .Signal.accent
+            configuration.baseForegroundColor = .white
+            configuration.cornerStyle = .capsule
+            configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2)
+            configuration.attributedTitle = AttributedString(
+                choice.badgeText,
+                attributes: AttributeContainer([.font: UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .bold)]),
+            )
+            timerButton.accessibilityValue = TellomiViewOnceChoice.menuTitle(for: choice)
+        } else {
+            configuration = .plain()
+            configuration.image = UIImage(systemName: "timer", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .regular))
+            configuration.baseForegroundColor = .Signal.secondaryLabel
+            configuration.contentInsets = .zero
+            timerButton.accessibilityValue = nil
+        }
+        timerButton.configuration = configuration
+        timerButton.menu = timerMenu(for: item, current: choice)
+        captionField.updateTrailingAccessoryInset()
+    }
+
+    /// 第一行说明，下面五项：一次性查看 / 3 秒 / 10 秒 / 30 秒 / 不删除，当前那项打勾（ADR-0079 §4.4 第 1 条）。
+    private func timerMenu(for item: TellomiPhotoPickerItem, current: TellomiViewOnceChoice?) -> UIMenu {
+        let actions = TellomiViewOnceChoice.menuOrder.map { choice in
+            UIAction(title: TellomiViewOnceChoice.menuTitle(for: choice), state: choice == current ? .on : .off) { [weak self] _ in
+                self?.selectViewOnceChoice(choice, for: item)
+            }
+        }
+        return UIMenu(title: TellomiViewOnceChoice.menuHeader, children: actions)
+    }
+
+    private func selectViewOnceChoice(_ choice: TellomiViewOnceChoice?, for item: TellomiPhotoPickerItem) {
+        onSetViewOnceChoice?(item, choice)
+        refreshChrome(animatedCheck: true)
     }
 
     /// 选图页在别处改了勾选（例如就地编辑时自动勾上）：勾选标和计数跟着变。
@@ -988,6 +1057,30 @@ extension TellomiPhotoPickerAlbumViewer {
     var isCountShownForTesting: Bool { !countButton.isHidden }
 
     var liveButtonTitleForTesting: String? { liveButton.isHidden ? nil : liveButton.configuration?.title }
+    var isTimerButtonShownForTesting: Bool { timerButton.superview != nil && !timerButton.isHidden }
+    var timerMenuForTesting: UIMenu? { timerButton.isHidden ? nil : timerButton.menu }
+    var timerBadgeTextForTesting: String? {
+        timerButton.isHidden ? nil : timerButton.configuration?.attributedTitle.map { String($0.characters) }
+    }
+    var timerButtonFrameForTesting: CGRect { timerButton.convert(timerButton.bounds, to: view) }
+    var captionFieldFrameForTesting: CGRect { captionField.convert(captionField.bounds, to: view) }
+
+    /// 把计时菜单弹出来 / 收起（录屏、截图用）。
+    func openTimerMenuForTesting() {
+        if #available(iOS 17.4, *) {
+            timerButton.performPrimaryAction()
+        }
+    }
+
+    func closeTimerMenuForTesting() {
+        timerButton.contextMenuInteraction?.dismissMenu()
+    }
+
+    /// 点菜单里的一项（菜单本身是系统画的，测试里直接调它的 handler）。
+    func selectTimerForTesting(_ choice: TellomiViewOnceChoice?) {
+        guard items.indices.contains(currentIndex) else { return }
+        selectViewOnceChoice(choice, for: items[currentIndex])
+    }
 
     func tapLiveForTesting() {
         liveButton.sendActions(for: .primaryActionTriggered)

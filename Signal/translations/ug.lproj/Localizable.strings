@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ سېكۇنتتىن كېيىن تاقىلىدۇ";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ سېكۇنت";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "توم";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "يۇقىرى سۈپەتتە ئەۋەتىش";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "ئايرىم ئەۋەتىش";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "ئادەتتىكى سۈپەتتە ئەۋەتىش";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "ئۆزلۈكىدىن ئۆچۈرۈش ۋاقىت ئۆلچىگۈچى";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "ئۆچۈرمەسلىك";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "ئېچىلغاندىن كېيىن مېدىيانىڭ قانچىلىك ساقلىنىدىغانلىقىنى تاللاڭ.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ سېكۇنت";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "سۈرەت پاراڭدا ساقلىنىدۇ.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "سۈرەت ئېچىلىپ %@ سېكۇنتتىن كېيىن ئۆچۈرۈلىدۇ.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "سۈرەت بىر قېتىملا كۆرۈشكە تەڭشەلدى.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "سىن پاراڭدا ساقلىنىدۇ.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "سىن ئېچىلىپ %@ سېكۇنتتىن كېيىن ئۆچۈرۈلىدۇ.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "سىن بىر قېتىملا كۆرۈشكە تەڭشەلدى.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "بىر قېتىملا كۆرۈش";
 "IMAGE_PICKER_TELLOMI_UNDO" = "ئەسلىگە قايتۇرۇش";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "ۋىدېيو، %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "بۇ QR كودنىڭ ۋاقتى ئۆتكەن ياكى Tellomi نىڭ QR كودى ئەمەس. كومپيۇتېرىڭىزدىكى Tellomi دا ھازىر كۆرسىتىلىۋاتقان QR كودنى سايىلەڭ.";

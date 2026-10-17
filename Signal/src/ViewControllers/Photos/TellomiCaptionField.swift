@@ -147,6 +147,32 @@ final class TellomiCaptionField: UIView {
         }
     }
 
+    /// Tellomi（tellomi/tellomi#1714，ADR-0079 §4.4）：表情键左边再放一个键（查看器里的计时键）。nil = 拿掉。
+    /// 文字让出它的位置；藏起来（`isHidden`）时不让——由调用方在写说明时藏起、再调 [updateTrailingAccessoryInset]。
+    private(set) var trailingAccessory: UIView?
+
+    func setTrailingAccessory(_ accessory: UIView?) {
+        trailingAccessory?.removeFromSuperview()
+        trailingAccessory = accessory
+        if let accessory {
+            accessory.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(accessory)
+            NSLayoutConstraint.activate([
+                accessory.widthAnchor.constraint(equalToConstant: Metrics.emojiButtonSize),
+                accessory.heightAnchor.constraint(equalToConstant: Metrics.emojiButtonSize),
+                accessory.trailingAnchor.constraint(equalTo: emojiButton.leadingAnchor),
+                accessory.bottomAnchor.constraint(equalTo: emojiButton.bottomAnchor),
+            ])
+        }
+        updateTrailingAccessoryInset()
+    }
+
+    func updateTrailingAccessoryInset() {
+        let accessoryWidth = trailingAccessory.map { $0.isHidden ? 0 : Metrics.emojiButtonSize } ?? 0
+        textView.textContainerInset.right = Metrics.emojiButtonSize + 8 + accessoryWidth
+        updatePlaceholderAndHeight()
+    }
+
     /// 高度要按排好之后的真实宽度算（一开始宽度是 0），所以由外面在排版之后、改了字之后调。
     func updatePlaceholderAndHeight() {
         placeholderLabel.isHidden = !textView.isEmpty

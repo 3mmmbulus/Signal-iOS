@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Zavře se za %@ s";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ s";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Tučně";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Odeslat ve vysoké kvalitě";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Odeslat samostatně";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Odeslat ve standardní kvalitě";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Časovač sebezničení";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Nemazat";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Zvolte, jak dlouho média po otevření zůstanou.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ s";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Fotka zůstane v chatu.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Fotka se smaže %@ s po otevření.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Fotka nastavena na zobrazení jednou.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Video zůstane v chatu.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Video se smaže %@ s po otevření.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Video nastaveno na zobrazení jednou.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Zobrazit jednou";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Vrátit zpět";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Video, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Platnost tohoto QR kódu vypršela, nebo to není kód aplikace Tellomi. Naskenujte QR kód, který se právě zobrazuje v aplikaci Tellomi ve vašem počítači.";

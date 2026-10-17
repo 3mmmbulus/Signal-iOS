@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "%@ 秒後に閉じます";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ 秒";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "太字";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "高画質で送信";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "個別に送信";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "標準画質で送信";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "自動消去タイマー";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "削除しない";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "開いた後にメディアを残す時間を選んでください。";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ 秒";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "写真はチャットに残ります。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "写真は開いてから %@ 秒後に削除されます。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "写真を一度きりの表示に設定しました。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "動画はチャットに残ります。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "動画は開いてから %@ 秒後に削除されます。";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "動画を一度きりの表示に設定しました。";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "一度きりの表示";
 "IMAGE_PICKER_TELLOMI_UNDO" = "元に戻す";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "動画、%@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "このQRコードは有効期限が切れているか、Tellomiのコードではありません。パソコンのTellomiに現在表示されているQRコードをスキャンしてください。";

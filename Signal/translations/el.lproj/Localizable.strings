@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "Κλείνει σε %@ δευτερόλεπτα";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ δ";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "Bold";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "Αποστολή σε υψηλή ποιότητα";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "Ξεχωριστή αποστολή";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "Αποστολή σε τυπική ποιότητα";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "Χρονόμετρο αυτοκαταστροφής";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "Χωρίς διαγραφή";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "Επιλέξτε πόσο θα διατηρείται το πολυμέσο μετά το άνοιγμα.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ δευτερόλεπτα";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "Η φωτογραφία θα παραμείνει στη συνομιλία.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "Η φωτογραφία θα διαγραφεί %@ δευτερόλεπτα μετά το άνοιγμα.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "Η φωτογραφία ορίστηκε για προβολή μία φορά.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "Το βίντεο θα παραμείνει στη συνομιλία.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "Το βίντεο θα διαγραφεί %@ δευτερόλεπτα μετά το άνοιγμα.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "Το βίντεο ορίστηκε για προβολή μία φορά.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "Προβολή μία φορά";
 "IMAGE_PICKER_TELLOMI_UNDO" = "Αναίρεση";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "Βίντεο, %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "Αυτός ο κωδικός QR έχει λήξει ή δεν είναι κωδικός του Tellomi. Σκανάρισε τον κωδικό QR που εμφανίζεται αυτή τη στιγμή στο Tellomi στον υπολογιστή σου.";

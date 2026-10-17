@@ -1620,6 +1620,8 @@ public final class MessageReceiver {
         if let messageCaption = dataMessage.tellomi?.messageCaption?.nilIfEmpty {
             TellomiCaptionAbove.setMessageCaption(messageCaption, messageUniqueId: message.uniqueId, tx: tx)
         }
+        // ADR-0079：计时的一次性查看（打开后看几秒），只在有时写。
+        TellomiViewOnceTimer.markReceived(dataMessage, messageUniqueId: message.uniqueId, tx: tx)
 
         // Inserting the message may have modified the thread on disk, so reload
         // it. For example, we may have marked the thread as visible.

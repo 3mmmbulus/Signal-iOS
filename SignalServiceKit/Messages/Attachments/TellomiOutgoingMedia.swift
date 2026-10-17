@@ -16,20 +16,25 @@ public struct TellomiOutgoingMedia: Equatable {
     /// 实况照片的动态部分（已转成 MP4、放进 `TellomiLivePhoto.outgoingDirectory` 的文件），按静态图的位置。
     public var livePhotoVideos: [UInt32: URL]
 
-    public init(spoilerOrders: Set<UInt32> = [], livePhotoVideos: [UInt32: URL] = [:]) {
+    /// ADR-0079：计时的一次性查看打开后看几秒（3 / 10 / 30）。只对一次性查看的消息记。
+    public var viewOnceSeconds: UInt32?
+
+    public init(spoilerOrders: Set<UInt32> = [], livePhotoVideos: [UInt32: URL] = [:], viewOnceSeconds: UInt32? = nil) {
         self.spoilerOrders = spoilerOrders
         self.livePhotoVideos = livePhotoVideos
+        self.viewOnceSeconds = viewOnceSeconds
     }
 
-    public var isEmpty: Bool { spoilerOrders.isEmpty && livePhotoVideos.isEmpty }
+    public var isEmpty: Bool { spoilerOrders.isEmpty && livePhotoVideos.isEmpty && viewOnceSeconds == nil }
 
     /// 按附件的先后给的标记（`attachments[i]` 就是位置 i）。
-    public init(spoilers: [Bool], livePhotoVideos: [URL?] = []) {
+    public init(spoilers: [Bool], livePhotoVideos: [URL?] = [], viewOnceSeconds: UInt32? = nil) {
         self.init(
             spoilerOrders: Set(spoilers.enumerated().compactMap { $0.element ? UInt32($0.offset) : nil }),
             livePhotoVideos: Dictionary(uniqueKeysWithValues: livePhotoVideos.enumerated().compactMap { index, url in
                 url.map { (UInt32(index), $0) }
             }),
+            viewOnceSeconds: viewOnceSeconds,
         )
     }
 
@@ -43,6 +48,10 @@ public struct TellomiOutgoingMedia: Equatable {
         // 一次性查看的查看器不播实况：只发静态图（ADR-0079 §4.4）。
         if !media.livePhotoVideos.isEmpty, !message.isViewOnceMessage {
             TellomiLivePhoto.markOutgoing(messageRowId: rowId, videos: media.livePhotoVideos, tx: tx)
+        }
+        // ADR-0079：计时只跟一次性查看一起有意义；别的消息给了也不记。
+        if let seconds = media.viewOnceSeconds, message.isViewOnceMessage {
+            TellomiViewOnceTimer.setSeconds(seconds, messageUniqueId: message.uniqueId, tx: tx)
         }
         if let quotedMessage = message.quotedMessage {
             TellomiMediaSpoiler.markOutgoingQuote(

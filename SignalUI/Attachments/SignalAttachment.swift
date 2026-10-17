@@ -213,6 +213,9 @@ public class SignalAttachment: CustomDebugStringConvertible {
     /// Tellomi (ADR-0068 §4.4, spec P-4): the moving half of a live photo, already an MP4 (H.264, long edge ≤ 848); sent as
     /// `AttachmentPointer.tellomi.livePhotoVideo` on this still. Nil = a still photo.
     public var tellomiLivePhotoVideo: URL?
+    /// Tellomi (ADR-0079): sent as view once that stays open this many seconds (3 / 10 / 30) once opened. Only on a view
+    /// once message; nil = plain view once (or not view once at all).
+    public var tellomiViewOnceSeconds: UInt32?
 
     // Returns the MIME type for this attachment or nil if no MIME type
     // can be identified.

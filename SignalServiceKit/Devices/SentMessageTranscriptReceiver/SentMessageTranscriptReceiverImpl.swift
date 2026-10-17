@@ -224,6 +224,10 @@ public class SentMessageTranscriptReceiverImpl: SentMessageTranscriptReceiver {
             if let messageCaption = messageParams.tellomiMessageCaption {
                 TellomiCaptionAbove.setMessageCaption(messageCaption, messageUniqueId: outgoingMessage.uniqueId, tx: tx)
             }
+            // ADR-0079：计时的一次性查看，气泡上显示秒数。
+            if let seconds = messageParams.tellomiViewOnceSeconds, outgoingMessage.isViewOnceMessage {
+                TellomiViewOnceTimer.setSeconds(seconds, messageUniqueId: outgoingMessage.uniqueId, tx: tx)
+            }
 
             if let validatedPollCreate = messageParams.validatedPollCreate {
                 do {

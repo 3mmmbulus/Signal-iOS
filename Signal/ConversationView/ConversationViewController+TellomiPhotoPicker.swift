@@ -64,6 +64,8 @@ extension ConversationViewController {
             canSendAsFile: true,
             // M-4：收藏里「定时发送」叫「设置提醒」。
             isNoteToSelf: thread.isNoteToSelf,
+            // #1714（ADR-0079 §4.4 第 3 条）：计时只在一对一会话里有（不在群里、不在收藏里）。
+            canSetViewOnceTimer: thread is TSContactThread && !thread.isNoteToSelf,
             hasQuotedReplyDraft: inputToolbar.quotedReplyDraft != nil,
             attachmentLimits: .currentLimits(),
             approvalDataSource: self,
@@ -199,6 +201,61 @@ extension ConversationViewController: TellomiPhotoPickerDelegate {
         )
     }
 
+    /// #1714（ADR-0079 §4.4）：有计时的一张一条，按先后发；上一条没发出去（被拦下 / 取消）就不再发后面的。
+    func photoPicker(_ picker: TellomiPhotoPickerViewController, sendParts parts: [TellomiPhotoPickerSending.Part], captionAboveMedia: Bool) {
+        let fromViewController = picker.presentedViewController ?? picker
+        let attachmentLimits = picker.attachmentLimits
+        ModalActivityIndicatorViewController.present(
+            fromViewController: fromViewController,
+            title: CommonStrings.preparingModal,
+            asyncBlock: { modal in
+                await TellomiPhotoPickerSending.send(parts) { part in
+                    switch part {
+                    case .text(let body):
+                        return await self.tellomiSendCaptionText(body, from: fromViewController)
+                    case .media(let approved, let body):
+                        return await self.sendAttachments(
+                            approved,
+                            messageBody: body,
+                            from: fromViewController,
+                            attachmentLimits: attachmentLimits,
+                            captionAboveMedia: captionAboveMedia && body != nil,
+                        )
+                    }
+                }
+                modal.dismiss(completion: {
+                    self.dismiss(animated: true)
+                })
+            },
+        )
+    }
+
+    /// #1714（ADR-0079 §4.4 第 5 条）：全都计时时说明单独一条文字、先发（一次性查看不能带说明）。和上游发文字一样先过拉黑、安全码。
+    @MainActor
+    func tellomiSendCaptionText(_ messageBody: MessageBody, from viewController: UIViewController) async -> Bool {
+        guard !messageBody.text.ows_stripped().isEmpty else { return true }
+        if isBlockedConversation(), await showUnblockConversationUI() {
+            return false
+        }
+        let identityIsConfirmed = await showSafetyNumberConfirmationIfNecessary(
+            from: viewController,
+            confirmationText: SafetyNumberStrings.confirmSendButton,
+            untrustedThreshold: Date(),
+        )
+        guard identityIsConfirmed else { return false }
+        _ = ThreadUtil.addThreadToProfileWhitelistIfEmptyOrPendingRequestAndSetDefaultTimerWithSneakyTransaction(thread)
+        ThreadUtil.enqueueMessage(
+            body: messageBody,
+            thread: thread,
+            persistenceCompletionHandler: {
+                AssertIsOnMainThread()
+                self.loadCoordinator.enqueueReload()
+            },
+        )
+        messageWasSent()
+        return true
+    }
+
     /// Tellomi（tellomi/tellomi#1519 M-4）：这个会话从 `date` 起排进去过定时消息没有。
     func tellomiHasScheduledMessages(since date: Date) -> Bool {
         let threadUniqueId = thread.uniqueId
@@ -318,6 +375,49 @@ enum TellomiMutedVideoSending {
 /// 引用只挂第一条：会话页每发出一条就清掉引用草稿（上游 `messageWasSent`）。
 /// 时间戳不重复、落库顺序与勾的顺序一致：上游 `MessageTimestampGenerator` 连发时逐个 +1，`ThreadUtil.enqueueSendQueue` 串行。
 enum TellomiPhotoPickerSending {
+
+    /// #1714（ADR-0079 §4.4）：有计时时要发的一条条：说明文字，或一张媒体（带不带说明）。
+    enum Part {
+        case text(MessageBody)
+        case media(ApprovedAttachments, MessageBody?)
+    }
+
+    /// 有计时的（含一次性查看）整批一张一条（照 Telegram 两端，iOS `TGMediaAssetsController`、安卓 `SendMessagesHelper`）：
+    /// 计时的发成一次性查看、带自己的秒数，不带遮罩、不带实况、不带说明（ADR-0079 §4.4 第 5、7 条）；没计时的照常，
+    /// 说明挂在没计时的最后一张上；全都计时时说明是最前面单独一条文字。
+    static func timedParts(
+        _ attachments: [PreviewableAttachment],
+        choices: [TellomiViewOnceChoice?],
+        imageQuality: ImageQuality,
+        messageBody: MessageBody?,
+    ) -> [Part] {
+        let lastUntimed = choices.indices.last { choices[$0] == nil && $0 < attachments.count }
+        var parts = [Part]()
+        if lastUntimed == nil, let messageBody, !messageBody.text.ows_stripped().isEmpty {
+            parts.append(.text(messageBody))
+        }
+        for (index, attachment) in attachments.enumerated() {
+            if let choice = choices.indices.contains(index) ? choices[index] : nil {
+                attachment.rawValue.tellomiViewOnceSeconds = choice.seconds
+                attachment.rawValue.isTellomiSpoiler = false
+                attachment.rawValue.tellomiLivePhotoVideo = nil
+                parts.append(.media(ApprovedAttachments(viewOnceAttachment: attachment, imageQuality: imageQuality), nil))
+            } else {
+                attachment.rawValue.tellomiViewOnceSeconds = nil
+                parts.append(.media(ApprovedAttachments(nonViewOnceAttachments: [attachment], imageQuality: imageQuality), index == lastUntimed ? messageBody : nil))
+            }
+        }
+        return parts
+    }
+
+    /// 按先后发；上一条没发出去就停。
+    @MainActor
+    static func send(_ parts: [Part], send: (Part) async -> Bool) async {
+        for part in parts {
+            guard await send(part) else { return }
+        }
+    }
+
     @MainActor
     static func sendSeparately(
         _ approvedAttachments: ApprovedAttachments,

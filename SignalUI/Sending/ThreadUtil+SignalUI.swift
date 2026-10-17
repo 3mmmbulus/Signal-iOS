@@ -40,6 +40,8 @@ extension ThreadUtil {
                 tellomiMedia = TellomiOutgoingMedia(
                     spoilers: attachmentsForSending.map(\.isTellomiSpoiler),
                     livePhotoVideos: attachmentsForSending.map(Self.tellomiStageLivePhotoVideo(_:)),
+                    // ADR-0079：一次性查看的消息只有一个附件，它带着秒数。
+                    viewOnceSeconds: attachments.isViewOnce ? attachmentsForSending.first?.tellomiViewOnceSeconds : nil,
                 )
                 let quotedReplyDraft = try await quotedReplyDraft.mapAsync {
                     try await DependenciesBridge.shared.quotedReplyManager.prepareDraftForSending($0)

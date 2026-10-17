@@ -10561,6 +10561,12 @@
 /* Long-press send menu item and sheet title in Saved Messages (note to self): choose a time to send this note to yourself, as a reminder. */
 "TELLOMI_SCHEDULE_SET_REMINDER" = "Set a Reminder";
 
+/* Accessibility label of the countdown ring on a timed view-once photo or video. Embeds {{ number of seconds it stays open }}. */
+"TELLOMI_VIEW_ONCE_COUNTDOWN_FORMAT" = "پس از %@ ثانیه بسته می‌شود";
+
+/* How long a timed view-once photo or video stays open, next to its label in the message bubble, e.g. '3 s'. Embeds {{ number of seconds }}. */
+"TELLOMI_VIEW_ONCE_SECONDS_SHORT_FORMAT" = "%@ ث";
+
 /* Option in selected text edit menu to make text bold */
 "TEXT_MENU_BOLD" = "برجسته";
 
@@ -11206,6 +11212,17 @@
 "IMAGE_PICKER_TELLOMI_SEND_HIGH_QUALITY" = "ارسال با کیفیت بالا";
 "IMAGE_PICKER_TELLOMI_SEND_SEPARATELY" = "ارسال جداگانه";
 "IMAGE_PICKER_TELLOMI_SEND_STANDARD_QUALITY" = "ارسال با کیفیت استاندارد";
+"IMAGE_PICKER_TELLOMI_TIMER_BUTTON" = "زمان‌سنج خودتخریبی";
+"IMAGE_PICKER_TELLOMI_TIMER_DO_NOT_DELETE" = "حذف نشود";
+"IMAGE_PICKER_TELLOMI_TIMER_MENU_TITLE" = "انتخاب کنید رسانه پس از باز شدن چه مدت نگه داشته شود.";
+"IMAGE_PICKER_TELLOMI_TIMER_SECONDS_FORMAT" = "%@ ثانیه";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_KEEP" = "عکس در گفتگو می‌ماند.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_SECONDS_FORMAT" = "عکس %@ ثانیه پس از باز شدن حذف می‌شود.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_PHOTO_VIEW_ONCE" = "عکس برای یک‌بار مشاهده تنظیم شد.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_KEEP" = "ویدیو در گفتگو می‌ماند.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_SECONDS_FORMAT" = "ویدیو %@ ثانیه پس از باز شدن حذف می‌شود.";
+"IMAGE_PICKER_TELLOMI_TIMER_TOAST_VIDEO_VIEW_ONCE" = "ویدیو برای یک‌بار مشاهده تنظیم شد.";
+"IMAGE_PICKER_TELLOMI_TIMER_VIEW_ONCE" = "یک‌بار مشاهده";
 "IMAGE_PICKER_TELLOMI_UNDO" = "واگرد";
 "IMAGE_PICKER_TELLOMI_VIDEO_FORMAT" = "ویدیو، %@";
 "LINK_DEVICE_INVALID_CODE_TELLOMI_EXPIRED_OR_FOREIGN_BODY" = "این کد QR منقضی شده یا کد Tellomi نیست. کد QR فعلی را که همین حالا در Tellomi روی رایانه‌تان نمایش داده می‌شود اسکن کنید.";
