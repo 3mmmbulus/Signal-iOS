@@ -438,7 +438,13 @@ final class TellomiLocationPickerViewController: OWSViewController {
     // MARK: - Sending
 
     private func send(place: TellomiPlace) {
-        send(Location(name: place.name, location: CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude), placemark: place.placemark))
+        send(Location(
+            name: place.name,
+            location: CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude),
+            placemark: place.placemark,
+            tellomiCategory: place.category,
+            tellomiAddressLine: place.address,
+        ))
     }
 
     private func send(_ location: Location) {

@@ -259,6 +259,45 @@ final class TellomiLocationBubbleTests: XCTestCase {
         }
     }
 
+    /// 给人看的截图：Tellomi 现在发出去的样子（`TellomiLocationSnapshot`：2:1、气球大头针，地点按类别配色）——收到的地点、
+    /// 发出的普通位置；另存两张原图。拿不到地图（模拟器没网）时用一张灰底图，只看大头针。
+    @MainActor
+    func testShotsOfWhatTellomiSends() async throws {
+        guard ProcessInfo.processInfo.environment["TELLOMI_SHOTS"] == "1" else {
+            throw XCTSkip("只在 TELLOMI_SHOTS=1 时截图")
+        }
+        let coordinate = CLLocationCoordinate2D(latitude: 31.2297, longitude: 121.4560)
+        var snapshots = [Data]()
+        for (index, pin) in [TellomiLocationSnapshot.Pin.place(category: .cafe), .location].enumerated() {
+            let image: UIImage
+            if let real = try? await TellomiLocationSnapshot.generate(coordinate: coordinate, pin: pin) {
+                image = real
+            } else {
+                let gray = UIGraphicsImageRenderer(size: TellomiLocationSnapshot.size).image { context in
+                    UIColor(white: 0.92, alpha: 1).setFill()
+                    context.fill(CGRect(origin: .zero, size: TellomiLocationSnapshot.size))
+                }
+                image = TellomiLocationSnapshot.render(map: gray, tip: TellomiLocationSnapshot.tipPoint, pin: pin)
+            }
+            try save(image, name: "location-snapshot-\(index == 0 ? "place" : "plain").png")
+            snapshots.append(try XCTUnwrap(image.jpegData(compressionQuality: 0.9)))
+        }
+        for dark in [false, true] {
+            let thread = makeThread()
+            let messages = [
+                try await insertLocation(body: Self.tellomiPlaceBody, thread: thread, imageData: snapshots[0]),
+                try await insertLocation(body: Self.signalIOSBody, thread: thread, imageData: snapshots[1], incoming: false),
+            ]
+            var images = [UIImage]()
+            for message in messages {
+                let hosted = try await host(message: message, thread: thread, width: 402, dark: dark)
+                images.append(render(hosted))
+                hosted.tearDown()
+            }
+            try save(stack(images, width: 402, dark: dark), name: "location-bubbles-sent-format-\(dark ? "dark" : "light").png")
+        }
+    }
+
     /// 上游 `Location.generateSnapshot` 的样子：256 pt 见方、跨度 300 m、系统大头针（尖在坐标上）。拿不到地图时画一张格子图。
     @MainActor
     private static func upstreamStyleSnapshot(latitude: Double, longitude: Double) async -> Data {
@@ -467,7 +506,7 @@ final class TellomiLocationBubbleTests: XCTestCase {
         for attempt in 0..<30 {
             try await Task.sleep(nanoseconds: 150_000_000)
             window.layoutIfNeeded()
-            if attempt >= 7, Self.find(CVImageView.self, in: cellView).map({ $0.image != nil }) ?? true {
+            if attempt >= 7, let album = Self.find(CVMediaAlbumView.self, in: cellView), Self.hasImage(in: album) {
                 break
             }
         }
@@ -515,6 +554,13 @@ final class TellomiLocationBubbleTests: XCTestCase {
             }
         }
         return nil
+    }
+
+    private static func hasImage(in view: UIView) -> Bool {
+        if let imageView = view as? UIImageView, imageView.image != nil {
+            return true
+        }
+        return view.subviews.contains { hasImage(in: $0) }
     }
 
     /// The footer (time / status): `CVComponentFooter`'s outer stack.

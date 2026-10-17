@@ -383,6 +383,12 @@ class LocationSearchResults: UITableViewController {
 public class Location: NSObject {
     public let name: String?
 
+    /// Tellomi（spec L-11）：选的地点的类别，决定发出去的地图上大头针的颜色和图标。
+    public let tellomiCategory: MKPointOfInterestCategory?
+
+    /// Tellomi（spec L-11）：选的地点的一行地址（位置页列表里的那行）；没有时从地标拼。
+    public let tellomiAddressLine: String?
+
     // difference from placemark location is that if location was reverse geocoded,
     // then location point to user selected location
     public let location: CLLocation
@@ -413,77 +419,58 @@ public class Location: NSObject {
         case assertion
     }
 
-    @MainActor
-    private func generateSnapshot() async throws -> UIImage {
-        let options = MKMapSnapshotter.Options()
-
-        // this is the plus/minus meter range from the given coordinate that we'd
-        // like to capture in our map snapshot.
-        let metersOffset: CLLocationDistance = 300
-
-        options.region = MKCoordinateRegion(
-            center: self.coordinate,
-            latitudinalMeters: metersOffset,
-            longitudinalMeters: metersOffset,
-        )
-
-        // The output size will be 256 * the device's scale. We don't adjust the
-        // scale directly on the options to ensure a consistent size because it
-        // produces poor results on some devices.
-        options.size = CGSize(square: 256)
-
-        let snapshot = try await MKMapSnapshotter(options: options).start()
-
-        // Draw our location pin on the snapshot
-
-        UIGraphicsBeginImageContextWithOptions(options.size, true, 0)
-        snapshot.image.draw(at: .zero)
-
-        let pinView = MKPinAnnotationView(annotation: nil, reuseIdentifier: nil)
-        pinView.pinTintColor = .Signal.accent
-        let pinImage = pinView.image
-
-        var point = snapshot.point(for: self.coordinate)
-
-        let pinCenterOffset = pinView.centerOffset
-        point.x -= pinView.bounds.size.width / 2
-        point.y -= pinView.bounds.size.height / 2
-        point.x += pinCenterOffset.x
-        point.y += pinCenterOffset.y
-        pinImage?.draw(at: point)
-
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-
-        UIGraphicsEndImageContext()
-
-        guard let image else {
-            throw OWSAssertionError("image unexpectedly nil")
-        }
-
-        return image
-    }
-
-    public init(name: String?, location: CLLocation? = nil, placemark: CLPlacemark) {
+    public init(
+        name: String?,
+        location: CLLocation? = nil,
+        placemark: CLPlacemark,
+        tellomiCategory: MKPointOfInterestCategory? = nil,
+        tellomiAddressLine: String? = nil,
+    ) {
         self.name = name
         self.location = location ?? placemark.location!
         self.placemark = placemark
+        self.tellomiCategory = tellomiCategory
+        self.tellomiAddressLine = tellomiAddressLine
+    }
+
+    /// 地点（有名称）用类别的颜色和图标，普通位置用主题色 + 大头针（Telegram：没有类别的用主题色）。
+    var tellomiSnapshotPin: TellomiLocationSnapshot.Pin {
+        guard tellomiPlaceName != nil, tellomiCategory != nil else {
+            return .location
+        }
+        return .place(category: tellomiCategory)
     }
 
     func prepareAttachment() async throws -> SendableAttachment {
-        let image = try await generateSnapshot()
+        // Tellomi（spec L-11）：上游画 256 pt 见方、系统大头针；改成 2:1 + 气球大头针（`TellomiLocationSnapshot`）。
+        let image = try await TellomiLocationSnapshot.generate(coordinate: coordinate, pin: tellomiSnapshotPin)
         let normalizedImage = try NormalizedImage.forImage(image)
         let previewableAttachment = PreviewableAttachment.imageAttachmentForNormalizedImage(normalizedImage)
         return try await SendableAttachment.forPreviewableAttachment(previewableAttachment, imageQualityLevel: .one)
     }
 
+    /// Tellomi（spec L-11）：名称放进正文时用的一行（去掉换行，免得打乱格式）。
+    var tellomiPlaceName: String? {
+        name?.components(separatedBy: .newlines).joined(separator: " ").trimmingCharacters(in: .whitespaces).nilIfEmpty
+    }
+
     public var messageText: String {
+        // Tellomi（spec L-11）：上游从来不发名称（选了一个地点，对方只看到地址）。选的地点改发
+        // 「名称\n一行地址\n链接」——Signal-Android 带名称的格式，Tellomi 认得出名称，老客户端照样显示这三行、点链接。
+        if let placeName = tellomiPlaceName {
+            let addressLine = (tellomiAddressLine ?? TellomiPlace.singleLineAddress(placemark))?
+                .components(separatedBy: .newlines).joined(separator: " ").trimmingCharacters(in: .whitespaces).nilIfEmpty
+            return [placeName, addressLine, urlString].compactMap { $0 }.joined(separator: "\n")
+        }
+
         // The message body will look something like:
         //
         // Place Name, 123 Street Name
         //
         // https://maps.google.com/maps
 
-        if let address {
+        // Tellomi（spec L-11）：没反查到地址时地标的地址是空的，上游会发出「\n\n链接」，空行去掉。
+        if let address = address?.nilIfEmpty {
             return address + "\n\n" + urlString
         } else {
             return urlString
