@@ -1869,16 +1869,54 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertGreaterThanOrEqual(picker.bottomBarFadingOutCountForTesting, 1, "说明栏的截图在淡出")
     }
 
-    /// 2026-10-17（TestFlight (16)「「+」菜单没有液态玻璃」）：选中那格底下是一块镜片（离胶囊边 3 pt，同 Telegram `AttachmentPanel`），
-    /// 换选中项时镜片弹簧滑过去，不是瞬移。
+    /// 2026-10-17 第二版（owner：换 tab 时从第一格瞬间跳过去、不是真的 Apple 液态玻璃）：iOS 26 起 dock 就是系统的 `UITabBar`
+    /// ——系统自己画浮起的玻璃胶囊和会拉伸的液态镜片（Telegram 在 iOS 26 用私有的 `_UILiquidLensView` 做同一个效果）；
+    /// 选中项由页面换，animated 时交给系统滑过去；已经选中的不再设一遍（不打断点下去时系统正在走的动画）。
+    @MainActor
+    func testDockIsTheSystemTabBarOnIOS26() throws {
+        guard #available(iOS 26, *) else {
+            throw XCTSkip("iOS 26 之前是自绘的 dock")
+        }
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        window.isHidden = false
+        defer { window.isHidden = true }
+        let host = UIView(frame: window.bounds)
+        window.addSubview(host)
+        let dock = TellomiAttachmentDock(items: TellomiAttachmentDockItem.allCases, selectedItem: .gallery)
+        dock.install(in: host)
+        host.layoutIfNeeded()
+        let bar = try XCTUnwrap(dock.systemTabBarForTesting)
+        XCTAssertNil(dock.customDockForTesting)
+        XCTAssertEqual(bar.items?.map(\.title), TellomiAttachmentDockItem.allCases.map(\.title))
+        XCTAssertEqual(dock.visiblySelectedItemForTesting, .gallery)
+        XCTAssertEqual(dock.frame.maxY, host.bounds.maxY, accuracy: 0.5, "贴着底边，安全区由系统 tab 栏自己让")
+        XCTAssertEqual(dock.frame.size.width, host.bounds.size.width, accuracy: 0.5)
+
+        dock.select(.location, animated: true)
+        XCTAssertEqual(dock.selectedItem, .location)
+        XCTAssertEqual(dock.visiblySelectedItemForTesting, .location)
+        let selected = bar.selectedItem
+        dock.select(.location, animated: true)
+        XCTAssertTrue(bar.selectedItem === selected, "已经选中不再设")
+
+        var picked = [TellomiAttachmentDockItem]()
+        dock.onSelect = { picked.append($0) }
+        dock.tapForTesting(.poll)
+        XCTAssertEqual(picked, [.poll])
+        XCTAssertEqual(dock.selectedItem, .poll, "系统点下去已经换了")
+        XCTAssertEqual(dock.selectedItemTintForTesting?.resolvedColor(with: dock.traitCollection), UIColor.Signal.accent.resolvedColor(with: dock.traitCollection))
+    }
+
+    /// 2026-10-17（TestFlight (16)「「+」菜单没有液态玻璃」）：iOS 26 之前的自绘 dock——选中那格底下是一块镜片（离胶囊边 3 pt，
+    /// 同 Telegram `AttachmentPanel`），换选中项时镜片弹簧滑过去，不是瞬移。
     @MainActor
     func testDockLensSitsUnderTheSelectedItemAndSlidesToTheNewOne() throws {
         let (dock, window) = Self.dockInWindow()
         defer { window.isHidden = true }
         let gallery = try XCTUnwrap(dock.buttonFrameForTesting(.gallery))
         XCTAssertEqual(dock.lensFrameForTesting.midX, gallery.midX, accuracy: 0.5)
-        XCTAssertEqual(dock.lensFrameForTesting.size.height, TellomiAttachmentDock.height - 2 * TellomiAttachmentDock.lensInset, accuracy: 0.5)
-        XCTAssertGreaterThanOrEqual(dock.lensFrameForTesting.minX, TellomiAttachmentDock.lensInset - 0.5, "镜片不出胶囊")
+        XCTAssertEqual(dock.lensFrameForTesting.size.height, TellomiCustomAttachmentDock.height - 2 * TellomiCustomAttachmentDock.lensInset, accuracy: 0.5)
+        XCTAssertGreaterThanOrEqual(dock.lensFrameForTesting.minX, TellomiCustomAttachmentDock.lensInset - 0.5, "镜片不出胶囊")
 
         dock.select(.location, animated: true)
         XCTAssertTrue(dock.isLensAnimatingForTesting, "镜片滑过去")
@@ -1888,7 +1926,7 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(dock.selectedItemTintForTesting?.resolvedColor(with: dock.traitCollection), UIColor.Signal.accent.resolvedColor(with: dock.traitCollection))
     }
 
-    /// 按住 dock 左右拖（同 Telegram `TabSelectionRecognizer`）：松手时手指下那一格交给页面；拖过两头算最边上那格；
+    /// 自绘 dock：按住左右拖（同 Telegram `TabSelectionRecognizer`）：松手时手指下那一格交给页面；拖过两头算最边上那格；
     /// 页面真正换页之前镜片回到当前选中的那格。
     @MainActor
     func testDraggingAcrossTheDockSelectsTheItemUnderTheFinger() throws {
@@ -1925,11 +1963,12 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         XCTAssertEqual(dock.alpha, 1, "不动玻璃的 alpha")
     }
 
+    /// iOS 26 之前用的自绘 dock（iOS 26 起是系统 tab 栏，见下面 `testDockIsTheSystemTabBarOnIOS26`）。
     @MainActor
-    private static func dockInWindow() -> (TellomiAttachmentDock, UIWindow) {
+    private static func dockInWindow() -> (TellomiCustomAttachmentDock, UIWindow) {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 120))
         window.isHidden = false
-        let dock = TellomiAttachmentDock(items: TellomiAttachmentDockItem.allCases, selectedItem: .gallery)
+        let dock = TellomiCustomAttachmentDock(items: TellomiAttachmentDockItem.allCases, selectedItem: .gallery)
         dock.frame = CGRect(x: TellomiAttachmentDock.sideMargin, y: 20, width: 402 - 2 * TellomiAttachmentDock.sideMargin, height: TellomiAttachmentDock.height)
         window.addSubview(dock)
         dock.layoutIfNeeded()

@@ -52,7 +52,7 @@ protocol TellomiAttachmentFilesDelegate: AnyObject {
 ///   已不在本机的置灰、点了只提示；长按「选择」进多选（F-8），底栏换成「说明 + 发送」、藏 🔍。
 /// - 搜索（F-10）：藏 dock、展开全屏、搜索框贴底；本机文件名、大小写与全半角不敏感、0.6 秒防抖；分组「我发送的文件」；
 ///   超过 4 条先显示 3 条 +「显示更多」；搜不到写「没有找到」（不照 Telegram 骨架一直闪的缺陷）。
-final class TellomiAttachmentFilesViewController: UIViewController, TellomiAttachmentDockHosting {
+final class TellomiAttachmentFilesViewController: UIViewController, TellomiAttachmentDockClient {
 
     enum Entry: Equatable {
         case gallery
@@ -142,15 +142,26 @@ final class TellomiAttachmentFilesViewController: UIViewController, TellomiAttac
 
     private static let plainCellIdentifier = "plain"
 
-    private lazy var dock: TellomiAttachmentDock? = {
-        guard !dockItems.isEmpty else { return nil }
+    /// 在附件 Sheet 里时用 Sheet 那一条共用的 dock（2026-10-17 第二版）；单独打开时自己建一条。
+    private var dock: TellomiAttachmentDock? { sharedAttachmentDock ?? ownDock }
+
+    private lazy var ownDock: TellomiAttachmentDock? = {
+        guard sharedAttachmentDock == nil, !dockItems.isEmpty else { return nil }
         let dock = TellomiAttachmentDock(items: dockItems, selectedItem: .file)
         dock.onSelect = { [weak self] item in self?.didSelectDockItem(item) }
         return dock
     }()
 
-    /// 附件 Sheet 换页时接手 dock 用（`TellomiAttachmentDockHosting`）。
-    var attachmentDock: TellomiAttachmentDock? { isViewLoaded ? dock : nil }
+    // MARK: TellomiAttachmentDockClient
+
+    var sharedAttachmentDock: TellomiAttachmentDock?
+    var isActiveAttachmentPage = true
+    var attachmentDockItem: TellomiAttachmentDockItem { .file }
+    var wantsAttachmentDock: Bool { !isSelecting && !isSearching }
+
+    func attachmentDockDidSelect(_ item: TellomiAttachmentDockItem) {
+        didSelectDockItem(item)
+    }
 
     private lazy var captionField: UITextField = {
         let field = UITextField()
@@ -290,15 +301,8 @@ final class TellomiAttachmentFilesViewController: UIViewController, TellomiAttac
                 row.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -8),
             ])
         }
-        if let dock {
-            dock.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(dock)
-            NSLayoutConstraint.activate([
-                dock.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: TellomiAttachmentDock.sideMargin),
-                dock.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -TellomiAttachmentDock.sideMargin),
-                dock.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -TellomiAttachmentDock.bottomMargin),
-                dock.heightAnchor.constraint(equalToConstant: TellomiAttachmentDock.height),
-            ])
+        if sharedAttachmentDock == nil, let dock = ownDock {
+            dock.install(in: view)
         }
         updateChrome()
 
@@ -329,7 +333,10 @@ final class TellomiAttachmentFilesViewController: UIViewController, TellomiAttac
 
     private func updateChrome() {
         searchButton.isHidden = !showsSearchButton
-        dock?.isHidden = isSelecting || isSearching
+        // 只有当前页能动 dock（Sheet 里共用的那一条）
+        if isActiveAttachmentPage {
+            dock?.isHidden = !wantsAttachmentDock
+        }
         sendBar.isHidden = !isSelecting
         searchBar.isHidden = !isSearching
         topBar.isHidden = isSearching

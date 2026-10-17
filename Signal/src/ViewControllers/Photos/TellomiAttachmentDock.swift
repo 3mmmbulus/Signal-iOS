@@ -63,7 +63,7 @@ enum TellomiAttachmentDockItem: CaseIterable {
 /// - 换选中项时镜片用弹簧滑过去（`AttachmentPanel.updateLiquidLens`，0.4 s spring）；按住在 dock 上左右拖，镜片跟手、
 ///   松手落在手指下那一格（`AttachmentPanel.onTabSelectionGesture` / `TabSelectionRecognizer`）。
 /// 只读了 Telegram 的源码弄清机制，代码是独立写的（GPLv2 与 AGPLv3 不兼容，`docs/reference/TELEGRAM_SOURCE.md`）。
-final class TellomiAttachmentDock: UIView {
+final class TellomiCustomAttachmentDock: UIView {
 
     static let height: CGFloat = 62
     static let sideMargin: CGFloat = 20
@@ -85,8 +85,6 @@ final class TellomiAttachmentDock: UIView {
     private var dragX: CGFloat?
     /// 拖动中手指下的那一格（字和图标先变成选中色，松手才真正选）。
     private var highlightedItem: TellomiAttachmentDockItem?
-    /// 换页时由 Sheet 接手：镜片先放在上一页 dock 的位置，再滑到这一格。
-    private var lensFrameOverride: CGRect?
 
     init(items: [TellomiAttachmentDockItem], selectedItem: TellomiAttachmentDockItem) {
         self.items = items
@@ -171,11 +169,10 @@ final class TellomiAttachmentDock: UIView {
     func select(_ item: TellomiAttachmentDockItem, animated: Bool) {
         let animated = animated && window != nil
         if animated {
-            // 先把镜片放在它现在该在的地方（换页接手时是上一页的位置），再换选中项、滑过去
+            // 先把镜片放在它现在该在的地方，再换选中项、滑过去
             layoutIfNeeded()
         }
         selectedItem = item
-        lensFrameOverride = nil
         updateColors()
         guard animated else {
             setNeedsLayout()
@@ -184,33 +181,13 @@ final class TellomiAttachmentDock: UIView {
         animateLens { self.layoutLens() }
     }
 
-    /// 镜片此刻在哪（dock 坐标；动画中取屏幕上看到的位置）。
-    var currentLensFrame: CGRect {
-        let frame = lens.layer.presentation()?.frame ?? lens.frame
-        return background.contentView.convert(frame, to: self)
-    }
-
-    /// Sheet 换页时用：镜片先摆在 [frame]（上一页 dock 的 `currentLensFrame`），之后 `select(_:animated:)` 从这里滑走。
-    func placeLens(at frame: CGRect) {
-        lensFrameOverride = frame
-        setNeedsLayout()
-        layoutIfNeeded()
-    }
-
     override func layoutSubviews() {
         super.layoutSubviews()
         layoutLens()
     }
 
     private func layoutLens() {
-        let frame: CGRect
-        if let lensFrameOverride {
-            frame = convert(lensFrameOverride, to: background.contentView)
-        } else if let target = lensTargetFrame() {
-            frame = target
-        } else {
-            return
-        }
+        guard let frame = lensTargetFrame() else { return }
         lens.bounds = CGRect(origin: .zero, size: frame.size)
         lens.center = CGPoint(x: frame.midX, y: frame.midY)
         if #unavailable(iOS 26) {
@@ -366,8 +343,169 @@ final class TellomiAttachmentDock: UIView {
     }
 }
 
+/// 附件 Sheet 底部的 dock（2026-10-17 第二版，owner 在 TestFlight 18 上：「换 tab 时动效是从第一个 tab 瞬间切过去的，不是真实的 iOS 液态玻璃」）。
+///
+/// - **iOS 26 起就是系统的 `UITabBar`**：浮起来的玻璃胶囊、选中项那块会随手指和换选中项拉伸着滑过去的镜片、按住拖动换格，
+///   全是系统自己画的（Apple 的 liquid lens）。Telegram iOS 在 `AttachmentPanel` 里用的就是这个镜片（私有的 `_UILiquidLensView`，
+///   `LiquidLensView.swift` 按类名取）；公开 API 拿到同一个东西的办法是直接用 `UITabBar`。第一版自己用 `UIGlassEffect` 拼的镜片看起来像一块灰片，
+///   也没有系统那种拉伸。
+/// - iOS 26 之前：第一版的自绘 dock（`TellomiCustomAttachmentDock`：模糊胶囊 + 会滑的选中块）。
+///
+/// 选中项由页面 / Sheet 定（`select(_:animated:)`）：点了一格只交给 `onSelect`；系统 tab 栏点下去自己已经换了选中项，
+/// 页面没换页（GIF 收起 Sheet、置灰的格子……）时由 Sheet 换回来。
+/// 摆放用 `install(in:)`：系统 tab 栏贴满宽度、贴着底边（安全区它自己让），自绘的照旧左右各让 20、离安全区底 8、高 62。
+final class TellomiAttachmentDock: UIView, UITabBarDelegate {
+
+    static let height: CGFloat = 62
+    static let sideMargin: CGFloat = 20
+    static let bottomMargin: CGFloat = 8
+    static let lensInset: CGFloat = TellomiCustomAttachmentDock.lensInset
+
+    var onSelect: ((TellomiAttachmentDockItem) -> Void)?
+
+    let items: [TellomiAttachmentDockItem]
+    private(set) var selectedItem: TellomiAttachmentDockItem
+    /// iOS 26 起为 true（除非测试里要自绘的那种）。
+    let usesSystemTabBar: Bool
+    private let tabBar: UITabBar?
+    private let tabBarItems: [UITabBarItem]
+    private let custom: TellomiCustomAttachmentDock?
+
+    init(items: [TellomiAttachmentDockItem], selectedItem: TellomiAttachmentDockItem, prefersSystemTabBar: Bool = true) {
+        self.items = items
+        self.selectedItem = selectedItem
+        var systemAvailable = false
+        if #available(iOS 26, *) {
+            systemAvailable = true
+        }
+        usesSystemTabBar = systemAvailable && prefersSystemTabBar
+        if usesSystemTabBar {
+            let tabBarItems = items.enumerated().map { index, item in
+                UITabBarItem(title: item.title, image: UIImage(imageLiteralResourceName: item.imageName), tag: index)
+            }
+            let bar = UITabBar()
+            bar.items = tabBarItems
+            bar.selectedItem = items.firstIndex(of: selectedItem).map { tabBarItems[$0] }
+            bar.tintColor = .Signal.accent
+            self.tabBar = bar
+            self.tabBarItems = tabBarItems
+            self.custom = nil
+        } else {
+            self.tabBar = nil
+            self.tabBarItems = []
+            self.custom = TellomiCustomAttachmentDock(items: items, selectedItem: selectedItem)
+        }
+        super.init(frame: .zero)
+        if let tabBar {
+            tabBar.delegate = self
+            addSubview(tabBar)
+            tabBar.autoPinEdgesToSuperviewEdges()
+        } else if let custom {
+            custom.onSelect = { [weak self] item in self?.onSelect?(item) }
+            addSubview(custom)
+            custom.autoPinEdgesToSuperviewEdges()
+        }
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    /// 放进 [host] 的底部（Sheet 或单独打开的页）。
+    func install(in host: UIView) {
+        translatesAutoresizingMaskIntoConstraints = false
+        host.addSubview(self)
+        if usesSystemTabBar {
+            // 系统 tab 栏自己按安全区摆胶囊：贴满宽度、贴着底边，高度用它自己的
+            NSLayoutConstraint.activate([
+                leadingAnchor.constraint(equalTo: host.leadingAnchor),
+                trailingAnchor.constraint(equalTo: host.trailingAnchor),
+                bottomAnchor.constraint(equalTo: host.bottomAnchor),
+            ])
+        } else {
+            NSLayoutConstraint.activate([
+                leadingAnchor.constraint(equalTo: host.safeAreaLayoutGuide.leadingAnchor, constant: Self.sideMargin),
+                trailingAnchor.constraint(equalTo: host.safeAreaLayoutGuide.trailingAnchor, constant: -Self.sideMargin),
+                bottomAnchor.constraint(equalTo: host.safeAreaLayoutGuide.bottomAnchor, constant: -Self.bottomMargin),
+                heightAnchor.constraint(equalToConstant: Self.height),
+            ])
+        }
+    }
+
+    func select(_ item: TellomiAttachmentDockItem) {
+        select(item, animated: false)
+    }
+
+    /// 换选中项；系统 tab 栏 animated 时由系统滑过去（同点那一格）。已经选中就什么都不做——不打断点下去时系统正在走的动画。
+    func select(_ item: TellomiAttachmentDockItem, animated: Bool) {
+        selectedItem = item
+        if let tabBar {
+            guard let index = items.firstIndex(of: item) else { return }
+            let target = tabBarItems[index]
+            guard tabBar.selectedItem !== target else { return }
+            if animated, window != nil {
+                tabBar.selectedItem = target
+            } else {
+                UIView.performWithoutAnimation {
+                    tabBar.selectedItem = target
+                    tabBar.layoutIfNeeded()
+                }
+            }
+        } else {
+            custom?.select(item, animated: animated)
+        }
+    }
+
+    // MARK: - 出现（G-6：全部取消选图时 dock 回来）
+
+    /// 自绘的：玻璃「凝结」出来（不动 alpha）。系统 tab 栏没有可动的 effect，只靠调用方的缩放。
+    func prepareToAppear() {
+        custom?.prepareToAppear()
+    }
+
+    func finishAppearing() {
+        custom?.finishAppearing()
+    }
+
+    // MARK: - UITabBarDelegate
+
+    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        guard let index = tabBarItems.firstIndex(where: { $0 === item }) else { return }
+        // 系统已经把选中项换过去了（含重复点当前格）：记下来，交给页面 / Sheet 决定换不换页
+        selectedItem = items[index]
+        onSelect?(items[index])
+    }
+}
+
 #if TESTABLE_BUILD
 extension TellomiAttachmentDock {
+    /// 同用户点了一格：系统 tab 栏先自己换选中项，再告诉代理。
+    func tapForTesting(_ item: TellomiAttachmentDockItem) {
+        if let tabBar, let index = items.firstIndex(of: item) {
+            tabBar.selectedItem = tabBarItems[index]
+            self.tabBar(tabBar, didSelect: tabBarItems[index])
+        } else {
+            custom?.tapForTesting(item)
+        }
+    }
+
+    var systemTabBarForTesting: UITabBar? { tabBar }
+    var customDockForTesting: TellomiCustomAttachmentDock? { custom }
+
+    /// 系统 tab 栏上显示为选中的那一格。
+    var visiblySelectedItemForTesting: TellomiAttachmentDockItem? {
+        if let tabBar {
+            return tabBar.selectedItem.flatMap { selected in tabBarItems.firstIndex(where: { $0 === selected }) }.map { items[$0] }
+        }
+        return custom?.selectedItem
+    }
+
+    var selectedItemTintForTesting: UIColor? { custom?.selectedItemTintForTesting ?? tabBar?.tintColor }
+}
+#endif
+
+#if TESTABLE_BUILD
+extension TellomiCustomAttachmentDock {
     func tapForTesting(_ item: TellomiAttachmentDockItem) {
         buttons[item]?.sendActions(for: .primaryActionTriggered)
     }

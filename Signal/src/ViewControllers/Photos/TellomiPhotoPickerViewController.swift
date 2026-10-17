@@ -65,7 +65,7 @@ extension TellomiPhotoPickerDelegate {
 /// Telegram 的实现只读机制、一行都没搬（GPLv2）。
 final class TellomiPhotoPickerViewController: OWSViewController, UICollectionViewDataSource, UICollectionViewDelegate,
     BodyRangesTextViewDelegate, AttachmentApprovalViewControllerDelegate, UIAdaptivePresentationControllerDelegate,
-    TellomiAttachmentDockHosting
+    TellomiAttachmentDockClient
 {
 
     private enum Metrics {
@@ -505,31 +505,41 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     // MARK: - Dock (#1115)
 
     /// 底部 dock：没选照片时在，选了就换成说明 + 发送（同 Telegram：dock 与说明栏占同一个位置）；「只看已选」时也不在。
-    private lazy var dock: TellomiAttachmentDock? = {
-        guard !dockItems.isEmpty else { return nil }
+    /// 在附件 Sheet 里时用 Sheet 那一条共用的（`sharedAttachmentDock`，2026-10-17 第二版）；单独打开时自己建一条。
+    private var dock: TellomiAttachmentDock? { sharedAttachmentDock ?? ownDock }
+
+    private lazy var ownDock: TellomiAttachmentDock? = {
+        guard sharedAttachmentDock == nil, !dockItems.isEmpty else { return nil }
         let dock = TellomiAttachmentDock(items: dockItems, selectedItem: .gallery)
         dock.onSelect = { [weak self] item in self?.didSelectDockItem(item) }
         return dock
     }()
 
+    /// 只有当前页能动 dock（Sheet 里的共用 dock，换页后旧页不许再动它）。
+    private var drivenDock: TellomiAttachmentDock? { isActiveAttachmentPage ? dock : nil }
+
     private func setUpDock() {
-        guard let dock else { return }
-        dock.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(dock)
-        NSLayoutConstraint.activate([
-            dock.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: TellomiAttachmentDock.sideMargin),
-            dock.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -TellomiAttachmentDock.sideMargin),
-            dock.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -TellomiAttachmentDock.bottomMargin),
-            dock.heightAnchor.constraint(equalToConstant: TellomiAttachmentDock.height),
-        ])
+        guard sharedAttachmentDock == nil, let dock = ownDock else { return }
+        dock.install(in: view)
     }
 
     private var isDockVisible: Bool {
-        dock != nil && selectedIds.isEmpty && displayMode == .all
+        dock != nil && wantsAttachmentDock
     }
 
-    /// 附件 Sheet 换页时接手 dock 用（`TellomiAttachmentDockHosting`）。
-    var attachmentDock: TellomiAttachmentDock? { isViewLoaded ? dock : nil }
+    // MARK: TellomiAttachmentDockClient
+
+    var sharedAttachmentDock: TellomiAttachmentDock?
+    var isActiveAttachmentPage = true
+    var attachmentDockItem: TellomiAttachmentDockItem { .gallery }
+    var wantsAttachmentDock: Bool { selectedIds.isEmpty && displayMode == .all }
+
+    func attachmentDockDidSelect(_ item: TellomiAttachmentDockItem) {
+        didSelectDockItem(item)
+    }
+
+    /// 附件 Sheet 的 dock 有哪几格（Sheet 用来建那一条共用的）。
+    var attachmentDockItems: [TellomiAttachmentDockItem] { dockItems }
 
     private func didSelectDockItem(_ item: TellomiAttachmentDockItem) {
         guard item != .gallery else {
@@ -897,7 +907,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             bar.transform = .identity
             snapshot.frame = bar.frame
             snapshot.isUserInteractionEnabled = false
-            view.insertSubview(snapshot, aboveSubview: bar)
+            // dock 可能是附件 Sheet 那一条共用的（不在这一页的 view 里）：截图放在它旁边
+            (bar.superview ?? view).insertSubview(snapshot, aboveSubview: bar)
             bottomBarSnapshots.append(snapshot)
             UIView.animate(withDuration: fadeOutDuration, delay: 0, options: .curveEaseInOut) {
                 snapshot.alpha = 0
@@ -933,15 +944,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let showPill = hasSelection && displayMode == .all
         let pillAppears = showPill && countPill.isHidden
         // G-6：dock 与说明栏换位前记下谁在，要消失的那一个先截图（隐藏以后就截不到了）。
-        let dockWasShown = dock.map { !$0.isHidden } ?? false
+        let dockWasShown = drivenDock.map { !$0.isHidden } ?? false
         let sendBarWasShown = !sendBar.isHidden
-        let dockSnapshot = animated && dockWasShown && !isDockVisible ? dock?.snapshotView(afterScreenUpdates: false) : nil
+        let dockSnapshot = animated && dockWasShown && !isDockVisible ? drivenDock?.snapshotView(afterScreenUpdates: false) : nil
         let sendBarSnapshot = animated && sendBarWasShown && !hasSelection ? sendBar.snapshotView(afterScreenUpdates: false) : nil
         let changes = {
             self.countPill.isHidden = !showPill
             self.moreButton.isHidden = !showMore
             self.sendBar.isHidden = !hasSelection
-            self.dock?.isHidden = !self.isDockVisible
+            self.drivenDock?.isHidden = !self.isDockVisible
             self.countPill.alpha = showPill ? 1 : 0
             self.countPill.transform = .identity
         }
@@ -957,7 +968,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
         view.layoutIfNeeded()
         if animated {
-            if let dock {
+            if let dock = drivenDock {
                 animateBottomBarSwap(dock, wasShown: dockWasShown, snapshot: dockSnapshot, fadeOutDuration: 0.1, hiddenTransform: CGAffineTransform(scaleX: 0.85, y: 0.85))
             }
             animateBottomBarSwap(sendBar, wasShown: sendBarWasShown, snapshot: sendBarSnapshot, fadeOutDuration: 0.25, hiddenTransform: CGAffineTransform(translationX: 0, y: 44))

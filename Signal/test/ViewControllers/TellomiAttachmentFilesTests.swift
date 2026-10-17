@@ -468,10 +468,11 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         XCTAssertEqual(container.children.count, 1)
     }
 
-    /// 2026-10-17（TestFlight (16)「换页有闪动」）：照 Telegram `AttachmentController.animateSwitchTransition` 换页——新页不透明地放在
-    /// 旧页底下，只有旧页淡出；两页的 dock 换页期间藏起来，由 Sheet 上面一条临时 dock 接手，镜片从「相册」滑到「文件」，滑完换回新页自己的 dock。
+    /// 2026-10-17 第二版（owner 在 TestFlight 18 上：「换 tab 时动效是从第一个 tab 瞬间切过去的」）：dock 是 Sheet 的一条、各页共用
+    /// （照 Telegram iOS：`AttachmentPanel` 在 `AttachmentController` 里）——换页时它一直在原处，不藏、不换一条，选中项由它自己滑过去；
+    /// 换页的内容照 `AttachmentController.animateSwitchTransition`：新页不透明地放在旧页底下，只有旧页淡出。
     @MainActor
-    func testSwitchingPagesKeepsTheDockStillAndSlidesTheLens() async throws {
+    func testSwitchingPagesKeepsTheOneSharedDock() async throws {
         let picker = TellomiPhotoPickerViewController(
             library: EmptyPhotoLibrary(),
             initialMessageBody: nil,
@@ -490,50 +491,58 @@ final class TellomiAttachmentFilesTests: SignalBaseTest {
         window.isHidden = false
         defer { window.isHidden = true }
         container.view.layoutIfNeeded()
-        let pickerDock = try XCTUnwrap(picker.attachmentDock)
-        XCTAssertFalse(pickerDock.isHidden)
+        let dock = try XCTUnwrap(container.dock)
+        XCTAssertTrue(picker.dockForTesting === dock, "选图页用 Sheet 那一条")
+        XCTAssertTrue(dock.superview === container.view)
+        XCTAssertFalse(dock.isHidden)
+        XCTAssertEqual(Self.docks(in: window).count, 1)
+        let frame = dock.frame
 
         container.show(.files, animated: true)
-        let filesDock = try XCTUnwrap(filesPage.attachmentDock)
+        XCTAssertTrue(filesPage.dockForTesting === dock, "「文件」页也用这一条")
+        XCTAssertEqual(Self.docks(in: window).count, 1, "页里没有自己的 dock")
         let subviews = container.view.subviews
         let filesIndex = try XCTUnwrap(subviews.firstIndex(of: filesPage.view))
         let pickerIndex = try XCTUnwrap(subviews.firstIndex(of: picker.view))
+        let dockIndex = try XCTUnwrap(subviews.firstIndex(of: dock))
         XCTAssertLessThan(filesIndex, pickerIndex, "新页在旧页底下")
+        XCTAssertLessThan(pickerIndex, dockIndex, "dock 在两页上面")
         XCTAssertEqual(filesPage.view.alpha, 1, "新页不淡入（里面的玻璃不跟着动 alpha）")
-        let transitionDock = try XCTUnwrap(container.transitionDockForTesting, "换页期间有一条临时 dock")
-        XCTAssertTrue(pickerDock.isHidden)
-        XCTAssertTrue(filesDock.isHidden)
-        XCTAssertEqual(transitionDock.selectedItem, .file)
-        XCTAssertTrue(transitionDock.isLensAnimatingForTesting, "镜片在滑")
-        XCTAssertTrue(transitionDock.superview === window, "临时 dock 在窗口上（Sheet 展开时不跟着动）")
-        XCTAssertEqual(transitionDock.frame, filesDock.convert(filesDock.bounds, to: window), "临时 dock 和新页的 dock 重合")
-        XCTAssertEqual(transitionDock.alpha, 1)
+        XCTAssertFalse(dock.isHidden, "换页时 dock 一直在")
+        XCTAssertEqual(dock.frame, frame, "不挪")
+        XCTAssertEqual(dock.alpha, 1)
+        XCTAssertEqual(dock.selectedItem, .file)
+        XCTAssertEqual(dock.visiblySelectedItemForTesting, .file)
+        XCTAssertFalse(picker.isActiveAttachmentPage, "淡出的旧页不再动 dock")
 
-        try await Task.sleep(nanoseconds: 700_000_000)
-        XCTAssertNil(container.transitionDockForTesting, "滑完拿掉")
-        XCTAssertFalse(filesDock.isHidden, "换回新页自己的 dock")
-        XCTAssertFalse(pickerDock.isHidden, "旧页（相册页会再用）的 dock 恢复")
+        try await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertNil(picker.parent)
         XCTAssertTrue(container.visibleChildForTesting === filesPage)
         XCTAssertEqual(picker.view.alpha, 1)
+        XCTAssertFalse(dock.isHidden)
 
-        // 连着点两格：上一次的临时 dock 立刻交接完，这次接着走，屏幕上始终只有一条临时 dock
-        container.show(.gallery, animated: true)
-        let first = try XCTUnwrap(container.transitionDockForTesting)
+        // 点了一格、页面没换页（这里选图页没有会话页可交）：选中项换回当前页那一格
+        container.show(.gallery, animated: false)
+        dock.tapForTesting(.poll)
+        XCTAssertEqual(dock.selectedItem, .gallery)
+        XCTAssertEqual(dock.visiblySelectedItemForTesting, .gallery)
+
+        // 连着点两格：上一次立刻收尾，这次接着走；点回刚淡出的那一页，上一次的收尾不会把它拿掉
         container.show(.files, animated: true)
-        let second = try XCTUnwrap(container.transitionDockForTesting)
-        XCTAssertNil(first.superview, "上一条拿掉了")
-        XCTAssertFalse(first === second)
-        XCTAssertEqual(window.subviews.filter { $0 is TellomiAttachmentDock }.count, 1)
-        XCTAssertEqual(second.selectedItem, .file)
-        // 点回刚淡出的那一页：上一次的收尾不会把它拿掉
-        try await Task.sleep(nanoseconds: 700_000_000)
+        container.show(.gallery, animated: true)
+        container.show(.files, animated: true)
+        XCTAssertEqual(dock.selectedItem, .file)
+        XCTAssertEqual(Self.docks(in: window).count, 1)
+        try await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertTrue(filesPage.parent === container, "「文件」页还在")
         XCTAssertTrue(filesPage.view.superview === container.view)
         XCTAssertEqual(filesPage.view.alpha, 1)
         XCTAssertNil(picker.parent)
-        XCTAssertFalse(filesDock.isHidden)
-        XCTAssertNil(container.transitionDockForTesting)
+        XCTAssertFalse(dock.isHidden)
+    }
+
+    private static func docks(in view: UIView) -> [TellomiAttachmentDock] {
+        (view as? TellomiAttachmentDock).map { [$0] } ?? view.subviews.flatMap { docks(in: $0) }
     }
 
     // MARK: - Poll page in the sheet (2026-10-16)
