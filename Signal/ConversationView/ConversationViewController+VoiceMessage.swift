@@ -51,7 +51,8 @@ extension ConversationViewController {
     private func startRecordingVoiceMessage(_ inProgressVoiceMessage: VoiceMessageInProgressDraft) {
         AssertIsOnMainThread()
 
-        ImpactHapticFeedback.impactOccurred(style: .light)
+        // Tellomi（交互审计 A-12；动效标准第五节「长按触发」→ `.medium`，同 Android `LONG_PRESS`）
+        ImpactHapticFeedback.impactOccurred(style: .medium)
 
         do {
             try inProgressVoiceMessage.startRecording()
@@ -67,7 +68,8 @@ extension ConversationViewController {
         viewState.inProgressVoiceMessage?.stopRecordingAsync()
         viewState.inProgressVoiceMessage = nil
 
-        NotificationHapticFeedback().notificationOccurred(.warning)
+        // Tellomi（交互审计 A-12）：不再在这里统一给警告震动。左滑过线由输入框给「越过阈值」，太短在下面给「错误」，
+        // 点「取消」按钮、没给麦克风权限都不震（同 Android）。
 
         clearVoiceMessageDraft()
         inputToolbar?.hideVoiceMemoUI(animated: true)
@@ -85,12 +87,14 @@ extension ConversationViewController {
         inProgressVoiceMessage.stopRecording()
 
         guard let duration = inProgressVoiceMessage.duration, duration >= Self.minimumVoiceMessageDuration else {
+            // Tellomi（交互审计 A-12；动效标准第五节「错误：录音太短」→ `.error`，同 Android `REJECT`）
+            NotificationHapticFeedback().notificationOccurred(.error)
             inputToolbar?.showVoiceMemoTooltip()
             cancelRecordingVoiceMessage()
             return
         }
 
-        ImpactHapticFeedback.impactOccurred(style: .medium)
+        // Tellomi（交互审计 A-12）：发出、存草稿不给触感（动效标准第五节「发送成功不给」，同 Android）。
 
         configureScrollDownButtons()
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		268662CFEE5FD8F61E2F2EF1 /* TellomiRecordingGestureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */; };
+		6AF504DEE7EECC0E2419C527 /* TellomiRecordingGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26880CAAD6CF4EDB3DE978EE /* TellomiRecordingGesture.swift */; };
 		B29BF826B80B6799F176675E /* TellomiTransferHandoffCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5945B497963E1B64677714 /* TellomiTransferHandoffCellTests.swift */; };
 		B7F3ECCC901AAF47CD1E7619 /* TellomiTransferHandoffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FBB634B31F60E4EA1E0F05 /* TellomiTransferHandoffTests.swift */; };
 		E5ADD3E1FE8E1BA2D8BA1218 /* TellomiTransferHandoff.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA94FB62304BE8EB2D16FD9C /* TellomiTransferHandoff.swift */; };
@@ -4542,6 +4544,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRecordingGestureTests.swift; sourceTree = "<group>"; };
+		26880CAAD6CF4EDB3DE978EE /* TellomiRecordingGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRecordingGesture.swift; sourceTree = "<group>"; };
 		2A5945B497963E1B64677714 /* TellomiTransferHandoffCellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTransferHandoffCellTests.swift; sourceTree = "<group>"; };
 		64FBB634B31F60E4EA1E0F05 /* TellomiTransferHandoffTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTransferHandoffTests.swift; sourceTree = "<group>"; };
 		CA94FB62304BE8EB2D16FD9C /* TellomiTransferHandoff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTransferHandoff.swift; sourceTree = "<group>"; };
@@ -10375,6 +10379,7 @@
 				8B0570935FC9CB5F688847FD /* TellomiReactionAnimationsTest.swift */,
 				40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */,
 				0D92436364DDFB0C8BBCB0E5 /* TellomiSendFlightTests.swift */,
+				CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */,
 				2A5945B497963E1B64677714 /* TellomiTransferHandoffCellTests.swift */,
 				64FBB634B31F60E4EA1E0F05 /* TellomiTransferHandoffTests.swift */,
 				EA3E5CDCE15B919C45D88EC3 /* MediaInteractiveDismissTest.swift */,
@@ -10673,6 +10678,7 @@
 			children = (
 				503AECC429B2A4D300642F66 /* VoiceMessageInProgressDraft.swift */,
 				B1F8FEC9116A64477AA3CEF1 /* TellomiVoiceLevel.swift */,
+				26880CAAD6CF4EDB3DE978EE /* TellomiRecordingGesture.swift */,
 				34A955A1271B510500B05242 /* VoiceMessageInterruptedDraft.swift */,
 				503AECC729B2AEFA00642F66 /* VoiceMessageSendableDraft.swift */,
 			);
@@ -20221,6 +20227,7 @@
 				5E59F78A245F3D22F2E0E9A5 /* TellomiViewOnceCountdownView.swift in Sources */,
 				503AECC529B2A4D300642F66 /* VoiceMessageInProgressDraft.swift in Sources */,
 				58434A95C1B6B76DC3012C46 /* TellomiVoiceLevel.swift in Sources */,
+				6AF504DEE7EECC0E2419C527 /* TellomiRecordingGesture.swift in Sources */,
 				503AECC629B2AD6700642F66 /* VoiceMessageInterruptedDraft.swift in Sources */,
 				503AECC829B2AEFA00642F66 /* VoiceMessageSendableDraft.swift in Sources */,
 				88928A7526418904009C9B30 /* VoiceMessageTooltip.swift in Sources */,
@@ -20413,6 +20420,7 @@
 				3A8881D28A31DD78A26C36D0 /* TellomiReactionAnimationsTest.swift in Sources */,
 				7DE3BB5B930D647AAE1D924A /* TellomiConversationItemAnimationTest.swift in Sources */,
 				087034E7417F96B59CA68F50 /* TellomiSendFlightTests.swift in Sources */,
+				268662CFEE5FD8F61E2F2EF1 /* TellomiRecordingGestureTests.swift in Sources */,
 				B29BF826B80B6799F176675E /* TellomiTransferHandoffCellTests.swift in Sources */,
 				B7F3ECCC901AAF47CD1E7619 /* TellomiTransferHandoffTests.swift in Sources */,
 				9CDBC349A9CF01A4B5252E7D /* MediaInteractiveDismissTest.swift in Sources */,

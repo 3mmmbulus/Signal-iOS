@@ -2842,7 +2842,9 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         }
         tellomiVoiceLevelHalo.levelSource = tellomiVoiceLevelSource
         tellomiVoiceLevelHalo.start(following: voiceMemoRedRecordingCircle)
-        UIView.animate(withDuration: 0.2, delay: 1) {
+        // Tellomi（交互审计 A-12）：锁定提示按下就出来，不再等 1 秒（Telegram 两端都是一开始录就画出锁：iOS
+        // `TGModernConversationInputMicButton.animateIn`，Android `ChatActivityEnterView` 的录音圆）。
+        UIView.animate(withDuration: 0.2) {
             self.voiceMemoLockView.alpha = 1
             self.voiceMemoLockView.transform = .identity
         }
@@ -2958,7 +2960,8 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
     }
 
     func lockVoiceMemoUI() {
-        ImpactHapticFeedback.impactOccurred(style: .medium)
+        // Tellomi（交互审计 A-12；动效标准第五节「需要确认的完成：录音锁定」→ `.impact(.light)`，同 Android `CONFIRM`）
+        ImpactHapticFeedback.impactOccurred(style: .light, in: self)
 
         let cancelButton = UIButton(
             configuration: .borderless(),
@@ -3009,7 +3012,8 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
 
         // Fade out the voice message views as the cancel gesture
         // proceeds as feedback.
-        voiceMemoCancelLabel.alpha = CGFloat.clamp01(1 - cancelAlpha)
+        // Tellomi（交互审计 A-12）：淡到 0.3 为止，同 Android（`TellomiRecordingGesture`）
+        voiceMemoCancelLabel.alpha = TellomiRecordingGesture.hintAlpha(cancelProgress: cancelAlpha)
     }
 
     private func updateVoiceMemoDurationLabel() {
@@ -3137,6 +3141,9 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
                 let cancelAlpha = xOffset / cancelOffsetPoints
                 let isCancelled = cancelAlpha >= 1
                 guard !isCancelled else {
+                    // Tellomi（交互审计 A-12；动效标准第五节「越过手势阈值」→ `.impact(.light)`，同 Android
+                    // `GESTURE_THRESHOLD_ACTIVATE`）。取消本身不再另给警告震动（会话页 `cancelRecordingVoiceMessage`）。
+                    ImpactHapticFeedback.impactOccurred(style: .light, in: self)
                     voiceMemoRecordingState = .idle
                     inputToolbarDelegate?.voiceMemoGestureDidCancel()
                     return
@@ -3144,13 +3151,19 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
 
                 setVoiceMemoUICancelAlpha(cancelAlpha)
 
+                let translation: CGAffineTransform
                 if xOffset > yOffset {
-                    voiceMemoRedRecordingCircle.transform = CGAffineTransform(translationX: min(-xOffset, 0), y: 0)
+                    translation = CGAffineTransform(translationX: min(-xOffset, 0), y: 0)
                 } else if yOffset > xOffset {
-                    voiceMemoRedRecordingCircle.transform = CGAffineTransform(translationX: 0, y: min(-yOffset, 0))
+                    translation = CGAffineTransform(translationX: 0, y: min(-yOffset, 0))
                 } else {
-                    voiceMemoRedRecordingCircle.transform = .identity
+                    translation = .identity
                 }
+                // Tellomi（交互审计 A-12）：离取消线越近，录音圆越淡、越小（到线上是 0.5 / 0.8，同 Android）；
+                // 音量光晕跟着它的 transform 和透明度走。
+                let scale = TellomiRecordingGesture.buttonScale(cancelProgress: cancelAlpha)
+                voiceMemoRedRecordingCircle.transform = translation.scaledBy(x: scale, y: scale)
+                voiceMemoRedRecordingCircle.alpha = TellomiRecordingGesture.buttonAlpha(cancelProgress: cancelAlpha)
             }
 
         case .ended:
