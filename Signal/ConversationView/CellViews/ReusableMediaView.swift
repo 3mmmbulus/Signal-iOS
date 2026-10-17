@@ -86,7 +86,27 @@ public class ReusableMediaView {
 
     // MARK: - Ownership
 
-    public weak var owner: NSObject?
+    public weak var owner: NSObject? {
+        didSet {
+            if owner !== oldValue {
+                tellomiOnLoadFinished = nil
+            }
+        }
+    }
+
+    // MARK: - Tellomi
+
+    /// Tellomi (interaction audit A-13): the media is up (or its load gave up); the owner can drop the placeholder it
+    /// laid over it (`TellomiTransferHandoff`). Called once, then cleared; cleared when the owner changes.
+    var tellomiOnLoadFinished: (() -> Void)?
+
+    var tellomiIsLoaded: Bool { mediaViewAdapter.isLoaded }
+
+    private func tellomiLoadFinished() {
+        let onLoadFinished = tellomiOnLoadFinished
+        tellomiOnLoadFinished = nil
+        onLoadFinished?()
+    }
 
     // MARK: - Initializers
 
@@ -156,12 +176,14 @@ public class ReusableMediaView {
             }
             guard let media = possibleMedia else {
                 self.loadState = .failed
+                self.tellomiLoadFinished()
                 return
             }
 
             self.mediaViewAdapter.applyMedia(media)
 
             self.loadState = .loaded
+            self.tellomiLoadFinished()
         }
 
         guard loadState == .loading else {

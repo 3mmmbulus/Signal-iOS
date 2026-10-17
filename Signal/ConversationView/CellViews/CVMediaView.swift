@@ -158,6 +158,63 @@ class CVMediaView: ManualLayoutViewWithLayer {
         }
     }
 
+    // MARK: - Tellomi transfer handoff
+
+    /// Tellomi (interaction audit A-13): when this attachment finishes transferring, the cell is rebuilt and this view
+    /// is replaced by one without the ring. Hand our last look (ring, placeholder) to that view so the ring shrinks
+    /// away and the image fades in over the placeholder, as both Telegram apps do (`TellomiTransferHandoff`).
+    override func willMove(toWindow newWindow: UIWindow?) {
+        super.willMove(toWindow: newWindow)
+        if newWindow == nil, window != nil {
+            tellomiOfferTransferHandoff()
+        }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil {
+            tellomiAskForTransferHandoff()
+        }
+    }
+
+    private var tellomiTransferHandoffKey: String {
+        TellomiTransferHandoff.key(interactionUniqueId: interaction.uniqueId, attachmentId: attachment.attachmentID)
+    }
+
+    private func tellomiOfferTransferHandoff() {
+        guard
+            let progressView,
+            progressView.superview === self,
+            !progressView.isHidden,
+            progressView.alpha > 0,
+            progressView.bounds.size.isNonEmpty
+        else {
+            return
+        }
+        // A snapshot keeps the blur behind the ring; drawing the layer is the fallback (it can't draw the blur).
+        let ring = progressView.snapshotView(afterScreenUpdates: false) ?? UIImageView(
+            image: UIGraphicsImageRenderer(bounds: progressView.bounds).image { context in
+                progressView.layer.render(in: context.cgContext)
+            },
+        )
+        // Still ours (on upload, the finished view has already taken the same image view over)
+        var placeholder: UIImage?
+        if let reusableMediaView, reusableMediaView.owner === self, let imageView = reusableMediaView.mediaView as? UIImageView {
+            placeholder = imageView.image
+        }
+        TellomiTransferHandoff.shared.transferringViewWillLeave(
+            key: tellomiTransferHandoffKey,
+            look: TellomiTransferHandoff.Look(ring: ring, ringSize: progressView.bounds.size, placeholder: placeholder),
+        )
+    }
+
+    private func tellomiAskForTransferHandoff() {
+        guard progressView == nil, case .stream(_, isUploading: false, _) = attachment else {
+            return
+        }
+        TellomiTransferHandoff.shared.finishedViewDidEnter(key: tellomiTransferHandoffKey, receiver: self)
+    }
+
     func loadMedia() {
         AssertIsOnMainThread()
         defer {
@@ -445,5 +502,49 @@ class CVMediaView: ManualLayoutViewWithLayer {
         iconView.isUserInteractionEnabled = false
         circleView.addSubviewToCenterOnSuperview(iconView, size: image.size)
 
+    }
+}
+
+// MARK: - Tellomi transfer handoff
+
+extension CVMediaView: TellomiTransferHandoffReceiver {
+
+    var tellomiCanReceiveTransferHandoff: Bool {
+        window != nil && progressView == nil
+    }
+
+    func tellomiReceiveTransferHandoff(_ look: TellomiTransferHandoff.Look) {
+        // The image first, so the ring shrinks away on top of it.
+        if
+            let reusableMediaView,
+            reusableMediaView.owner === self,
+            !isTellomiSpoilerCovering,
+            !(reusableMediaView.mediaView is LoopingVideoView),
+            let placeholder = look.placeholder ?? tellomiCachedBlurHashImage(unlessLoaded: reusableMediaView)
+        {
+            let placeholderView = TellomiTransferHandoff.coverWithPlaceholder(placeholder, above: reusableMediaView.mediaView, in: self)
+            if reusableMediaView.tellomiIsLoaded {
+                TellomiTransferHandoff.fadeOutPlaceholder(placeholderView)
+            } else {
+                reusableMediaView.tellomiOnLoadFinished = { [weak placeholderView] in
+                    guard let placeholderView else { return }
+                    TellomiTransferHandoff.fadeOutPlaceholder(placeholderView)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + TellomiTransferHandoff.placeholderTimeout) { [weak placeholderView] in
+                    guard let placeholderView else { return }
+                    TellomiTransferHandoff.fadeOutPlaceholder(placeholderView)
+                }
+            }
+        }
+        TellomiTransferHandoff.playRingExit(look.ring, size: look.ringSize, in: self)
+    }
+
+    /// The old view's image was already unloaded: the blurhash it showed is still in the media cache. Only while our own
+    /// image isn't up yet (once it is, laying the blurhash over it would flash).
+    private func tellomiCachedBlurHashImage(unlessLoaded reusableMediaView: ReusableMediaView) -> UIImage? {
+        guard !reusableMediaView.tellomiIsLoaded, let blurHash = attachment.attachment.attachment.blurHash?.nilIfEmpty else {
+            return nil
+        }
+        return mediaCache.getMedia(.blurHash(blurHash), isAnimated: false) as? UIImage
     }
 }
