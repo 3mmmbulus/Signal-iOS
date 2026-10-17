@@ -564,10 +564,9 @@ open class InteractiveSheetViewController: OWSViewController {
                 heightDidChange(to: .height(newHeight))
             }
 
-            // If the height is decreasing, adjust the relevant view's proportionally
-            if newHeight < startingHeight {
-                backdropView?.alpha = 1 - (startingHeight - newVisibleHeight) / startingHeight
-            }
+            // Tellomi（交互审计 A-29 / Q-07）：拖着的时候遮罩不变，松手关掉时才淡出（下面 `.ended` 里的 `animate`）。
+            // 照 Telegram 两端：iOS `SheetComponent` 的 `dimView` 只在出现、消失时各淡 0.3 s；Android `BottomSheet` 拖动中不改遮罩，
+            // 关掉时才 1 → 0。上游这里按往下拖了多少把遮罩跟着变淡。（Android 同改，Signal-Android 的 `TellomiSheetScrim`。）
 
             // Update our offset/height to reflect the new position
             sheetCurrentOffsetConstraint?.constant = newOffset
