@@ -5,6 +5,7 @@
 
 public import SignalServiceKit
 public import UIKit
+import SignalUI
 
 /// UIContextMenuInteractionDelegate analog
 public protocol ContextMenuInteractionDelegate: AnyObject {
@@ -46,7 +47,7 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
                 UIView.animate(
                     withDuration: sourceViewBounceDuration,
                     delay: 0,
-                    options: [.curveEaseInOut, .beginFromCurrentState],
+                    options: [.curveEaseOut, .beginFromCurrentState],
                     animations: {
                         self.targetedPreview?.view.transform = CGAffineTransform.identity
                     },
@@ -55,6 +56,18 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
             }
         }
     }
+
+    /// Tellomi（交互审计 A-06）：Telegram 从按下 0.12 s 起用 0.2 s 缩完、0.32 s 激活；这里从 0.2 s 的长按识别起缩剩下的 0.12 s。
+    static let pressShrinkDuration: TimeInterval = 0.12
+
+    /// 按住时缩到多小：宽度少 15 pt，最小 0.7（Telegram `ContextControllerSourceNode`）。
+    static func pressedScale(forWidth width: CGFloat) -> CGFloat {
+        guard width > 0 else { return 1 }
+        return max(0.7, (width - 15) / width)
+    }
+
+    /// 这一次按压缩到的比例；菜单的预览从这个大小接着放回原大。
+    fileprivate var pressedScale: CGFloat = 1
 
     fileprivate var locationInView = CGPoint.zero
     fileprivate var configuration: ContextMenuConfiguration?
@@ -119,15 +132,19 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
 
         self.targetedPreview = targetedPreview
 
-        if presentImmediately {
+        let reduceMotion = MainActor.assumeIsolated { TellomiMotion.isReduceMotionEnabled }
+        if presentImmediately || reduceMotion {
             self.presentMenu(locationInView: self.locationInView, presentImmediately: true)
         } else {
+            // Tellomi（交互审计 A-06）：照 Telegram 的按压——按住时消息按「宽度 − 15 pt」线性缩小，按下后 0.32 s 弹菜单。
+            // 聊天的长按识别保持 0.2 s（审计 Q-06），所以从识别起用剩下的 0.12 s 缩完。原来是 0.2 s 缩到 0.95、0.4 s 才弹。
+            pressedScale = Self.pressedScale(forWidth: targetedPreview.view.bounds.width)
             UIView.animate(
-                withDuration: sourceViewBounceDuration,
+                withDuration: Self.pressShrinkDuration,
                 delay: 0,
-                options: [.curveEaseInOut, .beginFromCurrentState],
+                options: [.curveLinear, .beginFromCurrentState],
                 animations: {
-                    targetedPreview.view.transform = .scale(0.95)
+                    targetedPreview.view.transform = .scale(self.pressedScale)
                 },
                 completion: { finished in
                     let shouldPresent = finished && self.gestureEligibleForMenuPresentation
@@ -169,7 +186,8 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
     public func presentMenu(window: UIWindow, contextMenuConfiguration: ContextMenuConfiguration, targetedPreview: ContextMenuTargetedPreview, presentImmediately: Bool) {
 
         let menuAccessory = menuAccessory(configuration: contextMenuConfiguration, targetedPreview: targetedPreview)
-        let contextMenuController = ContextMenuController(configuration: contextMenuConfiguration, preview: targetedPreview, initiatingGestureRecognizer: initiatingGestureRecognizer(), menuAccessory: menuAccessory, presentImmediately: presentImmediately)
+        let contextMenuController = ContextMenuController(configuration: contextMenuConfiguration, preview: targetedPreview, initiatingGestureRecognizer: initiatingGestureRecognizer(), menuAccessory: menuAccessory, presentImmediately: presentImmediately, pressedScale: pressedScale)
+        contextMenuController.initialKeyboardFrameInWindow = keyboardFrameInWindowAtPresentation()
         contextMenuController.delegate = self
         self.contextMenuController = contextMenuController
 
@@ -178,10 +196,16 @@ public class ContextMenuInteraction: NSObject, UIInteraction {
 
         window.addSubview(contextMenuController.view)
         contextMenuController.view.frame = window.bounds
+        contextMenuController.applyInitialKeyboardFrame()
     }
 
     public func initiatingGestureRecognizer() -> UIGestureRecognizer? {
         return longPressGestureRecognizer
+    }
+
+    /// Tellomi（交互审计 A-06，Q-05 = A）：菜单弹出时键盘在哪（窗口坐标）；键盘不动，菜单排在它上面。默认没有键盘。
+    public func keyboardFrameInWindowAtPresentation() -> CGRect? {
+        nil
     }
 
     public func menuAccessory(configuration: ContextMenuConfiguration, targetedPreview: ContextMenuTargetedPreview) -> ContextMenuActionsAccessory {
@@ -322,6 +346,8 @@ public class ChatHistoryContextMenuInteraction: ContextMenuInteraction {
     public let thread: TSThread
     public let messageActions: [MessageAction]
     public let keyboardWasActive: Bool
+    /// Tellomi（交互审计 A-06，Q-05 = A）：长按时键盘在窗口里的位置；键盘不收，菜单排在它上面。
+    public var keyboardFrameInWindow: CGRect?
     public let chatHistoryLongPressGesture: UIGestureRecognizer?
     public var contextMenuVisible: Bool {
         return contextMenuController != nil
@@ -379,6 +405,10 @@ public class ChatHistoryContextMenuInteraction: ContextMenuInteraction {
 
     override public func initiatingGestureRecognizer() -> UIGestureRecognizer? {
         return chatHistoryLongPressGesture
+    }
+
+    override public func keyboardFrameInWindowAtPresentation() -> CGRect? {
+        keyboardFrameInWindow
     }
 
     override public func menuAccessory(configuration: ContextMenuConfiguration, targetedPreview: ContextMenuTargetedPreview) -> ContextMenuActionsAccessory {

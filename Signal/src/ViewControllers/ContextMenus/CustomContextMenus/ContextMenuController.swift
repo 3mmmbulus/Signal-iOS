@@ -392,6 +392,10 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
     var localPanGestureRecoginzer: UIPanGestureRecognizer?
 
     private let presentImmediately: Bool
+    /// Tellomi（交互审计 A-06）：按压时消息缩到的比例；预览从这个大小放回原大。
+    private let pressedScale: CGFloat
+    /// Tellomi（交互审计 A-06，Q-05 = A）：弹出时键盘的位置（窗口坐标），菜单内容排在它上面。
+    var initialKeyboardFrameInWindow: CGRect?
     private let renderBackgroundBlur: Bool
 
     enum PreviewRenderMode {
@@ -447,6 +451,7 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
         initiatingGestureRecognizer: UIGestureRecognizer?,
         menuAccessory: ContextMenuActionsAccessory?,
         presentImmediately: Bool = true,
+        pressedScale: CGFloat = 0.95,
         renderBackgroundBlur: Bool = true,
         previewRenderMode: PreviewRenderMode = .shadow,
     ) {
@@ -455,6 +460,7 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
         self.gestureRecognizer = initiatingGestureRecognizer
         self.menuAccessory = menuAccessory
         self.presentImmediately = presentImmediately
+        self.pressedScale = pressedScale
         self.renderBackgroundBlur = renderBackgroundBlur
         self.previewRenderMode = previewRenderMode
         super.init()
@@ -571,7 +577,7 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
 
         // Match initial transform
         if !presentImmediately, !reduceMotion {
-            previewView.transform = CGAffineTransform.scale(0.95)
+            previewView.transform = CGAffineTransform.scale(pressedScale)
         }
 
         previewView.isHidden = false
@@ -972,6 +978,19 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
         present(navController, animated: true)
     }
 
+    /// 菜单铺满窗口之后由 `ContextMenuInteraction` 调：长按时键盘就在（Q-05 = A，不收键盘），内容先排在它上面。
+    func applyInitialKeyboardFrame() {
+        guard let hostView = view as? ContextMenuHostView, let keyboardFrame = initialKeyboardFrameInWindow else { return }
+        hostView.keyboardOverlap = Self.keyboardOverlap(keyboardFrame: view.convert(keyboardFrame, from: nil), in: view.bounds)
+        hostView.setNeedsLayout()
+    }
+
+    /// 键盘盖住 [bounds] 底部多少；键盘不在屏幕上（落到底下）就是 0。
+    static func keyboardOverlap(keyboardFrame: CGRect, in bounds: CGRect) -> CGFloat {
+        guard !keyboardFrame.isEmpty, keyboardFrame.minY < bounds.maxY else { return 0 }
+        return max(0, bounds.maxY - keyboardFrame.minY)
+    }
+
     /// 键盘起落（展开面板里搜索）：内容区底边让到键盘上面，跟键盘同一条曲线。
     @objc
     private func keyboardWillChangeFrame(_ notification: Notification) {
@@ -983,7 +1002,7 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
             return
         }
         let endFrameInView = view.convert(endFrame, from: window.screen.coordinateSpace)
-        let overlap = max(0, view.bounds.maxY - endFrameInView.minY)
+        let overlap = Self.keyboardOverlap(keyboardFrame: endFrameInView, in: view.bounds)
         guard overlap != hostView.keyboardOverlap else { return }
         hostView.keyboardOverlap = overlap
 

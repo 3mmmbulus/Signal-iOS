@@ -107,6 +107,77 @@ final class TellomiContextMenuActionTimingTest: SignalBaseTest {
         XCTAssertEqual(delegate.didEndCount, 1)
         XCTAssertEqual(secondCompletionCount, 1, "跟着第一次一起收尾")
     }
+
+    // MARK: - 按压（交互审计 A-06，照 Telegram）
+
+    /// 按住时缩到「宽度 − 15 pt」，最小 0.7。
+    func testPressedScaleTakesFifteenPointsOffTheWidth() {
+        XCTAssertEqual(ContextMenuInteraction.pressedScale(forWidth: 300), 0.95, accuracy: 1e-9)
+        XCTAssertEqual(ContextMenuInteraction.pressedScale(forWidth: 150), 0.9, accuracy: 1e-9)
+        XCTAssertEqual(ContextMenuInteraction.pressedScale(forWidth: 40), 0.7, accuracy: 1e-9)
+        XCTAssertEqual(ContextMenuInteraction.pressedScale(forWidth: 0), 1)
+    }
+
+    /// 长按识别（0.2 s）之后 0.12 s 缩完就弹菜单：按下后 0.32 s，和 Telegram 的激活时刻一样（原来 0.4 s）。
+    func testMenuOpensWhenTheShrinkEnds() throws {
+        try XCTSkipIf(UIAccessibility.isReduceMotionEnabled, "减弱动态效果时不缩、直接弹")
+        XCTAssertEqual(0.2 + ContextMenuInteraction.pressShrinkDuration, 0.32, accuracy: 1e-9)
+
+        let delegate = FakeContextMenuDelegate()
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.2))
+        let interaction = ContextMenuInteraction(delegate: delegate)
+        sourceView.addInteraction(interaction)
+        let before = window.subviews.count
+        interaction.initiateContextMenuGesture(locationInView: CGPoint(x: 20, y: 20), presentImmediately: false)
+        XCTAssertEqual(sourceView.transform.a, ContextMenuInteraction.pressedScale(forWidth: 220), accuracy: 1e-6, "缩到的目标比例")
+        XCTAssertEqual(window.subviews.count, before, "还在缩")
+        wait(seconds: ContextMenuInteraction.pressShrinkDuration + 0.15)
+        XCTAssertEqual(window.subviews.count, before + 1, "缩完弹出")
+        interaction.dismissMenu(animated: false) {}
+    }
+
+    // MARK: - 键盘不动（交互审计 A-06，Q-05 = A）
+
+    func testKeyboardOverlap() {
+        let bounds = CGRect(x: 0, y: 0, width: 390, height: 844)
+        XCTAssertEqual(ContextMenuController.keyboardOverlap(keyboardFrame: CGRect(x: 0, y: 508, width: 390, height: 336), in: bounds), 336)
+        XCTAssertEqual(ContextMenuController.keyboardOverlap(keyboardFrame: CGRect(x: 0, y: 844, width: 390, height: 336), in: bounds), 0, "落到屏幕外")
+        XCTAssertEqual(ContextMenuController.keyboardOverlap(keyboardFrame: .zero, in: bounds), 0)
+    }
+
+    /// 键盘开着长按底部的消息：键盘不收，消息预览和菜单都挪到键盘上面 8 pt 以内。
+    func testMenuFitsAboveAKeyboardThatStaysUp() {
+        sourceView.frame = CGRect(x: 40, y: 700, width: 220, height: 60)
+        let keyboardFrame = CGRect(x: 0, y: 508, width: 390, height: 336)
+        let delegate = FakeContextMenuDelegate()
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.2))
+        let interaction = KeyboardContextMenuInteraction(delegate: delegate, keyboardFrame: keyboardFrame)
+        sourceView.addInteraction(interaction)
+        interaction.initiateContextMenuGesture(locationInView: CGPoint(x: 20, y: 20), presentImmediately: true)
+        wait(seconds: 0.8)
+
+        let host = window.subviews.last!
+        let content = host.subviews.filter { !$0.isHidden && $0.alpha > 0 && $0.frame.size.width < host.bounds.size.width }
+        XCTAssertFalse(content.isEmpty)
+        for view in content {
+            XCTAssertLessThanOrEqual(view.frame.maxY, keyboardFrame.minY - 8 + 0.5, "\(type(of: view)) 在键盘上面")
+        }
+        interaction.dismissMenu(animated: false) {}
+    }
+}
+
+/// 弹出时报告一块键盘。
+private final class KeyboardContextMenuInteraction: ContextMenuInteraction {
+    private let keyboardFrame: CGRect
+
+    init(delegate: ContextMenuInteractionDelegate, keyboardFrame: CGRect) {
+        self.keyboardFrame = keyboardFrame
+        super.init(delegate: delegate)
+    }
+
+    override func keyboardFrameInWindowAtPresentation() -> CGRect? {
+        keyboardFrame
+    }
 }
 
 // MARK: -

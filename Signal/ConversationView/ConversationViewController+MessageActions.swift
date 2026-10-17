@@ -33,6 +33,10 @@ extension ConversationViewController {
     ) {
         let keyboardActive = inputToolbar?.isInputViewFirstResponder ?? false
         let interaction = ChatHistoryContextMenuInteraction(delegate: self, itemViewModel: model, thread: thread, messageActions: messageActions, initiatingGestureRecognizer: collectionViewContextMenuGestureRecognizer, keyboardWasActive: keyboardActive)
+        // Tellomi（交互审计 A-06，owner 2026-09-26 Q-05 = A）：长按不收键盘，菜单排在键盘上面。
+        if keyboardActive {
+            interaction.keyboardFrameInWindow = view.convert(keyboardLayoutGuide.layoutFrame, to: nil)
+        }
         collectionViewActiveContextMenuInteraction = interaction
         cell.addInteraction(interaction)
         let cellCenterPoint = cell.frame.center
@@ -245,7 +249,7 @@ extension ConversationViewController: ContextMenuInteractionDelegate {
             componentView.contextMenuPresentationWillBegin?()
         }
 
-        dismissKeyBoard()
+        // Tellomi（交互审计 A-06，Q-05 = A）：不再收键盘。原来先收、关菜单再弹回，底部来回跳两次。
     }
 
     public func contextMenuInteraction(_ interaction: ContextMenuInteraction, willEndForConfiguration: ContextMenuConfiguration) {
@@ -256,12 +260,15 @@ extension ConversationViewController: ContextMenuInteractionDelegate {
         if let contextInteraction = interaction as? ChatHistoryContextMenuInteraction, let cell = contextInteraction.view as? CVCell, let componentView = cell.componentView {
             componentView.contextMenuPresentationDidEnd?()
 
-            // Restore the keyboard unless the context menu item presented
-            // a view controller.
+            // Tellomi（交互审计 A-06，Q-05 = A）：键盘一直在。菜单项弹出了新页面才收键盘（和上游收起后的结果一样）；
+            // 键盘被别的输入框拿走了（展开的表情面板里搜索过）就弹回输入框。
             if contextInteraction.keyboardWasActive {
                 if self.presentedViewController == nil {
-                    popKeyBoard()
+                    if !(inputToolbar?.isInputViewFirstResponder ?? false) {
+                        popKeyBoard()
+                    }
                 } else {
+                    dismissKeyBoard()
                     // If we're not going to restore the keyboard, update
                     // chat history layout.
                     self.loadCoordinator.enqueueReload()
