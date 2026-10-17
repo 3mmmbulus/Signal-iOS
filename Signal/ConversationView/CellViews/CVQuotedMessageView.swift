@@ -442,6 +442,11 @@ public class CVQuotedMessageView: ManualStackViewWithLayer {
                 return nil
             }
 
+            // Tellomi (spec attachment-files-location §3.3.1): a reply to a location says "Location" next to the map.
+            if TellomiLocationMessage.isQuotedLocation(body: quotedReplyModel.originalMessageBody?.text, attachmentMimeType: mimeType) {
+                return TellomiLocationMessage.localizedTitle
+            }
+
             if MimeTypeUtil.isSupportedAudioMimeType(mimeType) {
                 return OWSLocalizedString(
                     "QUOTED_REPLY_TYPE_AUDIO",

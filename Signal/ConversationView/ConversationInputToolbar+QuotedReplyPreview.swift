@@ -620,7 +620,7 @@ private class QuotedMessageSnippetView: UIView {
 
     // MARK: -
 
-    private func mimeTypeAndRenderingFlag(
+    private static func mimeTypeAndRenderingFlag(
         _ content: DraftQuotedReplyModel.Content,
     ) -> (String, AttachmentReference.RenderingFlag?)? {
         switch content {
@@ -633,15 +633,20 @@ private class QuotedMessageSnippetView: UIView {
         case .attachment(_, let reference, let attachment, _):
             return (attachment.mimeType, reference.renderingFlag)
         case .edit(_, _, let innerContent):
-            return mimeTypeAndRenderingFlag(innerContent)
+            return Self.mimeTypeAndRenderingFlag(innerContent)
         case .giftBadge, .text, .payment, .viewOnce, .contactShare, .storyReactionEmoji, .poll:
             return nil
         }
     }
 
     private var fileTypeForSnippet: String? {
-        guard let (mimeType, renderingFlag) = mimeTypeAndRenderingFlag(quotedMessage.content) else {
+        guard let (mimeType, renderingFlag) = Self.mimeTypeAndRenderingFlag(quotedMessage.content) else {
             return nil
+        }
+
+        // Tellomi (spec attachment-files-location §3.3.1): replying to a location says "Location" next to the map.
+        if TellomiLocationMessage.isQuotedLocation(body: quotedMessage.bodyForSending?.text, attachmentMimeType: mimeType) {
+            return TellomiLocationMessage.localizedTitle
         }
 
         if MimeTypeUtil.isSupportedAudioMimeType(mimeType) {
@@ -703,6 +708,13 @@ private class QuotedMessageSnippetView: UIView {
             let body = quotedMessage.bodyForSending,
             !body.text.isEmpty
         else {
+            return nil
+        }
+        // Tellomi (spec attachment-files-location §3.3.1): a location shows "Location" (`fileTypeForSnippet`), not its text.
+        if
+            let (mimeType, _) = Self.mimeTypeAndRenderingFlag(quotedMessage.content),
+            TellomiLocationMessage.isQuotedLocation(body: body.text, attachmentMimeType: mimeType)
+        {
             return nil
         }
         return SSKEnvironment.shared.databaseStorageRef.read { tx in

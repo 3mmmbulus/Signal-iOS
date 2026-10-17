@@ -5,6 +5,7 @@
 
 import Contacts
 import MapKit
+import SignalServiceKit
 import XCTest
 
 @testable import Signal

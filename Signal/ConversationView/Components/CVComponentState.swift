@@ -1780,7 +1780,15 @@ private extension CVComponentState.Builder {
             return
         }
         var displayableQuotedText: DisplayableText?
-        if let quotedBody = quotedReplyModel.originalMessageBody, !quotedBody.text.isEmpty {
+        if
+            let quotedBody = quotedReplyModel.originalMessageBody, !quotedBody.text.isEmpty,
+            // Tellomi (spec attachment-files-location §3.3.1): a reply to a location shows the map and "Location"
+            // (`CVQuotedMessageView.fileTypeForSnippet`), not the name / address / link, like Telegram's reply header.
+            !TellomiLocationMessage.isQuotedLocation(
+                body: quotedBody.text,
+                attachmentMimeType: quotedReplyModel.originalContent.attachmentMimeType,
+            )
+        {
             displayableQuotedText = CVComponentState.displayableQuotedText(
                 text: quotedBody.text,
                 ranges: quotedBody.ranges,

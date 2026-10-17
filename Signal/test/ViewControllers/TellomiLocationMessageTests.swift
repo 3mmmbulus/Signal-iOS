@@ -3,12 +3,31 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import SignalServiceKit
 import XCTest
 
 @testable import Signal
 
 /// spec attachment-files-location L-11：从 Signal-iOS、Signal-Android 和 Tellomi 发的正文里认出位置消息；别的正文不认。
 final class TellomiLocationMessageTests: XCTestCase {
+
+    // MARK: - 引用回复（spec §3.3.1）
+
+    /// 引用回复里：正文认得出、引用的是静态图才写「位置」；GIF、视频、没有附件、别的正文都不算。
+    func testAQuotedLocationIsALocationBodyAndAStillImage() {
+        let body = "星巴克臻选上海烘焙工坊\n静安区南京西路789号\nhttps://maps.google.com/maps?q=31.2297%2C121.4560"
+        XCTAssertTrue(TellomiLocationMessage.isQuotedLocation(body: body, attachmentMimeType: "image/jpeg"))
+        XCTAssertTrue(TellomiLocationMessage.isQuotedLocation(body: body, attachmentMimeType: "image/png"))
+        XCTAssertFalse(TellomiLocationMessage.isQuotedLocation(body: body, attachmentMimeType: "image/gif"))
+        XCTAssertFalse(TellomiLocationMessage.isQuotedLocation(body: body, attachmentMimeType: "video/mp4"))
+        XCTAssertFalse(TellomiLocationMessage.isQuotedLocation(body: body, attachmentMimeType: nil))
+        XCTAssertFalse(TellomiLocationMessage.isQuotedLocation(body: "Look at this", attachmentMimeType: "image/jpeg"))
+        XCTAssertFalse(TellomiLocationMessage.isQuotedLocation(body: nil, attachmentMimeType: "image/jpeg"))
+    }
+
+    func testThePreviewIsLocationWithAPin() {
+        XCTAssertEqual(TellomiLocationMessage.previewText, "📍 " + TellomiLocationMessage.localizedTitle)
+    }
 
     // MARK: - Signal-iOS（上游 `Location.messageText`：多行地址 + 空行 + 链接）
 

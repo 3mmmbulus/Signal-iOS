@@ -74,6 +74,34 @@ public struct TellomiLocationMessage: Equatable {
         )
     }
 
+    // MARK: - 会话列表、通知、引用回复（spec §3.3.1）
+
+    /// 「位置」：会话列表、通知和引用回复里，位置消息只写这一个词，不写名称、地址和链接。Telegram 两端都这样，地点也一样
+    /// （iOS `MessageContentKind` 的 `.location` → `Message.Location`，Android `MessageObject` 的 geo / venue →
+    /// `AttachLocation`）。和位置页的标题用同一条文案。
+    public static var localizedTitle: String {
+        OWSLocalizedString("ATTACHMENT_KEYBOARD_LOCATION", comment: "A button to select a location from the Attachment Keyboard")
+    }
+
+    /// 会话列表与通知：「📍 位置」，同别的附件「📷 照片」的写法。
+    public static var previewText: String {
+        "📍 " + localizedTitle
+    }
+
+    /// 引用回复里引用的是不是一条位置：正文认得出、引用的附件是一张静态图（气泡那边的判断在 `CVComponentState.tellomiLocation`，
+    /// 引用里看不到别的附件，只能看这两样）。
+    public static func isQuotedLocation(body: String?, attachmentMimeType: String?) -> Bool {
+        guard
+            let body,
+            let mimeType = attachmentMimeType,
+            MimeTypeUtil.isSupportedImageMimeType(mimeType),
+            !MimeTypeUtil.isSupportedDefinitelyAnimatedMimeType(mimeType)
+        else {
+            return false
+        }
+        return parse(body: body) != nil
+    }
+
     /// `https://maps.google.com/maps?q=<纬度>,<经度>`（Signal 各端发的那种）里的坐标。整行必须就是这个链接。
     static func coordinate(fromMapsLink line: String) -> (latitude: Double, longitude: Double)? {
         guard

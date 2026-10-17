@@ -553,7 +553,8 @@ public extension TSMessage {
              let .stickerDescription(text),
              let .giftBadge(text),
              let .infoMessage(text),
-             let .paymentMessage(text):
+             let .paymentMessage(text),
+             let .tellomiLocation(text):
             return text
         case .empty:
             return ""
@@ -576,7 +577,8 @@ public extension TSMessage {
              let .stickerDescription(text),
              let .giftBadge(text),
              let .infoMessage(text),
-             let .paymentMessage(text):
+             let .paymentMessage(text),
+             let .tellomiLocation(text):
             return HydratedMessageBody.fromPlaintextWithoutRanges(text)
         case .empty:
             return HydratedMessageBody.fromPlaintextWithoutRanges("")
@@ -588,6 +590,9 @@ public extension TSMessage {
         case let .body(body, _, ranges):
             // We ignore the prefix here.
             return MessageBody(text: body, ranges: ranges ?? .empty)
+        case .tellomiLocation:
+            // Tellomi: a search result keeps the words that matched (the name / address), not "Location".
+            return rawBody(transaction: tx).map { MessageBody(text: $0, ranges: bodyRanges ?? .empty) }
         case .remotelyDeleted,
              .storyReactionEmoji,
              .viewOnceMessage,
@@ -611,6 +616,8 @@ public extension TSMessage {
         case giftBadge(String)
         case infoMessage(String)
         case paymentMessage(String)
+        /// Tellomi (spec attachment-files-location §3.3.1): "📍 Location".
+        case tellomiLocation(String)
         case empty
     }
 
@@ -742,6 +749,12 @@ public extension TSMessage {
             }
         }
 
+        // Tellomi (spec attachment-files-location §3.3.1): a location reads "📍 Location" in the chat list and in notifications,
+        // not its name, address and maps link (Telegram, both platforms: Message.Location / AttachLocation, places too).
+        if tellomiIsLocation(body: bodyDescription, tx: tx) {
+            return .tellomiLocation(TellomiLocationMessage.previewText)
+        }
+
         var pollPrefix: String?
         if isPoll {
             let locPollString = OWSLocalizedString(
@@ -776,6 +789,31 @@ public extension TSMessage {
             // with camera first capture over the conversation list.
             return .empty
         }
+    }
+
+    /// Tellomi (L-11): the same rule as the bubble (`CVComponentState.tellomiLocation`): a body `TellomiLocationMessage` reads,
+    /// exactly one still image, and nothing else (sticker, contact, poll, link preview, gift).
+    private func tellomiIsLocation(body: String?, tx: DBReadTransaction) -> Bool {
+        guard
+            let body,
+            !isPoll, contactShare == nil, linkPreview == nil, messageSticker == nil, giftBadge == nil,
+            TellomiLocationMessage.parse(body: body) != nil,
+            let sqliteRowId
+        else {
+            return false
+        }
+        let attachments = DependenciesBridge.shared.attachmentStore.fetchReferencedAttachments(
+            for: .messageBodyAttachment(messageRowId: sqliteRowId),
+            tx: tx,
+        )
+        guard attachments.count == 1, let attachment = attachments.first else {
+            return false
+        }
+        let mimeType = attachment.attachment.mimeType
+        return attachment.reference.renderingFlag == .default
+            && MimeTypeUtil.isSupportedImageMimeType(mimeType)
+            && !MimeTypeUtil.isSupportedDefinitelyAnimatedMimeType(mimeType)
+            && !TellomiLivePhoto.isLivePhoto(attachment.reference, tx: tx)
     }
 
     // MARK: - Stories

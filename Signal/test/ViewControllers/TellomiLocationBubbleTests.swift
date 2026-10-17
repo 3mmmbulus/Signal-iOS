@@ -135,6 +135,31 @@ final class TellomiLocationBubbleTests: XCTestCase {
         }
     }
 
+    // MARK: - Chat list, notifications (spec §3.3.1)
+
+    /// 会话列表和通知里写「📍 Location」，不写名称、地址和链接（Telegram 两端：`Message.Location` / `AttachLocation`，
+    /// 地点也一样）；搜索结果还是显示搜到的字；别的消息照旧。
+    @MainActor
+    func testTheChatListAndNotificationsSayLocation() async throws {
+        let thread = makeThread()
+        for (body, incoming) in [(Self.tellomiPlaceBody, true), (Self.signalIOSBody, true), (Self.signalAndroidBody, false)] {
+            let location = try await insertLocation(body: body, thread: thread, incoming: incoming)
+            read { tx in
+                XCTAssertEqual(location.notificationPreviewText(tx), "📍 Location", body)
+                XCTAssertEqual(location.conversationListPreviewText(tx).asPlaintext(), "📍 Location", body)
+                XCTAssertEqual(location.conversationListSearchResultsBody(tx)?.text, body, body)
+            }
+        }
+
+        let photoWithCaption = try await insertLocation(body: "Look at this", thread: thread)
+        let textWithTheLink = try insertMessage(thread: thread, body: Self.tellomiPlaceBody, incoming: true)
+        read { tx in
+            XCTAssertEqual(photoWithCaption.notificationPreviewText(tx), "📷 Look at this")
+            XCTAssertTrue(textWithTheLink.notificationPreviewText(tx).contains("maps.google.com"))
+            XCTAssertTrue(textWithTheLink.conversationListPreviewText(tx).asPlaintext().contains("星巴克"))
+        }
+    }
+
     // MARK: - Layout (Telegram's numbers)
 
     @MainActor
