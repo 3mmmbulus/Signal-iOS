@@ -103,6 +103,7 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
         thumbnailRequest = nil
         imageView.image = nil
         itemId = nil
+        item = nil
         setSpoiler(false, animated: false)
     }
 
@@ -112,12 +113,12 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
         accentColor: UIColor,
         library: TellomiPhotoPickerLibrary,
         thumbnailSize: CGSize,
+        isLiveOn: Bool = false,
     ) {
         itemId = item.id
+        self.item = item
         durationLabel.isHidden = !item.isVideo
-        typeBadgeSymbol = Self.typeBadgeSymbol(for: item)
-        livePhotoBadge.image = typeBadgeSymbol.flatMap { UIImage(systemName: $0) }
-        livePhotoBadge.isHidden = typeBadgeSymbol == nil
+        setLiveOn(isLiveOn)
         durationLabel.text = item.isVideo ? Self.formatDuration(item.duration) : nil
         setSelectionNumber(selectionNumber, accentColor: accentColor, animated: false)
 
@@ -181,8 +182,19 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
     }
 
     private(set) var typeBadgeSymbol: String?
+    private var item: TellomiPhotoPickerItem?
 
-    static func typeBadgeSymbol(for item: TellomiPhotoPickerItem) -> String? {
+    /// #1263（spec P-4）：实况照片左上角的图标跟着实况开关变（开 = 同心圆，关 = 带斜杠；照 Telegram 两端：所有实况格一起变，
+    /// 没选的也变）。
+    func setLiveOn(_ isLiveOn: Bool) {
+        guard let item else { return }
+        typeBadgeSymbol = Self.typeBadgeSymbol(for: item, isLiveOn: isLiveOn)
+        livePhotoBadge.image = typeBadgeSymbol.flatMap { UIImage(systemName: $0) }
+        livePhotoBadge.isHidden = typeBadgeSymbol == nil
+        setNeedsLayout()
+    }
+
+    static func typeBadgeSymbol(for item: TellomiPhotoPickerItem, isLiveOn: Bool = true) -> String? {
         if item.isVideo {
             switch item.videoKind {
             case .normal: return "video.fill"
@@ -190,7 +202,8 @@ final class TellomiPhotoPickerCell: UICollectionViewCell {
             case .timelapse: return "timelapse"
             }
         }
-        return item.isLivePhoto ? "livephoto" : nil
+        guard item.isLivePhoto else { return nil }
+        return isLiveOn ? "livephoto" : "livephoto.slash"
     }
 
     func setSelectionNumber(_ number: Int?, accentColor: UIColor, animated: Bool) {

@@ -142,7 +142,8 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
 
         let live = try XCTUnwrap(picker.cellForTesting(itemIndex: 2))
         XCTAssertTrue(live.isShowingLivePhotoBadgeForTesting)
-        XCTAssertEqual(live.typeBadgeSymbol, "livephoto")
+        // #1263 P-4：实况开关默认关，图标是带斜杠的（开了换成同心圆，见 testLiveSwitchFlipsEveryLiveCellAndToasts）。
+        XCTAssertEqual(live.typeBadgeSymbol, "livephoto.slash")
         XCTAssertEqual(live.livePhotoBadgeFrameForTesting.origin, CGPoint(x: 6, y: 6))
         XCTAssertFalse(try XCTUnwrap(picker.cellForTesting(itemIndex: 0)).isShowingLivePhotoBadgeForTesting)
 
@@ -418,6 +419,110 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
         let sent = try await nextSend(hosted, count: 1)
         XCTAssertTrue(sent.separately)
         XCTAssertEqual(sent.approved.attachments.map(\.rawValue.isTellomiSpoiler), [true, false])
+    }
+
+    // MARK: - P-4 实况开关（#1263，ADR-0068 §4.4）
+
+    /// 已选里有实况照片才出现，在「···」左边、同一个胶囊里（照 Telegram iOS 右边那一组）；默认关（带斜杠）。
+    @MainActor
+    func testLiveSwitchOnlyWithALivePhotoSelected() async throws {
+        let hosted = host(canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        XCTAssertFalse(picker.isLiveButtonShownForTesting)
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 2)?.typeBadgeSymbol, "livephoto.slash", "没选的实况格子也显示关")
+
+        picker.tapCheckForTesting(itemIndex: 2)
+        XCTAssertTrue(picker.isLiveButtonShownForTesting)
+        XCTAssertEqual(picker.liveButtonSymbolForTesting, "livephoto.slash", "默认关")
+        picker.view.layoutIfNeeded()
+        XCTAssertLessThanOrEqual(picker.liveButtonFrameForTesting.maxX, picker.moreButtonFrameForTesting.minX + 0.5, "在 ··· 左边")
+        XCTAssertEqual(picker.liveButtonFrameForTesting.midY, picker.moreButtonFrameForTesting.midY, accuracy: 0.5)
+
+        picker.tapCheckForTesting(itemIndex: 2)
+        XCTAssertFalse(picker.isLiveButtonShownForTesting)
+    }
+
+    /// 点一下：已选和没选的实况格子图标一起变，底部提示「实况照片已启用 / 已关闭」2.5 秒、碰一下就收；不记住（新开的面板又是关）。
+    @MainActor
+    func testLiveSwitchFlipsEveryLiveCellAndToasts() async throws {
+        let hosted = host(library: FakePhotoLibrary(liveIndexes: [2, 4]), canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 2)
+
+        picker.tapLiveButtonForTesting()
+        XCTAssertEqual(picker.liveButtonSymbolForTesting, "livephoto")
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 2)?.typeBadgeSymbol, "livephoto")
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 4)?.typeBadgeSymbol, "livephoto", "没选的也一起变")
+        XCTAssertEqual(picker.lastLiveToastText, Strings.livePhotoOn)
+        XCTAssertTrue(picker.isLiveToastShownForTesting)
+        XCTAssertEqual(TellomiPhotoPickerViewController.liveToastDuration, 2.5)
+        picker.tapAnywhereForTesting()
+        XCTAssertFalse(picker.isLiveToastShownForTesting, "碰一下就收")
+
+        // 新勾的跟着开关（开）；取消勾选再勾回来也是跟着开关。
+        picker.tapCheckForTesting(itemIndex: 4)
+        XCTAssertEqual(picker.liveButtonSymbolForTesting, "livephoto")
+
+        picker.tapLiveButtonForTesting()
+        XCTAssertEqual(picker.liveButtonSymbolForTesting, "livephoto.slash")
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 4)?.typeBadgeSymbol, "livephoto.slash")
+        XCTAssertEqual(picker.lastLiveToastText, Strings.livePhotoOff)
+
+        let again = host(canSendAsFile: true)
+        defer { again.tearDown() }
+        again.picker.tapCheckForTesting(itemIndex: 2)
+        XCTAssertEqual(again.picker.liveButtonSymbolForTesting, "livephoto.slash", "不记住：每次打开都是关")
+    }
+
+    /// 查看器里单改一张：左上角「实况 / 实况关闭」，点了就勾上；顶栏开关按「全部开着才算开」显示（同 Telegram 安卓）。不是实况的没有这个键。
+    @MainActor
+    func testViewerSwitchesOneLivePhoto() async throws {
+        let hosted = host(library: FakePhotoLibrary(liveIndexes: [2, 4]), canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 4)
+        picker.tapItemForTesting(itemIndex: 2)
+        let viewer = try await presentedViewer(picker)
+        XCTAssertEqual(viewer.liveButtonTitleForTesting, Strings.liveOff)
+
+        viewer.tapLiveForTesting()
+        XCTAssertEqual(viewer.liveButtonTitleForTesting, Strings.live)
+        XCTAssertEqual(picker.selectedIdsForTesting, ["r4", "r2"], "改了就勾上")
+        XCTAssertEqual(picker.liveButtonSymbolForTesting, "livephoto.slash", "r4 还关着，顶栏算关")
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 2)?.typeBadgeSymbol, "livephoto")
+        XCTAssertEqual(picker.cellForTesting(itemIndex: 4)?.typeBadgeSymbol, "livephoto.slash")
+        XCTAssertEqual(picker.lastLiveToastText, Strings.livePhotoOn)
+
+        viewer.scrollToItemForTesting(0)
+        XCTAssertNil(viewer.liveButtonTitleForTesting, "不是实况的没有这个键")
+    }
+
+    /// 发送：开着的实况照片附件上挂着动态部分（交给会话页按两段发），关着的、不是实况的不挂、也不去取。
+    @MainActor
+    func testLivePhotosAreSentWithTheirMotion() async throws {
+        let library = FakePhotoLibrary(liveIndexes: [2, 4])
+        let hosted = host(library: library, canSendAsFile: true)
+        defer { hosted.tearDown() }
+        let picker = hosted.picker
+        picker.tapCheckForTesting(itemIndex: 0)
+        picker.tapCheckForTesting(itemIndex: 2)
+        picker.tapSendForTesting()
+        let still = try await nextSend(hosted, count: 1)
+        XCTAssertEqual(still.approved.attachments.map { $0.rawValue.tellomiLivePhotoVideo == nil }, [true, true], "默认关：只发静态图")
+        XCTAssertTrue(library.liveVideoRequests.isEmpty)
+
+        picker.tapCheckForTesting(itemIndex: 4)
+        picker.tapLiveButtonForTesting()
+        picker.performMoreMenuItemForTesting(.hideWithSpoiler)
+        picker.tapSendForTesting()
+        let live = try await nextSend(hosted, count: 2)
+        XCTAssertEqual(library.ids(of: live.approved), ["r0", "r2", "r4"])
+        XCTAssertEqual(live.approved.attachments.map { $0.rawValue.tellomiLivePhotoVideo != nil }, [false, true, true])
+        XCTAssertEqual(live.approved.attachments.map(\.rawValue.isTellomiSpoiler), [true, true, true], "遮罩和实况可以一起（两端 Telegram 都允许）")
+        XCTAssertEqual(library.liveVideoRequests, ["r2", "r4"])
     }
 
     // MARK: - P-5「以文件发送」（#1263）
@@ -2383,6 +2488,15 @@ final class TellomiPhotoPickerTests: SignalBaseTest {
     }
 
     @MainActor
+    private func presentedViewer(_ picker: TellomiPhotoPickerViewController) async throws -> TellomiPhotoPickerAlbumViewer {
+        let shown = await waitUntil { self.albumViewer(over: picker)?.viewIfLoaded?.window != nil }
+        XCTAssertTrue(shown, "点照片打开查看器")
+        let viewer = try XCTUnwrap(albumViewer(over: picker))
+        viewer.view.layoutIfNeeded()
+        return viewer
+    }
+
+    @MainActor
     private func approvalViewController(over picker: TellomiPhotoPickerViewController) -> AttachmentApprovalViewController? {
         (picker.presentedViewController as? UINavigationController)?.viewControllers.first as? AttachmentApprovalViewController
     }
@@ -2539,6 +2653,10 @@ private enum Strings {
     static let limitedAccess = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIMITED_ACCESS", comment: "")
     static let hideWithSpoiler = OWSLocalizedString("IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER", comment: "")
     static let removeSpoiler = OWSLocalizedString("IMAGE_PICKER_TELLOMI_DISABLE_SPOILER", comment: "")
+    static let livePhotoOn = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON", comment: "")
+    static let livePhotoOff = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF", comment: "")
+    static let live = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE", comment: "")
+    static let liveOff = OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_OFF", comment: "")
 
     static func sendAsFiles(_ count: Int) -> String {
         String.nonPluralLocalizedStringWithFormat(OWSLocalizedString("IMAGE_PICKER_TELLOMI_SEND_AS_FILES_FORMAT", comment: ""), OWSFormat.formatInt(count))
@@ -2574,13 +2692,14 @@ private final class FakePhotoLibrary: TellomiPhotoPickerLibrary {
     /// 交出去的附件，按网格里的 id（用来核对发送顺序）。
     private(set) var attachmentsById = [String: PreviewableAttachment]()
 
-    init() {
+    /// #1263 P-4：哪几项是实况照片（默认只有第 3 项）。
+    init(liveIndexes: Set<Int> = [2]) {
         recents = (0..<24).map { index in
             TellomiPhotoPickerItem(
                 id: "r\(index)",
                 isVideo: index == 1 || index == 7,
                 duration: index == 1 ? 75 : 3_725,
-                isLivePhoto: index == 2,
+                isLivePhoto: liveIndexes.contains(index),
                 isAnimatedImage: index == 5,
                 pixelSize: Self.pixelSizes[index % Self.pixelSizes.count],
                 asset: nil,
@@ -2665,6 +2784,17 @@ private final class FakePhotoLibrary: TellomiPhotoPickerLibrary {
         )
         attachmentsById[item.id] = attachment
         return attachment
+    }
+
+    /// #1263 P-4：要过动态部分的（按顺序）；交出去的是一个小的假 MP4。
+    private(set) var liveVideoRequests = [String]()
+
+    func livePhotoVideo(for item: TellomiPhotoPickerItem) async throws -> URL? {
+        guard item.isLivePhoto else { return nil }
+        liveVideoRequests.append(item.id)
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("live-\(item.id)-\(UUID().uuidString).mp4")
+        try Data(repeating: 1, count: 64).write(to: url)
+        return url
     }
 
     /// #1263：哪几项是 HEIC；按文件发时交出去的（含 HEIC 选择），文件名 IMG_<id>.JPG / .HEIC。

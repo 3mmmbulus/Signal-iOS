@@ -133,6 +133,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
     private var selectedItems = [String: TellomiPhotoPickerItem]()
     /// #1263（spec P-5 / P-6）：「罩住图片」罩上的已选。取消勾选就拿掉，之后新勾的不自动罩（同 Telegram 安卓 `addToSelectedPhotos`）。
     private(set) var spoileredIds = Set<String>()
+    /// #1263（spec P-4）：实况开关。默认关（关 = 按静态图发），只管这一次打开的面板、不记住（Telegram iOS `TGMediaEditingContext`
+    /// 每次打开新建；安卓会记进设置，只有一端有，不做）。顶栏开关改它，新勾的实况照片跟着它，没选的实况格子的图标也跟着它。
+    private var liveDefault = false
+    /// 已选的实况照片逐张的开关：顶栏开关一按全部改成同一个值，查看器里可以单改一张。取消勾选就拿掉（同 Telegram 安卓 `discardLivePhoto`）。
+    private var liveOverrides = [String: Bool]()
 
     /// 进上游预览页时每张附件对应网格里的哪一项：在那里删掉一张，网格里也取消勾选。
     private var editingItems = [(itemId: String, attachment: SignalAttachment)]()
@@ -247,8 +252,42 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         return button
     }()
 
+    /// #1263（spec P-2 / P-4）：顶栏右边的胶囊 [实况开关][···]（照 Telegram iOS `MediaPickerScreen` 右边那一组玻璃键：实况在 ··· 左边，
+    /// 已选里有实况照片才出现）。胶囊的底是玻璃（iOS 26）/ 灰底，两个键本身是透明的。
+    private lazy var rightCapsule: UIView = {
+        let background: UIView
+        let content: UIView
+        if #available(iOS 26, *) {
+            let effectView = UIVisualEffectView(effect: UIGlassEffect(style: .regular))
+            effectView.cornerConfiguration = .capsule()
+            background = effectView
+            content = effectView.contentView
+        } else {
+            background = UIView()
+            background.backgroundColor = .secondarySystemFill
+            background.layer.cornerRadius = Metrics.roundButtonSize / 2
+            background.layer.cornerCurve = .continuous
+            content = background
+        }
+        let stack = UIStackView(arrangedSubviews: [liveButton, moreButton])
+        stack.axis = .horizontal
+        stack.spacing = 0
+        content.addSubview(stack)
+        stack.autoPinEdgesToSuperviewEdges()
+        background.isHidden = true
+        return background
+    }()
+
+    private lazy var liveButton: UIButton = {
+        var configuration = UIButton.Configuration.plain()
+        configuration.baseForegroundColor = .Signal.label
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.toggleLiveForSelection() })
+        button.isHidden = true
+        return button
+    }()
+
     private lazy var moreButton: UIButton = {
-        var configuration = Self.roundButtonConfiguration()
+        var configuration = UIButton.Configuration.plain()
         configuration.image = Theme.iconImage(.buttonMore)
         configuration.baseForegroundColor = .Signal.label
         configuration.cornerStyle = .capsule
@@ -350,6 +389,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         setUpDock()
         view.addSubview(undoBar)
 
+        view.addGestureRecognizer(liveToastDismissTap)
         library.onChange = { [weak self] in self?.reloadLibrary() }
         reloadLibrary()
         updateSelectionChrome(animated: false)
@@ -389,7 +429,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         leading.spacing = 8
         leading.alignment = .center
 
-        for subview in [leading, titleButton, moreButton] {
+        for subview in [leading, titleButton, rightCapsule] {
             subview.translatesAutoresizingMaskIntoConstraints = false
             topBar.addSubview(subview)
         }
@@ -412,8 +452,11 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
 
             moreButton.widthAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
             moreButton.heightAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
-            moreButton.trailingAnchor.constraint(equalTo: topBar.layoutMarginsGuide.trailingAnchor),
-            moreButton.centerYAnchor.constraint(equalTo: topBar.centerYAnchor),
+            liveButton.widthAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
+            liveButton.heightAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
+            rightCapsule.trailingAnchor.constraint(equalTo: topBar.layoutMarginsGuide.trailingAnchor),
+            rightCapsule.centerYAnchor.constraint(equalTo: topBar.centerYAnchor),
+            rightCapsule.heightAnchor.constraint(equalToConstant: Metrics.roundButtonSize),
         ])
     }
 
@@ -680,6 +723,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             accentColor: .Signal.accent,
             library: library,
             thumbnailSize: thumbnailSize,
+            isLiveOn: isLiveOn(item),
         )
         cell.onCheckTapped = { [weak self] in
             self?.toggleSelection(item)
@@ -753,6 +797,15 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             self?.sendFromAlbumViewer(item, viewer: viewer)
         }
         viewer.onClose = { [weak viewer] in viewer?.dismiss(animated: true) }
+        // #1263（spec P-4）：查看器里这一张的实况开 / 关。
+        viewer.liveState = { [weak self] item in
+            guard let self, item.isLivePhoto else { return nil }
+            return self.isLiveOn(item)
+        }
+        viewer.onToggleLive = { [weak self] item in
+            guard let self else { return }
+            self.setLive(!self.isLiveOn(item), for: item)
+        }
         viewer.modalPresentationStyle = .overFullScreen
         albumViewer = viewer
         updateSendMenus()
@@ -847,6 +900,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
             if spoileredIds.remove(item.id) != nil {
                 refreshVisibleSpoilers(animated: true)
             }
+            liveOverrides[item.id] = nil
         }
         refreshVisibleSelectionNumbers(animatedItemId: selected ? item.id : nil)
         updateSelectionChrome(animated: true)
@@ -872,6 +926,101 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 return
             }
         }
+    }
+
+    // MARK: - Live (#1263 P-4)
+
+    /// 这一项按实况发不发（不是实况照片就是 false）：逐张改过的按它，没改过的跟顶栏开关。
+    func isLiveOn(_ item: TellomiPhotoPickerItem) -> Bool {
+        item.isLivePhoto && (liveOverrides[item.id] ?? liveDefault)
+    }
+
+    private var selectedLiveItems: [TellomiPhotoPickerItem] {
+        selectedIds.compactMap { selectedItems[$0] }.filter(\.isLivePhoto)
+    }
+
+    /// 顶栏开关亮不亮：已选的实况照片全部开着（有一张关着就是关，同 Telegram 安卓 `areLivePhotosEnabled`）。
+    var isLiveToggleOn: Bool {
+        let live = selectedLiveItems
+        return !live.isEmpty && live.allSatisfy(isLiveOn)
+    }
+
+    /// 点顶栏开关：已选的实况照片全部开 / 全部关，没选的格子的图标跟着变（Telegram 两端都是整组一起），底部提示 2.5 秒。
+    private func toggleLiveForSelection() {
+        let turnOn = !isLiveToggleOn
+        liveDefault = turnOn
+        for item in selectedLiveItems {
+            liveOverrides[item.id] = turnOn
+        }
+        refreshLiveIndicators()
+        showLiveToast(isOn: turnOn)
+    }
+
+    /// 查看器里单改一张（照 Telegram 两端：单张查看器里这一张的开 / 关）；改了就勾上（Telegram iOS 选了模式会自动选中）。
+    private func setLive(_ isOn: Bool, for item: TellomiPhotoPickerItem) {
+        guard item.isLivePhoto else { return }
+        if selectionNumber(for: item.id) == nil {
+            guard setSelection(item: item, selected: true) else { return }
+        }
+        liveOverrides[item.id] = isOn
+        refreshLiveIndicators()
+        showLiveToast(isOn: isOn)
+    }
+
+    private func refreshLiveIndicators() {
+        for case let cell as TellomiPhotoPickerCell in collectionView.visibleCells {
+            guard let itemId = cell.itemId, let currentAlbum else { continue }
+            let item = selectedItems[itemId] ?? collectionView.indexPath(for: cell).map { library.item(at: $0.item, in: currentAlbum) }
+            cell.setLiveOn(item.map(isLiveOn) ?? liveDefault)
+        }
+        updateLiveButton()
+        albumViewer?.refreshSelection()
+    }
+
+    private(set) var liveButtonSymbol = "livephoto.slash"
+
+    private func updateLiveButton() {
+        let isOn = isLiveToggleOn
+        liveButtonSymbol = isOn ? "livephoto" : "livephoto.slash"
+        liveButton.configuration?.image = UIImage(systemName: liveButtonSymbol)
+        liveButton.accessibilityLabel = OWSLocalizedString(
+            "IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE",
+            comment: "Accessibility label of the Live Photo switch in the photo picker's top bar.",
+        )
+        liveButton.accessibilityValue = isOn ? CommonStrings.switchOn : CommonStrings.switchOff
+    }
+
+    private var liveToast: ToastController?
+    static let liveToastDuration: TimeInterval = 2.5
+
+    /// 底部深色胶囊，图标 +「实况照片已启用 / 已关闭」，2.5 秒消失、碰一下屏幕就消失（照 Telegram iOS `TooltipInfoScreen`）。
+    private func showLiveToast(isOn: Bool) {
+        liveToast?.tellomiDismiss()
+        let text = isOn
+            ? OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON", comment: "Toast after turning on Live Photo in the photo picker: selected live photos will be sent with their motion.")
+            : OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF", comment: "Toast after turning off Live Photo in the photo picker: selected live photos will be sent as still photos.")
+        let toast = ToastController(text: text, image: UIImage(systemName: isOn ? "livephoto" : "livephoto.slash"))
+        let host: UIView = topmostPresenter.view
+        toast.presentToastView(from: .bottom, of: host, inset: host.safeAreaInsets.bottom + 80, dismissAfter: .milliseconds(Int(Self.liveToastDuration * 1000)))
+        liveToast = toast
+        lastLiveToastText = text
+    }
+
+    private(set) var lastLiveToastText: String?
+
+    /// 碰一下屏幕（任何地方）提示就消失，碰的那一下照常生效。
+    private lazy var liveToastDismissTap: UITapGestureRecognizer = {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissLiveToast))
+        tap.cancelsTouchesInView = false
+        tap.delaysTouchesBegan = false
+        tap.delaysTouchesEnded = false
+        return tap
+    }()
+
+    @objc
+    private func dismissLiveToast() {
+        liveToast?.tellomiDismiss()
+        liveToast = nil
     }
 
     private func refreshVisibleSpoilers(animated: Bool) {
@@ -960,6 +1109,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         isModalInPresentation = hasSelection
 
         let showMore = hasSelection && !moreMenuItems().isEmpty
+        let showLive = hasSelection && !selectedLiveItems.isEmpty
         let showPill = hasSelection && displayMode == .all
         let pillAppears = showPill && countPill.isHidden
         // G-6：dock 与说明栏换位前记下谁在，要消失的那一个先截图（隐藏以后就截不到了）。
@@ -970,6 +1120,8 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let changes = {
             self.countPill.isHidden = !showPill
             self.moreButton.isHidden = !showMore
+            self.liveButton.isHidden = !showLive
+            self.rightCapsule.isHidden = !showMore && !showLive
             self.sendBar.isHidden = !hasSelection
             self.drivenDock?.isHidden = !self.isDockVisible
             self.countPill.alpha = showPill ? 1 : 0
@@ -1000,6 +1152,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         selectedView.bottomInset = hasSelection ? sendBar.frame.height : view.safeAreaInsets.bottom
         layoutUndoBar()
         updateSendMenus()
+        updateLiveButton()
     }
 
     // MARK: - Selected only (P-3)
@@ -1544,7 +1697,7 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         let items = selectedIds.compactMap { selectedItems[$0] }
         guard !items.isEmpty else { return }
         let messageBody = messageBodyForSending
-        prepareAttachments(for: items, applyingEditsFrom: approvalItems) { [weak self] attachments in
+        prepareAttachments(for: items, applyingEditsFrom: approvalItems, liveItemIds: liveItemIdsForSending(items)) { [weak self] attachments in
             guard let self else { return }
             self.applySpoilers(to: attachments, itemIds: items.map(\.id))
             self.delegate?.photoPicker(
@@ -1599,11 +1752,18 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         }
     }
 
+    /// #1263（spec P-4）：这一次要按实况发的：实况开着、静态图没在编辑页里改过（改过的——裁剪、涂鸦——动态部分对不上，只发改过的静态图）。
+    private func liveItemIdsForSending(_ items: [TellomiPhotoPickerItem]) -> Set<String> {
+        Set(items.filter { isLiveOn($0) && !hasImageEdits($0) }.map(\.id))
+    }
+
     /// 一张一张地把选中的变成附件（视频要压缩，慢），期间显示「正在准备…」，可取消。
     /// 在预览 / 编辑页里改过的（`edits` 里有它的编辑项），按改过的样子出附件（E-6）。
+    /// `liveItemIds` 里的实况照片另外取出动态部分、转成 MP4 挂在附件上（ADR-0068 §4.4）；取不到的只发静态图。
     private func prepareAttachments(
         for items: [TellomiPhotoPickerItem],
         applyingEditsFrom edits: [String: AttachmentApprovalItem],
+        liveItemIds: Set<String> = [],
         presenter: UIViewController? = nil,
         completion: @escaping ([PreviewableAttachment]) -> Void,
     ) {
@@ -1623,11 +1783,16 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                     var attachments = [PreviewableAttachment]()
                     for item in items {
                         try Task.checkCancellation()
+                        let attachment: PreviewableAttachment
                         if let editItem = edits[item.id] {
-                            attachments.append(try await AttachmentApprovalViewController.tellomiOutputAttachment(for: editItem, attachmentLimits: attachmentLimits))
+                            attachment = try await AttachmentApprovalViewController.tellomiOutputAttachment(for: editItem, attachmentLimits: attachmentLimits)
                         } else {
-                            attachments.append(try await library.attachment(for: item, attachmentLimits: attachmentLimits))
+                            attachment = try await library.attachment(for: item, attachmentLimits: attachmentLimits)
                         }
+                        if liveItemIds.contains(item.id), attachment.isImage {
+                            attachment.rawValue.tellomiLivePhotoVideo = await Self.livePhotoVideo(for: item, library: library)
+                        }
+                        attachments.append(attachment)
                     }
                     return attachments
                 }
@@ -1647,6 +1812,18 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
                 })
             },
         )
+    }
+
+    /// 取不到 / 转不了就只发静态图（不让整条发不出去）。
+    private static func livePhotoVideo(for item: TellomiPhotoPickerItem, library: TellomiPhotoPickerLibrary) async -> URL? {
+        do {
+            return try await library.livePhotoVideo(for: item)
+        } catch is CancellationError {
+            return nil
+        } catch {
+            Logger.warn("Couldn't prepare the live photo video; sending the still only. \(error)")
+            return nil
+        }
     }
 
     private func didTapClose() {
@@ -1796,19 +1973,43 @@ final class TellomiPhotoPickerViewController: OWSViewController, UICollectionVie
         didApproveAttachments approvedAttachments: ApprovedAttachments,
         messageBody: MessageBody?,
     ) {
-        // 预览页发出来的附件按还勾着的那几张排（在那里删掉的已经取消勾选了）；一次性查看的不带遮罩（ADR-0068 §4.4）。
-        if !approvedAttachments.isViewOnce {
-            let itemIds = editingItems.map(\.itemId).filter { selectedItems[$0] != nil }
-            applySpoilers(to: approvedAttachments.attachments, itemIds: itemIds)
+        // 预览页发出来的附件按还勾着的那几张排（在那里删掉的已经取消勾选了）；一次性查看的不带遮罩、不带实况（ADR-0068 §4.4）。
+        let itemIds = editingItems.map(\.itemId).filter { selectedItems[$0] != nil }
+        let scheduledAt = attachmentApproval.tellomiApprovedScheduledAt
+        let forward = { [weak self] in
+            guard let self else { return }
+            self.delegate?.photoPicker(
+                self,
+                send: approvedAttachments,
+                messageBody: messageBody,
+                separately: false,
+                captionAboveMedia: self.isCaptionAboveMedia,
+                scheduledAt: scheduledAt,
+            )
         }
-        delegate?.photoPicker(
-            self,
-            send: approvedAttachments,
-            messageBody: messageBody,
-            separately: false,
-            captionAboveMedia: isCaptionAboveMedia,
-            scheduledAt: attachmentApproval.tellomiApprovedScheduledAt,
-        )
+        guard !approvedAttachments.isViewOnce, approvedAttachments.attachments.count == itemIds.count else {
+            forward()
+            return
+        }
+        applySpoilers(to: approvedAttachments.attachments, itemIds: itemIds)
+        // 在预览页里改过的不带实况（同网格直接发）。
+        let liveIds = Set(itemIds.filter { id in
+            selectedItems[id].map(isLiveOn) == true && approvalItems[id].map(AttachmentApprovalViewController.tellomiHasImageEdits) != true
+        })
+        let liveTargets = zip(itemIds, approvedAttachments.attachments).filter { liveIds.contains($0.0) && $0.1.isImage }
+        guard !liveTargets.isEmpty else {
+            forward()
+            return
+        }
+        let library = self.library
+        let items = selectedItems
+        ModalActivityIndicatorViewController.present(fromViewController: topmostPresenter, title: CommonStrings.preparingModal, asyncBlock: { modal in
+            for (itemId, attachment) in liveTargets {
+                guard let item = items[itemId] else { continue }
+                attachment.rawValue.tellomiLivePhotoVideo = await Self.livePhotoVideo(for: item, library: library)
+            }
+            modal.dismiss(completion: forward)
+        })
     }
 
     func attachmentApprovalDidCancel() {
@@ -2094,7 +2295,21 @@ extension TellomiPhotoPickerViewController {
     var isCountPillShownForTesting: Bool { !countPill.isHidden }
     var countPillTextForTesting: String? { countPill.configuration?.attributedTitle.map { String($0.characters) } }
     var countPillFrameForTesting: CGRect { countPill.convert(countPill.bounds, to: view) }
-    var isMoreButtonShownForTesting: Bool { !moreButton.isHidden }
+    var isMoreButtonShownForTesting: Bool { !moreButton.isHidden && !rightCapsule.isHidden }
+    var isLiveButtonShownForTesting: Bool { !liveButton.isHidden && !rightCapsule.isHidden }
+    var liveButtonSymbolForTesting: String { liveButtonSymbol }
+    var liveButtonFrameForTesting: CGRect { liveButton.convert(liveButton.bounds, to: view) }
+    var moreButtonFrameForTesting: CGRect { moreButton.convert(moreButton.bounds, to: view) }
+
+    func tapLiveButtonForTesting() {
+        liveButton.sendActions(for: .primaryActionTriggered)
+    }
+
+    func tapAnywhereForTesting() {
+        dismissLiveToast()
+    }
+
+    var isLiveToastShownForTesting: Bool { liveToast != nil }
     var isSendBarShownForTesting: Bool { !sendBar.isHidden }
     /// G-6：正在淡出的截图数；dock / 说明栏身上有没有淡入动画。
     var bottomBarFadingOutCountForTesting: Int { bottomBarSnapshots.count }

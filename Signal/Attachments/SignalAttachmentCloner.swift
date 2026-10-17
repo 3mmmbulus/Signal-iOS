@@ -39,6 +39,13 @@ enum SignalAttachmentCloner {
             // Tellomi (ADR-0068): sent again as the same original file, not re-normalized into a photo.
             result = try PreviewableAttachment.tellomiAsFileAttachment(dataSource: decryptedDataSource, dataUTI: dataUTI, attachmentLimits: attachmentLimits)
         }
+        // Tellomi (ADR-0068 §4.4 "转发"): a live photo is forwarded with its motion when this device has it (our own, or played
+        // this run — a received one plays whenever it comes on screen); the spoiler is not carried over.
+        if result.isImage {
+            result.rawValue.tellomiLivePhotoVideo = SSKEnvironment.shared.databaseStorageRef.read { tx in
+                TellomiLivePhoto.video(attachment.reference, tx: tx)
+            }.flatMap(TellomiLivePhoto.localVideoFile(_:))
+        }
         return result
     }
 }

@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "پنهان کردن با اسپویلر";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "حفظ HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "دسترسی Tellomi به عکس‌هایتان را محدود کرده‌اید.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "زنده";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "زنده خاموش";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "عکس زنده خاموش شد";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "عکس زنده روشن شد";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "عکس زنده";
 "IMAGE_PICKER_TELLOMI_MORE" = "گزینه‌های بیشتر";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "انتقال توضیح به پایین";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "انتقال توضیح به بالا";

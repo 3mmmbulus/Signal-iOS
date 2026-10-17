@@ -14,7 +14,7 @@ struct TellomiPhotoPickerItem: Hashable {
     let id: String
     let isVideo: Bool
     let duration: TimeInterval
-    /// 实况照片：格子左上角小图标（P-8）；开关与按实况发出是 #1263（P-4）。
+    /// 实况照片：格子左上角小图标（P-8）；开关与按实况发出见 `TellomiPhotoPickerViewController` 的实况开关（#1263 P-4）。
     let isLivePhoto: Bool
     /// 动图（GIF 等）：上游预览页不支持裁剪 / 绘制（按通用附件处理），查看器里不给这两个快捷。
     let isAnimatedImage: Bool
@@ -79,12 +79,18 @@ protocol TellomiPhotoPickerLibrary: AnyObject {
     /// Tellomi（#1263 F-3）：相册里当前版本的文件大小（「文件」页相册预览底部的「尺寸 · 时长 · 大小」）；不知道就 nil。
     func fileSize(for item: TellomiPhotoPickerItem) -> Int64?
 
+    /// Tellomi（#1263 P-4，ADR-0068 §4.4）：实况照片的动态部分，转成要发的 MP4（`TellomiLivePhotoTranscoder`）。
+    /// 不是实况、或者取不到就 nil（只发静态图）。
+    func livePhotoVideo(for item: TellomiPhotoPickerItem) async throws -> URL?
+
     /// 相册内容变了（比如「选择更多照片…」之后），网格要重读。
     var onChange: (() -> Void)? { get set }
 }
 
 extension TellomiPhotoPickerLibrary {
     func fileSize(for item: TellomiPhotoPickerItem) -> Int64? { nil }
+
+    func livePhotoVideo(for item: TellomiPhotoPickerItem) async throws -> URL? { nil }
 
     func requestViewerImage(
         for item: TellomiPhotoPickerItem,
@@ -363,6 +369,24 @@ final class TellomiSystemPhotoLibrary: NSObject, TellomiPhotoPickerLibrary, PHPh
         } catch SignalAttachmentError.fileSizeTooLarge {
             return .tooLarge(fileName: fileName)
         }
+    }
+
+    // MARK: - 实况（#1263 P-4）
+
+    /// 动态部分：在「照片」里编辑过的取 fullSizePairedVideo（和网格里看到的静态图对得上），否则原件的 pairedVideo；
+    /// iCloud 里的先下载。写成临时 .mov，再转成要发的 MP4。
+    func livePhotoVideo(for item: TellomiPhotoPickerItem) async throws -> URL? {
+        guard item.isLivePhoto, let asset = item.asset else { return nil }
+        let resources = PHAssetResource.assetResources(for: asset)
+        guard let resource = resources.first(where: { $0.type == .fullSizePairedVideo }) ?? resources.first(where: { $0.type == .pairedVideo }) else {
+            return nil
+        }
+        let movie = OWSFileSystem.temporaryFileUrl(fileExtension: "mov", isAvailableWhileDeviceLocked: false)
+        defer { try? OWSFileSystem.deleteFileIfExists(url: movie) }
+        let options = PHAssetResourceRequestOptions()
+        options.isNetworkAccessAllowed = true
+        try await PHAssetResourceManager.default().writeData(for: resource, toFile: movie, options: options)
+        return try await TellomiLivePhotoTranscoder.transcode(movie)
     }
 
     // MARK: - PHPhotoLibraryChangeObserver

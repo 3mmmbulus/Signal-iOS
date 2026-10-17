@@ -242,11 +242,14 @@ public class PreparedOutgoingMessage {
 
     public func attachmentUploadOperations(tx: DBReadTransaction) -> [() async throws -> Void] {
         let attachmentUploadManager = DependenciesBridge.shared.attachmentUploadManager
-        return attachmentIdsForUpload(tx: tx).map { attachmentId in
+        let operations: [() async throws -> Void] = attachmentIdsForUpload(tx: tx).map { attachmentId in
             return {
                 try await attachmentUploadManager.uploadTransitTierAttachment(attachmentId: attachmentId)
             }
         }
+        // Tellomi（ADR-0068 §4.4）：实况照片的动态部分是第二段上传，传完才组得出 `tellomi.livePhotoVideo`。
+        guard case .persisted(let persisted) = messageType else { return operations }
+        return operations + TellomiLivePhoto.uploadOperations(messageRowId: persisted.rowId, tx: tx)
     }
 
     // MARK: - Message state updates

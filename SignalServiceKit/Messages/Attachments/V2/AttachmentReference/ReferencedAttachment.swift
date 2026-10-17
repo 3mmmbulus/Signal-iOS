@@ -259,8 +259,9 @@ extension ReferencedAttachment {
     /// attachment, suitable for sending with a message.
     ///
     /// Tellomi (ADR-0068 §4.4): `tellomiSpoiler` covers it for the receiver (a body attachment or a quote thumbnail;
-    /// `TellomiMediaSpoiler.isSpoiler(_:tx:)`).
-    func asProtoForSending(tellomiSpoiler: Bool = false) -> SSKProtoAttachmentPointer? {
+    /// `TellomiMediaSpoiler.isSpoiler(_:tx:)`); `tellomiLivePhotoVideo` is the uploaded moving half of a live photo
+    /// (a still body attachment; `TellomiLivePhoto.storedPointer(_:tx:)`).
+    func asProtoForSending(tellomiSpoiler: Bool = false, tellomiLivePhotoVideo: SSKProtoAttachmentPointer? = nil) -> SSKProtoAttachmentPointer? {
         guard let pointer = AttachmentTransitPointer(attachment: attachment) else {
             return nil
         }
@@ -308,13 +309,19 @@ extension ReferencedAttachment {
         }
 
         // Tellomi (ADR-0068 §4.1): only written when something is set, so other pointers stay byte-identical to upstream.
-        // Sent as a file wins (the receiver ignores a spoiler on it anyway, rule 1).
-        if tellomiAsFile || tellomiSpoiler {
+        // Sent as a file wins (the receiver ignores a spoiler or a live part on it anyway, rule 1). The live part only goes on
+        // a still image and never carries a live part of its own (rule 3).
+        let livePhotoVideo = pointer.attachment.mimeType.lowercased().hasPrefix("image/") && tellomiLivePhotoVideo?.tellomi?.livePhotoVideo == nil
+            ? tellomiLivePhotoVideo : nil
+        if tellomiAsFile || tellomiSpoiler || livePhotoVideo != nil {
             let tellomi = SSKProtoTellomiAttachment.builder()
             if tellomiAsFile {
                 tellomi.setAsFile(true)
             } else {
-                tellomi.setSpoiler(true)
+                if tellomiSpoiler {
+                    tellomi.setSpoiler(true)
+                }
+                livePhotoVideo.map(tellomi.setLivePhotoVideo(_:))
             }
             builder.setTellomi(tellomi.buildInfallibly())
         }

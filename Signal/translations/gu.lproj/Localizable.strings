@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "સ્પોઇલરથી છુપાવો";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC રાખો";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "તમે Tellomi ની તમારા ફોટા સુધીની ઍક્સેસ મર્યાદિત કરી છે.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "લાઇવ";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "લાઇવ બંધ";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "લાઇવ ફોટો બંધ";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "લાઇવ ફોટો ચાલુ";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "લાઇવ ફોટો";
 "IMAGE_PICKER_TELLOMI_MORE" = "વધુ વિકલ્પો";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "કૅપ્શન નીચે ખસેડો";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "કૅપ્શન ઉપર ખસેડો";

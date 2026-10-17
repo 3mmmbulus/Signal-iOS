@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Скрыть под спойлер";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Оставить HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Вы ограничили доступ Tellomi к вашим фото.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live выкл.";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo выключено";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo включено";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "Другие параметры";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Переместить подпись вниз";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Переместить подпись вверх";

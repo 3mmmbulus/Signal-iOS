@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Elrejtés spoilerként";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC megtartása";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Korlátoztad a Tellomi hozzáférését a fotóidhoz.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live ki";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo kikapcsolva";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo bekapcsolva";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "További lehetőségek";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Felirat alulra";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Felirat felülre";

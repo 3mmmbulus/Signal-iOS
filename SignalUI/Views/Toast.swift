@@ -190,6 +190,11 @@ public class ToastController: NSObject, ToastViewDelegate {
         self.toastView = nil
     }
 
+    /// Tellomi（tellomi/tellomi#1263 P-4）：「碰一下屏幕就消失」的提示由调用方收起（同 Telegram iOS `TooltipInfoScreen`）。
+    public func tellomiDismiss() {
+        dismissToastView()
+    }
+
     // MARK: Internal
 
     func dismissToastView() {

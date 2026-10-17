@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Skrýt jako spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Ponechat HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Omezili jste přístup aplikace Tellomi k fotografiím.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live vyp.";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo vypnuto";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo zapnuto";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "Další možnosti";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Přesunout popisek dolů";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Přesunout popisek nahoru";

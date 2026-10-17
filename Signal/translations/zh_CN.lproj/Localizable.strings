@@ -5367,6 +5367,21 @@
 /* Banner at the top of the photo picker when the user gave Tellomi access to only some photos. */
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "你已限制 Tellomi 访问照片。";
 
+/* Button in the photo picker's album viewer on a live photo that is sent with its motion. Tap to send it as a still. */
+"IMAGE_PICKER_TELLOMI_LIVE" = "实况";
+
+/* Button in the photo picker's album viewer on a live photo that is sent as a still. Tap to send it with its motion. */
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "实况关闭";
+
+/* Toast after turning off Live Photo in the photo picker: selected live photos will be sent as still photos. */
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "实况照片已关闭";
+
+/* Toast after turning on Live Photo in the photo picker: selected live photos will be sent with their motion. */
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "实况照片已启用";
+
+/* Accessibility label of the Live Photo switch in the photo picker's top bar. */
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "实况照片";
+
 /* Accessibility label for the more-options button in the photo picker. */
 "IMAGE_PICKER_TELLOMI_MORE" = "更多选项";
 

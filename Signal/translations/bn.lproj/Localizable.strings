@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "স্পয়লার দিয়ে লুকান";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC রাখুন";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "আপনি ছবিতে Tellomi-এর অ্যাক্সেস সীমিত করেছেন।";
+"IMAGE_PICKER_TELLOMI_LIVE" = "লাইভ";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "লাইভ বন্ধ";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "লাইভ ফটো বন্ধ হয়েছে";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "লাইভ ফটো চালু হয়েছে";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "লাইভ ফটো";
 "IMAGE_PICKER_TELLOMI_MORE" = "আরও বিকল্প";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "ক্যাপশন নিচে সরান";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "ক্যাপশন উপরে সরান";

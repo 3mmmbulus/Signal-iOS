@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import PhotosUI
 import SignalServiceKit
 import SignalUI
 
@@ -43,6 +44,9 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     /// 选图页用：工具页还盖着时，改完的重画等它收起再做。
     var isWaitingForToolToClose = false
     var onClose: (() -> Void)?
+    /// #1263（spec P-4）：这一张的实况开不开（nil = 不是实况照片，没有那个键）；点了交给选图页切。
+    var liveState: (TellomiPhotoPickerItem) -> Bool? = { _ in nil }
+    var onToggleLive: ((TellomiPhotoPickerItem) -> Void)?
 
     private let library: TellomiPhotoPickerLibrary
     private let items: [TellomiPhotoPickerItem]
@@ -104,6 +108,22 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         let check = TellomiNumberedCheck()
         check.addAction(UIAction { [weak self] _ in self?.didTapCheck() }, for: .touchUpInside)
         return check
+    }()
+
+    /// #1263（spec P-4）：左上角（✕ 下面）这一张的「实况 / 实况关闭」，点一下切（两端 Telegram 单张查看器都有这一张的开 / 关；
+    /// iOS 的「循环」「来回」只有 iOS 有，按 O8 不做）。
+    private lazy var liveButton: UIButton = {
+        // 同顶上「9 / 24」那个胶囊：半透明黑底白字，黑色背景上看得清（不随浅色 / 深色外观变）。
+        var configuration = UIButton.Configuration.filled()
+        configuration.baseBackgroundColor = UIColor.black.withAlphaComponent(0.5)
+        configuration.baseForegroundColor = .white
+        configuration.cornerStyle = .capsule
+        configuration.imagePadding = 4
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+        configuration.contentInsets = .init(top: 4, leading: 8, bottom: 4, trailing: 10)
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.didTapLive() })
+        button.isHidden = true
+        return button
     }()
 
     private lazy var countButton: UIButton = {
@@ -292,6 +312,10 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             checkButton.widthAnchor.constraint(equalToConstant: 44),
             checkButton.heightAnchor.constraint(equalToConstant: 44),
 
+            liveButton.leadingAnchor.constraint(equalTo: closeButton.leadingAnchor),
+            liveButton.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: 12),
+            liveButton.heightAnchor.constraint(equalToConstant: 28),
+
             countButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             countButton.topAnchor.constraint(equalTo: checkButton.bottomAnchor, constant: 4),
             countButton.heightAnchor.constraint(equalToConstant: 28),
@@ -449,6 +473,13 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
         refreshChrome(animatedCheck: true)
     }
 
+    private func didTapLive() {
+        guard items.indices.contains(currentIndex) else { return }
+        onToggleLive?(items[currentIndex])
+        refreshChrome(animatedCheck: true)
+        reloadCurrentPage()
+    }
+
     private func didTapEdit(tool: TellomiApprovalEditTool) {
         guard items.indices.contains(currentIndex) else { return }
         onEdit?(items[currentIndex], tool)
@@ -515,7 +546,7 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
     }
 
     private var chromeViews: [UIView] {
-        [closeButton, positionPill, checkButton, countButton, toolsStack, bottomBar]
+        [closeButton, positionPill, checkButton, countButton, liveButton, toolsStack, bottomBar]
     }
 
     private var currentPageIsZoomed: Bool {
@@ -547,6 +578,14 @@ final class TellomiPhotoPickerAlbumViewer: UIViewController {
             checkButton.setNumber(selectionNumber(itemId), accentColor: .Signal.accent, animated: animatedCheck)
             let item = items[currentIndex]
             toolsStack.isHidden = fileMode != nil || item.isVideo || item.isAnimatedImage
+            let live = fileMode == nil ? liveState(item) : nil
+            liveButton.isHidden = live == nil
+            if let live {
+                liveButton.configuration?.image = UIImage(systemName: live ? "livephoto" : "livephoto.slash")
+                liveButton.configuration?.title = live
+                    ? OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE", comment: "Button in the photo picker's album viewer on a live photo that is sent with its motion. Tap to send it as a still.")
+                    : OWSLocalizedString("IMAGE_PICKER_TELLOMI_LIVE_OFF", comment: "Button in the photo picker's album viewer on a live photo that is sent as a still. Tap to send it with its motion.")
+            }
             if let fileMode {
                 let name = fileMode.fileName(item)
                 fileNameLabel.text = name
@@ -601,7 +640,10 @@ extension TellomiPhotoPickerAlbumViewer: UICollectionViewDataSource, UICollectio
             let item = items[indexPath.item]
             page.onZoomChanged = { [weak self] zoomed in self?.collectionView.isScrollEnabled = !zoomed }
             page.onSingleTap = { [weak self] in self?.toggleSelection(of: item) }
-            page.configure(item: item, library: library, targetSize: pixelTargetSize(for: item), editedImage: editedImage(item.id))
+            let edited = editedImage(item.id)
+            // 实况开着、没改过：放一遍动态部分（静音），同 Telegram 两端的单张查看器。
+            let playsLive = fileMode == nil && edited == nil && liveState(item) == true
+            page.configure(item: item, library: library, targetSize: pixelTargetSize(for: item), editedImage: edited, playsLive: playsLive)
         }
         return cell
     }
@@ -656,6 +698,9 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
     private var normalZoomScale: CGFloat = 1
     private var isFullResolution = false
     private let downloadProgress = TellomiAlbumViewerDownloadProgress()
+    /// #1263（spec P-4）：实况开着时盖在图上的系统实况视图，出来放一遍（静音）。
+    private var livePhotoView: PHLivePhotoView?
+    private var livePhotoRequest: PHImageRequestID?
 
     var isZoomed: Bool { scrollView.zoomScale > normalZoomScale + 0.0001 }
 
@@ -710,15 +755,20 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
         item = nil
         library = nil
         editedImage = nil
+        stopLivePreview()
         isFullResolution = false
         needsFit = true
         downloadProgress.hide(animated: false)
     }
 
-    func configure(item: TellomiPhotoPickerItem, library: TellomiPhotoPickerLibrary, targetSize: CGSize, editedImage: UIImage? = nil) {
+    func configure(item: TellomiPhotoPickerItem, library: TellomiPhotoPickerLibrary, targetSize: CGSize, editedImage: UIImage? = nil, playsLive: Bool = false) {
         self.item = item
         self.library = library
         self.editedImage = editedImage
+        stopLivePreview()
+        if playsLive, let asset = item.asset {
+            startLivePreview(asset: asset, targetSize: targetSize, itemId: item.id)
+        }
         isFullResolution = editedImage != nil
         needsFit = true
         downloadProgress.hide(animated: false)
@@ -734,6 +784,35 @@ private final class TellomiAlbumViewerPageCell: UICollectionViewCell, UIScrollVi
 
     /// 改过之后的样子（裁剪过尺寸就不同了）：有它就不再向相册要图。
     private var editedImage: UIImage?
+
+    private func startLivePreview(asset: PHAsset, targetSize: CGSize, itemId: String) {
+        let options = PHLivePhotoRequestOptions()
+        options.deliveryMode = .highQualityFormat
+        options.isNetworkAccessAllowed = true
+        livePhotoRequest = PHImageManager.default().requestLivePhoto(for: asset, targetSize: targetSize, contentMode: .aspectFit, options: options) { [weak self] livePhoto, info in
+            let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
+            guard let self, let livePhoto, !isDegraded, self.item?.id == itemId, self.livePhotoView == nil else { return }
+            let liveView = PHLivePhotoView(frame: self.imageView.bounds)
+            liveView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            liveView.isMuted = true
+            liveView.contentMode = .scaleAspectFit
+            liveView.livePhoto = livePhoto
+            liveView.isUserInteractionEnabled = false
+            self.imageView.addSubview(liveView)
+            self.livePhotoView = liveView
+            liveView.startPlayback(with: .full)
+        }
+    }
+
+    private func stopLivePreview() {
+        if let livePhotoRequest {
+            PHImageManager.default().cancelImageRequest(livePhotoRequest)
+        }
+        livePhotoRequest = nil
+        livePhotoView?.stopPlayback()
+        livePhotoView?.removeFromSuperview()
+        livePhotoView = nil
+    }
 
     private func request(_ item: TellomiPhotoPickerItem, from library: TellomiPhotoPickerLibrary, targetSize: CGSize) {
         thumbnailRequest?.cancel()
@@ -907,6 +986,18 @@ extension TellomiPhotoPickerAlbumViewer {
     var positionTextForTesting: String? { positionLabel.text }
     var checkNumberTextForTesting: String? { checkButton.numberTextForTesting }
     var isCountShownForTesting: Bool { !countButton.isHidden }
+
+    var liveButtonTitleForTesting: String? { liveButton.isHidden ? nil : liveButton.configuration?.title }
+
+    func tapLiveForTesting() {
+        liveButton.sendActions(for: .primaryActionTriggered)
+    }
+
+    /// 同手指翻到第 index 张。
+    func scrollToItemForTesting(_ index: Int) {
+        collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: false)
+        updateCurrentIndex(from: collectionView)
+    }
 
     func tapCheckForTesting() {
         didTapCheck()

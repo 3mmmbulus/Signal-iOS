@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Nascondi come spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Mantieni HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Hai limitato l’accesso di Tellomi alle tue foto.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live disattivato";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo disattivata";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo attivata";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "Altre opzioni";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Sposta didascalia sotto";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Sposta didascalia sopra";

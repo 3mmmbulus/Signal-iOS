@@ -37,7 +37,10 @@ extension ThreadUtil {
                 let attachmentsForSending = try await attachments.0.mapAsync {
                     try await $0.forSending(attachmentContentValidator: attachmentContentValidator)
                 }
-                tellomiMedia = TellomiOutgoingMedia(spoilers: attachmentsForSending.map(\.isTellomiSpoiler))
+                tellomiMedia = TellomiOutgoingMedia(
+                    spoilers: attachmentsForSending.map(\.isTellomiSpoiler),
+                    livePhotoVideos: attachmentsForSending.map(Self.tellomiStageLivePhotoVideo(_:)),
+                )
                 let quotedReplyDraft = try await quotedReplyDraft.mapAsync {
                     try await DependenciesBridge.shared.quotedReplyManager.prepareDraftForSending($0)
                 }
@@ -190,6 +193,18 @@ extension ThreadUtil {
 
     // MARK: - Tellomi
 
+    /// Tellomi（ADR-0068 §4.4）：实况的动态部分复制进待上传目录（选图给的是临时文件；定时消息的那份留在它的记录里）。
+    /// 复制不了就只发静态图。
+    private static func tellomiStageLivePhotoVideo(_ attachment: SendableAttachment.ForSending) -> URL? {
+        guard let url = attachment.tellomiLivePhotoVideo else { return nil }
+        do {
+            return try TellomiLivePhoto.stageOutgoingVideo(url)
+        } catch {
+            Logger.warn("Couldn't stage the live photo video; sending the still only. \(error)")
+            return nil
+        }
+    }
+
     /// Tellomi（tellomi/tellomi#1519 M-4）：定时消息到点入队时的认领。两步都在落库的那个写事务里，所以几处同时发、
     /// 崩溃重来都只会发一次。
     public struct TellomiEnqueueClaim {
@@ -258,7 +273,10 @@ extension ThreadUtil {
                 benchEventId: benchEventId,
                 thread: thread,
                 tellomiCaptionAboveMedia: captionAboveMedia && messageBody != nil,
-                tellomiMedia: TellomiOutgoingMedia(spoilers: attachments.map(\.isTellomiSpoiler)),
+                tellomiMedia: TellomiOutgoingMedia(
+                    spoilers: attachments.map(\.isTellomiSpoiler),
+                    livePhotoVideos: attachments.map(Self.tellomiStageLivePhotoVideo(_:)),
+                ),
                 tellomiClaim: claim,
             )
         }

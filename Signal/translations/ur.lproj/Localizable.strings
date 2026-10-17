@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "اسپوائلر سے چھپائیں";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "HEIC رکھیں";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "آپ نے Tellomi کی تصاویر تک رسائی محدود کر دی ہے۔";
+"IMAGE_PICKER_TELLOMI_LIVE" = "لائیو";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "لائیو آف";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "لائیو فوٹو آف";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "لائیو فوٹو آن";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "لائیو فوٹو";
 "IMAGE_PICKER_TELLOMI_MORE" = "مزید اختیارات";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "کیپشن نیچے لے جائیں";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "کیپشن اوپر لے جائیں";

@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Amaga amb espòiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Mantén HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Has limitat l'accés de Tellomi a les teves fotos.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live desactivat";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo desactivada";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo activada";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "Més opcions";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Mou el peu de foto avall";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Mou el peu de foto amunt";

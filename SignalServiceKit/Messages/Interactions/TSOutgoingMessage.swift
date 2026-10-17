@@ -666,7 +666,9 @@ extension TSOutgoingMessage {
         return referencedAttachments.compactMap { referencedAttachment in
             // Tellomi（ADR-0068 §4.4）：选图时罩住的（`TellomiOutgoingMedia`）；一次性查看的不带遮罩。
             let tellomiSpoiler = !isViewOnceMessage && TellomiMediaSpoiler.isSpoiler(referencedAttachment.reference, tx: tx)
-            guard let attachmentProto = referencedAttachment.asProtoForSending(tellomiSpoiler: tellomiSpoiler) else {
+            // 实况照片的动态部分（发送前传好的，`TellomiLivePhoto.uploadOperations`）。
+            let livePhotoVideo = isViewOnceMessage ? nil : TellomiLivePhoto.storedPointer(referencedAttachment.reference, tx: tx)
+            guard let attachmentProto = referencedAttachment.asProtoForSending(tellomiSpoiler: tellomiSpoiler, tellomiLivePhotoVideo: livePhotoVideo) else {
                 owsFailDebug("Failed to generate proto for body attachment!")
                 return nil
             }

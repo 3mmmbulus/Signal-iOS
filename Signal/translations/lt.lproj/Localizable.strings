@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Paslėpti kaip spoilerį";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Palikti HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Apribojote Tellomi prieigą prie nuotraukų.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live išj.";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo išjungta";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo įjungta";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "Daugiau parinkčių";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Perkelti aprašą žemyn";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Perkelti aprašą aukštyn";

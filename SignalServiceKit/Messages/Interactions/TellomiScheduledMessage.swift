@@ -21,6 +21,8 @@ public struct TellomiScheduledMessage: Codable, Equatable {
         public let renderingFlag: AttachmentReference.RenderingFlag
         /// Tellomi（#1263，ADR-0068 §4.4）：选图时罩住的。旧记录里没有这一项（nil = 不罩）。
         public let tellomiSpoiler: Bool?
+        /// Tellomi（#1263，ADR-0068 §4.4）：实况照片的动态部分（MP4），记录目录里的文件名；nil = 静态图。
+        public let tellomiLiveFileName: String?
 
         public init(
             fileName: String,
@@ -29,6 +31,7 @@ public struct TellomiScheduledMessage: Codable, Equatable {
             sourceFilename: String?,
             renderingFlag: AttachmentReference.RenderingFlag,
             tellomiSpoiler: Bool = false,
+            tellomiLiveFileName: String? = nil,
         ) {
             self.fileName = fileName
             self.dataUTI = dataUTI
@@ -37,6 +40,7 @@ public struct TellomiScheduledMessage: Codable, Equatable {
             self.renderingFlag = renderingFlag
             // 只在罩住时写，别的记录编码出来和以前一样。
             self.tellomiSpoiler = tellomiSpoiler ? true : nil
+            self.tellomiLiveFileName = tellomiLiveFileName
         }
 
         public var isTellomiSpoiler: Bool { tellomiSpoiler == true }
@@ -180,6 +184,11 @@ public enum TellomiScheduledMessageStore {
 
     public static func fileUrl(for attachment: TellomiScheduledMessage.Attachment, messageId: String) -> URL {
         directory(for: messageId).appendingPathComponent(attachment.fileName)
+    }
+
+    /// Tellomi（ADR-0068 §4.4）：这一项实况照片的动态部分；静态图是 nil。
+    public static func liveVideoUrl(for attachment: TellomiScheduledMessage.Attachment, messageId: String) -> URL? {
+        attachment.tellomiLiveFileName.map { directory(for: messageId).appendingPathComponent($0) }
     }
 
     // MARK: - Reads

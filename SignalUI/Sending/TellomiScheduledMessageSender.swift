@@ -283,6 +283,15 @@ public final class TellomiScheduledMessageSender {
             let destination = directory.appendingPathComponent(fileName)
             try OWSFileSystem.copyFile(from: attachment.dataSource.fileUrl, to: destination)
             OWSFileSystem.protectFileOrFolder(atPath: destination.path)
+            // Tellomi（ADR-0068 §4.4）：实况的动态部分也存一份，到点照样两段发。
+            var liveFileName: String?
+            if let live = attachment.tellomiLivePhotoVideo {
+                let name = "\(index).live.mp4"
+                let liveDestination = directory.appendingPathComponent(name)
+                try OWSFileSystem.copyFile(from: live, to: liveDestination)
+                OWSFileSystem.protectFileOrFolder(atPath: liveDestination.path)
+                liveFileName = name
+            }
             return TellomiScheduledMessage.Attachment(
                 fileName: fileName,
                 dataUTI: attachment.dataUTI,
@@ -290,6 +299,7 @@ public final class TellomiScheduledMessageSender {
                 sourceFilename: attachment.sourceFilename?.rawValue ?? attachment.defaultFilename,
                 renderingFlag: attachment.renderingFlag,
                 tellomiSpoiler: attachment.isTellomiSpoiler,
+                tellomiLiveFileName: liveFileName,
             )
         }
     }
@@ -396,6 +406,7 @@ public final class TellomiScheduledMessageSender {
                     dataSource: .pendingAttachment(pendingAttachment),
                     renderingFlag: attachment.renderingFlag,
                     isTellomiSpoiler: attachment.isTellomiSpoiler,
+                    tellomiLivePhotoVideo: TellomiScheduledMessageStore.liveVideoUrl(for: attachment, messageId: message.id),
                 )
             }
 

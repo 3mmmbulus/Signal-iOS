@@ -114,6 +114,143 @@ public enum TellomiLivePhoto {
         return try? SSKProtoAttachmentPointer(serializedData: data)
     }
 
+    // MARK: - Sending (ADR-0068 §4.4, spec P-4)
+
+    /// 要发的动态部分（已经转成 MP4）先放在这里：消息发出去之前要上传（可能重试、可能重启以后才发），发出去以后自己这边播放也用它，
+    /// 不用再从 CDN 下一遍。文件名是消息里的位置（`b<行号>.<位置>.mp4`，同 `TellomiMediaSpoiler` 的键）。
+    public static var outgoingDirectory: URL {
+        OWSFileSystem.appSharedDataDirectoryURL().appendingPathComponent("TellomiLivePhotoOutgoing", isDirectory: true)
+    }
+
+    /// 还没传上去的：键 `m<消息行号>`，值 = { 位置: 文件名 }（JSON）。传上去以后指针写进 `store`，这一项留着（重发时看指针还新不新鲜）。
+    private static let pendingStore = KeyValueStore(collection: "TellomiLivePhotoPending")
+
+    /// 传上去的指针过了这么久就当已经过期、重传（同上游附件：`AttachmentUploadManagerImpl` 3 天内的复用）。
+    static let reuploadAfter: TimeInterval = 3 * 24 * 60 * 60
+
+    /// 选图准备好的 MP4 挪进 `outgoingDirectory`（消息还没落库，先用随机名）。
+    public static func stageOutgoingVideo(_ url: URL) throws -> URL {
+        let directory = outgoingDirectory
+        guard OWSFileSystem.ensureDirectoryExists(directory.path) else {
+            throw OWSAssertionError("Couldn't create the live photo directory.")
+        }
+        let staged = directory.appendingPathComponent("\(UUID().uuidString).mp4")
+        try OWSFileSystem.copyFile(from: url, to: staged)
+        return staged
+    }
+
+    /// 消息落库后（同一个写事务里，进发送队列之前）：这几个位置的静态图有动态部分，记下来等上传。文件改名成位置名。
+    static func markOutgoing(messageRowId: Int64, videos: [UInt32: URL], tx: DBWriteTransaction) {
+        guard !videos.isEmpty else { return }
+        var pending = [String: String]()
+        for (order, url) in videos {
+            let key = TellomiMediaSpoiler.bodyKey(messageRowId: messageRowId, orderInMessage: order)
+            let named = outgoingDirectory.appendingPathComponent("\(key).mp4")
+            if url != named {
+                try? FileManager.default.removeItem(at: named)
+                do {
+                    try FileManager.default.moveItem(at: url, to: named)
+                } catch {
+                    Logger.warn("Couldn't name the live photo video; sending the still only. \(error)")
+                    continue
+                }
+            }
+            pending["\(order)"] = named.lastPathComponent
+        }
+        guard !pending.isEmpty, let data = try? JSONEncoder().encode(pending) else { return }
+        pendingStore.setData(data, key: pendingKey(messageRowId: messageRowId), transaction: tx)
+    }
+
+    private static func pendingKey(messageRowId: Int64) -> String {
+        "m\(messageRowId)"
+    }
+
+    static func pendingVideos(messageRowId: Int64, tx: DBReadTransaction) -> [UInt32: URL] {
+        guard
+            let data = pendingStore.getData(pendingKey(messageRowId: messageRowId), transaction: tx),
+            let pending = try? JSONDecoder().decode([String: String].self, from: data)
+        else {
+            return [:]
+        }
+        return Dictionary(uniqueKeysWithValues: pending.compactMap { order, fileName in
+            UInt32(order).map { ($0, outgoingDirectory.appendingPathComponent(fileName)) }
+        })
+    }
+
+    /// 发送前的上传（`PreparedOutgoingMessage.attachmentUploadOperations`）：动态部分是第二段上传（§4.4「两段各自上传 CDN」），
+    /// 传完把指针记在静态图的位置上，组 `AttachmentPointer.tellomi.livePhotoVideo` 时读。指针还新鲜（3 天内）的不重传；
+    /// 本机文件没了的跳过（只发静态图，不让整条消息失败）。
+    static func uploadOperations(
+        messageRowId: Int64,
+        now: Date = Date(),
+        uploader: @escaping (DataSourcePath) async throws -> SSKProtoAttachmentPointer = TellomiLivePhoto.uploadTransient,
+        tx: DBReadTransaction,
+    ) -> [() async throws -> Void] {
+        return pendingVideos(messageRowId: messageRowId, tx: tx).sorted { $0.key < $1.key }.compactMap { order, url in
+            let key = TellomiMediaSpoiler.bodyKey(messageRowId: messageRowId, orderInMessage: order)
+            if
+                let existing = store.getData(key, transaction: tx).flatMap({ try? SSKProtoAttachmentPointer(serializedData: $0) }),
+                existing.hasUploadTimestamp,
+                now.timeIntervalSince(Date(millisecondsSince1970: existing.uploadTimestamp)) < reuploadAfter
+            {
+                return nil
+            }
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                Logger.warn("Live photo video is gone; sending the still only.")
+                return nil
+            }
+            return {
+                let pointer = try await uploader(DataSourcePath(fileUrl: url, ownership: .borrowed))
+                let data = try pointer.serializedData()
+                await SSKEnvironment.shared.databaseStorageRef.awaitableWrite { tx in
+                    store.setData(data, key: key, transaction: tx)
+                    // 自己这边的气泡重画：出现实况角标、能播（播的是本机文件）。
+                    if let message = InteractionFinder.fetch(rowId: messageRowId, transaction: tx) {
+                        SSKEnvironment.shared.databaseStorageRef.touch(interaction: message, shouldReindex: false, tx: tx)
+                    }
+                }
+            }
+        }
+    }
+
+    /// 和联系人同步文件同一种上传（不落附件表）：加密、拿上传表单、传，交回去的是收方要的那个嵌套指针。
+    static func uploadTransient(_ dataSource: DataSourcePath) async throws -> SSKProtoAttachmentPointer {
+        let result = try await DependenciesBridge.shared.attachmentUploadManager.uploadTransientAttachment(dataSource: dataSource)
+        return videoPointer(
+            cdnNumber: result.cdnNumber,
+            cdnKey: result.cdnKey,
+            key: result.localUploadMetadata.key,
+            digest: result.localUploadMetadata.digest,
+            plaintextLength: result.localUploadMetadata.plaintextDataLength,
+            uploadTimestamp: result.finishTimestamp,
+        )
+    }
+
+    static func videoPointer(
+        cdnNumber: UInt32,
+        cdnKey: String,
+        key: Data,
+        digest: Data,
+        plaintextLength: UInt32,
+        uploadTimestamp: UInt64,
+    ) -> SSKProtoAttachmentPointer {
+        let builder = SSKProtoAttachmentPointer.builder()
+        builder.setCdnNumber(cdnNumber)
+        builder.setCdnKey(cdnKey)
+        builder.setContentType("video/mp4")
+        builder.setKey(key)
+        builder.setDigest(digest)
+        builder.setSize(plaintextLength)
+        builder.setUploadTimestamp(uploadTimestamp)
+        return builder.buildInfallibly()
+    }
+
+    /// 自己发的：本机还留着那个 MP4 就直接播，不去 CDN 下。
+    static func localOutgoingFile(cacheKey: String) -> URL? {
+        let url = outgoingDirectory.appendingPathComponent("\(cacheKey).mp4")
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
     // MARK: - Download
 
     public struct Video {
@@ -185,10 +322,19 @@ public enum TellomiLivePhoto {
         return downloaded.get()[video.cacheKey]
     }
 
+    /// 本机现成的动态部分：自己发的那份，或者这次运行里下好的（转发时带上，§4.4「转发」）。没有就是 nil，不会去下。
+    public static func localVideoFile(_ video: Video) -> URL? {
+        cachedVideo(video) ?? localOutgoingFile(cacheKey: video.cacheKey)
+    }
+
     /// 下载、解密动态部分，返回本机的临时文件；这次运行里下过就直接给。
     public static func fetchVideo(_ video: Video) async throws -> URL {
         if let url = cachedVideo(video) {
             return url
+        }
+        if let local = localOutgoingFile(cacheKey: video.cacheKey) {
+            downloaded.update { $0[video.cacheKey] = local }
+            return local
         }
         let decrypted = try await DependenciesBridge.shared.attachmentDownloadManager.downloadTransientAttachment(
             downloadMetadata: video.downloadMetadata,

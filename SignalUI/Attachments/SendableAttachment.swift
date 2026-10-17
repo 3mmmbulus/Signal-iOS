@@ -21,6 +21,8 @@ public struct SendableAttachment {
     public let renderingFlag: AttachmentReference.RenderingFlag
     /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/isTellomiSpoiler``.
     public private(set) var isTellomiSpoiler = false
+    /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/tellomiLivePhotoVideo``.
+    public private(set) var tellomiLivePhotoVideo: URL?
 
     private init(
         dataSource: DataSourcePath,
@@ -52,6 +54,7 @@ public struct SendableAttachment {
         var result = try await _forPreviewableAttachment(attachment, imageQualityLevel: imageQualityLevel)
         // Tellomi (ADR-0068 §4.4): the picker's marks ride along to the message.
         result.isTellomiSpoiler = attachment.rawValue.isTellomiSpoiler
+        result.tellomiLivePhotoVideo = attachment.rawValue.tellomiLivePhotoVideo
         return result
     }
 
@@ -201,11 +204,19 @@ public struct SendableAttachment {
         public let renderingFlag: AttachmentReference.RenderingFlag
         /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/isTellomiSpoiler``.
         public let isTellomiSpoiler: Bool
+        /// Tellomi (ADR-0068 §4.4): see ``SignalAttachment/tellomiLivePhotoVideo``.
+        public let tellomiLivePhotoVideo: URL?
 
-        public init(dataSource: AttachmentDataSource, renderingFlag: AttachmentReference.RenderingFlag, isTellomiSpoiler: Bool = false) {
+        public init(
+            dataSource: AttachmentDataSource,
+            renderingFlag: AttachmentReference.RenderingFlag,
+            isTellomiSpoiler: Bool = false,
+            tellomiLivePhotoVideo: URL? = nil,
+        ) {
             self.dataSource = dataSource
             self.renderingFlag = renderingFlag
             self.isTellomiSpoiler = isTellomiSpoiler
+            self.tellomiLivePhotoVideo = tellomiLivePhotoVideo
         }
     }
 
@@ -215,6 +226,7 @@ public struct SendableAttachment {
             dataSource: dataSource,
             renderingFlag: self.renderingFlag,
             isTellomiSpoiler: self.isTellomiSpoiler,
+            tellomiLivePhotoVideo: self.tellomiLivePhotoVideo,
         )
     }
 }

@@ -5,23 +5,32 @@
 
 import Foundation
 
-/// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.4，spec P-5）：要发的这条消息上 Tellomi 自己的附件标记——
-/// 选图「···」的「罩住图片」。按正文附件在消息里的位置（`orderInMessage`）给，消息落库后、进发送队列之前
+/// Tellomi（tellomi/tellomi#1263，ADR-0068 §4.4，spec P-4 / P-5）：要发的这条消息上 Tellomi 自己的附件标记——
+/// 选图「···」的「罩住图片」、顶栏的实况开关。按正文附件在消息里的位置（`orderInMessage`）给，消息落库后、进发送队列之前
 /// 在同一个写事务里记上（`ThreadUtil.enqueueMessageSync`），发送时组 `AttachmentPointer` 读得到。
 public struct TellomiOutgoingMedia: Equatable {
 
     /// 罩住的正文附件（位置）。只有图片 / 视频算（ADR-0068 §4.1），别的位置给了也不记。
     public var spoilerOrders: Set<UInt32>
 
-    public init(spoilerOrders: Set<UInt32> = []) {
+    /// 实况照片的动态部分（已转成 MP4、放进 `TellomiLivePhoto.outgoingDirectory` 的文件），按静态图的位置。
+    public var livePhotoVideos: [UInt32: URL]
+
+    public init(spoilerOrders: Set<UInt32> = [], livePhotoVideos: [UInt32: URL] = [:]) {
         self.spoilerOrders = spoilerOrders
+        self.livePhotoVideos = livePhotoVideos
     }
 
-    public var isEmpty: Bool { spoilerOrders.isEmpty }
+    public var isEmpty: Bool { spoilerOrders.isEmpty && livePhotoVideos.isEmpty }
 
     /// 按附件的先后给的标记（`attachments[i]` 就是位置 i）。
-    public init(spoilers: [Bool]) {
-        self.init(spoilerOrders: Set(spoilers.enumerated().compactMap { $0.element ? UInt32($0.offset) : nil }))
+    public init(spoilers: [Bool], livePhotoVideos: [URL?] = []) {
+        self.init(
+            spoilerOrders: Set(spoilers.enumerated().compactMap { $0.element ? UInt32($0.offset) : nil }),
+            livePhotoVideos: Dictionary(uniqueKeysWithValues: livePhotoVideos.enumerated().compactMap { index, url in
+                url.map { (UInt32(index), $0) }
+            }),
+        )
     }
 
     /// 记上。每条要发的消息都过这里：没有标记时只看引用——回复一张被罩住的图，引用缩略图也罩着发（§4.4「引用回复」）。
@@ -30,6 +39,10 @@ public struct TellomiOutgoingMedia: Equatable {
         guard let (message, rowId) = preparedMessage.tellomiPersistedMessage else { return }
         if !media.spoilerOrders.isEmpty, !message.isViewOnceMessage {
             TellomiMediaSpoiler.markOutgoing(messageRowId: rowId, orders: media.spoilerOrders, tx: tx)
+        }
+        // 一次性查看的查看器不播实况：只发静态图（ADR-0079 §4.4）。
+        if !media.livePhotoVideos.isEmpty, !message.isViewOnceMessage {
+            TellomiLivePhoto.markOutgoing(messageRowId: rowId, videos: media.livePhotoVideos, tx: tx)
         }
         if let quotedMessage = message.quotedMessage {
             TellomiMediaSpoiler.markOutgoingQuote(

@@ -127,6 +127,8 @@ public class AttachmentMultisend {
         let original: AttachmentDataSource?
         let segmented: [AttachmentDataSource]?
         let renderingFlag: AttachmentReference.RenderingFlag
+        /// Tellomi (ADR-0068 §4.4): a forwarded live photo's motion (only for the unsegmented original, not stories).
+        var tellomiLivePhotoVideo: URL?
 
         init(
             original: AttachmentDataSource?,
@@ -169,11 +171,13 @@ public class AttachmentMultisend {
                     attachment,
                     shouldUseDefaultFilename: false,
                 )
-                try results.append(.init(
+                var result = try SegmentAttachmentResult(
                     original: dataSource,
                     segmented: nil,
                     renderingFlag: attachment.renderingFlag,
-                ))
+                )
+                result.tellomiLivePhotoVideo = attachment.tellomiLivePhotoVideo
+                results.append(result)
             }
             return results
         }
@@ -241,6 +245,7 @@ public class AttachmentMultisend {
             return SendableAttachment.ForSending(
                 dataSource: original,
                 renderingFlag: attachment.renderingFlag,
+                tellomiLivePhotoVideo: attachment.tellomiLivePhotoVideo,
             )
         }
 
@@ -383,7 +388,13 @@ public class AttachmentMultisend {
             linkPreviewDataSource: nil,
             transaction: tx,
         )
-        return try unpreparedMessage.prepare(tx: tx)
+        let preparedMessage = try unpreparedMessage.prepare(tx: tx)
+        // Tellomi（ADR-0068 §4.4「转发」）：实况的动态部分原样带过去（每个收件会话一份，按消息的位置改名）；遮罩不带。
+        let livePhotoVideos: [URL?] = attachments.map { attachment in
+            attachment.tellomiLivePhotoVideo.flatMap { try? TellomiLivePhoto.stageOutgoingVideo($0) }
+        }
+        TellomiOutgoingMedia.mark(preparedMessage, media: TellomiOutgoingMedia(spoilers: [], livePhotoVideos: livePhotoVideos), tx: tx)
+        return preparedMessage
     }
 
     // MARK: Preparing Group Story Messages

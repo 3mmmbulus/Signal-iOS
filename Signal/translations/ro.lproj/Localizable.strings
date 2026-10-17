@@ -11188,6 +11188,11 @@
 "IMAGE_PICKER_TELLOMI_HIDE_WITH_SPOILER" = "Ascunde ca spoiler";
 "IMAGE_PICKER_TELLOMI_KEEP_HEIC" = "Păstrează HEIC";
 "IMAGE_PICKER_TELLOMI_LIMITED_ACCESS" = "Ai limitat accesul Tellomi la fotografiile tale.";
+"IMAGE_PICKER_TELLOMI_LIVE" = "Live";
+"IMAGE_PICKER_TELLOMI_LIVE_OFF" = "Live oprit";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_OFF" = "Live Photo dezactivat";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_ON" = "Live Photo activat";
+"IMAGE_PICKER_TELLOMI_LIVE_PHOTO_TOGGLE" = "Live Photo";
 "IMAGE_PICKER_TELLOMI_MORE" = "Mai multe opțiuni";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_DOWN" = "Mută descrierea jos";
 "IMAGE_PICKER_TELLOMI_MOVE_CAPTION_UP" = "Mută descrierea sus";
