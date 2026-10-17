@@ -77,6 +77,8 @@ public enum TellomiRestrictions {
 
     public static let path = "v1/tellomi/restriction"
     public static let checkInterval: TimeInterval = 6 * .hour
+    /// 有处置时问得勤一些：提前解除（申诉通过、处置有误）时，提示不该还挂几个小时。
+    public static let checkIntervalWhileRestricted: TimeInterval = 15 * .minute
 
     /// 说明变了（在主线程发）：会话列表的提示跟着重判。
     public static let didChangeNotification = Notification.Name("TellomiRestrictionDidChange")
@@ -138,17 +140,20 @@ public enum TellomiRestrictions {
         guard DependenciesBridge.shared.tsAccountManager.registrationStateWithMaybeSneakyTransaction.isRegistered else {
             return
         }
-        let checkedAt = db.read { keyValueStore.getDate(checkedAtKey, transaction: $0) }
-        guard force || shouldCheck(now: now, lastChecked: checkedAt) else {
-            return
+        let (checkedAt, restricted) = db.read { tx in
+            (keyValueStore.getDate(checkedAtKey, transaction: tx), active(tx: tx, now: now) != nil)
         }
-        await db.awaitableWrite { tx in
-            keyValueStore.setDate(now, key: checkedAtKey, transaction: tx)
+        guard force || shouldCheck(now: now, lastChecked: checkedAt, isRestricted: restricted) else {
+            return
         }
         do {
             let response = try await SSKEnvironment.shared.networkManagerRef.asyncRequest(
                 TSRequest(url: URL(string: path)!, method: "GET", parameters: nil),
             )
+            // 问到了才记时间：回前台那一刻断网的话，下次回前台还要再问，不能白等 6 小时
+            await db.awaitableWrite { tx in
+                keyValueStore.setDate(now, key: checkedAtKey, transaction: tx)
+            }
             // 204 没有 body = 没有处置
             await store(response.responseStatusCode == 200 ? TellomiRestriction.parse(response.responseBodyData) : nil, db: db)
         } catch {
@@ -156,13 +161,13 @@ public enum TellomiRestrictions {
         }
     }
 
-    static func shouldCheck(now: Date, lastChecked: Date?) -> Bool {
+    static func shouldCheck(now: Date, lastChecked: Date?, isRestricted: Bool = false) -> Bool {
         guard let lastChecked else {
             return true
         }
         let sinceLast = now.timeIntervalSince(lastChecked)
         // 时钟往回拨过（sinceLast < 0）也问一次
-        return sinceLast < 0 || sinceLast >= checkInterval
+        return sinceLast < 0 || sinceLast >= (isRestricted ? checkIntervalWhileRestricted : checkInterval)
     }
 
     /// 取发送证书被拒（`OWSUDManager`）：403 自带说明就记下，不然问一次服务端。

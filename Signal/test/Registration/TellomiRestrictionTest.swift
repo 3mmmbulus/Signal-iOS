@@ -48,6 +48,9 @@ final class TellomiRestrictionTest: XCTestCase {
         XCTAssertFalse(TellomiRestrictions.shouldCheck(now: now, lastChecked: now.addingTimeInterval(-5 * .hour)))
         XCTAssertTrue(TellomiRestrictions.shouldCheck(now: now, lastChecked: now.addingTimeInterval(-6 * .hour)))
         XCTAssertTrue(TellomiRestrictions.shouldCheck(now: now, lastChecked: now.addingTimeInterval(.hour)), "clock went backwards")
+        // 有处置时每 15 分钟问一次，提前解除时提示不会多挂几个小时
+        XCTAssertTrue(TellomiRestrictions.shouldCheck(now: now, lastChecked: now.addingTimeInterval(-16 * .minute), isRestricted: true))
+        XCTAssertFalse(TellomiRestrictions.shouldCheck(now: now, lastChecked: now.addingTimeInterval(-5 * .minute), isRestricted: true))
     }
 
     func testRecognisesTheForbiddenSendFromLibsignal() {
