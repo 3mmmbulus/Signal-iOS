@@ -104,6 +104,10 @@ public class ContextMenuTargetedPreviewAccessory {
     var landscapeAccessoryAlignment: AccessoryAlignment?
 
     var animateAccessoryPresentationAlongsidePreview: Bool = false
+    /// Tellomi（交互审计 A-06）：横向夹进屏幕时，在菜单的内容边距之外再多留这么多（回应条照 Telegram 离屏幕边 17 pt）。
+    var extraHorizontalInset: CGFloat = 0
+    /// 横向放不下时要不要缩小消息预览来让它。回应条不要：它自己夹进屏幕（Telegram 同样不为回应条缩小消息）。
+    var shrinksPreviewToFitHorizontally = true
     var targetAnimateOutFrame: CGRect?
 
     weak var delegate: ContextMenuTargetedPreviewAccessoryInteractionDelegate?
@@ -135,6 +139,12 @@ public class ContextMenuTargetedPreviewAccessory {
     /// Called when a current touch event changed location
     /// - Parameter locationInView: location relative to accessoryView's coordinate space
     func touchLocationInViewDidChange(locationInView: CGPoint) {
+
+    }
+
+    /// Tellomi（交互审计 A-06）：菜单宿主排好这个附件之后调用，[previewFrame] 是消息预览在宿主里的位置
+    /// （和 `accessoryView.frame` 同一个坐标系）。回应条用它把尾巴挂到消息的角上。
+    func accessoryDidLayout(previewFrame: CGRect) {
 
     }
 

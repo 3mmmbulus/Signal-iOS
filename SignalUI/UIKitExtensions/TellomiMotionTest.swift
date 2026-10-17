@@ -77,4 +77,24 @@ final class TellomiMotionTest: XCTestCase {
         XCTAssertEqual(velocity.dx, 2)
         XCTAssertEqual(velocity.dy, 0)
     }
+
+    // MARK: - 固定时长弹簧（回应条照 Telegram，交互审计 A-06）
+
+    /// 换成质量 1 之后，整段弹簧正好在指定时长里稳定下来。
+    func testFixedDurationSpringSettlesInItsDuration() {
+        for spring in [TellomiMotion.reactionItemAppear, TellomiMotion.reactionBarScaleIn, TellomiMotion.reactionBarWiden] {
+            XCTAssertEqual(spring.animation(keyPath: "transform.scale").duration, spring.duration, accuracy: 0.005)
+        }
+        XCTAssertEqual(TellomiMotion.reactionItemAppear.duration, 0.4)
+        XCTAssertEqual(TellomiMotion.reactionBarScaleIn.duration, 0.3)
+        XCTAssertEqual(TellomiMotion.reactionBarWiden.duration, 0.5)
+    }
+
+    /// 压缩时间不改变弹簧的性格：阻尼 88 ≈ 0.66（回弹约 7%），104 ≈ 0.78（约 2%）。
+    func testFixedDurationSpringKeepsTheDampingRatio() {
+        XCTAssertEqual(TellomiMotion.reactionItemAppear.dampingRatio, 0.656, accuracy: 0.001)
+        XCTAssertEqual(TellomiMotion.reactionBarWiden.dampingRatio, 0.775, accuracy: 0.001)
+        let spring = TellomiMotion.reactionItemAppear
+        XCTAssertEqual(spring.damping / (2 * spring.stiffness.squareRoot()), spring.dampingRatio, accuracy: 1e-9)
+    }
 }

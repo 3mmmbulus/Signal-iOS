@@ -151,6 +151,7 @@ private class ContextMenuHostView: UIView {
                 }
 
                 accessoryFrames.append(frame)
+                accessory.accessoryDidLayout(previewFrame: delegate?.contextMenuViewPreviewFrameForAccessoryLayout(self) ?? .zero)
             }
         }
 
@@ -163,8 +164,9 @@ private class ContextMenuHostView: UIView {
         let contentRect = bounds.inset(by: contentAreaInsets)
 
         // Check for Y-offset shift first, aligning to bottom accessory
-        let minX: CGFloat = accessoryViews?.map { accessoryFrame($0, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset).x }.min() ?? 0
-        let maxX: CGFloat = accessoryViews?.map { accessoryFrame($0, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset).maxX }.max() ?? 0
+        let horizontallyFittedAccessories = accessoryViews?.filter(\.shrinksPreviewToFitHorizontally)
+        let minX: CGFloat = horizontallyFittedAccessories?.map { accessoryFrame($0, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset).x }.min() ?? 0
+        let maxX: CGFloat = horizontallyFittedAccessories?.map { accessoryFrame($0, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset).maxX }.max() ?? 0
         var minY: CGFloat = accessoryViews?.map { accessoryFrame($0, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset).y }.min() ?? 0
         var maxY: CGFloat = accessoryViews?.map { accessoryFrame($0, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset).maxY }.max() ?? 0
         minY = min(minY, previewFrame.minY)
@@ -288,10 +290,10 @@ private class ContextMenuHostView: UIView {
         return accessoryFrame
     }
 
-    private func adjustAccessoryFrameForContentRect(_ accessoryFrame: CGRect) -> CGRect {
+    private func adjustAccessoryFrameForContentRect(_ accessoryFrame: CGRect, extraHorizontalInset: CGFloat) -> CGRect {
         var updatedFrame = accessoryFrame
         // Adjust accessory horizontal/vertical overlap if needed
-        let contentRect = bounds.inset(by: contentAreaInsets)
+        let contentRect = bounds.inset(by: contentAreaInsets).insetBy(dx: extraHorizontalInset, dy: 0)
         if accessoryFrame.maxY > contentRect.maxY {
             let adjust = accessoryFrame.maxY - contentRect.maxY
             updatedFrame.y -= adjust
@@ -313,7 +315,7 @@ private class ContextMenuHostView: UIView {
         let previewFrame = delegate?.contextMenuViewPreviewFrameForAccessoryLayout(self) ?? CGRect.zero
 
         let accessoryFrame = accessoryFrame(accessory, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset)
-        let adjustedAccessoryFrame = adjustAccessoryFrameForContentRect(accessoryFrame)
+        let adjustedAccessoryFrame = adjustAccessoryFrameForContentRect(accessoryFrame, extraHorizontalInset: accessory.extraHorizontalInset)
 
         accessory.accessoryView.frame = adjustedAccessoryFrame
     }
