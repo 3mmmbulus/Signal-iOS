@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D98FD2341C126A5F84A8338B /* TellomiReactionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F309B2B2F331098F485957 /* TellomiReactionPanel.swift */; };
 		E8981A997A8652D2C38AED29 /* TellomiReactionBarTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509F00653629A8EA63754812 /* TellomiReactionBarTest.swift */; };
 		E33674E0E545DC181638A823 /* TellomiReactionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AD8F99D0817666FBD35986 /* TellomiReactionBar.swift */; };
 		241EDA7D2F5CC134D05C3CC0 /* TellomiOutgoingMediaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C31330450293295B7C19657 /* TellomiOutgoingMediaTests.swift */; };
@@ -4499,6 +4500,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		84F309B2B2F331098F485957 /* TellomiReactionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionPanel.swift; sourceTree = "<group>"; };
 		509F00653629A8EA63754812 /* TellomiReactionBarTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionBarTest.swift; sourceTree = "<group>"; };
 		E2AD8F99D0817666FBD35986 /* TellomiReactionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiReactionBar.swift; sourceTree = "<group>"; };
 		3C31330450293295B7C19657 /* TellomiOutgoingMediaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiOutgoingMediaTests.swift; sourceTree = "<group>"; };
@@ -14837,6 +14839,7 @@
 				F0B872B5269CF6D900D26481 /* ContextMenuInteraction.swift */,
 				F0EE4DB526A7AC18001DE4ED /* ContextMenuReactionBarAccessory.swift */,
 				E2AD8F99D0817666FBD35986 /* TellomiReactionBar.swift */,
+				84F309B2B2F331098F485957 /* TellomiReactionPanel.swift */,
 			);
 			path = CustomContextMenus;
 			sourceTree = "<group>";
@@ -19431,6 +19434,7 @@
 				F0B872B6269CF6D900D26481 /* ContextMenuInteraction.swift in Sources */,
 				F0EE4DB626A7AC18001DE4ED /* ContextMenuReactionBarAccessory.swift in Sources */,
 				E33674E0E545DC181638A823 /* TellomiReactionBar.swift in Sources */,
+				D98FD2341C126A5F84A8338B /* TellomiReactionPanel.swift in Sources */,
 				B94E922D2E381478007BA81B /* ContextualActionBuilder.swift in Sources */,
 				76CDEB192EAD982000ADCCD6 /* ConversationBottomPanelView.swift in Sources */,
 				3457794326828A9A00732869 /* ConversationCollectionView.swift in Sources */,

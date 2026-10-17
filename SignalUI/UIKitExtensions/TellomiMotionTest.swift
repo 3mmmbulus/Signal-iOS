@@ -90,6 +90,13 @@ final class TellomiMotionTest: XCTestCase {
         XCTAssertEqual(TellomiMotion.reactionBarWiden.duration, 0.5)
     }
 
+    /// 原地展开用 Telegram iOS 26 的过渡弹簧：刚度 555.027、阻尼 47.118（质量 1），临界阻尼。
+    func testReactionPanelExpandIsTelegramsTransitionSpring() {
+        XCTAssertEqual(TellomiMotion.reactionPanelExpand.stiffness, 555.027, accuracy: 0.01)
+        XCTAssertEqual(TellomiMotion.reactionPanelExpand.damping, 47.118, accuracy: 0.01)
+        XCTAssertEqual(TellomiMotion.reactionPanelExpand.dampingRatio, 1)
+    }
+
     /// 压缩时间不改变弹簧的性格：阻尼 88 ≈ 0.66（回弹约 7%），104 ≈ 0.78（约 2%）。
     func testFixedDurationSpringKeepsTheDampingRatio() {
         XCTAssertEqual(TellomiMotion.reactionItemAppear.dampingRatio, 0.656, accuracy: 0.001)

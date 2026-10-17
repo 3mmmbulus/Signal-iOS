@@ -65,6 +65,10 @@ struct TellomiReactionBarLayout: Equatable {
     /// 按住滑到某个表情上：放大到 2 倍，下沿比原位置低 4 pt。
     static let focusedScale: CGFloat = 2
     static let focusedBottomOffset: CGFloat = 4
+    /// 原地展开成全部表情：面板最高 300（Telegram `emojiContentHeight`）。
+    static let expandedPanelMaxHeight: CGFloat = 300
+    /// 展开时面板上沿比收起时的条往上提 96（Telegram：46 + 54 − 4），消息接在面板下面 7 pt。
+    static let expandedPanelLift: CGFloat = 96
     /// 收起：内容和玻璃 0.2 s 淡出（Telegram iOS `ReactionContextNode.animateOut`）。
     static let dismissDuration: TimeInterval = 0.2
 
@@ -189,6 +193,12 @@ final class TellomiReactionBar: UIView {
     private var itemViews: [ItemView] = []
     private let expandButton = ExpandButton()
 
+    /// 往下拉（还没到展开）：底板、展开键和尾巴跟着往下长这么多。
+    private var pullDistance: CGFloat = 0
+    /// 已经原地展开成全部表情。
+    private(set) var isExpanded = false
+    private var panel: TellomiReactionPanel?
+
     private var messageFrameInSuperview: CGRect?
     private var tailFrames: (large: CGRect, small: CGRect)?
     private var growthOrigin: CGRect?
@@ -217,7 +227,8 @@ final class TellomiReactionBar: UIView {
         materialContainer.isUserInteractionEnabled = false
         for view in [barBackground, largeTailCircle, smallTailCircle] {
             if #available(iOS 26, *) {
-                view.cornerConfiguration = .capsule()
+                // 收起时是胶囊；往下拉长、展开成面板时圆角停在 23（Telegram `min(23, h / 2)`）。
+                view.cornerConfiguration = .capsule(maximumRadius: TellomiReactionBarLayout.cornerRadius)
             } else {
                 view.clipsToBounds = true
                 view.layer.cornerCurve = .continuous
@@ -288,7 +299,45 @@ final class TellomiReactionBar: UIView {
     }
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {
-        CGSize(width: barLayout.width, height: TellomiReactionBarLayout.height)
+        CGSize(width: barLayout.width, height: isExpanded ? bounds.height : TellomiReactionBarLayout.height)
+    }
+
+    // MARK: - 往下拉 / 原地展开（交互审计 A-06）
+
+    func setPullDistance(_ distance: CGFloat) {
+        pullDistance = distance
+        setNeedsLayout()
+    }
+
+    /// 宿主开始把条展开成面板：面板先透明地铺进来，尺寸由宿主的布局在弹簧里带着走。
+    func prepareExpansion(panel: TellomiReactionPanel) {
+        guard !isExpanded else { return }
+        isExpanded = true
+        isAnimatingIn = false
+        contentView.mask = nil
+        focusedSlot = nil
+        pullDistance = 0
+        panel.alpha = 0
+        panel.frame = bounds
+        addSubview(panel)
+        self.panel = panel
+        panel.layoutIfNeeded()
+    }
+
+    /// 展开的淡入淡出：7 个表情 0.15 s 淡出，尾巴缩回去，面板内容 0.1 s 后 0.2 s 淡入。
+    func playExpansionFades() {
+        UIView.animate(withDuration: 0.15, delay: 0, options: [.curveEaseIn, .beginFromCurrentState]) {
+            self.contentView.alpha = 0
+            self.largeTailCircle.transform = .scale(0.01)
+            self.smallTailCircle.transform = .scale(0.01)
+        } completion: { _ in
+            self.contentView.isHidden = true
+            self.largeTailCircle.isHidden = true
+            self.smallTailCircle.isHidden = true
+        }
+        UIView.animate(withDuration: 0.2, delay: 0.1, options: [.curveEaseOut, .allowUserInteraction]) {
+            self.panel?.alpha = 1
+        }
     }
 
     /// 消息（预览）在父视图里的位置变了：重算尾巴和底板长出来的起点。
@@ -301,28 +350,35 @@ final class TellomiReactionBar: UIView {
         super.layoutSubviews()
 
         let layout = barLayout
-        contentView.frame = bounds
+        // 收起时的条（46 高）；往下拉时底板往下长，展开后底板就是整个面板。
+        let collapsedBounds = CGRect(x: 0, y: 0, width: bounds.width, height: TellomiReactionBarLayout.height)
+        let backgroundRect = isExpanded ? bounds : CGRect(x: 0, y: 0, width: bounds.width, height: TellomiReactionBarLayout.height + pullDistance)
+        contentView.frame = collapsedBounds
+        panel?.frame = bounds
         // 尾巴最低到条下沿往下 18 pt；四周多留一点给玻璃的高光。
-        materialContainer.frame = bounds.inset(by: UIEdgeInsets(top: -10, left: -10, bottom: -28, right: -10))
+        materialContainer.frame = backgroundRect.inset(by: UIEdgeInsets(top: -10, left: -10, bottom: -28, right: -10))
         let containerOffset = materialContainer.frame.origin
 
         if !isAnimatingIn {
-            barBackground.bounds = CGRect(origin: .zero, size: bounds.size)
-            barBackground.center = CGPoint(x: bounds.midX - containerOffset.x, y: bounds.midY - containerOffset.y)
+            barBackground.bounds = CGRect(origin: .zero, size: backgroundRect.size)
+            barBackground.center = CGPoint(x: backgroundRect.midX - containerOffset.x, y: backgroundRect.midY - containerOffset.y)
         }
         if #unavailable(iOS 26) {
             barBackground.layer.cornerRadius = TellomiReactionBarLayout.cornerRadius
-            shadowView.frame = bounds
-            shadowView.layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: TellomiReactionBarLayout.cornerRadius).cgPath
+            shadowView.frame = backgroundRect
+            shadowView.layer.shadowPath = UIBezierPath(roundedRect: CGRect(origin: .zero, size: backgroundRect.size), cornerRadius: TellomiReactionBarLayout.cornerRadius).cgPath
         }
 
-        if let superview, let messageFrame = messageFrameInSuperview {
-            let tail = TellomiReactionBarLayout.tailFrames(barFrame: frame, messageFrame: messageFrame, containerWidth: superview.bounds.width)
+        if !isExpanded, let superview, let messageFrame = messageFrameInSuperview {
+            let barFrame = CGRect(x: frame.minX, y: frame.minY, width: frame.width, height: TellomiReactionBarLayout.height)
+            let tail = TellomiReactionBarLayout.tailFrames(barFrame: barFrame, messageFrame: messageFrame, containerWidth: superview.bounds.width)
             tailFrames = (tail.large.offsetBy(dx: -frame.minX, dy: -frame.minY), tail.small.offsetBy(dx: -frame.minX, dy: -frame.minY))
-            growthOrigin = TellomiReactionBarLayout.growthOriginFrame(barFrame: frame, messageFrame: messageFrame, containerWidth: superview.bounds.width)
+            growthOrigin = TellomiReactionBarLayout.growthOriginFrame(barFrame: barFrame, messageFrame: messageFrame, containerWidth: superview.bounds.width)
         }
-        let tail = tailFrames ?? Self.defaultTail(bounds: bounds, isRTL: isRTL)
-        for (circle, frame) in [(largeTailCircle, tail.large), (smallTailCircle, tail.small)] {
+        let restingTail = tailFrames ?? Self.defaultTail(bounds: collapsedBounds, isRTL: isRTL)
+        // 尾巴挂在底板下沿：往下拉时跟着往下走。
+        let tail = (restingTail.large.offsetBy(dx: 0, dy: pullDistance), restingTail.small.offsetBy(dx: 0, dy: pullDistance))
+        for (circle, frame) in [(largeTailCircle, tail.0), (smallTailCircle, tail.1)] {
             circle.bounds = CGRect(origin: .zero, size: frame.size)
             circle.center = CGPoint(x: frame.midX - containerOffset.x, y: frame.midY - containerOffset.y)
             if #unavailable(iOS 26) {
@@ -338,7 +394,9 @@ final class TellomiReactionBar: UIView {
         for (index, itemView) in itemViews.enumerated() {
             itemView.isHidden = index >= layout.slotCount - 1
         }
-        let expandFrame = layout.expandButtonFrame(isRTL: isRTL)
+        // 往下拉时展开键拉长成竖着的胶囊（Telegram：高 = 30 + 拉的距离）。
+        var expandFrame = layout.expandButtonFrame(isRTL: isRTL)
+        expandFrame.size.height += isExpanded ? 0 : pullDistance
         expandButton.bounds = CGRect(origin: .zero, size: expandFrame.size)
         expandButton.center = CGPoint(x: expandFrame.midX, y: expandFrame.midY)
     }
@@ -422,6 +480,7 @@ final class TellomiReactionBar: UIView {
         UIView.animate(withDuration: duration, delay: 0, options: [.beginFromCurrentState]) {
             [self.barBackground, self.largeTailCircle, self.smallTailCircle].forEach { $0.effect = nil }
             self.contentView.alpha = 0
+            self.panel?.alpha = 0
             self.shadowView.alpha = 0
         } completion: { _ in
             completion()

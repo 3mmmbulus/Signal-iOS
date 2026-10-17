@@ -35,7 +35,8 @@ public protocol ContextMenuInteractionDelegate: AnyObject {
 public class ContextMenuInteraction: NSObject, UIInteraction {
 
     weak var delegate: ContextMenuInteractionDelegate?
-    fileprivate var contextMenuController: ContextMenuController?
+    // Tellomi：测试要拿到菜单控制器（模拟往下拉），读权限放开到模块内。
+    fileprivate(set) var contextMenuController: ContextMenuController?
 
     private let sourceViewBounceDuration = 0.2
     fileprivate var gestureEligibleForMenuPresentation: Bool {
@@ -290,6 +291,14 @@ extension ContextMenuInteraction: ContextMenuControllerDelegate, ContextMenuTarg
 
     func contextMenuControllerRequestsDismissal(_ contextMenuController: ContextMenuController) {
         dismissMenu(animated: true, completion: { })
+    }
+
+    func contextMenuTargetedPreviewAccessoryRequestsExpansion(_ accessory: ContextMenuTargetedPreviewAccessory) {
+        contextMenuController?.expandAccessoryInPlace(accessory)
+    }
+
+    func contextMenuTargetedPreviewAccessoryRequestsReactionConfiguration(_ accessory: ContextMenuTargetedPreviewAccessory) {
+        contextMenuController?.showReactionConfiguration()
     }
 
     func contextMenuTargetedPreviewAccessoryRequestsEmojiPicker(

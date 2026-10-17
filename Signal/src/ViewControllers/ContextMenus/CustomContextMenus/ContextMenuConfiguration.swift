@@ -61,6 +61,10 @@ protocol ContextMenuTargetedPreviewAccessoryInteractionDelegate: AnyObject {
         accessory: ContextMenuTargetedPreviewAccessory,
         completion: @escaping (String) -> Void,
     )
+    /// Tellomi（交互审计 A-06）：附件要原地展开（回应条 → 全部表情）。
+    func contextMenuTargetedPreviewAccessoryRequestsExpansion(_ accessory: ContextMenuTargetedPreviewAccessory)
+    /// Tellomi（交互审计 A-06）：展开后的面板要打开「回应设置」。
+    func contextMenuTargetedPreviewAccessoryRequestsReactionConfiguration(_ accessory: ContextMenuTargetedPreviewAccessory)
 }
 
 /// Encapsulates an accessory view with relevant layout information
@@ -141,6 +145,23 @@ public class ContextMenuTargetedPreviewAccessory {
     func touchLocationInViewDidChange(locationInView: CGPoint) {
 
     }
+
+    // MARK: Tellomi（交互审计 A-06）：原地展开
+
+    /// 能不能原地展开（回应条 → 全部表情，照 Telegram）。能展开的附件不跟着「往下拉」走，拉的时候它自己往下长。
+    var canExpandInPlace: Bool { false }
+    /// 已经展开了。宿主据此改摆法：它在上、消息预览在它下面，别的附件藏起来。
+    var isExpandedInPlace = false
+    /// 展开时整块往上提多少（相对收起时的上沿）。
+    var expansionLift: CGFloat { 0 }
+    /// 展开后的高度。[availableHeight] 是菜单内容区（除去安全区和键盘）的高度。
+    func expandedHeight(availableHeight: CGFloat) -> CGFloat { 0 }
+    /// 往下拉（还没到展开）的距离；0 = 松开或已经展开。
+    func updatePullDistance(_ distance: CGFloat) {}
+    /// 宿主开始展开它：准备展开后的内容。尺寸变化由宿主在动画里布局带着走。
+    func willExpandInPlace() {}
+    /// 展开动画开始之后调用：附件自己的淡入淡出（各有各的时长，不跟宿主的弹簧走）。
+    func didStartExpansionAnimation() {}
 
     /// Tellomi（交互审计 A-06）：菜单宿主排好这个附件之后调用，[previewFrame] 是消息预览在宿主里的位置
     /// （和 `accessoryView.frame` 同一个坐标系）。回应条用它把尾巴挂到消息的角上。

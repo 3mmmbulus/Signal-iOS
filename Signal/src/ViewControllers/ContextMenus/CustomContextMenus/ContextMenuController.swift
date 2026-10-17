@@ -28,12 +28,19 @@ private class ContextMenuHostView: UIView {
     weak var delegate: ContextMenuViewDelegate?
     var previewViewAlignment: ContextMenuTargetedPreview.Alignment = .center
 
+    /// Tellomi（交互审计 A-06）：键盘盖住宿主底部多少。菜单内容排在键盘上面（展开后的表情面板里搜索时键盘会起来）。
+    var keyboardOverlap: CGFloat = 0
+    /// Tellomi（交互审计 A-06）：往下拉了多少（已按 Telegram 的 0.35 阻力折算）。消息预览和菜单跟着往下走，回应条不动、往下长。
+    var pullDistance: CGFloat = 0
+    /// Tellomi（交互审计 A-06）：展开时锁定的面板上沿（收起时的上沿往上提 `expansionLift`）。
+    var expandedAccessoryTop: CGFloat?
+
     private var contentAreaInsets: UIEdgeInsets {
         let minPadding: CGFloat = 8
         return UIEdgeInsets(
             top: max(safeAreaInsets.top, minPadding),
             leading: max(safeAreaInsets.leading, minPadding),
-            bottom: max(safeAreaInsets.bottom, minPadding),
+            bottom: max(safeAreaInsets.bottom, minPadding, keyboardOverlap + minPadding),
             trailing: max(safeAreaInsets.trailing, minPadding),
         )
     }
@@ -101,11 +108,15 @@ private class ContextMenuHostView: UIView {
         dismissButton?.frame = bounds
 
         let animationState = delegate?.contextMenuViewAnimationState(self) ?? .none
+        if let expandedAccessory = accessoryViews?.first(where: \.isExpandedInPlace) {
+            layoutExpanded(expandedAccessory, animationState: animationState)
+            return
+        }
         var auxVerticalOffset: CGFloat = 0
         if let previewView = self.previewView {
             // Let the controller manage the preview's frame if animating
             if animationState != .animateOut {
-                previewView.frame = targetPreviewFrame()
+                previewView.frame = targetPreviewFrame().offsetBy(dx: 0, dy: pullDistance)
             }
 
             if let auxView = auxiliaryPreviewView {
@@ -155,6 +166,35 @@ private class ContextMenuHostView: UIView {
             }
         }
 
+    }
+
+    /// Tellomi（交互审计 A-06）：回应条原地展开成全部表情之后的摆法（照 Telegram）：面板锁在收起时的上沿往上提一段，
+    /// 高 ≤ 300、夹在内容区里；消息预览原大接在面板下面 7 pt（放不下就出到屏幕外）；别的附件跟着预览走、由控制器藏起来。
+    private func layoutExpanded(_ expandedAccessory: ContextMenuTargetedPreviewAccessory, animationState: ContextMenuAnimationState) {
+        // 收起时由控制器接管预览；面板原地淡出，不再排。
+        guard animationState != .animateOut else { return }
+
+        let contentRect = bounds.inset(by: contentAreaInsets)
+        let panelHeight = min(expandedAccessory.expandedHeight(availableHeight: contentRect.height), contentRect.height)
+        var panelFrame = expandedAccessory.accessoryView.frame
+        let lockedTop = expandedAccessoryTop ?? panelFrame.minY
+        panelFrame.origin.y = min(max(lockedTop, contentRect.minY), contentRect.maxY - panelHeight)
+        panelFrame.size.height = panelHeight
+        expandedAccessory.accessoryView.frame = panelFrame
+
+        var auxVerticalOffset: CGFloat = 0
+        if let previewView {
+            var previewFrame = previewView.frame
+            previewFrame.origin.y = panelFrame.maxY + TellomiReactionBarLayout.gapAboveMessage
+            previewView.frame = previewFrame
+            if let auxView = auxiliaryPreviewView {
+                auxView.frame = targetAuxiliaryPreviewFrame(previewFrame: previewFrame)
+                auxVerticalOffset = max(auxView.frame.maxY - previewFrame.maxY, 0)
+            }
+        }
+        for accessory in accessoryViews ?? [] where accessory !== expandedAccessory {
+            layoutAccessoryView(accessory, auxVerticalOffset: auxVerticalOffset)
+        }
     }
 
     private func targetPreviewFrame() -> CGRect {
@@ -312,7 +352,11 @@ private class ContextMenuHostView: UIView {
     }
 
     private func layoutAccessoryView(_ accessory: ContextMenuTargetedPreviewAccessory, auxVerticalOffset: CGFloat) {
-        let previewFrame = delegate?.contextMenuViewPreviewFrameForAccessoryLayout(self) ?? CGRect.zero
+        var previewFrame = delegate?.contextMenuViewPreviewFrameForAccessoryLayout(self) ?? CGRect.zero
+        // Tellomi（A-06）：往下拉的时候回应条不跟着走（它自己往下长）。
+        if accessory.canExpandInPlace {
+            previewFrame.origin.y -= pullDistance
+        }
 
         let accessoryFrame = accessoryFrame(accessory, previewFrame: previewFrame, auxVerticalOffset: auxVerticalOffset)
         let adjustedAccessoryFrame = adjustAccessoryFrameForContentRect(accessoryFrame, extraHorizontalInset: accessory.extraHorizontalInset)
@@ -457,6 +501,13 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
                 accessory.accessoryView.isHidden = true
             }
         }
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillChangeFrame(_:)),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil,
+        )
     }
 
     private func dismissButtonTapped() {
@@ -797,10 +848,150 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
 
     @objc
     private func panGestureRecognized(sender: UIGestureRecognizer) {
+        if sender.state == .began, let pan = sender as? UIPanGestureRecognizer, shouldBeginPull(at: pan.location(in: view)) {
+            isPulling = true
+        }
+        if isPulling, let pan = sender as? UIPanGestureRecognizer {
+            handlePull(pan)
+            return
+        }
+
         if sender.state == .began || sender.state == .changed {
             gestureDidChange()
         } else if sender.state == .ended {
             handleGestureEnd()
+        }
+    }
+
+    // MARK: Tellomi（交互审计 A-06）：往下拉 / 点 ⌄ 原地展开成全部表情
+
+    /// 往下拉多远（折算后）就展开：Telegram 是 30。
+    static let pullToExpandThreshold: CGFloat = 30
+    /// 手指位移折算成内容位移：Telegram 顶部过度滚动的阻力 0.35。
+    static let pullResistance: CGFloat = 0.35
+
+    private var isPulling = false
+
+    private var expandableAccessory: ContextMenuTargetedPreviewAccessory? {
+        accessoryViews.first { $0.canExpandInPlace && !$0.isExpandedInPlace }
+    }
+
+    /// 从空白处、消息预览上起手才算「往下拉」；从回应条、菜单上起手还是按住滑选。
+    private func shouldBeginPull(at location: CGPoint) -> Bool {
+        guard expandableAccessory != nil, animationState != .animateOut else { return false }
+        return !accessoryViews.contains { accessory in
+            !accessory.accessoryView.isHidden && accessory.accessoryView.alpha > 0 && accessory.accessoryView.frame.contains(location)
+        }
+    }
+
+    private func handlePull(_ pan: UIPanGestureRecognizer) {
+        switch pan.state {
+        case .began, .changed:
+            let distance = Self.pulledDistance(fingerTranslation: pan.translation(in: view).y)
+            if distance > Self.pullToExpandThreshold, let accessory = expandableAccessory {
+                isPulling = false
+                // 停掉这次拖动；展开动画从拉长的样子接着走。
+                pan.isEnabled = false
+                pan.isEnabled = true
+                expandAccessoryInPlace(accessory)
+            } else {
+                setPullDistance(distance, animated: false)
+            }
+        default:
+            // 没拉到：弹回去，菜单不收。
+            isPulling = false
+            setPullDistance(0, animated: true)
+        }
+    }
+
+    /// 手指往下 [fingerTranslation] 点时内容往下多少；往上不算。
+    static func pulledDistance(fingerTranslation: CGFloat) -> CGFloat {
+        max(0, fingerTranslation) * pullResistance
+    }
+
+    func setPullDistance(_ distance: CGFloat, animated: Bool) {
+        guard let hostView = view as? ContextMenuHostView else { return }
+        let apply = {
+            hostView.pullDistance = distance
+            self.expandableAccessory?.updatePullDistance(distance)
+            hostView.setNeedsLayout()
+            hostView.layoutIfNeeded()
+        }
+        if animated {
+            TellomiMotion.animator(TellomiMotion.release, animations: apply).startAnimation()
+        } else {
+            apply()
+        }
+    }
+
+    func expandAccessoryInPlace(_ accessory: ContextMenuTargetedPreviewAccessory) {
+        guard
+            accessory.canExpandInPlace,
+            !accessory.isExpandedInPlace,
+            animationState != .animateOut,
+            let hostView = view as? ContextMenuHostView
+        else {
+            return
+        }
+
+        hostView.expandedAccessoryTop = accessory.accessoryView.frame.minY - accessory.expansionLift
+        accessory.willExpandInPlace()
+        accessory.isExpandedInPlace = true
+        // 展开后菜单里的拖动交给表情网格滚动。
+        localPanGestureRecoginzer?.isEnabled = false
+        ImpactHapticFeedback.impactOccurred(style: .light)
+
+        let otherAccessories = accessoryViews.filter { $0 !== accessory }
+        for other in otherAccessories {
+            other.accessoryView.isUserInteractionEnabled = false
+        }
+        let changes = {
+            hostView.pullDistance = 0
+            accessory.updatePullDistance(0)
+            hostView.setNeedsLayout()
+            hostView.layoutIfNeeded()
+            for other in otherAccessories {
+                other.accessoryView.alpha = 0
+            }
+        }
+        if reduceMotion {
+            UIView.transition(with: hostView, duration: TellomiMotion.reducedMotionCrossfadeDuration, options: [.transitionCrossDissolve, .allowUserInteraction], animations: changes)
+        } else {
+            TellomiMotion.animator(TellomiMotion.reactionPanelExpand, animations: changes).startAnimation()
+        }
+        accessory.didStartExpansionAnimation()
+        UIAccessibility.post(notification: .layoutChanged, argument: accessory.accessoryView)
+    }
+
+    func showReactionConfiguration() {
+        let configVC = EmojiReactionPickerConfigViewController(reactionPickerConfigurationListener: nil)
+        let navController = UINavigationController(rootViewController: configVC)
+        if contextMenuConfiguration.forceDarkTheme {
+            navController.overrideUserInterfaceStyle = .dark
+        }
+        present(navController, animated: true)
+    }
+
+    /// 键盘起落（展开面板里搜索）：内容区底边让到键盘上面，跟键盘同一条曲线。
+    @objc
+    private func keyboardWillChangeFrame(_ notification: Notification) {
+        guard
+            let hostView = view as? ContextMenuHostView,
+            let window = view.window,
+            let endFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        else {
+            return
+        }
+        let endFrameInView = view.convert(endFrame, from: window.screen.coordinateSpace)
+        let overlap = max(0, view.bounds.maxY - endFrameInView.minY)
+        guard overlap != hostView.keyboardOverlap else { return }
+        hostView.keyboardOverlap = overlap
+
+        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? NSNumber)?.doubleValue ?? 0.25
+        let curve = (notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? NSNumber)?.uintValue ?? 7
+        UIView.animate(withDuration: duration, delay: 0, options: [.beginFromCurrentState, UIView.AnimationOptions(rawValue: curve << 16)]) {
+            hostView.setNeedsLayout()
+            hostView.layoutIfNeeded()
         }
     }
 

@@ -115,6 +115,53 @@ public class ContextMenuReactionBarAccessory: ContextMenuTargetedPreviewAccessor
         reactionPicker.updateAnchor(messageFrameInSuperview: previewFrame)
     }
 
+    // MARK: 原地展开（交互审计 A-06，照 Telegram：点 ⌄ 或往下拉，条就地长成全部表情）
+
+    private var message: TSMessage? { itemViewModel?.interaction as? TSMessage }
+
+    /// 展开不需要消息（面板里「这条消息」那一组是空的）；只有选中写回应时才要。
+    override var canExpandInPlace: Bool { true }
+
+    override var expansionLift: CGFloat { TellomiReactionBarLayout.expandedPanelLift }
+
+    override func expandedHeight(availableHeight: CGFloat) -> CGFloat {
+        min(TellomiReactionBarLayout.expandedPanelMaxHeight, availableHeight)
+    }
+
+    override func updatePullDistance(_ distance: CGFloat) {
+        reactionPicker.setPullDistance(distance)
+    }
+
+    override func willExpandInPlace() {
+        let panel = TellomiReactionPanel(message: message)
+        panel.onSelect = { [weak self] emoji, source in
+            self?.didSelectExpandedReaction(emoji.rawValue, flyInSource: source)
+        }
+        panel.onConfigure = { [weak self] in
+            guard let self else { return }
+            self.delegate?.contextMenuTargetedPreviewAccessoryRequestsReactionConfiguration(self)
+        }
+        reactionPicker.prepareExpansion(panel: panel)
+    }
+
+    override func didStartExpansionAnimation() {
+        reactionPicker.playExpansionFades()
+    }
+
+    /// 在展开的面板里选了一个：和条上一样，先写回应（表情从网格那一格飞进胶囊），再收起。
+    private func didSelectExpandedReaction(_ emoji: String, flyInSource: ReactionFlyIn.Source?) {
+        guard let message else {
+            owsFailDebug("Not sending reaction for unexpected interaction type")
+            return
+        }
+        let isRemoving = emoji == selectedEmoji
+        let reduceMotion = MainActor.assumeIsolated { TellomiMotion.isReduceMotionEnabled }
+        didSelectReactionHandler?(message, emoji, isRemoving, isRemoving || reduceMotion ? nil : flyInSource)
+        reactionPicker.playDismissalAnimation(duration: TellomiReactionBarLayout.dismissDuration) {
+            self.delegate?.contextMenuTargetedPreviewAccessoryRequestsDismissal(self, completion: { })
+        }
+    }
+
     @objc
     private func hoverGestureRecognized(sender: UIGestureRecognizer) {
         reactionPicker.updateFocusPosition(sender.location(in: reactionPicker), animated: true)
@@ -174,17 +221,7 @@ public class ContextMenuReactionBarAccessory: ContextMenuTargetedPreviewAccessor
     }
 
     func didSelectShowFullEmojiPicker() {
-        guard let message = itemViewModel?.interaction as? TSMessage else {
-            owsFailDebug("Not sending reaction for unexpected interaction type")
-            return
-        }
-
-        reactionPicker.playDismissalAnimation(duration: TellomiReactionBarLayout.dismissDuration) { }
-
-        self.delegate?.contextMenuTargetedPreviewAccessoryRequestsEmojiPicker(for: message, accessory: self) { emojiString in
-            let isRemoving = emojiString == self.itemViewModel?.reactionState?.localUserEmoji
-            self.didSelectReactionHandler?(message, emojiString, isRemoving, nil)
-            self.delegate?.contextMenuTargetedPreviewAccessoryRequestsDismissal(self, completion: { })
-        }
+        // Tellomi（交互审计 A-06）：不再另弹表情 Sheet，条原地展开。
+        delegate?.contextMenuTargetedPreviewAccessoryRequestsExpansion(self)
     }
 }

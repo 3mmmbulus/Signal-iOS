@@ -213,6 +213,110 @@ final class TellomiReactionBarTest: SignalBaseTest {
     }
 }
 
+// MARK: - 原地展开（交互审计 A-06）
+
+@MainActor
+final class TellomiReactionBarExpansionTest: SignalBaseTest {
+
+    private var window: UIWindow!
+    private var message: UIView!
+    private var accessory: ContextMenuReactionBarAccessory!
+    private var interaction: ContextMenuInteraction!
+    private var delegate: BarMenuDelegate!
+
+    override func setUp() {
+        super.setUp()
+        window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let root = UIViewController()
+        root.view.backgroundColor = .white
+        window.rootViewController = root
+        window.isHidden = false
+        message = UIView(frame: CGRect(x: 290, y: 500, width: 84, height: 36))
+        message.backgroundColor = .systemBlue
+        root.view.addSubview(message)
+        window.layoutIfNeeded()
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.2))
+
+        let thread = TSContactThread(contactAddress: SignalServiceAddress(Aci.randomForTesting()))
+        accessory = ContextMenuReactionBarAccessory(thread: thread, itemViewModel: nil)
+        delegate = BarMenuDelegate(accessory: accessory)
+        interaction = ContextMenuInteraction(delegate: delegate)
+        message.addInteraction(interaction)
+        interaction.initiateContextMenuGesture(locationInView: CGPoint(x: 20, y: 20), presentImmediately: true)
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 1))
+    }
+
+    override func tearDown() {
+        interaction.dismissMenu(animated: false) {}
+        window.isHidden = true
+        window = nil
+        super.tearDown()
+    }
+
+    private var bar: TellomiReactionBar { accessory.accessoryView as! TellomiReactionBar }
+    private var host: UIView { bar.superview! }
+    private var preview: UIView? {
+        host.subviews.first { $0 !== bar && $0.frame.size == message.frame.size }
+    }
+
+    /// 手指往下 1 pt，内容往下 0.35 pt；往上不算；手指拉过约 86 pt 才到 30。
+    func testPullUsesTelegramsResistance() {
+        XCTAssertEqual(ContextMenuController.pulledDistance(fingerTranslation: 100), 35, accuracy: 1e-9)
+        XCTAssertEqual(ContextMenuController.pulledDistance(fingerTranslation: -50), 0)
+        XCTAssertLessThan(ContextMenuController.pulledDistance(fingerTranslation: 85), ContextMenuController.pullToExpandThreshold)
+        XCTAssertGreaterThan(ContextMenuController.pulledDistance(fingerTranslation: 86), ContextMenuController.pullToExpandThreshold)
+    }
+
+    /// 往下拉：消息预览和菜单跟着往下，回应条不动（它自己往下长）。
+    func testPullMovesTheMessageButNotTheBar() throws {
+        let controller = try XCTUnwrap(interaction.contextMenuController)
+        let barFrame = bar.frame
+        let previewFrame = try XCTUnwrap(preview).frame
+        controller.setPullDistance(20, animated: false)
+        XCTAssertEqual(bar.frame, barFrame)
+        XCTAssertEqual(try XCTUnwrap(preview).frame.minY, previewFrame.minY + 20, accuracy: 0.5)
+        controller.setPullDistance(0, animated: false)
+        XCTAssertEqual(try XCTUnwrap(preview).frame.minY, previewFrame.minY, accuracy: 0.5)
+    }
+
+    /// 点 ⌄：条就地长成 300 高的面板、上沿往上提 96，消息原大接在面板下面 7 pt，菜单藏起来、点不到。
+    func testExpandButtonGrowsTheBarIntoThePanel() throws {
+        let collapsedTop = bar.frame.minY
+        let menu = try XCTUnwrap(interaction.contextMenuController?.menuAccessory?.accessoryView)
+        accessory.didSelectShowFullEmojiPicker()
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 1))
+
+        XCTAssertTrue(bar.isExpanded)
+        XCTAssertTrue(accessory.isExpandedInPlace)
+        XCTAssertEqual(bar.frame.size.height, 300)
+        XCTAssertEqual(bar.frame.minY, collapsedTop - 96, accuracy: 0.5)
+        XCTAssertEqual(try XCTUnwrap(preview).frame.minY, bar.frame.maxY + 7, accuracy: 0.5)
+        XCTAssertEqual(menu.alpha, 0)
+        XCTAssertFalse(menu.isUserInteractionEnabled)
+        XCTAssertNotNil(bar.subviews.first { $0 is TellomiReactionPanel })
+    }
+
+    /// 面板里搜索、键盘起来：面板让到键盘上面（离键盘 8 pt），放不下就变矮。
+    func testExpandedPanelMovesAboveTheKeyboard() throws {
+        accessory.didSelectShowFullEmojiPicker()
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 1))
+
+        let keyboardHeight: CGFloat = 336
+        let keyboardFrame = CGRect(x: 0, y: window.bounds.size.height - keyboardHeight, width: window.bounds.size.width, height: keyboardHeight)
+        NotificationCenter.default.post(
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil,
+            userInfo: [
+                UIResponder.keyboardFrameEndUserInfoKey: NSValue(cgRect: window.convert(keyboardFrame, to: window.screen.coordinateSpace)),
+                UIResponder.keyboardAnimationDurationUserInfoKey: NSNumber(value: 0.25),
+            ],
+        )
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.6))
+        XCTAssertLessThanOrEqual(bar.frame.maxY, keyboardFrame.minY - 8 + 0.5)
+        XCTAssertGreaterThanOrEqual(bar.frame.minY, host.safeAreaInsets.top - 0.5)
+    }
+}
+
 private final class BarMenuDelegate: ContextMenuInteractionDelegate {
     let accessory: ContextMenuTargetedPreviewAccessory
 

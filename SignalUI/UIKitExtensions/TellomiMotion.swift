@@ -107,6 +107,10 @@ public enum TellomiMotion {
     /// 回应条底板从锚点那一小块拉到全宽：阻尼 104、0.5 s（Telegram iOS `animateInFromAnchorRect`）。
     public static let reactionBarWiden = FixedDurationSpring(damping: 104, duration: 0.5)
 
+    /// 回应条原地展开成全部表情：Telegram iOS 26 的 `.spring` 过渡（质量 1、刚度 555.027、阻尼 47.118，临界阻尼，
+    /// `UIKitUtils.m` `make26SpringAnimationImpl`），换成这里的「感知时长 + 回弹」就是 0.267 s、不回弹。
+    public static let reactionPanelExpand = Spring(duration: 2 * .pi / 555.027.squareRoot(), bounce: 0)
+
     /// 纯透明度变化：淡入 ease-out、淡出 ease-in。
     public static let fadeInDuration: TimeInterval = 0.2
     public static let fadeOutDuration: TimeInterval = 0.15
