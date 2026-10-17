@@ -84,6 +84,8 @@ public enum LinkValidator {
                 result = parsedUrl
             } else if let trimmedUrl = tellomiUrlTrimmedBeforeGluedText(matchedText) {
                 result = trimmedUrl
+            } else if let upgradedUrl = tellomiHttpsUpgrade(parsedUrl, matchedText: matchedText) {
+                result = upgradedUrl
             } else {
                 return
             }
@@ -121,6 +123,44 @@ public enum LinkValidator {
             return nil
         }
         guard LinkPreviewHelper.isPermittedLinkPreviewUrl(url, parsedFrom: prefix) else {
+            return nil
+        }
+        return url
+    }
+
+    /// Tellomi（owner 2026-10-17，ADR-0063 补充「http 与无协议链接」）：写成 `http://b23.tv/abc` 或 `b23.tv/abc` 的链接
+    /// （NSDataDetector 把没写协议的也当 http），换成 https 写法再验一遍上游的规则（含上面「后面紧贴中文」的截断）；
+    /// 只有注册表认领这条 https（品牌、短链；第一方除外，`TellomiLinkClassifier.claimsHttpsUpgrade`）才用它出卡片。
+    /// 抓的永远是 https，不抓明文 http；不归注册表的 http 链接照上游没有卡片。
+    static func tellomiHttpsUpgrade(
+        _ parsedUrl: URL,
+        matchedText: String,
+        claims: (String) -> Bool = TellomiLinkRegistry.classifier.claimsHttpsUpgrade(of:),
+    ) -> URL? {
+        guard parsedUrl.scheme?.lowercased() == "http" else {
+            return nil
+        }
+        let rest: Substring
+        if let scheme = matchedText.range(of: "http://", options: [.anchored, .caseInsensitive]) {
+            rest = matchedText[scheme.upperBound...]
+        } else if !matchedText.contains("://") {
+            rest = matchedText[...]
+        } else {
+            return nil
+        }
+        guard !rest.isEmpty else {
+            return nil
+        }
+        let text = "https://" + rest
+        let url: URL
+        if let candidate = URL(string: text), candidate.host?.isEmpty == false, LinkPreviewHelper.isPermittedLinkPreviewUrl(candidate, parsedFrom: text) {
+            url = candidate
+        } else if let trimmed = tellomiUrlTrimmedBeforeGluedText(text) {
+            url = trimmed
+        } else {
+            return nil
+        }
+        guard claims(url.absoluteString) else {
             return nil
         }
         return url

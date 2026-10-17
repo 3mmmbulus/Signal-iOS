@@ -117,11 +117,22 @@ class LinkValidatorTest: XCTestCase {
             ("https://zh.wikipedia.org/wiki/中国", nil),
             ("https://v.douyin.com/iABC/复制此链接", nil),
             // Tellomi: the cut link must still pass every upstream rule
-            ("http://xhslink.com/a/b很好", nil),
             ("https://example.org/a很好", nil),
             // Tellomi: never cut inside the host (a mixed-script host is a spoofing risk), only in path / query / fragment
             ("https://b23.tv很好", nil),
             ("https://www.wikipediа.org/wiki/Main", nil),
+
+            // Tellomi (owner 2026-10-17): http:// or no scheme gets a preview over https when the registry claims the https link
+            ("看 http://b23.tv/abc", "https://b23.tv/abc"),
+            ("HTTP://b23.tv/abc", "https://b23.tv/abc"),
+            ("b23.tv/abc", "https://b23.tv/abc"),
+            ("看 www.bilibili.com/video/BV1GJ411x7h7 吧", "https://www.bilibili.com/video/BV1GJ411x7h7"),
+            ("http://xhslink.com/a/b很好", "https://xhslink.com/a/b"),
+            // …not when nothing in the registry claims it (as upstream), nor for our own hosts (official badge needs https)
+            ("http://signal.org", nil),
+            ("signal.org/hello", nil),
+            ("http://tell.cc/g/abc", nil),
+            ("http://a.com https://signal.org/x", "https://signal.org/x"),
         ]
         for (entireMessage, expectedValue) in testCases {
             let actualValue = LinkValidator.firstLinkPreviewURL(in: .init(text: entireMessage, ranges: .empty))

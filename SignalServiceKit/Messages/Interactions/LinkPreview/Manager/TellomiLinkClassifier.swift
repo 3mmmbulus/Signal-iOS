@@ -14,9 +14,15 @@ protocol TellomiLinkClassifying: AnyObject {
     func openPlan(_ url: String) throws -> String
     /// 发送端：开一条链接的作业（ADR-0063 §4.2）。假的注册表不需要。
     func beginSendJob(url: String, context: String) throws -> any TellomiSendJob
+    /// 哪个平台认领这个 URL（JSON，有 `provider`）；nil = 注册表里没有平台认领。假的注册表不需要。
+    func identify(_ url: String, location: Bool) throws -> String?
 }
 
 extension TellomiLinkClassifying {
+    func identify(_ url: String, location: Bool) throws -> String? {
+        nil
+    }
+
     func receiveCheck(preview: String, body: String, message: String) throws -> String {
         throw OWSGenericError("This registry cannot check a received preview")
     }
@@ -86,6 +92,7 @@ public final class TellomiLinkClassifier: @unchecked Sendable {
         guard let registry else {
             return nil
         }
+        let body = bodyForRegistry(body, previewUrl: preview.url)
         guard
             let previewJson = Self.json(Self.previewObject(preview)),
             let messageJson = Self.json([
@@ -149,6 +156,7 @@ public final class TellomiLinkClassifier: @unchecked Sendable {
         guard let registry else {
             return nil
         }
+        let body = bodyForRegistry(body, previewUrl: preview.url)
         guard
             let previewJson = Self.json(Self.previewObject(preview)),
             let messageJson = Self.json([
@@ -215,6 +223,91 @@ public final class TellomiLinkClassifier: @unchecked Sendable {
             log("openPlan failed: \(type(of: error))")
             return nil
         }
+    }
+
+    // MARK: - http:// 和没写协议的链接（2026-10-17）
+
+    /// owner 2026-10-17 定（ADR-0063 补充「http 与无协议链接」）：正文里写成 `http://…` 或没写协议（`b23.tv/abc`）的链接，
+    /// 它的 https 形式归注册表里某个平台（品牌、短链）时，按 https 出卡片；不归注册表的照旧是纯链接。
+    /// 第一方（tell.cc、官网）不算：官网徽标、用户卡只认正文里写明的 https（§4.8）。
+    /// 发送端只抓 https，从不抓明文 http（`LinkValidator.tellomiHttpsUpgrade`）。
+    public func claimsHttpsUpgrade(of httpsUrl: String) -> Bool {
+        guard let registry, httpsUrl.range(of: "https://", options: [.anchored, .caseInsensitive]) != nil else {
+            return false
+        }
+        do {
+            guard
+                let json = try registry.identify(httpsUrl, location: false),
+                let data = json.data(using: .utf8),
+                let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let provider = object["provider"] as? String
+            else {
+                return false
+            }
+            return provider != Self.firstPartyProvider
+        } catch {
+            log("identify failed: \(type(of: error))")
+            return false
+        }
+    }
+
+    /// rust/links 里第一方的 provider（`limits.rs` 的 `TELLOMI`）。
+    static let firstPartyProvider = "tellomi"
+
+    /// 交给 rust/links 判定用的正文：预览是 https、正文里这条链接写成 `http://…` 或没写协议、注册表又认领它时，
+    /// 把正文里那一处换成 https 写法，rust/links 的「链接在正文里」（`url_appears_in_body`）才找得到；别的情况原样返回。
+    /// 只换判定用的这一份，显示的正文不动。
+    func bodyForRegistry(_ body: String, previewUrl: String) -> String {
+        Self.body(body, upgradingLinkTo: previewUrl, claims: claimsHttpsUpgrade(of:))
+    }
+
+    static func body(_ body: String, upgradingLinkTo previewUrl: String, claims: (String) -> Bool) -> String {
+        guard
+            let scheme = previewUrl.range(of: "https://", options: [.anchored, .caseInsensitive]),
+            !body.contains(previewUrl)
+        else {
+            return body
+        }
+        // 同 rust/links：预览 URL 末尾的一个「/」正文里可以没有
+        var needle = previewUrl[scheme.upperBound...]
+        if needle.hasSuffix("/"), !needle.dropLast().hasSuffix("/"), !needle.dropLast().hasSuffix(":") {
+            needle = needle.dropLast()
+        }
+        guard !needle.isEmpty else {
+            return body
+        }
+        // 每一处都换（后面紧跟的是不是链接的结尾由 rust/links 判，`b23.tv/abcdef` 那一处它不认，后面的 `b23.tv/abc` 还在）
+        var replaced = [Range<String.Index>]()
+        var searchFrom = body.startIndex
+        while let found = body.range(of: needle, range: searchFrom..<body.endIndex) {
+            searchFrom = body.index(after: found.lowerBound)
+            let before = body[..<found.lowerBound]
+            if let http = before.range(of: "http://", options: [.backwards, .anchored, .caseInsensitive]) {
+                replaced.append(http.lowerBound..<found.upperBound)
+            } else if let last = before.unicodeScalars.last, isPartOfLink(last) {
+                // 前面紧挨着字母数字或 URL 里的标点：是另一条更长的链接（`evil-b23.tv`、`https://x/b23.tv`）或邮箱的一段
+                continue
+            } else {
+                replaced.append(found)
+            }
+        }
+        guard !replaced.isEmpty, claims(previewUrl) else {
+            return body
+        }
+        var result = body
+        for range in replaced.reversed() {
+            result.replaceSubrange(range, with: "https://" + needle)
+        }
+        return result
+    }
+
+    /// 同 rust/links `url_appears_in_body` 的「前面不能是」：ASCII 字母数字和 `-._~:/?#@$&*+=%`。
+    private static func isPartOfLink(_ scalar: Unicode.Scalar) -> Bool {
+        guard scalar.isASCII else {
+            return false
+        }
+        return ("a"..."z").contains(scalar) || ("A"..."Z").contains(scalar) || ("0"..."9").contains(scalar)
+            || "-._~:/?#@$&*+=%".unicodeScalars.contains(scalar)
     }
 
     // MARK: - JSON

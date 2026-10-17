@@ -72,6 +72,8 @@ final class TellomiReceivedPreviewIntegrationTest: SSKBaseTest {
         var title: String? = "某个标题"
         var rich: Data?
         var image = true
+        /// nil = 「看这个 <url>」。
+        var body: String?
     }
 
     private func imagePointer() -> SSKProtoAttachmentPointer {
@@ -108,7 +110,7 @@ final class TellomiReceivedPreviewIntegrationTest: SSKBaseTest {
         let timestamp = MessageTimestampGenerator.sharedInstance.generateTimestamp()
         let dataMessage = SSKProtoDataMessage.builder()
         dataMessage.setTimestamp(timestamp)
-        dataMessage.setBody("看这个 \(sent.url)")
+        dataMessage.setBody(sent.body ?? "看这个 \(sent.url)")
         dataMessage.addPreview(try SSKProtoPreview(serializedData: previewBytes))
         let content = SSKProtoContent.builder()
         content.setDataMessage(try dataMessage.build())
@@ -190,5 +192,22 @@ final class TellomiReceivedPreviewIntegrationTest: SSKBaseTest {
         let preview = try XCTUnwrap(message.linkPreview)
         XCTAssertEqual(preview.title, "视频标题")
         XCTAssertNil(preview.rich, "超长的 rich 不落库（§6.1 / §7.4）")
+    }
+
+    /// owner 2026-10-17（ADR-0063 补充）：正文里写的是没协议 / http:// 的短链，预览是它的 https——注册表认领，预览照收。
+    func testAPreviewOfASchemelessLinkTheRegistryClaimsIsKept() async throws {
+        try XCTSkipUnless(TellomiLinkRegistry.classifier.isAvailable, "随包注册表没加载")
+        for body in ["看这个 b23.tv/BV1GJ411x7h7", "看这个 http://b23.tv/BV1GJ411x7h7"] {
+            let message = try await receive(Sent(url: "https://b23.tv/BV1GJ411x7h7", title: "视频标题", body: body))
+            XCTAssertEqual(message.linkPreview?.title, "视频标题", body)
+        }
+    }
+
+    /// 注册表不认领的网站，http:// 写法照上游丢掉预览（消息照收）。
+    func testAPreviewOfAnHttpLinkTheRegistryDoesNotClaimIsDropped() async throws {
+        try XCTSkipUnless(TellomiLinkRegistry.classifier.isAvailable, "随包注册表没加载")
+        let message = try await receive(Sent(url: "https://www.wikipedia.org/wiki/Tellomi", body: "看这个 http://www.wikipedia.org/wiki/Tellomi"))
+        XCTAssertNil(message.linkPreview)
+        XCTAssertEqual(message.body, "看这个 http://www.wikipedia.org/wiki/Tellomi")
     }
 }
