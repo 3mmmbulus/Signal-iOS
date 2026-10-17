@@ -55,8 +55,6 @@
 	<string>16</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>LOGS_EMAIL</key>
-	<string>support@signal.org</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.social-networking</string>
 	<key>LSApplicationQueriesSchemes</key>
@@ -67,19 +65,6 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>signal.org</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
-		</dict>
-	</dict>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_sgnl-new-device._tcp</string>
