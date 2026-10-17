@@ -5524,7 +5524,7 @@
 "INFO_MESSAGE_REPORTED_SPAM" = "已举报为垃圾消息";
 
 /* Body message of the alert shown when a user taps on 'learn more' via the spam info message. */
-"INFO_MESSAGE_REPORTED_SPAM_LEARN_MORE_MESSAGE" = "Tellomi 已通知此用户，其可能发送了垃圾消息。Tellomi 无法看到任何聊天的内容。";
+"INFO_MESSAGE_REPORTED_SPAM_LEARN_MORE_MESSAGE" = "Tellomi 已收到通知：此人可能在发送垃圾消息。Tellomi 无法看到任何聊天的内容。";
 
 /* Title of the alert shown when a user taps on 'learn more' via the spam info message. */
 "INFO_MESSAGE_REPORTED_SPAM_LEARN_MORE_TITLE" = "已举报垃圾消息";
@@ -6388,7 +6388,7 @@
 "MESSAGE_REQUEST_NAME_COLLISON_UPDATE_CONTACT_ACTION" = "更新联系人";
 
 /* Action sheet message to confirm reporting a conversation as spam via a message request. */
-"MESSAGE_REQUEST_REPORT_CONVERSATION_MESSAGE" = "Tellomi 将会通知此用户，其可能发送了垃圾消息。Tellomi 无法看到任何聊天的内容。";
+"MESSAGE_REQUEST_REPORT_CONVERSATION_MESSAGE" = "Tellomi 会收到通知：此人可能在发送垃圾消息。Tellomi 无法看到任何聊天的内容。";
 
 /* Action sheet title to confirm reporting a conversation as spam via a message request. */
 "MESSAGE_REQUEST_REPORT_CONVERSATION_TITLE" = "要举报垃圾消息吗？";
