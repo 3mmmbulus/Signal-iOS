@@ -1107,9 +1107,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>&quot;%2$@&quot; adresini bağlı tutmak için bu cihazda %1$d gün içinde Tellomi&apos;i aç.</string>
+			<string>&quot;%2$@&quot; adresini bağlı tutmak için bu cihazda %1$d gün içinde Tellomi&apos;yi aç.</string>
 			<key>other</key>
-			<string>&quot;%2$@&quot; adresini bağlı tutmak için bu cihazda %1$d gün içinde Tellomi&apos;i aç.</string>
+			<string>&quot;%2$@&quot; adresini bağlı tutmak için bu cihazda %1$d gün içinde Tellomi&apos;yi aç.</string>
 		</dict>
 	</dict>
 	<key>LINK_DEVICE_CONFIRMATION_ALERT_TRANSFER_SUBTITLE_%d</key>

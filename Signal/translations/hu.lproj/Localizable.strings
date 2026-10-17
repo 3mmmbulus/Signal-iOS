@@ -3740,7 +3740,7 @@
 "EDIT_MESSAGE_SEND_MESSAGE_UNKNOWN_ERROR" = "EDIT_MESSAGE_SEND_MESSAGE_UNKNOWN_ERROR";
 
 /* body of email sent to contacts when inviting to install Signal. Embeds {{link to install Signal}} and {{link to the Signal home page}} */
-"EMAIL_INVITE_BODY" = "Szia!\n\nÚjabban privát csevegéseimet a Tellomi üzenetküldő alkalmazással bonyolítom iPhone-on. Örülnék, ha te is telepítenéd, így biztosak lehetünk benne, hogy amit írunk, vagy mondunk a telefonba, az köztünk marad.\n\nA Tellomi elérhető iPhone és Android telefonokra, valamint asztali számítógépre. Itt szerezheted meg: %1$@\n\nA Tellomi az ismert csevegőprogramokhoz hasonlóan működik: küldhetünk képeket, videókat, hívhatjuk egymást, csoportos csevegést indíthatunk. A legjobb, hogy a fentiekbe senkinek, még a Tellomi fejlesztőinek sincs semmilyen betekintési, belehallgatási lehetősége.\n\nA Signalról itt olvashatsz bővebben: %2$@.";
+"EMAIL_INVITE_BODY" = "Szia!\n\nÚjabban privát csevegéseimet a Tellomi üzenetküldő alkalmazással bonyolítom iPhone-on. Örülnék, ha te is telepítenéd, így biztosak lehetünk benne, hogy amit írunk, vagy mondunk a telefonba, az köztünk marad.\n\nA Tellomi elérhető iPhone és Android telefonokra, valamint asztali számítógépre. Itt szerezheted meg: %1$@\n\nA Tellomi az ismert csevegőprogramokhoz hasonlóan működik: küldhetünk képeket, videókat, hívhatjuk egymást, csoportos csevegést indíthatunk. A legjobb, hogy a fentiekbe senkinek, még a Tellomi fejlesztőinek sincs semmilyen betekintési, belehallgatási lehetősége.\n\nA Tellomiról itt olvashatsz bővebben: %2$@.";
 
 /* subject of email sent to contacts when inviting to install Signal */
 "EMAIL_INVITE_SUBJECT" = "Váltsunk Tellomira!";

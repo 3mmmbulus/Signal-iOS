@@ -1,9 +1,9 @@
-NSAppleMusicUsageDescription = "Tellomi'in içerik eklentilerini oynatması için Apple Music'e ihtiyacı var.";
+NSAppleMusicUsageDescription = "Tellomi'nin içerik eklentilerini oynatması için Apple Music'e ihtiyacı var.";
 NSCameraUsageDescription = "Tellomi fotoğraf çekmek ve görüntülü aramalar gerçekleştirmek için kameranızı kullanır.";
 NSContactsUsageDescription = "Tellomi tanıdığınız kullanıcıları bulmak için rehberinizi kullanır. Kişilerinizi sunuclarımızda saklamamaktayız.";
-NSFaceIDUsageDescription = "Tellomi'in Ekran Kilidi Face ID kullanır.";
-NSLocationWhenInUseUsageDescription = "Tellomi'in mevcut konumunuzu paylaşmak için konum erişimine ihtiyacı var.";
-NSMicrophoneUsageDescription = "Tellomi'in sesli aramalar gerçekleştirmek ve sesli iletiler gönderebilmek için mikrofonunuza erişime ihtiyacı var.";
+NSFaceIDUsageDescription = "Tellomi'nin Ekran Kilidi Face ID kullanır.";
+NSLocationWhenInUseUsageDescription = "Tellomi'nin mevcut konumunuzu paylaşmak için konum erişimine ihtiyacı var.";
+NSMicrophoneUsageDescription = "Tellomi'nin sesli aramalar gerçekleştirmek ve sesli iletiler gönderebilmek için mikrofonunuza erişime ihtiyacı var.";
 NSPhotoLibraryAddUsageDescription = "Tellomi fotoğrafları albümlerinize kaydedecektir.";
 NSPhotoLibraryUsageDescription = "Tellomi, göndermek istediğiniz fotoğrafları albümlerinizden seçmenizi sağlayacaktır.";
 NSLocalNetworkUsageDescription = "Tellomi, hesabınızı doğrudan yeni bir telefona aktarmanıza izin vermek için yerel ağı kullanır. Yeni bir aygıta aktarım başlatmayı açıkça seçmediğiniz sürece kullanılmayacaktır.";

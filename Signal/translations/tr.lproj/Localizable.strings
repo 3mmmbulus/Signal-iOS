@@ -65,7 +65,7 @@
 "ACCOUNT_DATA_REPORT_TITLE" = "Hesap Verilerin";
 
 /* Label for 'invite' button in contact view. */
-"ACTION_INVITE" = "Tellomi'e davet et";
+"ACTION_INVITE" = "Tellomi'ye davet et";
 
 /* Label for button that lets you send a message to a contact. */
 "ACTION_SEND_MESSAGE" = "İleti Gönder";
@@ -215,7 +215,7 @@
 "APP_LAUNCH_FAILURE_ALERT_MESSAGE" = "Tellomi başlatılamıyor. Lütfen bu sorunu çözmemiz için hata ayıklama günlüğünüzü support@tellomi.app adresine gönderin.";
 
 /* Button to try launching the app even though the last launch failed */
-"APP_LAUNCH_FAILURE_CONTINUE" = "Bunun yerine Tellomi'i açın";
+"APP_LAUNCH_FAILURE_CONTINUE" = "Bunun yerine Tellomi'yi açın";
 
 /* Message for an error indicating that the app couldn't launch because some unexpected error happened with the user's registration status. */
 "APP_LAUNCH_FAILURE_CORRUPT_REGISTRATION_MESSAGE" = "Lütfen bu sorunu çözmemiz için hata ayıklama günlüğünü support@tellomi.app adresine gönder.";
@@ -236,10 +236,10 @@
 "APP_LAUNCH_FAILURE_DATABASE_RECOVERY_ACTION_TITLE" = "Onar";
 
 /* Action in an action sheet offering to exit the app. */
-"APP_LAUNCH_FAILURE_EXIT_APP_ACTION_TITLE" = "Tellomi'dan Çık";
+"APP_LAUNCH_FAILURE_EXIT_APP_ACTION_TITLE" = "Tellomi'den Çık";
 
 /* Error indicating that the app could not launch without reverting unknown database migrations. */
-"APP_LAUNCH_FAILURE_INVALID_DATABASE_VERSION_MESSAGE" = "Lütfen Tellomi'in son sürümüne yükseltin.";
+"APP_LAUNCH_FAILURE_INVALID_DATABASE_VERSION_MESSAGE" = "Lütfen Tellomi'nin son sürümüne yükseltin.";
 
 /* Error indicating that the app could not launch without reverting unknown database migrations. */
 "APP_LAUNCH_FAILURE_INVALID_DATABASE_VERSION_TITLE" = "Bilinmeyen Veritabanı Sürümü";
@@ -251,13 +251,13 @@
 "APP_LAUNCH_FAILURE_LAST_LAUNCH_CRASHED_TITLE" = "Tellomi Açılamadı";
 
 /* Message for an error sheet shown when the app cannot launch because the device is out of storage space. Embeds 1:{{ the localized name of the user's device model, e.g. iPhone }}; 2:{{ an amount of storage space as a file size, e.g. 1 GB }}. */
-"APP_LAUNCH_FAILURE_NOT_ENOUGH_STORAGE_SPACE_MESSAGE_FORMAT" = "Tellomi açılamıyor çünkü %1$@ cihazında depolama alanı tükendi. En az %2$@ alanı boşalt, ardından Tellomi'ı yeniden aç.\n\niOS Ayarları > Genel > Depolama Alanı öğesine git ve kullanmadığın uygulamaları kaldır, Photos uygulamandaki veya diğer uygulamalardaki büyük videoları sil ve indirilen müziklerle medyayı sil.";
+"APP_LAUNCH_FAILURE_NOT_ENOUGH_STORAGE_SPACE_MESSAGE_FORMAT" = "Tellomi açılamıyor çünkü %1$@ cihazında depolama alanı tükendi. En az %2$@ alanı boşalt, ardından Tellomi'yi yeniden aç.\n\niOS Ayarları > Genel > Depolama Alanı öğesine git ve kullanmadığın uygulamaları kaldır, Photos uygulamandaki veya diğer uygulamalardaki büyük videoları sil ve indirilen müziklerle medyayı sil.";
 
 /* Title for an error sheet shown when the app cannot launch because the device is out of storage space. */
 "APP_LAUNCH_FAILURE_NOT_ENOUGH_STORAGE_SPACE_TITLE" = "Yeterli depolama alanı yok";
 
 /* Error indicating that the app could not restore transferred data. */
-"APP_LAUNCH_FAILURE_RESTORE_FAILED_MESSAGE" = "Eski cihazından aktarılan veri geri yüklenemiyor. Lütfen bu sorunu çözmemiz için support@tellomi.app adresine hata günlüğünü gönder. Eğer Tellomi'ı geri yüklersen, ileti geçmişin kaybolabilir.";
+"APP_LAUNCH_FAILURE_RESTORE_FAILED_MESSAGE" = "Eski cihazından aktarılan veri geri yüklenemiyor. Lütfen bu sorunu çözmemiz için support@tellomi.app adresine hata günlüğünü gönder. Eğer Tellomi'yi geri yüklersen, ileti geçmişin kaybolabilir.";
 
 /* Error indicating that the app could not restore transferred data. */
 "APP_LAUNCH_FAILURE_RESTORE_FAILED_TITLE" = "Aktarım Tamamlanamadı";
@@ -383,7 +383,7 @@
 "ATTACHMENT_BACKFILL_FINISHED_NOTIFICATION" = "Bağlı cihazında Tellomi ile senkronizasyon tamamlandı";
 
 /* Notification body shown when media sync to a linked device was interrupted. */
-"ATTACHMENT_BACKFILL_INTERRUPTED_NOTIFICATION" = "Bağlı cihazınla senkronizasyona devam etmek için Tellomi'ı aç";
+"ATTACHMENT_BACKFILL_INTERRUPTED_NOTIFICATION" = "Bağlı cihazınla senkronizasyona devam etmek için Tellomi'yi aç";
 
 /* Notification body shown while syncing media to a linked device. */
 "ATTACHMENT_BACKFILL_SYNCING_NOTIFICATION" = "Bağlı cihazında Tellomi ile senkronize ediliyor";
@@ -443,7 +443,7 @@
 "ATTACHMENT_KEYBOARD_GIF" = "GIF";
 
 /* Text in chat attachment panel when Signal only has access to some photos/videos. This string is in a compact horizontal space, so it should be short if possible. */
-"ATTACHMENT_KEYBOARD_LIMITED_ACCESS" = "Tellomi'in fotoğraflara erişimi sınırlıdır";
+"ATTACHMENT_KEYBOARD_LIMITED_ACCESS" = "Tellomi'nin fotoğraflara erişimi sınırlıdır";
 
 /* A button to select a location from the Attachment Keyboard */
 "ATTACHMENT_KEYBOARD_LOCATION" = "Konum";
@@ -455,7 +455,7 @@
 "ATTACHMENT_KEYBOARD_NO_MEDIA_TITLE" = "Fotoğraf veya video yok";
 
 /* Text in chat attachment panel explaining that user needs to give Signal permission to access photos. */
-"ATTACHMENT_KEYBOARD_NO_PHOTO_ACCESS" = "Tellomi'in fotoğraflarına veya videolarına erişimi yok. Erişimi etkinleştirmek için Ayarlar'ı aç ve Fotoğraflar'a dokun";
+"ATTACHMENT_KEYBOARD_NO_PHOTO_ACCESS" = "Tellomi'nin fotoğraflarına veya videolarına erişimi yok. Erişimi etkinleştirmek için Ayarlar'ı aç ve Fotoğraflar'a dokun";
 
 /* Button in chat attachment panel to let user open Settings app and give Signal persmission to access photos. */
 "ATTACHMENT_KEYBOARD_OPEN_SETTINGS" = "Ayarları aç";
@@ -605,7 +605,7 @@
 "BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_ACTION" = "Aç";
 
 /* Body for Backup enablement reminder megaphone */
-"BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_BODY" = "Yeni bir telefon aldığında veya Tellomi'ı yeniden yüklediğinde asla mesaj kaybetme.";
+"BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_BODY" = "Yeni bir telefon aldığında veya Tellomi'yi yeniden yüklediğinde asla mesaj kaybetme.";
 
 /* Title for Backup enablement reminder megaphone */
 "BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_TITLE" = "Şifreli yedeklemeleri aç";
@@ -680,7 +680,7 @@
 "BACKUP_ONBOARDING_INTRO_NOT_NOW_TOAST" = "Yedeklemeleri Ayarlar'dan etkinleştirebilirsin.";
 
 /* Subtitle for a view introducing Backups during an onboarding flow. */
-"BACKUP_ONBOARDING_INTRO_SUBTITLE" = "Tellomi'ın güvenli, uçtan uca şifreli depolama hizmetini kullanarak mesajlarını ve medyanı yedekle. Yeni bir telefon aldığında veya Tellomi'ı yeniden yüklediğinde asla mesaj kaybetme.";
+"BACKUP_ONBOARDING_INTRO_SUBTITLE" = "Tellomi'nin güvenli, uçtan uca şifreli depolama hizmetini kullanarak mesajlarını ve medyanı yedekle. Yeni bir telefon aldığında veya Tellomi'yi yeniden yüklediğinde asla mesaj kaybetme.";
 
 /* Title for a view introducing Backups during an onboarding flow. */
 "BACKUP_ONBOARDING_INTRO_TITLE" = "Tellomi Güvenli Yedeklemeler";
@@ -776,7 +776,7 @@
 "BACKUP_SAVE_KEY_SAVE_TO_PW_MGR_BUTTON_TITLE" = "Parola Yöneticisine Kaydet";
 
 /* Message describing that the Background App Refresh permission is disabled for Signal. \"Background App Refresh\" should be localized the same way it is in iOS Settings app permissions. */
-"BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_MESSAGE" = "Otomatik yedeklemeler devre dışı bırakılır. Tellomi'ın izinlerini güncelleyerek otomatik yedeklemeleri etkinleştir.";
+"BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_MESSAGE" = "Otomatik yedeklemeler devre dışı bırakılır. Tellomi'nin izinlerini güncelleyerek otomatik yedeklemeleri etkinleştir.";
 
 /* Add-on to a message describing that the Background App Refresh permission is disabled for Signal. \"Background App Refresh\" should be localized the same way it is in iOS Settings app permissions. */
 "BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_MESSAGE_UPDATE_NOW" = "Şimdi Güncelle";
@@ -785,7 +785,7 @@
 "BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_GO_TO_SETTINGS_BUTTON" = "Ayarlara Git";
 
 /* Message for a sheet warning the user about the Background App Refresh permission. \"Background App Refresh\" should be localized the same way it is in iOS Settings app permissions. */
-"BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_MESSAGE" = "Tellomi'ın, mesajlarını otomatik olarak yedeklemesine izin vermek için aşağıda \"Ayarlara Git\"e dokun ve \"Arka Plan Uygulama Yenileme\"yi etkinleştir";
+"BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_MESSAGE" = "Tellomi'nin, mesajlarını otomatik olarak yedeklemesine izin vermek için aşağıda \"Ayarlara Git\"e dokun ve \"Arka Plan Uygulama Yenileme\"yi etkinleştir";
 
 /* Title for a sheet warning the user about the Background App Refresh permission. \"Background App Refresh\" should be localized the same way it is in iOS Settings app permissions. */
 "BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_TITLE" = "Otomatik Yedeklemeler Devre Dışı";
@@ -902,16 +902,16 @@
 "BACKUP_SETTINGS_BACKUP_PLAN_PAID_RENEWAL_FORMAT" = "%1$@ tarihinde yenilenir";
 
 /* Footer for a menu section related to settings for when Backups are disabled. */
-"BACKUP_SETTINGS_BACKUPS_DISABLED_SECTION_FOOTER" = "Yedeklemeler kapatıldı ve verilerin Tellomi'ın güvenli depolama hizmetinden silindi.";
+"BACKUP_SETTINGS_BACKUPS_DISABLED_SECTION_FOOTER" = "Yedeklemeler kapatıldı ve verilerin Tellomi'nin güvenli depolama hizmetinden silindi.";
 
 /* Description for a progress view tracking media being downloaded in service of disabling Backups. */
-"BACKUP_SETTINGS_BACKUPS_DISABLING_DOWNLOADING_MEDIA_PROGRESS_VIEW_DESCRIPTION" = "Yedeklemeler kapatıldı ve bu cihazda bulunmayan medya dosyaları şimdi indiriliyor. Verilerin indirildikten sonra, Tellomi'ın güvenli depolama alanı hizmetinden silinecektir.";
+"BACKUP_SETTINGS_BACKUPS_DISABLING_DOWNLOADING_MEDIA_PROGRESS_VIEW_DESCRIPTION" = "Yedeklemeler kapatıldı ve bu cihazda bulunmayan medya dosyaları şimdi indiriliyor. Verilerin indirildikten sonra, Tellomi'nin güvenli depolama alanı hizmetinden silinecektir.";
 
 /* Message for a view indicating we failed to delete the user's Backup due to an unexpected error. */
 "BACKUP_SETTINGS_BACKUPS_DISABLING_GENERIC_ERROR_MESSAGE" = "Bir hata oluştu. Lütfen destek ekibiyle iletişime geç.";
 
 /* Header for a menu section related to settings for when disabling Backups encountered an unexpected error. */
-"BACKUP_SETTINGS_BACKUPS_DISABLING_GENERIC_ERROR_SECTION_HEADER" = "Verilerin Tellomi'ın güvenli depolama hizmetinden silinirken bir hata oluştu.";
+"BACKUP_SETTINGS_BACKUPS_DISABLING_GENERIC_ERROR_SECTION_HEADER" = "Verilerin Tellomi'nin güvenli depolama hizmetinden silinirken bir hata oluştu.";
 
 /* Title for a view indicating we failed to delete the user's Backup due to an unexpected error. */
 "BACKUP_SETTINGS_BACKUPS_DISABLING_GENERIC_ERROR_TITLE" = "Yedekleme Silinemedi";
@@ -920,7 +920,7 @@
 "BACKUP_SETTINGS_BACKUPS_DISABLING_PROGRESS_VIEW_DESCRIPTION" = "Yedekleme Siliniyor...";
 
 /* Header for a menu section related to disabling Backups. */
-"BACKUP_SETTINGS_BACKUPS_DISABLING_SECTION_HEADER" = "Yedeklemeler kapatıldı ve verilerin Tellomi'ın güvenli depolama hizmetinden silinecek.";
+"BACKUP_SETTINGS_BACKUPS_DISABLING_SECTION_HEADER" = "Yedeklemeler kapatıldı ve verilerin Tellomi'nin güvenli depolama hizmetinden silinecek.";
 
 /* Header for a menu section related to settings for when Backups are enabled. */
 "BACKUP_SETTINGS_BACKUPS_ENABLED_SECTION_HEADER" = "Yedekleme detayları";
@@ -968,13 +968,13 @@
 "BACKUP_SETTINGS_DISABLING_CONFIRMATION_ACTION_SHEET_TITLE" = "Yedeklemeler kapatılıp silinsin mi?";
 
 /* Message shown in an action sheet when the user disables Backups, explaining that their media is downloading first. */
-"BACKUP_SETTINGS_DISABLING_DOWNLOADS_STARTED_ACTION_SHEET_MESSAGE" = "Yedeklemende bu cihazda olmayan medya var. Yedeklemenin indirilmesi uzun sürebilir, kesintiye uğramasını önlemek için Tellomi'ı açık tut.";
+"BACKUP_SETTINGS_DISABLING_DOWNLOADS_STARTED_ACTION_SHEET_MESSAGE" = "Yedeklemende bu cihazda olmayan medya var. Yedeklemenin indirilmesi uzun sürebilir, kesintiye uğramasını önlemek için Tellomi'yi açık tut.";
 
 /* Title shown in an action sheet when the user disables Backups, explaining that their media is downloading first. */
 "BACKUP_SETTINGS_DISABLING_DOWNLOADS_STARTED_ACTION_SHEET_TITLE" = "Yedeklemen indiriliyor";
 
 /* Message shown in an action sheet indicating we failed to delete the user's Backup due to an unexpected error. */
-"BACKUP_SETTINGS_DISABLING_ERROR_GENERIC_ERROR_ACTION_SHEET_MESSAGE" = "Verilerin Tellomi'ın güvenli depolama hizmetinden silinirken bir hata oluştu.";
+"BACKUP_SETTINGS_DISABLING_ERROR_GENERIC_ERROR_ACTION_SHEET_MESSAGE" = "Verilerin Tellomi'nin güvenli depolama hizmetinden silinirken bir hata oluştu.";
 
 /* Title shown in an action sheet indicating we failed to delete the user's Backup due to an unexpected error. */
 "BACKUP_SETTINGS_DISABLING_ERROR_GENERIC_ERROR_ACTION_SHEET_TITLE" = "Yedekleme Silinemedi";
@@ -1067,13 +1067,13 @@
 "BACKUP_SETTINGS_LANDING_OTHER_WAYS_HEADER" = "Diğer Yedekleme Yolları";
 
 /* Subtitle on the Backups settings landing page. */
-"BACKUP_SETTINGS_LANDING_PAGE_SUBTITLE" = "Mesaj geçmişini yedekle, böylece yeni bir telefon aldığında veya Tellomi'ı yeniden yüklediğinde asla veri kaybetmezsin.";
+"BACKUP_SETTINGS_LANDING_PAGE_SUBTITLE" = "Mesaj geçmişini yedekle, böylece yeni bir telefon aldığında veya Tellomi'yi yeniden yüklediğinde asla veri kaybetmezsin.";
 
 /* Button to begin setting up Signal Secure Backups on the Backups settings landing page. */
 "BACKUP_SETTINGS_LANDING_SET_UP_BUTTON" = "Ayarla";
 
 /* Description of Signal Secure Backups on the Backups settings landing page. */
-"BACKUP_SETTINGS_LANDING_SIGNAL_BACKUPS_BODY" = "Tellomi'ın güvenli uçtan uca şifrelenmiş depolama hizmeti ile otomatik yedekleme.";
+"BACKUP_SETTINGS_LANDING_SIGNAL_BACKUPS_BODY" = "Tellomi'nin güvenli uçtan uca şifrelenmiş depolama hizmeti ile otomatik yedekleme.";
 
 /* Title for the Signal Secure Backups cell on the Backups settings landing page. */
 "BACKUP_SETTINGS_LANDING_SIGNAL_BACKUPS_TITLE" = "Tellomi Güvenli Yedeklemeler";
@@ -1088,7 +1088,7 @@
 "BACKUP_SETTINGS_LINKED_DEVICE_MANAGE_ON_PRIMARY_FOOTER_PAID" = "Tellomi Yedeklemeleri aboneliğini ana cihazından yönetebilir veya iptal edebilirsin.";
 
 /* Body text on the linked-device Backups screen, shown when Backups aren't set up, explaining the feature and that it can be enabled on the user's primary device. */
-"BACKUP_SETTINGS_LINKED_DEVICE_NO_BACKUP_FOOTER" = "Tellomi'ın güvenli uçtan uca şifrelenmiş depolama hizmeti ile otomatik yedekleme. Ana cihazınla başla.";
+"BACKUP_SETTINGS_LINKED_DEVICE_NO_BACKUP_FOOTER" = "Tellomi'nin güvenli uçtan uca şifrelenmiş depolama hizmeti ile otomatik yedekleme. Ana cihazınla başla.";
 
 /* Message on the linked-device Backups screen, shown when the user's paid subscription can't be found, prompting them to renew. */
 "BACKUP_SETTINGS_LINKED_DEVICE_SUBSCRIPTION_NOT_FOUND" = "Aboneliğin bulunamadı. Tellomi Güvenli Yedeklemeleri kullanmaya devam etmek için yenile.";
@@ -1103,7 +1103,7 @@
 "BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_LATER_ACTION" = "Daha sonra indir";
 
 /* Message for an action sheet allowing users to download their offloaded media. */
-"BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_MESSAGE" = "Yedeklemende bu cihazda olmayan medya var. Bunun indirilmesi uzun sürebilir, indirmenin kesintiye uğramasını önlemek için Tellomi'i açık tut.";
+"BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_MESSAGE" = "Yedeklemende bu cihazda olmayan medya var. Bunun indirilmesi uzun sürebilir, indirmenin kesintiye uğramasını önlemek için Tellomi'yi açık tut.";
 
 /* Action in an action sheet allowing users to download their offloaded media now. */
 "BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_NOW_ACTION" = "Şimdi İndir";
@@ -1142,7 +1142,7 @@
 "BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_UPSELL_TITLE" = "Depolama Alanı Optimizasyonunu Aç'a Yükselt";
 
 /* Subtitle for a notification telling the user they are out of remote storage space. */
-"BACKUP_SETTINGS_OUT_OF_STORAGE_SPACE_NOTIFICATION_SUBTITLE" = "Yedekleme depolama sınırına ulaştın. Sohbetleri ve medyayı yedeklemeye devam etmek için Tellomi'da yer aç.";
+"BACKUP_SETTINGS_OUT_OF_STORAGE_SPACE_NOTIFICATION_SUBTITLE" = "Yedekleme depolama sınırına ulaştın. Sohbetleri ve medyayı yedeklemeye devam etmek için Tellomi'de yer aç.";
 
 /* Title for a notification telling the user they are out of remote storage space. */
 "BACKUP_SETTINGS_OUT_OF_STORAGE_SPACE_NOTIFICATION_TITLE" = "Yedekleme Depolama Dolu";
@@ -1202,7 +1202,7 @@
 "BACKUP_SETTINGS_UPLOAD_PROGRESS_SUBTITLE_PAUSED_NEEDS_WIFI" = "Medya yükleme duraklatıldı: Wi-Fi bekleniyor";
 
 /* Subtitle for a progress bar tracking uploads that are paused because the user is out of remote storage space. Embeds 1:{{ total storage space provided, e.g. 100 GB }}; 2:{{ space the user needs to free up by deleting media, e.g. 1 GB }}. */
-"BACKUP_SETTINGS_UPLOAD_PROGRESS_SUBTITLE_PAUSED_OUT_OF_STORAGE_SPACE_FORMAT" = "Yedekleme planına dahil olan %1$@ depolama sınırına ulaştın. Yeni sohbetleri ve medyayı yedeklemek için Tellomi'da %2$@ alan boşalt ve ardından \"Şimdi Yedekle\"ye dokun.";
+"BACKUP_SETTINGS_UPLOAD_PROGRESS_SUBTITLE_PAUSED_OUT_OF_STORAGE_SPACE_FORMAT" = "Yedekleme planına dahil olan %1$@ depolama sınırına ulaştın. Yeni sohbetleri ve medyayı yedeklemek için Tellomi'de %2$@ alan boşalt ve ardından \"Şimdi Yedekle\"ye dokun.";
 
 /* Subtitle for a progress bar tracking active uploading. Embeds 1:{{ the amount uploaded as a file size, e.g. 100 MB }}; 2:{{ the total amount to upload as a file size, e.g. 1 GB }}; 3:{{ the percentage uploaded as a percent, e.g. 40% }}. */
 "BACKUP_SETTINGS_UPLOAD_PROGRESS_SUBTITLE_RUNNING" = "%1$@/%2$@ yükleniyor (%3$@)";
@@ -1214,7 +1214,7 @@
 "BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_BUTTON_TITLE" = "Şimdi Yedekle";
 
 /* Message for a sheet shown after the user enables backups. */
-"BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_MESSAGE" = "Bu işlem biraz zaman alabilir. Yedekleme yapılırken Tellomi'ı normal şekilde kullanabilirsin.";
+"BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_MESSAGE" = "Bu işlem biraz zaman alabilir. Yedekleme yapılırken Tellomi'yi normal şekilde kullanabilirsin.";
 
 /* Footer for a toggle shown after the user enables backups, letting them enable the Optimize Storage feature. */
 "BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_OPTIMIZE_MEDIA_TOGGLE_FOOTER" = "Bir sonraki yedeklemeni gerçekleştirdiğinde eski medya kaldırılır, ancak istediğin zaman yedeklemenden indirilebilir.";
@@ -1259,7 +1259,7 @@
 "BACKUPS_BACK_UP_YOUR_MEDIA_MEGAPHONE_TITLE" = "Tüm medyanı yedekle";
 
 /* Body for a Backup plan upsell view encouraging users to subscribe to a paid Backup plan to back up all their media. Embeds {{ the amount of storage included in the paid plan, preformatted as a localized byte count, e.g. '100 GB' }}. */
-"BACKUPS_BACK_UP_YOUR_MEDIA_UPSELL_BODY" = "Ücretli Tellomi Güvenli Yedeklemeler maksimum %1$@ büyüklüğe kadar tüm medyanı korur. Yeni bir telefon aldığında veya Tellomi'ı yeniden yüklediğinde asla resim veya video kaybetme.";
+"BACKUPS_BACK_UP_YOUR_MEDIA_UPSELL_BODY" = "Ücretli Tellomi Güvenli Yedeklemeler maksimum %1$@ büyüklüğe kadar tüm medyanı korur. Yeni bir telefon aldığında veya Tellomi'yi yeniden yüklediğinde asla resim veya video kaybetme.";
 
 /* Title for a Backup plan upsell view encouraging users to subscribe to a paid Backup plan to back up all their media. */
 "BACKUPS_BACK_UP_YOUR_MEDIA_UPSELL_TITLE" = "Tüm Medyayı Kaydetmek İçin Yükselt";
@@ -1301,7 +1301,7 @@
 "BACKUPS_SETTINGS_TITLE" = "Güvenli Yedeklemeler";
 
 /* Message for an action sheet shown on iPad saying you need to set up backups on your phone */
-"BACKUPS_SETUP_ON_PRIMARY_MESSAGE" = "Yedeklemeler'i yapılandırmak için birincil iPhone'unda veya Android'inde Tellomi'ı aç ve Ayarlar > Yedeklemeler'e git.";
+"BACKUPS_SETUP_ON_PRIMARY_MESSAGE" = "Yedeklemeler'i yapılandırmak için birincil iPhone'unda veya Android'inde Tellomi'yi aç ve Ayarlar > Yedeklemeler'e git.";
 
 /* Body for system notification or megaphone when backups is enabled. Embeds {{ time backups was enabled }} */
 "BACKUPS_TURNED_ON_NOTIFICATION_BODY_FORMAT" = "Bu hesap için Tellomi Yedeklemeleri %1$@ saatinde açıldı. Görüntülemek için dokun.";
@@ -1322,7 +1322,7 @@
 "BADGE_DETAILS_DONATE_TO_SIGNAL" = "Şimdi bağış yap";
 
 /* When viewing someone else's donor badge, you'll see a sheet. This is the title on that sheet. Embeds {badge owner's short name} */
-"BADGE_DETAILS_TITLE_FOR_SUPPORTER" = "%1$@ Tellomi'i destekliyor";
+"BADGE_DETAILS_TITLE_FOR_SUPPORTER" = "%1$@ Tellomi'yi destekliyor";
 
 /* String explaining to the user that their boost badge has expired on the badge expiry sheet. */
 "BADGE_EXPIRED_BOOST_BODY" = "Boost rozetinin süresi doldu ve artık profilinde görünmüyor.\n\nTellomi'i kullanmaya devam edebilirsin ancak senin için geliştirilen teknolojiyi desteklemek için lütfen aylık bağışçı olmayı düşün.";
@@ -1379,7 +1379,7 @@
 "BANK_MANDATE_READ_MORE" = "Devamını Oku";
 
 /* Users can donate to Signal with a bank account. We are required to show them a mandate with information about bank transfers. This is a subtitle about the payment processor Stripe above that mandate. */
-"BANK_MANDATE_SUBTITLE" = "Stripe, Tellomi'e yapılan bağışları işler. Tellomi, kişisel bilgilerini toplamaz veya saklamaz.";
+"BANK_MANDATE_SUBTITLE" = "Stripe, Tellomi'ye yapılan bağışları işler. Tellomi, kişisel bilgilerini toplamaz veya saklamaz.";
 
 /* Users can donate to Signal with a bank account. We are required to show them a mandate with information about bank transfers. This is the title above that mandate. */
 "BANK_MANDATE_TITLE" = "Banka Transferi";
@@ -1655,7 +1655,7 @@
 "CALL_QUALITY_SURVEY_COMPLETION_TOAST" = "Geri bildirimin için teşekkürler!";
 
 /* Footer text explaining custom issue descriptions in the call quality survey */
-"CALL_QUALITY_SURVEY_CUSTOM_ISSUE_FOOTER" = "Lütfen konuyla ilgili tüm ayrıntıları ekle. Burada paylaştığın her şey gizli tutulacak ve yalnızca Tellomi'daki aramaların iyileştirilmesine yardımcı olmak için kullanılacaktır.";
+"CALL_QUALITY_SURVEY_CUSTOM_ISSUE_FOOTER" = "Lütfen konuyla ilgili tüm ayrıntıları ekle. Burada paylaştığın her şey gizli tutulacak ve yalnızca Tellomi'deki aramaların iyileştirilmesine yardımcı olmak için kullanılacaktır.";
 
 /* Placeholder text for the custom issue entry in the call quality survey */
 "CALL_QUALITY_SURVEY_CUSTOM_ISSUE_PLACEHOLDER" = "Problemi açıkla";
@@ -1724,7 +1724,7 @@
 "CALL_QUALITY_SURVEY_ISSUES_SHEET_TITLE" = "Ne Gibi Problemler Yaşadın?";
 
 /* Header text explaining the purpose of the call quality survey */
-"CALL_QUALITY_SURVEY_RATING_HEADER" = "Bu, Tellomi'daki aramaları iyileştirmemize yardımcı olur. Kişisel olarak tanımlanabilir hiçbir bilgi saklanmaz.";
+"CALL_QUALITY_SURVEY_RATING_HEADER" = "Bu, Tellomi'deki aramaları iyileştirmemize yardımcı olur. Kişisel olarak tanımlanabilir hiçbir bilgi saklanmaz.";
 
 /* Title for the initial rating screen in the call quality survey */
 "CALL_QUALITY_SURVEY_RATING_TITLE" = "Araman Nasıldı?";
@@ -2111,7 +2111,7 @@
 "CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_BUTTON" = "Devam Et";
 
 /* Message shown in an action sheet when the user tries to resume backup using cellular data. */
-"CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_MESSAGE" = "Hücresel veri kullanarak medyanın yedeklenmesi veri ücretlerine neden olabilir. Yedeklemenin yüklenmesi uzun sürebilir, kesintiye uğramasını önlemek için Tellomi'ı açık tut.";
+"CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_MESSAGE" = "Hücresel veri kullanarak medyanın yedeklenmesi veri ücretlerine neden olabilir. Yedeklemenin yüklenmesi uzun sürebilir, kesintiye uğramasını önlemek için Tellomi'yi açık tut.";
 
 /* Title for the action sheet shown when the user tries to resume backup using cellular data. */
 "CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_TITLE" = "Hücresel Veri Kullanımına Devam Edilsin mi?";
@@ -2189,7 +2189,7 @@
 "CHOOSE_BACKUP_PLAN_BULLET_STORAGE_AMOUNT" = "%1$@ depolama";
 
 /* Text for a bullet point in a list of Backup features, thanking the user for supporting Signal by subscribing to the paid Backup plan. */
-"CHOOSE_BACKUP_PLAN_BULLET_THANKS_FOR_SUPPORTING_SIGNAL" = "Tellomi'i desteklediğin için teşekkürler!";
+"CHOOSE_BACKUP_PLAN_BULLET_THANKS_FOR_SUPPORTING_SIGNAL" = "Tellomi'yi desteklediğin için teşekkürler!";
 
 /* Message shown in an action sheet when the user tries to confirm a plan selection, but is not registered. */
 "CHOOSE_BACKUP_PLAN_CONFIRMATION_ERROR_NOT_REGISTERED" = "Yedeklemeleri etkinleştirmek için kayıtlı olman gerekir.";
@@ -2291,7 +2291,7 @@
 "COMPOSE_SCREEN_LIMITED_CONTACTS_CTA" = "Yönet";
 
 /* Multi-line label explaining why compose-screen contact picker is empty. */
-"COMPOSE_SCREEN_LIMITED_CONTACTS_PERMISSION" = "Tellomi'in sistem kişilerine sınırlı erişimi bulunmaktadır";
+"COMPOSE_SCREEN_LIMITED_CONTACTS_PERMISSION" = "Tellomi'nin sistem kişilerine sınırlı erişimi bulunmaktadır";
 
 /* Button to open settings from an empty compose-screen contact picker. */
 "COMPOSE_SCREEN_MISSING_CONTACTS_CTA" = "Ayarları aç";
@@ -2444,7 +2444,7 @@
 "CONTACT_SHARE_INVALID_CONTACT" = "Geçersiz kişi.";
 
 /* Alert body when contacts disabled while trying to share a contact. */
-"CONTACT_SHARING_NO_ACCESS_BODY" = "Tellomi'in kişilerine erişmesi gerekiyor. iOS Ayarları'na git ve kişileri aç. Kişilerin şifrelendi ve Tellomi hizmetinde görünmüyor.";
+"CONTACT_SHARING_NO_ACCESS_BODY" = "Tellomi'nin kişilerine erişmesi gerekiyor. iOS Ayarları'na git ve kişileri aç. Kişilerin şifrelendi ve Tellomi hizmetinde görünmüyor.";
 
 /* Alert title when contacts disabled while trying to share a contact. */
 "CONTACT_SHARING_NO_ACCESS_TITLE" = "Kişi Erişimine İzin Ver";
@@ -2618,7 +2618,7 @@
 "CONVERSATION_SETTINGS_ATTRIBUTES_ACCESS_SECTION_FOOTER_V2" = "Grup adını, fotoğrafını, açıklamasını, kaybolan mesajlar zamanlayıcısını ve sabitlenmiş mesajları kimin düzenleyebileceğini seç.";
 
 /* Footer string for a contact's badges in conversation settings */
-"CONVERSATION_SETTINGS_BADGES_FOOTER" = "Tellomi'ı destekleyerek profilin için rozet kazan. Daha fazlasını öğrenmek için bir rozete dokun.";
+"CONVERSATION_SETTINGS_BADGES_FOOTER" = "Tellomi'yi destekleyerek profilin için rozet kazan. Daha fazlasını öğrenmek için bir rozete dokun.";
 
 /* Header title for a contact's badges in conversation settings */
 "CONVERSATION_SETTINGS_BADGES_HEADER" = "Rozetler";
@@ -2921,10 +2921,10 @@
 "DATABASE_RECOVERY_MORE_STORAGE_SPACE_NEEDED_TITLE" = "Daha Fazla Depolama Alanı Gerekiyor";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) This is the description on the screen where we show an error message. */
-"DATABASE_RECOVERY_RECOVERY_FAILED_DESCRIPTION" = "Mesaj geçmişin kurtarılamadı. Yeniden yükleme yaptıktan sonra Tellomi'ı kullanmaya devam edebilirsin. Problemi daha iyi anlayabilmemiz için bize bir hata günlüğü gönder.";
+"DATABASE_RECOVERY_RECOVERY_FAILED_DESCRIPTION" = "Mesaj geçmişin kurtarılamadı. Yeniden yükleme yaptıktan sonra Tellomi'yi kullanmaya devam edebilirsin. Problemi daha iyi anlayabilmemiz için bize bir hata günlüğü gönder.";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) This button lets them delete all of their data. */
-"DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_BUTTON" = "Tellomi'ı Sıfırla";
+"DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_BUTTON" = "Tellomi'yi Sıfırla";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) If they want to delete the app and restart, they will be presented with a confirmation dialog. This is the final button they will press before their data is reset. */
 "DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_CONFIRMATION_CONFIRM" = "Sıfırla";
@@ -2933,7 +2933,7 @@
 "DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_CONFIRMATION_DESCRIPTION" = "Hesap bilgilerin, profilin ve tüm mesajların silinecek. Bu işlem tamamlandıktan sonra uygulama kapanacaktır.";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) If they want to delete the app and restart, they will be presented with a confirmation dialog. This is the title of that dialog. */
-"DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_CONFIRMATION_TITLE" = "Tellomi'ı Sıfırla";
+"DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_CONFIRMATION_TITLE" = "Tellomi'yi Sıfırla";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) They were asked to submit a debug log. This is the button that submits this log. */
 "DATABASE_RECOVERY_RECOVERY_FAILED_SUBMIT_DEBUG_LOG_BUTTON" = "Hata Ayıklama Günlüğünü gönder";
@@ -3098,7 +3098,7 @@
 "DEREGISTRATION_REREGISTER_PROMPT_TITLE" = "Bu telefon numarası yeniden kaydedilsin mi?";
 
 /* Label warning the user that they have been de-registered. */
-"DEREGISTRATION_WARNING" = "Bu cihaz artık kayıtlı değil. Bunun nedeni büyük olasılıkla telefon numaranın farklı bir cihazda Tellomi'e kaydedilmiş olmasıdır.";
+"DEREGISTRATION_WARNING" = "Bu cihaz artık kayıtlı değil. Bunun nedeni büyük olasılıkla telefon numaranın farklı bir cihazda Tellomi'ye kaydedilmiş olmasıdır.";
 
 /* If the user has been deregistered, they'll see a warning. This is This is the call to action on that warning. */
 "DEREGISTRATION_WARNING_ACTION_TITLE" = "Cihazı Tekrar Kaydet";
@@ -3161,7 +3161,7 @@
 "DEVICE_TRANSFER_CHOICE_TRANSFER_LINKED_TITLE" = "Başka bir iPad'den aktar";
 
 /* An error indicating that the other device closed signal mid-transfer and it could not complete */
-"DEVICE_TRANSFER_ERROR_BACKGROUNDED" = "Aktarım tamamlanamadı. Her iki cihazda da Tellomi'in açık olduğundan emin ol ve tekrar dene.";
+"DEVICE_TRANSFER_ERROR_BACKGROUNDED" = "Aktarım tamamlanamadı. Her iki cihazda da Tellomi'nin açık olduğundan emin ol ve tekrar dene.";
 
 /* An error indicating that something went wrong with the transfer and it could not complete */
 "DEVICE_TRANSFER_ERROR_GENERIC" = "Aktarım tamamlanamadı. Cihazlarının birbirine yakın olduğundan emin ol ve tekrar dene.";
@@ -3170,7 +3170,7 @@
 "DEVICE_TRANSFER_ERROR_NOT_ENOUGH_SPACE" = "Aktarımı tamamlamak için depolama alanı yetersiz";
 
 /* An error indicating the user must update their device before trying to transfer. */
-"DEVICE_TRANSFER_ERROR_UNSUPPORTED_VERSION" = "Tellomi'in son sürümüne güncelleyin ve tekrar deneyin";
+"DEVICE_TRANSFER_ERROR_UNSUPPORTED_VERSION" = "Tellomi'nin son sürümüne güncelleyin ve tekrar deneyin";
 
 /* Body of the device transfer screen for pairing a new device, from the new device */
 "DEVICE_TRANSFER_PAIR_NEW_DEVICE_MESSAGE" = "Hesabını aktarmak için bu cihazı eski cihazınla eşleştir";
@@ -3185,7 +3185,7 @@
 "DEVICE_TRANSFER_PAIR_OLD_DEVICE_TITLE" = "Eski Cihazınla Eşleştir";
 
 /* The explanation on the view that shows receiving progress */
-"DEVICE_TRANSFER_RECEIVING_EXPLANATION" = "İki cihazı da yakında bulundurun. Cihazları veya Tellomi'i kapatmayın. Aktarımlar uçtan uca şifrelidir.";
+"DEVICE_TRANSFER_RECEIVING_EXPLANATION" = "İki cihazı da yakında bulundurun. Cihazları veya Tellomi'yi kapatmayın. Aktarımlar uçtan uca şifrelidir.";
 
 /* The title on the view that shows receiving progress */
 "DEVICE_TRANSFER_RECEIVING_TITLE" = "Veri Alınıyor";
@@ -3218,7 +3218,7 @@
 "DEVICE_TRANSFER_STATUS_NEW_DEVICE_TRANSFERRING" = "Aktarıyor";
 
 /* Description in the progress view displayed during device transfer. */
-"DEVICE_TRANSFER_STATUS_NEW_DEVICE_TRANSFERRING_DESCRIPTION" = "İki cihazı da yakında bulundur. Her iki cihazı da kapatma ve Tellomi'ı açık tut. Aktarımlar uçtan uca şifrelidir.";
+"DEVICE_TRANSFER_STATUS_NEW_DEVICE_TRANSFERRING_DESCRIPTION" = "İki cihazı da yakında bulundur. Her iki cihazı da kapatma ve Tellomi'yi açık tut. Aktarımlar uçtan uca şifrelidir.";
 
 /* Status message on old device when cancelling transfer. */
 "DEVICE_TRANSFER_STATUS_OLD_DEVICE_CANCELLING" = "Yeni iPhone ile bağlantı iptal ediliyor…";
@@ -3344,13 +3344,13 @@
 "DONATE_CHOOSE_PAYMENT_METHOD_SHEET_SUBTITLE_FOR_ONE_TIME_DONATION" = "30 gün boyunca %1$@ rozetini kazan";
 
 /* When users make donations on a friend's behalf, they see a sheet that lets them pick a payment method. This is the title on that sheet. Embeds {{amount of money}}, such as \"$5\". */
-"DONATE_CHOOSE_PAYMENT_METHOD_SHEET_TITLE_FOR_DONATION_ON_BEHALF_OF_A_FRIEND" = "Tellomi'a %1$@ Bağış";
+"DONATE_CHOOSE_PAYMENT_METHOD_SHEET_TITLE_FOR_DONATION_ON_BEHALF_OF_A_FRIEND" = "Tellomi'ye %1$@ Bağış";
 
 /* When users make monthly donations, they see a sheet that lets them pick a payment method. This is the title on that sheet. Embeds {{amount of money per month}}, such as \"$5/month\". */
-"DONATE_CHOOSE_PAYMENT_METHOD_SHEET_TITLE_FOR_MONTHLY_DONATION" = "Tellomi'e %1$@ bağış yap";
+"DONATE_CHOOSE_PAYMENT_METHOD_SHEET_TITLE_FOR_MONTHLY_DONATION" = "Tellomi'ye %1$@ bağış yap";
 
 /* When users make one-time donations, they see a sheet that lets them pick a payment method. This is the title on that sheet. Embeds {{amount of money}}, such as \"$5\". */
-"DONATE_CHOOSE_PAYMENT_METHOD_SHEET_TITLE_FOR_ONE_TIME_DONATION" = "Tellomi'e %1$@ bağış yap";
+"DONATE_CHOOSE_PAYMENT_METHOD_SHEET_TITLE_FOR_ONE_TIME_DONATION" = "Tellomi'ye %1$@ bağış yap";
 
 /* Users can donate on a friend's behalf and can optionally add a message. This is tells users about that optional message. */
 "DONATE_ON_BEHALF_OF_A_FRIEND_ADDITIONAL_MESSAGE_INFO" = "Alıcı, bağıştan mesajla haberdar edilecektir. Kendi mesajını aşağıya ekle.";
@@ -3464,7 +3464,7 @@
 "DONATION_ON_BEHALF_OF_A_FRIEND_BADGE_REDEEMED" = "Kullanıldı";
 
 /* Users can donate on behalf of a friend, and the friend will receive a badge. This is a short paragraph on the screen where users choose the badge their friend will receive. */
-"DONATION_ON_BEHALF_OF_A_FRIEND_CHOOSE_BADGE_DESCRIPTION" = "Tellomi kullanan bir arkadaşın veya aile üyesi için bağış yaparak Tellomi'ı destekle. Böylece Tellomi'a olan desteklerini profillerinde gösterebilecekler.";
+"DONATION_ON_BEHALF_OF_A_FRIEND_CHOOSE_BADGE_DESCRIPTION" = "Tellomi kullanan bir arkadaşın veya aile üyesi için bağış yaparak Tellomi'yi destekle. Böylece Tellomi'ye olan desteklerini profillerinde gösterebilecekler.";
 
 /* Users can donate on behalf of a friend, and the friend will receive a badge. This is the title on the screen where users choose the badge their friend will receive. */
 "DONATION_ON_BEHALF_OF_A_FRIEND_CHOOSE_BADGE_TITLE" = "Arkadaşın için bağış yap";
@@ -3500,7 +3500,7 @@
 "DONATION_ON_BEHALF_OF_A_FRIEND_PREVIEW_OUTGOING" = "✨ %1$@ için bağış yaptın";
 
 /* You received a donation from a friend. This is the title of that message in the chat. Embeds {{short contact name}}. */
-"DONATION_ON_BEHALF_OF_A_FRIEND_RECEIVED_TITLE_FORMAT" = "%1$@ senin adına Tellomi'e bağış yaptı";
+"DONATION_ON_BEHALF_OF_A_FRIEND_RECEIVED_TITLE_FORMAT" = "%1$@ senin adına Tellomi'ye bağış yaptı";
 
 /* Users can donate on a friend's behalf. This is the error message that appears if the try to do this, but the recipient is blocked. */
 "DONATION_ON_BEHALF_OF_A_FRIEND_RECIPIENT_IS_BLOCKED_ERROR_BODY" = "Bu kullanıcıyı engellediğin için onun adına bağış yapamazsın.";
@@ -3524,7 +3524,7 @@
 "DONATION_ON_BEHALF_OF_A_FRIEND_SENT_TITLE_FORMAT" = "%1$@ adına bağış";
 
 /* When you donate on behalf of a friend, a thank-you sheet will appear. This is the text on that sheet. Embeds {{recipient name}}. */
-"DONATION_ON_BEHALF_OF_A_FRIEND_THANKS_BODY_FORMAT" = "%1$@ adına Tellomi'a bağışta bulundun. Böylece Tellomi'a olan desteklerini profillerinde gösterebilecekler.";
+"DONATION_ON_BEHALF_OF_A_FRIEND_THANKS_BODY_FORMAT" = "%1$@ adına Tellomi'ye bağışta bulundun. Böylece Tellomi'ye olan desteklerini profillerinde gösterebilecekler.";
 
 /* When you donate on behalf of a friend, a thank-you sheet will appear. This is the title on that sheet. */
 "DONATION_ON_BEHALF_OF_A_FRIEND_THANKS_TITLE" = "Desteğin için teşekkürler!";
@@ -3533,7 +3533,7 @@
 "DONATION_ON_BEHALF_OF_A_FRIEND_VIEW" = "Görüntüle";
 
 /* A friend has donated on your behalf and you received a badge. This text says that you received a badge, and from whom. Embeds {{contact's short name, such as a first name}}. */
-"DONATION_ON_BEHALF_OF_A_FRIEND_YOU_RECEIVED_A_BADGE_FORMAT" = "%1$@ senin adına Tellomi'a bağış yaptı! Tellomi'a desteğini profilinde göster.";
+"DONATION_ON_BEHALF_OF_A_FRIEND_YOU_RECEIVED_A_BADGE_FORMAT" = "%1$@ senin adına Tellomi'ye bağış yaptı! Tellomi'ye desteğini profilinde göster.";
 
 /* Body text for a sheet discussing donating to Signal. */
 "DONATION_READ_MORE_SHEET_BODY" = "Kâr amacı gütmeyen, bağımsız bir kuruluş olan Signal, özel mesajlaşma ve aramalara önem verir. Reklam yok, takip yok, gözetleme yok. Signal'ı desteklemek için bugün bağış yap.";
@@ -3581,7 +3581,7 @@
 "DONATION_RECEIPTS" = "Bağış Makbuzları";
 
 /* Text at the bottom of the donation receipts list, telling users that receipts might not be available */
-"DONATION_RECEIPTS_MIGHT_BE_MISSING_IF_YOU_REINSTALLED" = "Tellomi'i yeniden yüklediyseniz, önceki bağışların makbuzları mevcut olmayacaktır.";
+"DONATION_RECEIPTS_MIGHT_BE_MISSING_IF_YOU_REINSTALLED" = "Tellomi'yi yeniden yüklediyseniz, önceki bağışların makbuzları mevcut olmayacaktır.";
 
 /* Error message displayed if something goes wrong with 3DSecure/iDEAL payment authorization.  This will be encountered if the user cancels the webview before authrizing the payment. */
 "DONATION_REDIRECT_ERROR_CANCELLED_MESSAGE" = "Ödeme iptal edildi. Lütfen tekrar dene.";
@@ -3596,7 +3596,7 @@
 "DONATION_SCREEN_DONATE_BUTTON" = "Bağış yap";
 
 /* On donation screens, a small amount of information text is shown. This is the subtitle for that text. */
-"DONATION_SCREENS_HEADER_DESCRIPTION" = "Özel mesajlaşmayı desteklemek için bağış yap. Tellomi'ı bağımsız ve reklamsız tut.";
+"DONATION_SCREENS_HEADER_DESCRIPTION" = "Özel mesajlaşmayı desteklemek için bağış yap. Tellomi'yi bağımsız ve reklamsız tut.";
 
 /* On donation screens, a small amount of information text is shown. Users can click this link to learn more information. */
 "DONATION_SCREENS_HEADER_READ_MORE" = "Devamını oku";
@@ -3671,7 +3671,7 @@
 "DONATION_VIEW_DONATE_ON_BEHALF_OF_A_FRIEND" = "Arkadaşın için bağış yap";
 
 /* Text describing to the user that they're going to pay a donation to Signal */
-"DONATION_VIEW_DONATION_TO_SIGNAL" = "Tellomi'e Bağış";
+"DONATION_VIEW_DONATION_TO_SIGNAL" = "Tellomi'ye Bağış";
 
 /* Title for the 'Donor FAQ' button on the donation screen */
 "DONATION_VIEW_DONOR_FAQ" = "Bağışçılar için SSS";
@@ -3683,13 +3683,13 @@
 "DONATION_VIEW_MANAGE_BADGES" = "Rozetler";
 
 /* Text describing to the user that they're going to pay a monthly donation to Signal */
-"DONATION_VIEW_MONTHLY_DONATION_TO_SIGNAL" = "Tellomi'a Aylık Bağış";
+"DONATION_VIEW_MONTHLY_DONATION_TO_SIGNAL" = "Tellomi'ye Aylık Bağış";
 
 /* Title for the 'my support' section in the donation view */
 "DONATION_VIEW_MY_SUPPORT_TITLE" = "Desteğim";
 
 /* Title on the 'Donate to Signal' screen */
-"DONATION_VIEW_TITLE" = "Tellomi'e Bağış Yap";
+"DONATION_VIEW_TITLE" = "Tellomi'ye Bağış Yap";
 
 /* Label for the currency picker button in donation views */
 "DONATIONS_CURRENCY_PICKER_LABEL" = "Para birimi";
@@ -3713,7 +3713,7 @@
 "EDIT_GROUP_DEFAULT_TITLE" = "Grubu düzenle";
 
 /* Error message indicating the a user can't be added to a group. */
-"EDIT_GROUP_ERROR_CANNOT_ADD_MEMBER" = "Bu kullanıcı Tellomi'i güncelleyene kadar gruba eklenemez.";
+"EDIT_GROUP_ERROR_CANNOT_ADD_MEMBER" = "Bu kullanıcı Tellomi'yi güncelleyene kadar gruba eklenemez.";
 
 /* Error message indicating that an avatar image is invalid and cannot be used. */
 "EDIT_GROUP_ERROR_INVALID_AVATAR" = "Geçersiz fotoğraf.";
@@ -3740,10 +3740,10 @@
 "EDIT_MESSAGE_SEND_MESSAGE_UNKNOWN_ERROR" = "EDIT_MESSAGE_SEND_MESSAGE_UNKNOWN_ERROR";
 
 /* body of email sent to contacts when inviting to install Signal. Embeds {{link to install Signal}} and {{link to the Signal home page}} */
-"EMAIL_INVITE_BODY" = "Merhaba,\n\nSon zamanlarda iPhone'umdaki sohbetlerimi gizli tutmak için Tellomi kullanıyorum. Senin de Tellomi kullanmanı isterim böylece mesajlarımızın ve aramalarımızın sadece aramızda kaldığından emin olabiliriz.\n\nTellomi iPhone, Android ve Desktop için kullanılabilir. Uygulamayı bu adresten indirebilirsin: %1$@\n\nTellomi mevcut mesajlaşma uygulaman gibi çalışır. Görüntü ve video gönderebilir, arama yapabilir ve grup sohbetlerine başlayabiliriz. En iyi yanı ise Tellomi'i yaratanlar dahil hiç kimsenin ne yazdığımızı göremeyecek olması!\n\nTellomi hakkında daha fazla bilgi için burayı ziyaret edebilirsin: %2$@";
+"EMAIL_INVITE_BODY" = "Merhaba,\n\nSon zamanlarda iPhone'umdaki sohbetlerimi gizli tutmak için Tellomi kullanıyorum. Senin de Tellomi kullanmanı isterim böylece mesajlarımızın ve aramalarımızın sadece aramızda kaldığından emin olabiliriz.\n\nTellomi iPhone, Android ve Desktop için kullanılabilir. Uygulamayı bu adresten indirebilirsin: %1$@\n\nTellomi mevcut mesajlaşma uygulaman gibi çalışır. Görüntü ve video gönderebilir, arama yapabilir ve grup sohbetlerine başlayabiliriz. En iyi yanı ise Tellomi'yi yaratanlar dahil hiç kimsenin ne yazdığımızı göremeyecek olması!\n\nTellomi hakkında daha fazla bilgi için burayı ziyaret edebilirsin: %2$@";
 
 /* subject of email sent to contacts when inviting to install Signal */
-"EMAIL_INVITE_SUBJECT" = "Haydi Tellomi'e geçelim";
+"EMAIL_INVITE_SUBJECT" = "Haydi Tellomi'ye geçelim";
 
 /* Description for the fallback support sheet if user cannot send email */
 "EMAIL_SIGNAL_MESSAGE" = "Cihazınız eposta gönderebilecek şekilde yapılandırılmamış. Yardım talep etmek için support@tellomi.app adresine e-posta gönderebilir veya cihazınıza eposta kurabilirsiniz.";
@@ -3926,7 +3926,7 @@
 "ERROR_NETWORK_FAILURE" = "Ağ Hatası";
 
 /* Format string for an error alert notification message. Embeds {{ error string }} */
-"ERROR_NOTIFICATION_MESSAGE_FORMAT" = "Lütfen bu hatayı cihazınızdaki hata ayıklama günlükleriyle birlikte support@tellomi.app adresine bildirerek Tellomi'i iyileştirmemize yardımcı olun; %1$@";
+"ERROR_NOTIFICATION_MESSAGE_FORMAT" = "Lütfen bu hatayı cihazınızdaki hata ayıklama günlükleriyle birlikte support@tellomi.app adresine bildirerek Tellomi'yi iyileştirmemize yardımcı olun; %1$@";
 
 /* Format string for an error alert notification title. */
 "ERROR_NOTIFICATION_TITLE" = "Tellomi Beta: Bir hata oluştu";
@@ -3953,13 +3953,13 @@
 "EXPIRATION_WARNING_ACTION_TITLE" = "Şimdi Güncelle";
 
 /* Label warning the user that the app will expire soon. Embeds {{date}}. */
-"EXPIRATION_WARNING_SOON" = "Tellomi'in bu sürümü %1$@ tarihinde kullanım dışı kalacak. Mesajlaşmaya devam etmek için güncelle.";
+"EXPIRATION_WARNING_SOON" = "Tellomi'nin bu sürümü %1$@ tarihinde kullanım dışı kalacak. Mesajlaşmaya devam etmek için güncelle.";
 
 /* Label warning the user that the app will expire today. */
-"EXPIRATION_WARNING_TODAY" = "Tellomi'in bu sürümü bugün kullanım dışı kalacak. Mesajlaşmaya devam etmek için güncelle.";
+"EXPIRATION_WARNING_TODAY" = "Tellomi'nin bu sürümü bugün kullanım dışı kalacak. Mesajlaşmaya devam etmek için güncelle.";
 
 /* action sheet header when re-sending message which failed because of an invalid key signature */
-"FAILED_SENDING_BECAUSE_INVALID_KEY_SIGNATURE" = "%1$@ Tellomi'i güncelleyip açması gerektiğinden mesaj gönderilemedi.";
+"FAILED_SENDING_BECAUSE_INVALID_KEY_SIGNATURE" = "%1$@ Tellomi'yi güncelleyip açması gerektiğinden mesaj gönderilemedi.";
 
 /* action sheet header when re-sending message which failed because of untrusted identity keys */
 "FAILED_SENDING_BECAUSE_UNTRUSTED_IDENTITY_KEY" = "%1$@ ile olan güvenlik numaranız yakın zamanda değişti. Bu iletiyi tekrar göndermeden önce doğrulamak isteyebilirsiniz.";
@@ -5192,7 +5192,7 @@
 "INACTIVE_LINKED_DEVICE_REMINDER_MEGAPHONE_TITLE" = "Etkin olmayan bağlı cihaz";
 
 /* Body for an in-app megaphone about a user's inactive primary device. */
-"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_BODY" = "Hesabını aktif tutmak için, ana cihazında Tellomi'i aç.";
+"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_BODY" = "Hesabını aktif tutmak için, ana cihazında Tellomi'yi aç.";
 
 /* Title for a button in an in-app megaphone about a user's inactive primary device, temporarily dismissing the megaphone. */
 "INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_GOT_IT_BUTTON" = "Anladım";
@@ -5201,7 +5201,7 @@
 "INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_LEARN_MORE_BUTTON" = "Daha fazlasını öğren";
 
 /* Title for an in-app megaphone about a user's inactive primary device. */
-"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_TITLE" = "Tellomi'ı telefonunda aç";
+"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_TITLE" = "Tellomi'yi telefonunda aç";
 
 /* Label reminding the user that they are in archive mode, and that muted chats remain archived when they receive a new message. */
 "INBOX_VIEW_ARCHIVE_MODE_MUTED_CHATS_REMINDER" = "Arşivlenen sessize alınmış sohbetler, yeni bir mesaj geldiğinde arşivlenmiş olarak kalmaya devam eder.";
@@ -5288,7 +5288,7 @@
 "INFO_MESSAGE_USER_CHANGED_PHONE_NUMBER_FORMAT" = "%1$@ telefon numarasını değiştirdi.";
 
 /* Shown in inbox and conversation when a user joins Signal, embeds the new user's {{contact name}} */
-"INFO_MESSAGE_USER_JOINED_SIGNAL_BODY_FORMAT" = "%1$@ Tellomi'e katıldı!";
+"INFO_MESSAGE_USER_JOINED_SIGNAL_BODY_FORMAT" = "%1$@ Tellomi'ye katıldı!";
 
 /* Label at the top of the input text when editing a message */
 "INPUT_TOOLBAR_EDIT_MESSAGE_LABEL" = "Mesajı düzenle";
@@ -5315,13 +5315,13 @@
 "INVALID_PROXY_HOST_ERROR" = "Girdiğin proxy adresi geçersiz, lütfen adresi kontrol edip tekrar dene.";
 
 /* Alert body when contacts disabled while trying to invite contacts to signal */
-"INVITE_FLOW_REQUIRES_CONTACT_ACCESS_BODY" = "Arkadaşlarınızı Tellomi'e davet etmek için iOS Ayarlar uygulamasından kişiler erişimini etkinleştirebilirsiniz.";
+"INVITE_FLOW_REQUIRES_CONTACT_ACCESS_BODY" = "Arkadaşlarınızı Tellomi'ye davet etmek için iOS Ayarlar uygulamasından kişiler erişimini etkinleştirebilirsiniz.";
 
 /* Alert title when contacts disabled while trying to invite contacts to signal */
 "INVITE_FLOW_REQUIRES_CONTACT_ACCESS_TITLE" = "Kişi Erişimine İzin Ver";
 
 /* Label for the cell that presents the 'invite contacts' workflow. */
-"INVITE_FRIENDS_CONTACT_TABLE_BUTTON" = "Arkadaşlarınızı Tellomi'e Davet Edin";
+"INVITE_FRIENDS_CONTACT_TABLE_BUTTON" = "Arkadaşlarınızı Tellomi'ye Davet Edin";
 
 /* Header label above a section for more options for adding contacts */
 "INVITE_FRIENDS_CONTACT_TABLE_HEADER" = "Daha fazla";
@@ -5510,7 +5510,7 @@
 "LINK_PREVIEW_UNKNOWN_DOMAIN" = "Bağlantı Ön İzlemesi";
 
 /* Shown in an alert when trying to edit a contact. */
-"LINKED_DEVICE_CONTACTS_NOT_ALLOWED" = "Telefon rehberini yönetme özelliği bağlı cihazlarda artık bulunmuyor. Tellomi bağlantılarını telefon rehberine eklemek için ana cihazında Tellomi'ı aç.";
+"LINKED_DEVICE_CONTACTS_NOT_ALLOWED" = "Telefon rehberini yönetme özelliği bağlı cihazlarda artık bulunmuyor. Tellomi bağlantılarını telefon rehberine eklemek için ana cihazında Tellomi'yi aç.";
 
 /* Bullet point on the linked devices info sheet, describing what can be linked. */
 "LINKED_DEVICE_INFO_SHEET_BULLET_1" = "Bir masaüstü, tablet veya ilave telefon bağlayabilirsin.";
@@ -5525,7 +5525,7 @@
 "LINKED_DEVICE_INFO_SHEET_HEADER" = "<bold>Bağlı Cihazlar</bold>, eklediğin diğer cihazlardan Tellomi hesabına ve mesajlarına güvenli bir şekilde erişmeni sağlar.";
 
 /* Shown in a banner when you tap the 'New Chat' icon at the top of the list of chats. */
-"LINKED_DEVICE_MANAGE_CONTACTS_BANNER" = "Telefon rehberini yönetme özelliği bağlı cihazlarda artık desteklenmiyor. Bu cihaz, ana cihazındaki Tellomi'daki kişi listende yapılan değişiklikleri senkronize etmeye devam edecektir.";
+"LINKED_DEVICE_MANAGE_CONTACTS_BANNER" = "Telefon rehberini yönetme özelliği bağlı cihazlarda artık desteklenmiyor. Bu cihaz, ana cihazındaki Tellomi'deki kişi listende yapılan değişiklikleri senkronize etmeye devam edecektir.";
 
 /* A button shown in a banner when you tap the 'New Chat' icon at the top of the list of chats. Tapping it opens a website with more details. */
 "LINKED_DEVICE_MANAGE_CONTACTS_LEARN_MORE" = "Daha fazlasını öğren";
@@ -5561,7 +5561,7 @@
 "LINKED_DEVICES_EMPTY_STATE" = "Bağlı cihaz yok";
 
 /* Description for header of the linked devices list */
-"LINKED_DEVICES_HEADER_DESCRIPTION" = "Tellomi'i masaüstünde veya iPad'de kullan.";
+"LINKED_DEVICES_HEADER_DESCRIPTION" = "Tellomi'yi masaüstünde veya iPad'de kullan.";
 
 /* Footer text below the list of currently-linked devices */
 "LINKED_DEVICES_LIST_FOOTER" = "Mesajlar ve sohbet bilgileri tüm cihazlarda uçtan uca şifreleme ile korunmaktadır";
@@ -5603,7 +5603,7 @@
 "LINKING_SYNCING_TIMING_INFO" = "Bu işlem birkaç dakika sürebilir";
 
 /* Shown to users while the app is loading, asking them not to close the app. */
-"LOADING_VIEW_CONTROLLER_DONT_CLOSE_APP" = "Tellomi'i kapatmayın.";
+"LOADING_VIEW_CONTROLLER_DONT_CLOSE_APP" = "Tellomi'yi kapatmayın.";
 
 /* Body for an error sheet shown when the user's folder choice does not contain a backup file. */
 "LOCAL_BACKUPS_MISSING_BACKUP_ACTION_SHEET_BODY" = "Seçilen klasörde Tellomi yedeklemesi bulunamadı. Lütfen farklı bir klasör dene.";
@@ -5696,7 +5696,7 @@
 "LOGGING_SECTION" = "Günlük";
 
 /* Footer for the 'logging' help section. */
-"LOGGING_SECTION_FOOTER" = "Hata günlükleri Tellomi'in sorunları ve göçmeleri çözmesine yardımcı olur.";
+"LOGGING_SECTION_FOOTER" = "Hata günlükleri Tellomi'nin sorunları ve göçmeleri çözmesine yardımcı olur.";
 
 /* Title for the 'long text message' view. */
 "LONG_TEXT_VIEW_TITLE" = "İleti";
@@ -5705,7 +5705,7 @@
 "LOW_DISK_SPACE_WARNING_SHEET_MESSAGE_FORMAT" = "%1$@ cihazında depolama alanı azalıyor. Depolama alanı tamamen dolarsa Tellomi çalışmaz ve veri kaybedebilirsin. En az %2$@ alan boşalt.";
 
 /* A suggestion for freeing up storage space, on a sheet warning the user that their device is low on storage space. */
-"LOW_DISK_SPACE_WARNING_SHEET_SUGGESTION_DELETE_CAMERA_ROLL_MEDIA" = "Büyük videoları Photos uygulamasından, Tellomi'dan veya diğer mesajlaşma uygulamalarından sil";
+"LOW_DISK_SPACE_WARNING_SHEET_SUGGESTION_DELETE_CAMERA_ROLL_MEDIA" = "Büyük videoları Photos uygulamasından, Tellomi'den veya diğer mesajlaşma uygulamalarından sil";
 
 /* A suggestion for freeing up storage space, on a sheet warning the user that their device is low on storage space. */
 "LOW_DISK_SPACE_WARNING_SHEET_SUGGESTION_DELETE_DOWNLOADED_MEDIA" = "İndirilen müzikleri veya diğer medyayı sil";
@@ -5870,7 +5870,7 @@
 "MEMBER_LABEL_VIEW_TITLE" = "Üye Etiketi";
 
 /* A one-time confirmation that you, as an admin, want to delete for everyone */
-"MESSAGE_ACTION_ADMIN_DELETE_FOR_EVERYONE_CONFIRMATION" = "Tellomi'ın en güncel sürümlerinde grup üyeleri, bu mesajları senin sildiğini görecektir.";
+"MESSAGE_ACTION_ADMIN_DELETE_FOR_EVERYONE_CONFIRMATION" = "Tellomi'nin en güncel sürümlerinde grup üyeleri, bu mesajları senin sildiğini görecektir.";
 
 /* Action sheet button title */
 "MESSAGE_ACTION_COPY_TEXT" = "İleti Metnini kopyala";
@@ -6257,7 +6257,7 @@
 "MISSING_CAMERA_PERMISSION_MESSAGE" = "iOS Ayarları uygulamasından kamera erişimini etkinleştirebilirsin.";
 
 /* Alert title */
-"MISSING_CAMERA_PERMISSION_TITLE" = "Tellomi'in kamera erişimine ihtiyacı var.";
+"MISSING_CAMERA_PERMISSION_TITLE" = "Tellomi'nin kamera erişimine ihtiyacı var.";
 
 /* Alert body indicating the user has denied location permissions */
 "MISSING_LOCATION_PERMISSION_MESSAGE" = "Bu izni Ayarlar uygulamasından etkinleştirebilirsiniz.";
@@ -6269,7 +6269,7 @@
 "MISSING_MEDIA_LIBRARY_PERMISSION_MESSAGE" = "Bu izni Ayarlar uygulamasından etkinleştirebilirsiniz.";
 
 /* Alert title when user has previously denied media library access */
-"MISSING_MEDIA_LIBRARY_PERMISSION_TITLE" = "Bu özellik için Tellomi'in fotoğraflarınıza erişmeye ihtiyacı var.";
+"MISSING_MEDIA_LIBRARY_PERMISSION_TITLE" = "Bu özellik için Tellomi'nin fotoğraflarınıza erişmeye ihtiyacı var.";
 
 /* Text on a blocking progress screen that indicates that there's a deletion in progress. */
 "MODAL_DELETING" = "Siliniyor…";
@@ -6488,13 +6488,13 @@
 "NO_OTHER_GROUPS_IN_COMMON" = "Başka ortak grup yok.";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. The embedded value is 'Re-link' (translated via NOT_LINKED_BOTTOM_RELINK), and it will be formatted as a tappable link. */
-"NOT_LINKED_BOTTOM" = "Bu cihaz artık bağlı değil. Tellomi'i bu cihazda kullanmaya devam etmek için %1$@.";
+"NOT_LINKED_BOTTOM" = "Bu cihaz artık bağlı değil. Tellomi'yi bu cihazda kullanmaya devam etmek için %1$@.";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. This value is a tappable link embedded in a larger sentence. */
 "NOT_LINKED_BOTTOM_RELINK" = "tekrar bağla";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. The embedded value is 'Re-register' (translated via NOT_REGISTERED_BOTTOM_REREGISTER), and it will be formatted as a tappable link. */
-"NOT_REGISTERED_BOTTOM" = "Bu cihaz artık kayıtlı değil. Tellomi'ı kullanmaya devam etmek için %1$@.";
+"NOT_REGISTERED_BOTTOM" = "Bu cihaz artık kayıtlı değil. Tellomi'yi kullanmaya devam etmek için %1$@.";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. This value is a tappable link embedded in a larger sentence. */
 "NOT_REGISTERED_BOTTOM_REREGISTER" = "tekrar kaydet";
@@ -6509,7 +6509,7 @@
 "NOTIFICATION_BODY_INCOMING_MESSAGE_REQUEST" = "Mesaj İsteği";
 
 /* Body for a notification shown when Signal can't fetch messages because the device is low on storage space. */
-"NOTIFICATION_BODY_LOW_STORAGE_SPACE" = "Yeni mesajların olabilir, ancak cihazında Tellomi'ın çalışması için yeterli depolama alanı bulunmuyor. Daha fazla bilgi için dokun.";
+"NOTIFICATION_BODY_LOW_STORAGE_SPACE" = "Yeni mesajların olabilir, ancak cihazında Tellomi'nin çalışması için yeterli depolama alanı bulunmuyor. Daha fazla bilgi için dokun.";
 
 /* Lock screen notification text presented after user powers on their device without unlocking. Embeds {{device model}} (either 'iPad' or 'iPhone') */
 "NOTIFICATION_BODY_PHONE_LOCKED_FORMAT" = "%1$@ cihazınız yeniden başlarken ileti almış olabilirsiniz.";
@@ -6686,7 +6686,7 @@
 "ONBOARDING_MODE_SWITCH_BUTTON_REGISTERING" = "Bu cihazı bağla";
 
 /* explanation to the user they're switching from linking to registering flow */
-"ONBOARDING_MODE_SWITCH_EXPLANATION_PROVISIONING" = "\"iPad'i kaydet\" tuşuna basarak yeni bir Tellomi hesabı açabilir veya mevcut hesabınızı bu iPad'e aktarabilirsiniz. Bu işlem diğer cihazlarda aynı telefon numarası ile kaydedilmiş Tellomi'i devre dışı bırakacaktır.";
+"ONBOARDING_MODE_SWITCH_EXPLANATION_PROVISIONING" = "\"iPad'i kaydet\" tuşuna basarak yeni bir Tellomi hesabı açabilir veya mevcut hesabınızı bu iPad'e aktarabilirsiniz. Bu işlem diğer cihazlarda aynı telefon numarası ile kaydedilmiş Tellomi'yi devre dışı bırakacaktır.";
 
 /* explanation to the user they're switching from registering to linking flow */
 "ONBOARDING_MODE_SWITCH_EXPLANATION_REGISTERING" = "\"Bu cihazı bağla\"ya dokunarak bu cihazı mevcut bir Tellomi hesabına bağlayabilirsin.";
@@ -6698,7 +6698,7 @@
 "ONBOARDING_MODE_SWITCH_TITLE_REGISTERING" = "Bu cihazı bağla";
 
 /* warning to the user that registering an ipad is not recommended */
-"ONBOARDING_MODE_SWITCH_WARNING_PROVISIONING" = "Bu iPad'i kaydetmek diğer cihazlarda aynı telefon numarası ile kaydedilmiş Tellomi'i devre dışı bırakacaktır.";
+"ONBOARDING_MODE_SWITCH_WARNING_PROVISIONING" = "Bu iPad'i kaydetmek diğer cihazlarda aynı telefon numarası ile kaydedilmiş Tellomi'yi devre dışı bırakacaktır.";
 
 /* Description of the 'Contacts' permission in the 'onboarding permissions' view. */
 "ONBOARDING_PERMISSIONS_CONTACTS_DESCRIPTION" = "Tanıdığın kişileri bul. Kişilerin şifrelendi ve Tellomi hizmetinde görünmüyor.";
@@ -6746,7 +6746,7 @@
 "ONBOARDING_PIN_ATTEMPTS_EXHAUSTED_WITH_UNKNOWN_REGLOCK_EXPLANATION" = "PIN tahminlerin tükendi ancak yine de telefon numaranı doğrulayarak Tellomi hesabına erişmeyi deneyebilirsin. Gizliliğin ve güvenliğin için hesabın kayıtlı profil bilgileri veya ayar olmadan geri yüklenecektir.";
 
 /* Explanation of 'do not have old device' flow for the 'Restore or Transfer' prompt */
-"ONBOARDING_SPLASH_DO_NOT_HAVE_OLD_DEVICE_BODY" = "Ya da Tellomi'i aynı cihaza yeniden yüklüyorsun";
+"ONBOARDING_SPLASH_DO_NOT_HAVE_OLD_DEVICE_BODY" = "Ya da Tellomi'yi aynı cihaza yeniden yüklüyorsun";
 
 /* Title for the 'do not have my old device' choice of the 'Restore or Transfer' prompt */
 "ONBOARDING_SPLASH_DO_NOT_HAVE_OLD_DEVICE_TITLE" = "Eski telefonum yanımda değil";
@@ -6806,19 +6806,19 @@
 "OPEN_SETTINGS_BUTTON" = "Ayarlar";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're on unsupported version. Some users can upgrade their device to a newer version of iOS to continue using Signal. If that's the case, they'll be shown this text. */
-"OS_EXPIRED_AND_CAN_UPGRADE_OS" = "Tellomi artık bu cihazda çalışmıyor. Tellomi'i tekrar kullanmak için cihazını daha yeni bir iOS sürümüne güncelle.";
+"OS_EXPIRED_AND_CAN_UPGRADE_OS" = "Tellomi artık bu cihazda çalışmıyor. Tellomi'yi tekrar kullanmak için cihazını daha yeni bir iOS sürümüne güncelle.";
 
 /* Signal doesn't support old devices. If that's the case, they'll be shown this action, and tapping it will open information about Signal's minimum supported operating systems. */
-"OS_EXPIRED_AND_DEVICE_IS_STUCK" = "Tellomi artık bu cihazda çalışmıyor. Tellomi'i tekrar kullanmak için daha yeni bir cihaza geç.";
+"OS_EXPIRED_AND_DEVICE_IS_STUCK" = "Tellomi artık bu cihazda çalışmıyor. Tellomi'yi tekrar kullanmak için daha yeni bir cihaza geç.";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're on an old version. Some users can upgrade their device to a newer version of iOS to continue using Signal. If that's the case, they'll be shown this action, and tapping it will open device update instructions. */
 "OS_SOON_TO_EXPIRE_ACTION_TITLE" = "Şimdi Güncelle";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're an old version that will soon lose support. Some users can upgrade their device to a newer version of iOS to continue using Signal. If that's the case, they'll be shown this text. Embeds {{expiration date}}. */
-"OS_SOON_TO_EXPIRE_AND_CAN_UPGRADE_OS_FORMAT" = "Tellomi yakında cihazının iOS sürümünü desteklemeyecek. Tellomi'i kullanmaya devam etmek için cihazını %1$@ tarihine kadar daha yeni bir iOS sürümüne güncelle.";
+"OS_SOON_TO_EXPIRE_AND_CAN_UPGRADE_OS_FORMAT" = "Tellomi yakında cihazının iOS sürümünü desteklemeyecek. Tellomi'yi kullanmaya devam etmek için cihazını %1$@ tarihine kadar daha yeni bir iOS sürümüne güncelle.";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're on an old version that will soon lose support. This is the text on that warning when users can't upgrade iOS without getting a new device. Embeds {{expiration date}}. */
-"OS_SOON_TO_EXPIRE_AND_DEVICE_WILL_BE_STUCK_FORMAT" = "Tellomi yakında cihazının iOS sürümünü desteklemeyecek. Tellomi'i kullanmaya devam etmek için %1$@ tarihine kadar daha yeni bir cihaza geç.";
+"OS_SOON_TO_EXPIRE_AND_DEVICE_WILL_BE_STUCK_FORMAT" = "Tellomi yakında cihazının iOS sürümünü desteklemeyecek. Tellomi'yi kullanmaya devam etmek için %1$@ tarihine kadar daha yeni bir cihaza geç.";
 
 /* Info Message when another user disabled disappearing messages. Embeds {{name of other user}}. */
 "OTHER_DISABLED_DISAPPEARING_MESSAGES_CONFIGURATION" = "%1$@ kaybolan iletileri devre dışı bıraktı.";
@@ -6833,7 +6833,7 @@
 "OUTDATED_PAYMENT_CLIENT_ACTION_TITLE" = "Şimdi Güncelle";
 
 /* Label warning the user that they should update Signal to continue using payments. */
-"OUTDATED_PAYMENT_CLIENT_REMINDER_TEXT" = "Ödemeleri kullanmaya devam etmek için Tellomi'ı güncelle. Bakiyen güncel olmayabilir.";
+"OUTDATED_PAYMENT_CLIENT_REMINDER_TEXT" = "Ödemeleri kullanmaya devam etmek için Tellomi'yi güncelle. Bakiyen güncel olmayabilir.";
 
 /* Body of prompt notifying restore was cancelled. */
 "OUTGOING_DEVICE_REGISTRATION_CANCELLED_RESTORE_BODY" = "Geri yükleme iptal edilmiştir. Lütfen tekrar dene.";
@@ -7079,7 +7079,7 @@
 "PAYMENTS_NEW_PAYMENT_ERROR_INVALID_TRANSACTION" = "Geçersiz hareket";
 
 /* Indicates that a payment failed due to an outdated client. */
-"PAYMENTS_NEW_PAYMENT_ERROR_OUTDATED_CLIENT" = "Ödemeleri kullanmak için Tellomi'i güncelleyin.";
+"PAYMENTS_NEW_PAYMENT_ERROR_OUTDATED_CLIENT" = "Ödemeleri kullanmak için Tellomi'yi güncelleyin.";
 
 /* Indicates that an outgoing payment could not be verified in a timely way. */
 "PAYMENTS_NEW_PAYMENT_ERROR_OUTGOING_VERIFICATION_TAKING_TOO_LONG" = "Ödeme henüz doğrulanmadı";
@@ -7418,13 +7418,13 @@
 "PIN_CREATION_DISABLE_CONFIRMATION_ACTION" = "PIN'i devre dışı bırak";
 
 /* Message of the 'pin disable' action sheet. */
-"PIN_CREATION_DISABLE_CONFIRMATION_MESSAGE" = "PIN'i devre dışı bırakırsanız, başka bir iOS cihazından aktarmadığınız sürece Tellomi'i yeniden kaydettiğinizde tüm verileri kaybedersiniz. PIN devre dışı iken Kayıt Kilidini açamazsınız.";
+"PIN_CREATION_DISABLE_CONFIRMATION_MESSAGE" = "PIN'i devre dışı bırakırsanız, başka bir iOS cihazından aktarmadığınız sürece Tellomi'yi yeniden kaydettiğinizde tüm verileri kaybedersiniz. PIN devre dışı iken Kayıt Kilidini açamazsınız.";
 
 /* Title of the 'pin disable' action sheet. */
 "PIN_CREATION_DISABLE_CONFIRMATION_TITLE" = "Uyarı";
 
 /* The explanation in the 'pin creation' view. */
-"PIN_CREATION_EXPLANATION" = "PIN'ler Tellomi'de depolanan verileri şifreli olarak tutar böylelikle yalnızca siz erişebilirsiniz. Profiliniz, ayarlarınız ve kişileriniz Tellomi'i yeniden yüklediğinizde geri yüklenecektir. Uygulamayı açmak için PIN'inize ihtiyacınız yoktur.";
+"PIN_CREATION_EXPLANATION" = "PIN'ler Tellomi'de depolanan verileri şifreli olarak tutar böylelikle yalnızca siz erişebilirsiniz. Profiliniz, ayarlarınız ve kişileriniz Tellomi'yi yeniden yüklediğinizde geri yüklenecektir. Uygulamayı açmak için PIN'inize ihtiyacınız yoktur.";
 
 /* Message when a generic error occurs while creating a PIN. */
 "PIN_CREATION_GENERIC_ERROR_MESSAGE" = "PIN'in oluşturulurken bir sorun oluştu. Lütfen destek ekibiyle iletişime geç.";
@@ -7712,13 +7712,13 @@
 "PRIVACY_VERIFICATION_FAILED_THEY_HAVE_WRONG_KEY_FOR_ME" = "Tellomi kullanıcılarının her çifti ayrı bir güvenlik numarası paylaşır. %1$@ *size* özel olan güvenlik numarasını görüntülüyor olduğunu kontrol edin.";
 
 /* alert body */
-"PRIVACY_VERIFICATION_FAILED_WITH_OLD_LOCAL_VERSION" = "Tellomi'in eski bir sürümünü kullanıyorsunuz. Doğrulamadan önce güncellemeniz gerekiyor.";
+"PRIVACY_VERIFICATION_FAILED_WITH_OLD_LOCAL_VERSION" = "Tellomi'nin eski bir sürümünü kullanıyorsunuz. Doğrulamadan önce güncellemeniz gerekiyor.";
 
 /* alert body */
-"PRIVACY_VERIFICATION_FAILED_WITH_OLD_REMOTE_VERSION" = "Karşıdaki kişi Tellomi'in eski bir sürümünü kullanıyor. Doğrulamadan önce güncelleme yapmaları gerekiyor.";
+"PRIVACY_VERIFICATION_FAILED_WITH_OLD_REMOTE_VERSION" = "Karşıdaki kişi Tellomi'nin eski bir sürümünü kullanıyor. Doğrulamadan önce güncelleme yapmaları gerekiyor.";
 
 /* alert body */
-"PRIVACY_VERIFICATION_FAILURE_INVALID_QRCODE" = "Taranan kod güvenlik numarası gibi gözükmüyor. Tellomi'in güncel sürümünde olduğunuzdan emin misiniz?";
+"PRIVACY_VERIFICATION_FAILURE_INVALID_QRCODE" = "Taranan kod güvenlik numarası gibi gözükmüyor. Tellomi'nin güncel sürümünde olduğunuzdan emin misiniz?";
 
 /* Navbar title */
 "PRIVACY_VERIFICATION_TITLE" = "Güvenlik Numarasını Doğrula";
@@ -7892,7 +7892,7 @@
 "QUICK_RESTORE_URL_OPENED_ACTION_SHEET_EXTERNAL_URL_ACTION_TITLE" = "Karekodu Tara";
 
 /* Message for an action sheet telling users how to use quick restore, when trying to open an external quick restore URL. */
-"QUICK_RESTORE_URL_OPENED_ACTION_SHEET_EXTERNAL_URL_MESSAGE" = "Bu hesabı yeni bir cihaza aktarmak için \"Devam et\"e dokun ve Tellomi kamera ile karekodu tara. Yalnızca doğrudan Tellomi'dan gelen karekodları taradığından emin ol.";
+"QUICK_RESTORE_URL_OPENED_ACTION_SHEET_EXTERNAL_URL_MESSAGE" = "Bu hesabı yeni bir cihaza aktarmak için \"Devam et\"e dokun ve Tellomi kamera ile karekodu tara. Yalnızca doğrudan Tellomi'den gelen karekodları taradığından emin ol.";
 
 /* Accessibility label stating the author of the message to which you are replying. Embeds: {{ the author of the message to which you are replying }} {{ original message }}. */
 "QUOTED_REPLY_ACCESSIBILITY_LABEL_FORMAT" = "%1$@ adlı kişiye cevaben. %2$@";
@@ -8018,7 +8018,7 @@
 "RECIPIENT_PICKER_INVITE_MESSAGE" = "%1$@ bir Tellomi kullanıcısı değil. Bu numarayı davet etmek ister misin?";
 
 /* Alert title. Shown after selecting a phone number that isn't a Signal user. */
-"RECIPIENT_PICKER_INVITE_TITLE" = "Tellomi'e davet et";
+"RECIPIENT_PICKER_INVITE_TITLE" = "Tellomi'ye davet et";
 
 /* Alert title explaining what happens if you forget your 'two-factor auth pin'. */
 "REGISTER_2FA_FORGOT_PIN_ALERT_TITLE" = "Yardıma mı ihtiyacınız var?";
@@ -8114,7 +8114,7 @@
 "REGISTRATION_BACKUP_RESTORE_ERROR_UNRETRYABLE_SERVER_ERROR_TITLE" = "Yedekleme Geri Yüklenemiyor";
 
 /* Body for a sheet warning users about an incompatible backup version. */
-"REGISTRATION_BACKUP_RESTORE_ERROR_UNSUPPORTED_BACKUP_VERSION_BODY" = "Yedeklemeni geri yüklemek için Tellomi'ın en son sürümünü kullandığından emin ol ve tekrar dene. Sorun devam ederse, destekle iletişime geç.";
+"REGISTRATION_BACKUP_RESTORE_ERROR_UNSUPPORTED_BACKUP_VERSION_BODY" = "Yedeklemeni geri yüklemek için Tellomi'nin en son sürümünü kullandığından emin ol ve tekrar dene. Sorun devam ederse, destekle iletişime geç.";
 
 /* Title for a sheet warning users about an incompatible backup version. */
 "REGISTRATION_BACKUP_RESTORE_ERROR_UNSUPPORTED_BACKUP_VERSION_TITLE" = "Güncelleme Gerekli";
@@ -8126,7 +8126,7 @@
 "REGISTRATION_CANNOT_CONTINUE_WITHOUT_UPDATING_APP_ACTION" = "Güncelle";
 
 /* During (re)registration, users may need to update their app to continue. They'll be presented with an alert if this is the case, prompting them to update. This is the description text on that alert. */
-"REGISTRATION_CANNOT_CONTINUE_WITHOUT_UPDATING_APP_DESCRIPTION" = "Kayda devam etmek için lütfen Tellomi'in en son sürümüne güncelle.";
+"REGISTRATION_CANNOT_CONTINUE_WITHOUT_UPDATING_APP_DESCRIPTION" = "Kayda devam etmek için lütfen Tellomi'nin en son sürümüne güncelle.";
 
 /* During (re)registration, users may need to update their app to continue. They'll be presented with an alert if this is the case, prompting them to update. This is the title on that alert. */
 "REGISTRATION_CANNOT_CONTINUE_WITHOUT_UPDATING_APP_TITLE" = "Güncelleme Gerekli";
@@ -8240,7 +8240,7 @@
 "REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_ENABLE_BACKUPS" = "Yedeklemeleri etkinleştir ve yedeklemen tamamlanana kadar bekle";
 
 /* First step in directions for how to make a backup */
-"REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_OPEN_SIGNAL" = "Tellomi'ı eski cihazında aç";
+"REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_OPEN_SIGNAL" = "Tellomi'yi eski cihazında aç";
 
 /* Second step in directions for how to make a backup */
 "REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_TAP_SETTINGS" = "Ayarlar > Yedeklemeler Ögesine Dokun";
@@ -8258,7 +8258,7 @@
 "REGISTRATION_SCAN_QR_CODE_TITLE" = "Bu kodu eski cihazınla tara";
 
 /* Tutorial text describing the first step to scanning the restore/transfer QR code with your old phone: opening Signal */
-"REGISTRATION_SCAN_QR_CODE_TUTORIAL_OPEN_SIGNAL" = "Tellomi'i eski cihazında aç";
+"REGISTRATION_SCAN_QR_CODE_TUTORIAL_OPEN_SIGNAL" = "Tellomi'yi eski cihazında aç";
 
 /* Tutorial text describing the third step to scanning the restore/transfer QR code with your old phone: scan the code */
 "REGISTRATION_SCAN_QR_CODE_TUTORIAL_SCAN" = "Bu kodu kamera ile tara";
@@ -8306,7 +8306,7 @@
 "REGISTRATION_VOICE_CODE_FAILED_TRY_SMS_ERROR" = "Sana sesli arama ile bir doğrulama kodu gönderemedik. Bunun yerine kodunu SMS ile almayı dene.";
 
 /* Bottom bar label for the release notes thread */
-"RELEASE_NOTES_BOTTOM_BAR_LABEL" = "Tellomi'dan gelen tek resmi sohbet";
+"RELEASE_NOTES_BOTTOM_BAR_LABEL" = "Tellomi'den gelen tek resmi sohbet";
 
 /* Display name for the release notes channel */
 "RELEASE_NOTES_CHANNEL_NAME" = "Tellomi";
@@ -8318,10 +8318,10 @@
 "RELEASE_NOTES_DESCRIPTION_KEEP_UPDATED" = "Haberler ve sürüm notları ile güncel kal";
 
 /* Details text for the thread details view of the release notes channel */
-"RELEASE_NOTES_DETAILS" = "Tellomi'dan gelen tek resmi sohbet. Haberler ve sürüm notları ile güncel kal";
+"RELEASE_NOTES_DETAILS" = "Tellomi'den gelen tek resmi sohbet. Haberler ve sürüm notları ile güncel kal";
 
 /* Settings description label for the release notes thread telling a user this is the only official chat */
-"RELEASE_NOTES_SETTINGS_DESCRIPTION_ONLY_OFFICAL_CHAT" = "Tellomi'dan gelen tek resmi sohbet";
+"RELEASE_NOTES_SETTINGS_DESCRIPTION_ONLY_OFFICAL_CHAT" = "Tellomi'den gelen tek resmi sohbet";
 
 /* Button below the warning to fix a corrupted username. */
 "REMINDER_VIEW_USERNAME_CORRUPTED_FIX_BUTTON" = "Şimdi düzelt";
@@ -8537,7 +8537,7 @@
 "SAFETY_TIPS_CRYPTO_TITLE" = "Kripto veya para dolandırıcılıkları";
 
 /* Message body describing the enable reglock safety tip. */
-"SAFETY_TIPS_ENABLE_REGLOCK_BODY" = "Tellomi'da kaydolurken, doğrulama koduna ilaveten Tellomi PIN'ini de isteyerek hesabını koru.";
+"SAFETY_TIPS_ENABLE_REGLOCK_BODY" = "Tellomi'de kaydolurken, doğrulama koduna ilaveten Tellomi PIN'ini de isteyerek hesabını koru.";
 
 /* Message title describing the enable reglock safety tip. */
 "SAFETY_TIPS_ENABLE_REGLOCK_TITLE" = "Hesap ayarlarından kaydolma kilidini aç";
@@ -8570,10 +8570,10 @@
 "SAFETY_TIPS_MESSAGE_LINKS_TITLE" = "Web bağlantılı mesajlar";
 
 /* Message body describing the review names safety tip. */
-"SAFETY_TIPS_REVIEW_NAMES_BODY" = "\"Ad doğrulanmadı\" bildirimini ara. Herkes Tellomi'da kendi profil adını ayarlar.";
+"SAFETY_TIPS_REVIEW_NAMES_BODY" = "\"Ad doğrulanmadı\" bildirimini ara. Herkes Tellomi'de kendi profil adını ayarlar.";
 
 /* Message body describing the review names safety tip in the 'view more' flow. */
-"SAFETY_TIPS_REVIEW_NAMES_BODY_VIEW_MORE" = "\"Ad doğrulanmadı\" bildirimini ara. Herkes Tellomi'da kendi profil adını ve fotoğrafını ayarlar. Yeni bir isteğin kimden geldiğinden emin değilsen, isteği yok saymak daha güvenlidir.";
+"SAFETY_TIPS_REVIEW_NAMES_BODY_VIEW_MORE" = "\"Ad doğrulanmadı\" bildirimini ara. Herkes Tellomi'de kendi profil adını ve fotoğrafını ayarlar. Yeni bir isteğin kimden geldiğinden emin değilsen, isteği yok saymak daha güvenlidir.";
 
 /* Message title describing the review names safety tip. */
 "SAFETY_TIPS_REVIEW_NAMES_TITLE" = "Adları ve fotoğrafları incele";
@@ -8585,7 +8585,7 @@
 "SAFETY_TIPS_SIGNAL_CHATS_BODY_VIEW_MORE" = "Tellomi hiçbir zaman kayıt kodun, PIN kodun veya kurtarma anahtarın için sana mesaj atmaz. Tellomi veya Tellomi Destek olduğunu iddia eden sohbetleri yanıtlama. Kötü niyetli kişiler hesabını ele geçirmek için sahte adlar oluşturabilir.";
 
 /* Message title describing the signal chats tip. */
-"SAFETY_TIPS_SIGNAL_CHATS_TITLE" = "Tellomi'dan gelen sohbetleri yanıtlama";
+"SAFETY_TIPS_SIGNAL_CHATS_TITLE" = "Tellomi'den gelen sohbetleri yanıtlama";
 
 /* Message contents for the vague message safety tip. */
 "SAFETY_TIPS_VAGUE_MESSAGE_BODY" = "Spam gönderenler genelde seni cezbetmek için \"Merhaba\" gibi basit bir mesajla başlar. Yanıt verirsen, seninle daha fazla etkileşime geçebilirler.";
@@ -8621,13 +8621,13 @@
 "SCREEN_LOCK_ERROR_LOCAL_AUTHENTICATION_PASSCODE_NOT_SET" = "Ekran Kilidini kullanmak için iOS ayarlarınızdan bir şifre belirlemelisiniz.";
 
 /* Description of how and why Signal iOS uses Touch ID/Face ID/Phone Passcode to unlock 'screen lock'. */
-"SCREEN_LOCK_REASON_UNLOCK_SCREEN_LOCK" = "Tellomi'i açmak için kimlik doğrulaması yapın.";
+"SCREEN_LOCK_REASON_UNLOCK_SCREEN_LOCK" = "Tellomi'yi açmak için kimlik doğrulaması yapın.";
 
 /* Title for alert indicating that screen lock could not be unlocked. */
 "SCREEN_LOCK_UNLOCK_FAILED" = "Kimlik doğrulama başarısız oldu.";
 
 /* Label for button on lock screen that lets users unlock Signal. */
-"SCREEN_LOCK_UNLOCK_SIGNAL" = "Tellomi'in Kilidini Aç";
+"SCREEN_LOCK_UNLOCK_SIGNAL" = "Tellomi'nin Kilidini Aç";
 
 /* Placeholder text indicating the user can search for contacts by name, username, or phone number. */
 "SEARCH_BY_NAME_OR_USERNAME_OR_NUMBER_PLACEHOLDER_TEXT" = "Ad, kullanıcı adı veya numara";
@@ -8660,13 +8660,13 @@
 "SECONDARY_LINKING_ERROR_DIFFERENT_ACCOUNT_TITLE" = "Hesap Uyuşmuyor";
 
 /* Message for error alert indicating that a linked device must be upgraded before it can be linked. */
-"SECONDARY_LINKING_ERROR_OBSOLETE_LINKED_DEVICE_MESSAGE" = "Bu cihazı telefonunuza bağlamak için bu cihazdaki Tellomi'i güncelleyin.";
+"SECONDARY_LINKING_ERROR_OBSOLETE_LINKED_DEVICE_MESSAGE" = "Bu cihazı telefonunuza bağlamak için bu cihazdaki Tellomi'yi güncelleyin.";
 
 /* Title for error alert indicating that a linked device must be upgraded before it can be linked. */
 "SECONDARY_LINKING_ERROR_OBSOLETE_LINKED_DEVICE_TITLE" = "Desteklenmeyen Sürüm";
 
 /* alert message for outdated linking device */
-"SECONDARY_LINKING_ERROR_OLD_VERSION_MESSAGE" = "Diğer cihazınız iPad kare kodlarını taramayı desteklemeyen eski bir Tellomi sürümü kullanıyor. Lütfen Tellomi'in son sürümünü yükleyin ve tekrar deneyin.";
+"SECONDARY_LINKING_ERROR_OLD_VERSION_MESSAGE" = "Diğer cihazınız iPad kare kodlarını taramayı desteklemeyen eski bir Tellomi sürümü kullanıyor. Lütfen Tellomi'nin son sürümünü yükleyin ve tekrar deneyin.";
 
 /* alert title for outdated linking device */
 "SECONDARY_LINKING_ERROR_OLD_VERSION_TITLE" = "Tarayıcı Cihazı Güncelle";
@@ -8687,7 +8687,7 @@
 "SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_CHECK_FOR_UPDATE_BUTTON" = "Güncelleme ara";
 
 /* Message for action sheet when the secondary device fails to sync messages due to an app update being required. */
-"SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_ERROR_MESSAGE" = "Mesajlarını senkronize etme işlemini tamamlamak için Tellomi'i şimdi güncelle.";
+"SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_ERROR_MESSAGE" = "Mesajlarını senkronize etme işlemini tamamlamak için Tellomi'yi şimdi güncelle.";
 
 /* Title for action sheet when the secondary device fails to sync messages due to an app update being required. */
 "SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_ERROR_TITLE" = "Güncelleme gerekli";
@@ -8696,13 +8696,13 @@
 "SECONDARY_ONBOARDING_CHOOSE_DEVICE_NAME_PLACEHOLDER" = "İsim seçin";
 
 /* header text before the user can link this device */
-"SECONDARY_ONBOARDING_GET_STARTED_BY_OPENING_PRIMARY" = "Bu iPad'i hesabınıza bağlamak için telefonunuzdan Tellomi'i açın";
+"SECONDARY_ONBOARDING_GET_STARTED_BY_OPENING_PRIMARY" = "Bu iPad'i hesabınıza bağlamak için telefonunuzdan Tellomi'yi açın";
 
 /* Link explaining what to do when trying to link a device before having a primary device. */
 "SECONDARY_ONBOARDING_GET_STARTED_DO_NOT_HAVE_PRIMARY" = "Telefonumda Tellomi uygulaması yok…";
 
 /* alert body */
-"SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_BODY" = "Telefonunuzdan Uygulama Mağazasına girin, Tellomi'i yükleyin, kaydolma işlemini tamamlayın, ve daha sonrasında iPad'inizi aynı hesaba bağlayabilirsiniz.";
+"SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_BODY" = "Telefonunuzdan Uygulama Mağazasına girin, Tellomi'yi yükleyin, kaydolma işlemini tamamlayın, ve daha sonrasında iPad'inizi aynı hesaba bağlayabilirsiniz.";
 
 /* alert title */
 "SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_TITLE" = "Telefonunuza Tellomi Yükleyin";
@@ -8717,7 +8717,7 @@
 "SECONDARY_ONBOARDING_SCAN_CODE_STEP_LINK_DEVICE" = "\"Bağlı cihazlar\"a ve \"Yeni cihaz bağla\"ya dokun";
 
 /* First bullet point on the QR code screen for linking a device */
-"SECONDARY_ONBOARDING_SCAN_CODE_STEP_OPEN_PRIMARY" = "Tellomi'ı ana cihazında aç";
+"SECONDARY_ONBOARDING_SCAN_CODE_STEP_OPEN_PRIMARY" = "Tellomi'yi ana cihazında aç";
 
 /* Second bullet point on the QR code screen for linking a device */
 "SECONDARY_ONBOARDING_SCAN_CODE_STEP_OPEN_SETTINGS" = "Tellomi Ayarları'nı açmak için profil resmine dokun";
@@ -8726,7 +8726,7 @@
 "SECONDARY_ONBOARDING_SCAN_CODE_TITLE" = "Hesabını bağlamak için bu kodu tara";
 
 /* header text before the user can transfer to this device */
-"SECONDARY_TRANSFER_GET_STARTED_BY_OPENING_IPAD" = "Hesabınızı aktarmak için eski iPad'inizde Tellomi'i açın";
+"SECONDARY_TRANSFER_GET_STARTED_BY_OPENING_IPAD" = "Hesabınızı aktarmak için eski iPad'inizde Tellomi'yi açın";
 
 /* No comment provided by engineer. */
 "SECURE_SESSION_RESET" = "Güvenli oturum sıfırlandı.";
@@ -8858,7 +8858,7 @@
 "SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_COUNTRY" = "Konum";
 
 /* Table footer for the 'censorship circumvention' section when censorship circumvention can be manually enabled. */
-"SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_FOOTER" = "Etkinleştirildiğinde, Tellomi sansürü atlatmaya çalışacaktır. Tellomi'in sansürlendiği bir konumda olmadığınız sürece bu özelliği etkinleştirmeyin.";
+"SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_FOOTER" = "Etkinleştirildiğinde, Tellomi sansürü atlatmaya çalışacaktır. Tellomi'nin sansürlendiği bir konumda olmadığınız sürece bu özelliği etkinleştirmeyin.";
 
 /* Table footer for the 'censorship circumvention' section shown when censorship circumvention has been auto-enabled based on local phone number. */
 "SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_FOOTER_AUTO_ENABLED" = "Sansür atlatma hesabınızın telefon numarasına bağlı olarak etkinleştirildi.";
@@ -9062,7 +9062,7 @@
 "SETTINGS_DISAPPEARING_MESSAGES_FOOTER" = "Tarafınca başlatılan tüm yeni sohbetler için varsayılan kaybolan mesaj zamanlayıcısı ayarla.";
 
 /* Title for the 'donate to signal' link in settings. */
-"SETTINGS_DONATE" = "Tellomi'e Bağış Yap";
+"SETTINGS_DONATE" = "Tellomi'ye Bağış Yap";
 
 /* Title for help button and help pages in app settings. */
 "SETTINGS_HELP" = "Yardım";
@@ -9092,7 +9092,7 @@
 "SETTINGS_LINK_PREVIEWS" = "Bağlantı Ön İzlemelerini Oluştur";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
-"SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "Hesap ayarlarını yönetmek için ana cihazında Tellomi'ı aç.";
+"SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "Hesap ayarlarını yönetmek için ana cihazında Tellomi'yi aç.";
 
 /* Title of a card on a linked device's account settings, indicating that this is a linked device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_TITLE" = "Bu bir Bağlı Cihaz";
@@ -9143,7 +9143,7 @@
 "SETTINGS_LOCAL_FILE_BACKUPS_REMOTE_BACKUP_IN_PROGRESS_MESSAGE" = "Cihazda yedekleme gerçekleştirilemiyor çünkü Tellomi Güvenli Yedekleme sürdürülüyor. Daha sonra tekrar dene.";
 
 /* Footer text on the on-device backups settings page explaining how to restore a backup. */
-"SETTINGS_LOCAL_FILE_BACKUPS_RESTORE_FOOTER" = "Bir yedeklemeyi geri yüklemek için Tellomi'ı yeniden yükle. Uygulamayı aç, \"Geri Yükle veya Aktar\"a dokun ve \"Cihazda Yedekleme\"yi seç.";
+"SETTINGS_LOCAL_FILE_BACKUPS_RESTORE_FOOTER" = "Bir yedeklemeyi geri yüklemek için Tellomi'yi yeniden yükle. Uygulamayı aç, \"Geri Yükle veya Aktar\"a dokun ve \"Cihazda Yedekleme\"yi seç.";
 
 /* Label for the button that turns off on-device backups. */
 "SETTINGS_LOCAL_FILE_BACKUPS_TURN_OFF" = "Kapat ve Yedeklemeyi Sil";
@@ -9218,7 +9218,7 @@
 "SETTINGS_NOTIFICATION_CONTENT_TITLE" = "Bildirim İçeriği";
 
 /* When the local device discovers a contact has recently installed signal, the app can generates a message encouraging the local user to say hello. Turning this switch off disables that feature. */
-"SETTINGS_NOTIFICATION_EVENTS_CONTACT_JOINED_SIGNAL" = "Kişi Tellomi'a Katıldığında";
+"SETTINGS_NOTIFICATION_EVENTS_CONTACT_JOINED_SIGNAL" = "Kişi Tellomi'ye Katıldığında";
 
 /* The title for the notification settings. */
 "SETTINGS_NOTIFICATIONS" = "Bildirimler";
@@ -9227,7 +9227,7 @@
 "SETTINGS_NOTIFICATIONS_APP_BADGE_SECTION" = "Uygulama Rozeti";
 
 /* Explanation for the switch controlling whether a notification is shown when a phone contact joins Signal. */
-"SETTINGS_NOTIFICATIONS_CONTACT_JOINED_SIGNAL_FOOTER" = "Telefona kayıtlı bir kişi Tellomi'a katıldığında bildirim göster.";
+"SETTINGS_NOTIFICATIONS_CONTACT_JOINED_SIGNAL_FOOTER" = "Telefona kayıtlı bir kişi Tellomi'ye katıldığında bildirim göster.";
 
 /* Label for a switch controlling whether reactions to your messages generate notifications. */
 "SETTINGS_NOTIFICATIONS_REACTIONS" = "Tepki Bildirimleri";
@@ -9251,7 +9251,7 @@
 "SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_AGREE" = "Etkinleştir";
 
 /* Description for the 'activate payments confirmation' UI in the payment settings. */
-"SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_DESCRIPTION" = "MobileCoin göndermek ve almak için Tellomi'i kullanabilirsin. Tüm ödemeler MobileCoin ve MobileCoin Wallet Kullanım Koşullarına tabidir. Bazı sorunlarla karşılaşabilir ve kaybettiğin ödeme veya bakiyeyi geri alamayabilirsin.";
+"SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_DESCRIPTION" = "MobileCoin göndermek ve almak için Tellomi'yi kullanabilirsin. Tüm ödemeler MobileCoin ve MobileCoin Wallet Kullanım Koşullarına tabidir. Bazı sorunlarla karşılaşabilir ve kaybettiğin ödeme veya bakiyeyi geri alamayabilirsin.";
 
 /* Title for the 'activate payments confirmation' UI in the payment settings. */
 "SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_TITLE" = "Etkinleştir";
@@ -9314,10 +9314,10 @@
 "SETTINGS_PAYMENTS_DEACTIVATE_TITLE" = "Ödemeleri Devre Dışı Bırak";
 
 /* Explanation of the 'deactivate payments with balance' process in the 'deactivate payments' settings. */
-"SETTINGS_PAYMENTS_DEACTIVATE_WITH_BALANCE_EXPLANATION" = "Ödemeleri devre dışı bırakmadan önce mevcut bakiyeni başka bir cüzdana aktarmanı öneriyoruz. Eğer paranı şimdi aktarmamayı seçersen ödemeleri yeniden etkinleştirdiğinde Tellomi'e bağlı cüzdanında kalacaktır.";
+"SETTINGS_PAYMENTS_DEACTIVATE_WITH_BALANCE_EXPLANATION" = "Ödemeleri devre dışı bırakmadan önce mevcut bakiyeni başka bir cüzdana aktarmanı öneriyoruz. Eğer paranı şimdi aktarmamayı seçersen ödemeleri yeniden etkinleştirdiğinde Tellomi'ye bağlı cüzdanında kalacaktır.";
 
 /* Description for the 'deactivate payments confirmation' UI in the payment settings. */
-"SETTINGS_PAYMENTS_DEACTIVATE_WITHOUT_TRANSFER_CONFIRM_DESCRIPTION" = "Ödemeleri tekrar etkinleştirmeyi seçersen bakiyen Tellomi'e bağlı cüzdanında kalacaktır.";
+"SETTINGS_PAYMENTS_DEACTIVATE_WITHOUT_TRANSFER_CONFIRM_DESCRIPTION" = "Ödemeleri tekrar etkinleştirmeyi seçersen bakiyen Tellomi'ye bağlı cüzdanında kalacaktır.";
 
 /* Title for the 'deactivate payments confirmation' UI in the payment settings. */
 "SETTINGS_PAYMENTS_DEACTIVATE_WITHOUT_TRANSFER_CONFIRM_TITLE" = "Aktarmadan Devre Dışı Bırakılsın mı?";
@@ -9422,7 +9422,7 @@
 "SETTINGS_PAYMENTS_PASSPHRASE_DISCARD_CONFIRMATION_TITLE" = "Kaydetmeden devam etmek istiyor musun?";
 
 /* Explanation of the 'payments passphrase' in the 'view payments passphrase' settings. */
-"SETTINGS_PAYMENTS_PASSPHRASE_EXPLANATION" = "Tellomi'i yeniden kurduğunuzda Tellomi PIN'ini doğruladığınızda bakiyeniz otomatik olarak kurtarılacaktır. Bakiyenizi ayrıca bir kurtarma parolası ile de geri alabilirsiniz. Kurtarma parolası 24-kelimelik ve size özgü bir ifadedir. Bir yere yazın ve güvenli bir şekilde saklayın.";
+"SETTINGS_PAYMENTS_PASSPHRASE_EXPLANATION" = "Tellomi'yi yeniden kurduğunuzda Tellomi PIN'ini doğruladığınızda bakiyeniz otomatik olarak kurtarılacaktır. Bakiyenizi ayrıca bir kurtarma parolası ile de geri alabilirsiniz. Kurtarma parolası 24-kelimelik ve size özgü bir ifadedir. Bir yere yazın ve güvenli bir şekilde saklayın.";
 
 /* Explanation of the 'payments passphrase' when there is a balance. */
 "SETTINGS_PAYMENTS_PASSPHRASE_EXPLANATION_FROM_BALANCE" = "Bakiyen var! Kurtarma ifadeni kaydetme zamanı, bu bakiyeni geri yüklemek için kullanabileceğin 24 kelimelik bir anahtardır.";
@@ -9527,7 +9527,7 @@
 "SETTINGS_PAYMENTS_PAYMENTS_LOCK_PROMPT_EXPLANATION_TOUCHID" = "Touch ID'yi etkinleştirerek telefonuna sahip bir kişinin parana erişmesini önlemeye yardımcı ol. Bu seçeneği Ayarlar'dan devre dışı bırakabilirsin.";
 
 /* Button for payments outdated sheet. */
-"SETTINGS_PAYMENTS_PAYMENTS_OUTDATED_BUTTON" = "Tellomi'i Güncelle";
+"SETTINGS_PAYMENTS_PAYMENTS_OUTDATED_BUTTON" = "Tellomi'yi Güncelle";
 
 /* Message for payments outdated sheet. */
 "SETTINGS_PAYMENTS_PAYMENTS_OUTDATED_MESSAGE" = "Ödeme gönderip almaya devam etmek ve güncel ödeme bakiyeni görüntülemek için bir güncelleme gereklidir.";
@@ -9776,7 +9776,7 @@
 "SETTINGS_PIN_REMINDER_SWITCH_LABEL" = "PIN Hatırlatıcıları";
 
 /* Footer for the 'PINs' section of the privacy settings. */
-"SETTINGS_PINS_FOOTER" = "PIN'ler Tellomi'de depolanan verileri şifreli olarak tutar böylelikle yalnızca siz erişebilirsiniz. PIN'iniz kurtarılamaz. Profiliniz, ayarlarınız ve kişileriniz Tellomi'i yeniden yüklediğinizde geri yüklenecektir.";
+"SETTINGS_PINS_FOOTER" = "PIN'ler Tellomi'de depolanan verileri şifreli olarak tutar böylelikle yalnızca siz erişebilirsiniz. PIN'iniz kurtarılamaz. Profiliniz, ayarlarınız ve kişileriniz Tellomi'yi yeniden yüklediğinizde geri yüklenecektir.";
 
 /* Label for the 'pins' item of the privacy settings when the user does have a pin. */
 "SETTINGS_PINS_ITEM" = "PIN'inizi değiştirin";
@@ -9827,7 +9827,7 @@
 "SETTINGS_REGISTRATION_LOCK_TURN_ON_ERROR_PIN_REQUIRED" = "Kaydolma kilidi kullanmak için bir PIN oluşturmalısın.";
 
 /* Body for the alert confirming that the user wants to turn on registration lock. */
-"SETTINGS_REGISTRATION_LOCK_TURN_ON_MESSAGE" = "Tellomi'e tekrar kaydolurken Tellomi PIN'inizi unutursanız, hesabınıza 7 gün boyunca erişemezsiniz. ";
+"SETTINGS_REGISTRATION_LOCK_TURN_ON_MESSAGE" = "Tellomi'ye tekrar kaydolurken Tellomi PIN'inizi unutursanız, hesabınıza 7 gün boyunca erişemezsiniz. ";
 
 /* Title for the alert confirming that the user wants to turn on registration lock. */
 "SETTINGS_REGISTRATION_LOCK_TURN_ON_TITLE" = "Kayıt Kilidi Açılsın Mı?";
@@ -9857,19 +9857,19 @@
 "SETTINGS_SECTION_TITLE_CALLING" = "Arama";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL" = "Tellomi'i açmak için Touch ID, Face ID veya iOS cihaz parolası kullan.";
+"SETTINGS_SECURITY_DETAIL" = "Tellomi'yi açmak için Touch ID, Face ID veya iOS cihaz parolası kullan.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_FACEID" = "Tellomi'i açmak için Face ID kullan.";
+"SETTINGS_SECURITY_DETAIL_FACEID" = "Tellomi'yi açmak için Face ID kullan.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_OPTICID" = "Tellomi'i açmak için Optic ID kullan.";
+"SETTINGS_SECURITY_DETAIL_OPTICID" = "Tellomi'yi açmak için Optic ID kullan.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_PASSCODE" = "Tellomi'i açmak için cihaz parolası kullan.";
+"SETTINGS_SECURITY_DETAIL_PASSCODE" = "Tellomi'yi açmak için cihaz parolası kullan.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_TOUCHID" = "Tellomi'i açmak için Touch ID kullan.";
+"SETTINGS_SECURITY_DETAIL_TOUCHID" = "Tellomi'yi açmak için Touch ID kullan.";
 
 /* Section header */
 "SETTINGS_SECURITY_TITLE" = "Uygulama Güvenliği";
@@ -9953,7 +9953,7 @@
 "SHARE_EXTENSION_LOADING" = "Yükleniyor…";
 
 /* Message for an error shown when the user tries to share to Signal but the device is too low on storage space. */
-"SHARE_EXTENSION_LOW_STORAGE_SPACE_MESSAGE" = "Cihazında yeterli depolama alanı bulunmadığı için Tellomi'da paylaşım yapamazsın. Ayarlar'daki depolama alanını yöneterek yer boşalt, ardından tekrar dene.";
+"SHARE_EXTENSION_LOW_STORAGE_SPACE_MESSAGE" = "Cihazında yeterli depolama alanı bulunmadığı için Tellomi'de paylaşım yapamazsın. Ayarlar'daki depolama alanını yöneterek yer boşalt, ardından tekrar dene.";
 
 /* Title for an error shown when the user tries to share to Signal but the device is too low on storage space. */
 "SHARE_EXTENSION_LOW_STORAGE_SPACE_TITLE" = "Depolama Alanı Düşük";
@@ -10685,16 +10685,16 @@
 "TIME_AMOUNT_WEEKS_SHORT_FORMAT" = "%1$@h";
 
 /* Button for bottom sheet shown when device transfer completes on the receiving device. Tapping will terminate the Signal app and trigger a notification to relaunch. */
-"TRANSFER_COMPLETE_SHEET_BUTTON" = "Tellomi'i kapat";
+"TRANSFER_COMPLETE_SHEET_BUTTON" = "Tellomi'yi kapat";
 
 /* Subtitle for bottom sheet shown when device transfer completes on the receiving device. */
-"TRANSFER_COMPLETE_SHEET_SUBTITLE" = "Hesabını bu cihazda kullanmaya başlamak için Tellomi'i kapatıp yeniden aç.";
+"TRANSFER_COMPLETE_SHEET_SUBTITLE" = "Hesabını bu cihazda kullanmaya başlamak için Tellomi'yi kapatıp yeniden aç.";
 
 /* Title for bottom sheet shown when device transfer completes on the receiving device. */
 "TRANSFER_COMPLETE_SHEET_TITLE" = "Aktarım tamamlandı";
 
 /* Notification prompting the user to relaunch Signal after a device transfer completed. */
-"TRANSFER_RELAUNCH_NOTIFICATION" = "Mesajlaşmaya başlamak için Tellomi'i aç";
+"TRANSFER_RELAUNCH_NOTIFICATION" = "Mesajlaşmaya başlamak için Tellomi'yi aç";
 
 /* Label for a button that says 'Try Again'. */
 "TRY_AGAIN_BUTTON_TITLE" = "Yeniden Dene";
@@ -10712,7 +10712,7 @@
 "UNAVAILABLE_MEDIA_TAP_TOAST" = "Bu medya artık kullanılamıyor";
 
 /* Action sheet title when confirming you want to unblock release notes. */
-"UNBLOCK_LIST_BLOCK_RELEASE_NOTES_TITLE" = "Tellomi'ın engeli kaldırılsın mı?";
+"UNBLOCK_LIST_BLOCK_RELEASE_NOTES_TITLE" = "Tellomi'nin engeli kaldırılsın mı?";
 
 /* Action sheet body when confirming you want to unblock release notes */
 "UNBLOCK_RELEASE_NOTES_BEHAVIOR_EXPLANATION" = "Tellomi'den güncellemeler ve haberler almayı yeniden başlat.";
@@ -10724,25 +10724,25 @@
 "UNKNOWN_GROUP" = "Bilinmeyen Grup";
 
 /* Info message recorded in conversation history when local user receives an unknown message from a linked device and needs to upgrade. */
-"UNKNOWN_PROTOCOL_VERSION_NEED_TO_UPGRADE_FROM_LINKED_DEVICE" = "Cihazlarınızdan biri Tellomi'in yeni özelliğini kullanan bir ileti gönderdiği için burada işlenemiyor veya görüntülenemiyor.";
+"UNKNOWN_PROTOCOL_VERSION_NEED_TO_UPGRADE_FROM_LINKED_DEVICE" = "Cihazlarınızdan biri Tellomi'nin yeni özelliğini kullanan bir ileti gönderdiği için burada işlenemiyor veya görüntülenemiyor.";
 
 /* Info message recorded in conversation history when local user receives an unknown message and needs to upgrade. Embeds {{user's name or phone number}}. */
-"UNKNOWN_PROTOCOL_VERSION_NEED_TO_UPGRADE_WITH_NAME_FORMAT" = "%1$@, Tellomi'in yeni özelliğini kullanan bir ileti gönderdiği için ileti işlenemiyor veya görüntülenemiyor.";
+"UNKNOWN_PROTOCOL_VERSION_NEED_TO_UPGRADE_WITH_NAME_FORMAT" = "%1$@, Tellomi'nin yeni özelliğini kullanan bir ileti gönderdiği için ileti işlenemiyor veya görüntülenemiyor.";
 
 /* Info message recorded in conversation history when local user receives an unknown message and needs to upgrade. */
-"UNKNOWN_PROTOCOL_VERSION_NEED_TO_UPGRADE_WITHOUT_NAME" = "Tellomi'in yeni özelliğini kullanan bir ileti aldığınız için ileti işlenemiyor veya görüntülenemiyor.";
+"UNKNOWN_PROTOCOL_VERSION_NEED_TO_UPGRADE_WITHOUT_NAME" = "Tellomi'nin yeni özelliğini kullanan bir ileti aldığınız için ileti işlenemiyor veya görüntülenemiyor.";
 
 /* Label for button that lets users upgrade the app. */
-"UNKNOWN_PROTOCOL_VERSION_UPGRADE_BUTTON" = "Tellomi'i Şimdi Güncelleyin";
+"UNKNOWN_PROTOCOL_VERSION_UPGRADE_BUTTON" = "Tellomi'yi Şimdi Güncelleyin";
 
 /* Info message recorded in conversation history when local user has received an unknown unknown message from a linked device and has upgraded. */
-"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_FROM_LINKED_DEVICE" = "Tellomi'in son sürümüne güncellendi. Artık bu ileti türünü cihazınızda alabileceksiniz.";
+"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_FROM_LINKED_DEVICE" = "Tellomi'nin son sürümüne güncellendi. Artık bu ileti türünü cihazınızda alabileceksiniz.";
 
 /* Info message recorded in conversation history when local user has received an unknown message and has upgraded. Embeds {{user's name or phone number}}. */
-"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITH_NAME_FORMAT" = "Tellomi'in güncel sürümünü kullandığınıza göre %1$@ kişisinden bu iletiyi tekrar göndermesini isteyebilirsiniz.";
+"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITH_NAME_FORMAT" = "Tellomi'nin güncel sürümünü kullandığınıza göre %1$@ kişisinden bu iletiyi tekrar göndermesini isteyebilirsiniz.";
 
 /* Info message recorded in conversation history when local user has received an unknown message and has upgraded. */
-"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITHOUT_NAME" = "Tellomi'in güncel sürümünü kullandığınıza göre gönderenden bu iletiyi tekrar göndermesini isteyebilirsiniz.";
+"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITHOUT_NAME" = "Tellomi'nin güncel sürümünü kullandığınıza göre gönderenden bu iletiyi tekrar göndermesini isteyebilirsiniz.";
 
 /* Label indicating an unknown user. */
 "UNKNOWN_USER" = "Bilinmeyen";
@@ -10766,7 +10766,7 @@
 "UNLINK_CONFIRMATION_ALERT_TITLE" = "\"%1$@\" bağlantısını kaldır?";
 
 /* Label warning the user that they have been unlinked from their primary device. */
-"UNLINKED_WARNING" = "Bu cihaz artık bağlı değil. Mesajlaşmaya devam etmek için Tellomi'i telefonunla yeniden bağla.";
+"UNLINKED_WARNING" = "Bu cihaz artık bağlı değil. Mesajlaşmaya devam etmek için Tellomi'yi telefonunla yeniden bağla.";
 
 /* If this device has become unlinked from their primary device, they'll see a warning. This is the call to action on that warning. */
 "UNLINKED_WARNING_ACTION_TITLE" = "Cihazı Yeniden Bağla";
@@ -10793,7 +10793,7 @@
 "UNSUPPORTED_FEATURE_ERROR" = "Cihazınız bu özelliği desteklemiyor.";
 
 /* Description for the unverified safety number change. Embeds {name of contact with identity change} */
-"UNVERIFIED_SAFETY_NUMBER_CHANGE_DESCRIPTION_FORMAT" = "%1$@ ile olan Güvenlik Numaranız değişti, bunun sebebi Tellomi'i yeniden yüklemeleri veya cihaz değiştirmeleri olabilir. Yeni güvenlik numarasını onaylamak için Doğrula'ya dokunun. Bu eylem isteğe bağlıdır.";
+"UNVERIFIED_SAFETY_NUMBER_CHANGE_DESCRIPTION_FORMAT" = "%1$@ ile olan Güvenlik Numaranız değişti, bunun sebebi Tellomi'yi yeniden yüklemeleri veya cihaz değiştirmeleri olabilir. Yeni güvenlik numarasını onaylamak için Doğrula'ya dokunun. Bu eylem isteğe bağlıdır.";
 
 /* Action to verify a safety number after it has changed */
 "UNVERIFIED_SAFETY_NUMBER_VERIFY_ACTION" = "Doğrula";
@@ -10811,7 +10811,7 @@
 "USE_PROXY_BUTTON" = "Vekil sunucu kullan";
 
 /* Explanation of when you should use a signal proxy */
-"USE_PROXY_EXPLANATION" = "Proxy sunucusunu, yalnızca hücresel veri veya Wi-Fi üzerinden Tellomi'a bağlanamıyorsan kullan.";
+"USE_PROXY_EXPLANATION" = "Proxy sunucusunu, yalnızca hücresel veri veya Wi-Fi üzerinden Tellomi'ye bağlanamıyorsan kullan.";
 
 /* Description of username links and QR codes on the username education sheet */
 "USERNAME_EDUCATION_LINK_DESCRIPTION" = "Kullanıcı adlarının, seninle hızla bir sohbet başlatmak için arkadaşlarınla paylaşabileceğin benzersiz bir kare kodu ve bağlantısı vardır.";

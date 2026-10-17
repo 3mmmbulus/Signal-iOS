@@ -212,7 +212,7 @@
 "APP_EXPIRED_BOTTOM_UPDATE" = "지금 업데이트";
 
 /* Default message for the 'app launch failed' alert. */
-"APP_LAUNCH_FAILURE_ALERT_MESSAGE" = "Tellomi을 시작할 수 없습니다. 문제 해결을 위해 디버그 로그를 support@tellomi.app로 보내주세요.";
+"APP_LAUNCH_FAILURE_ALERT_MESSAGE" = "Tellomi를 시작할 수 없습니다. 문제 해결을 위해 디버그 로그를 support@tellomi.app로 보내주세요.";
 
 /* Button to try launching the app even though the last launch failed */
 "APP_LAUNCH_FAILURE_CONTINUE" = "대신 Tellomi 열기";
@@ -221,13 +221,13 @@
 "APP_LAUNCH_FAILURE_CORRUPT_REGISTRATION_MESSAGE" = "우리가 이 문제를 해결할 수 있도록 support@tellomi.app로 디버그 로그를 보내주세요.";
 
 /* Title for an error indicating that the app couldn't launch because some unexpected error happened with the user's registration status. */
-"APP_LAUNCH_FAILURE_CORRUPT_REGISTRATION_TITLE" = "Tellomi을 열 수 없음";
+"APP_LAUNCH_FAILURE_CORRUPT_REGISTRATION_TITLE" = "Tellomi를 열 수 없음";
 
 /* Error indicating that the app could not launch because the database could not be loaded. */
 "APP_LAUNCH_FAILURE_COULD_NOT_LOAD_DATABASE" = "데이터베이스를 불러올 수 없음";
 
 /* Message for an action sheet explaining that Signal can't launch because the database is corrupted. */
-"APP_LAUNCH_FAILURE_DATABASE_CORRUPTED_MESSAGE" = "데이터베이스가 손상되어 Tellomi을 시작할 수 없습니다. 계정이나 메시지 보안에는 영향이 없습니다.";
+"APP_LAUNCH_FAILURE_DATABASE_CORRUPTED_MESSAGE" = "데이터베이스가 손상되어 Tellomi를 시작할 수 없습니다. 계정이나 메시지 보안에는 영향이 없습니다.";
 
 /* Title for an action sheet explaining that Signal can't launch because the database is corrupted. */
 "APP_LAUNCH_FAILURE_DATABASE_CORRUPTED_TITLE" = "데이터베이스 손상";
@@ -245,19 +245,19 @@
 "APP_LAUNCH_FAILURE_INVALID_DATABASE_VERSION_TITLE" = "알 수 없는 데이터베이스 버전입니다.";
 
 /* Error indicating that the app crashed during the previous launch. */
-"APP_LAUNCH_FAILURE_LAST_LAUNCH_CRASHED_MESSAGE" = "Tellomi을 여는 도중 오류가 발생했습니다. 문제 해결을 위해 support@tellomi.app에 디버그 로그를 보내주세요.";
+"APP_LAUNCH_FAILURE_LAST_LAUNCH_CRASHED_MESSAGE" = "Tellomi를 여는 도중 오류가 발생했습니다. 문제 해결을 위해 support@tellomi.app에 디버그 로그를 보내주세요.";
 
 /* Error indicating that the app crashed during the previous launch. */
-"APP_LAUNCH_FAILURE_LAST_LAUNCH_CRASHED_TITLE" = "Tellomi을 열 수 없음";
+"APP_LAUNCH_FAILURE_LAST_LAUNCH_CRASHED_TITLE" = "Tellomi를 열 수 없음";
 
 /* Message for an error sheet shown when the app cannot launch because the device is out of storage space. Embeds 1:{{ the localized name of the user's device model, e.g. iPhone }}; 2:{{ an amount of storage space as a file size, e.g. 1 GB }}. */
-"APP_LAUNCH_FAILURE_NOT_ENOUGH_STORAGE_SPACE_MESSAGE_FORMAT" = "%1$@의 저장 공간이 부족하여 Tellomi을 실행할 수 없습니다. 최소 %2$@의 저장 공간을 확보한 후 Tellomi을 다시 실행해 주세요.\n\niOS 설정 > 일반 > 저장 공간으로 이동해 사용하지 않는 앱을 정리하거나, 사진 앱 등에서 대용량 동영상 및 다운로드한 미디어를 삭제해 공간을 확보해 주세요.";
+"APP_LAUNCH_FAILURE_NOT_ENOUGH_STORAGE_SPACE_MESSAGE_FORMAT" = "%1$@의 저장 공간이 부족하여 Tellomi를 실행할 수 없습니다. 최소 %2$@의 저장 공간을 확보한 후 Tellomi를 다시 실행해 주세요.\n\niOS 설정 > 일반 > 저장 공간으로 이동해 사용하지 않는 앱을 정리하거나, 사진 앱 등에서 대용량 동영상 및 다운로드한 미디어를 삭제해 공간을 확보해 주세요.";
 
 /* Title for an error sheet shown when the app cannot launch because the device is out of storage space. */
 "APP_LAUNCH_FAILURE_NOT_ENOUGH_STORAGE_SPACE_TITLE" = "저장 공간 부족";
 
 /* Error indicating that the app could not restore transferred data. */
-"APP_LAUNCH_FAILURE_RESTORE_FAILED_MESSAGE" = "기존 기기에서 가져온 데이터를 복구하지 못했습니다. 문제 해결을 위해 디버그 로그를 support@tellomi.app로 보내주세요. Tellomi을 재설치할 경우 기존 메시지 기록이 사라질 수 있으니 참고해 주세요.";
+"APP_LAUNCH_FAILURE_RESTORE_FAILED_MESSAGE" = "기존 기기에서 가져온 데이터를 복구하지 못했습니다. 문제 해결을 위해 디버그 로그를 support@tellomi.app로 보내주세요. Tellomi를 재설치할 경우 기존 메시지 기록이 사라질 수 있으니 참고해 주세요.";
 
 /* Error indicating that the app could not restore transferred data. */
 "APP_LAUNCH_FAILURE_RESTORE_FAILED_TITLE" = "이전을 완료할 수 없음";
@@ -605,7 +605,7 @@
 "BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_ACTION" = "켜기";
 
 /* Body for Backup enablement reminder megaphone */
-"BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_BODY" = "새 휴대폰을 구매하거나 Tellomi을 다시 설치하는 경우에도 메시지를 손실할 염려가 없습니다.";
+"BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_BODY" = "새 휴대폰을 구매하거나 Tellomi를 다시 설치하는 경우에도 메시지를 손실할 염려가 없습니다.";
 
 /* Title for Backup enablement reminder megaphone */
 "BACKUP_ENABLEMENT_REMINDER_MEGAPHONE_TITLE" = "암호화된 백업 켜기";
@@ -638,7 +638,7 @@
 "BACKUP_KEY_SEE_FULL_KEY_BUTTON_TITLE" = "전체 키 보기";
 
 /* Body for a warning sheet shown to discourage the user from sharing their 'Recovery Key', warning them not to share it with anyone. */
-"BACKUP_NEVER_SHARE_RECOVERY_KEY_SHEET_BODY" = "다른 사람과 복구 키를 공유하지 마세요. 복구 키를 공유하면 다른 사람이 내 계정을 탈취할 수 있습니다. Tellomi은 사용자에게 복구 키를 요구하는 메시지를 <bold>절대</bold> 보내지 않습니다. Tellomi을 사칭하는 채팅에 절대 답장하지 마세요.";
+"BACKUP_NEVER_SHARE_RECOVERY_KEY_SHEET_BODY" = "다른 사람과 복구 키를 공유하지 마세요. 복구 키를 공유하면 다른 사람이 내 계정을 탈취할 수 있습니다. Tellomi는 사용자에게 복구 키를 요구하는 메시지를 <bold>절대</bold> 보내지 않습니다. Tellomi를 사칭하는 채팅에 절대 답장하지 마세요.";
 
 /* Title for a warning sheet shown to discourage the user from sharing their 'Recovery Key'. */
 "BACKUP_NEVER_SHARE_RECOVERY_KEY_SHEET_TITLE" = "복구 키를 공유하지 마세요";
@@ -653,7 +653,7 @@
 "BACKUP_ONBOARDING_CANCEL_SHEET_TITLE" = "백업 설정을 종료할까요?";
 
 /* Body for a sheet warning users to their 'Recovery Key' safe. */
-"BACKUP_ONBOARDING_CONFIRM_KEY_KEEP_KEY_SAFE_SHEET_BODY" = "키를 분실할 경우 Tellomi은 백업을 복원하도록 도와드릴 수 없습니다. 안전한 곳에 키를 보관해 두고, 다른 사람과 공유하지 마세요.";
+"BACKUP_ONBOARDING_CONFIRM_KEY_KEEP_KEY_SAFE_SHEET_BODY" = "키를 분실할 경우 Tellomi는 백업을 복원하도록 도와드릴 수 없습니다. 안전한 곳에 키를 보관해 두고, 다른 사람과 공유하지 마세요.";
 
 /* Title for a sheet warning users to their 'Recovery Key' safe. */
 "BACKUP_ONBOARDING_CONFIRM_KEY_KEEP_KEY_SAFE_SHEET_TITLE" = "키를 안전하게 보관하세요";
@@ -680,7 +680,7 @@
 "BACKUP_ONBOARDING_INTRO_NOT_NOW_TOAST" = "설정에서 백업을 활성화할 수 있습니다.";
 
 /* Subtitle for a view introducing Backups during an onboarding flow. */
-"BACKUP_ONBOARDING_INTRO_SUBTITLE" = "Tellomi의 안전한 종단간 암호화 저장 공간 서비스를 사용하여 메시지와 미디어를 백업하세요. 새 휴대폰을 구매하거나 Tellomi을 다시 설치하는 경우에도 메시지를 손실할 염려가 없습니다.";
+"BACKUP_ONBOARDING_INTRO_SUBTITLE" = "Tellomi의 안전한 종단간 암호화 저장 공간 서비스를 사용하여 메시지와 미디어를 백업하세요. 새 휴대폰을 구매하거나 Tellomi를 다시 설치하는 경우에도 메시지를 손실할 염려가 없습니다.";
 
 /* Title for a view introducing Backups during an onboarding flow. */
 "BACKUP_ONBOARDING_INTRO_TITLE" = "Tellomi 안전 백업";
@@ -758,7 +758,7 @@
 "BACKUP_RESTORE_MODAL_TITLE" = "메시지를 복원하는 중...";
 
 /* Message for a confirmation sheet shown before saving the user's Recovery Key to their password manager. */
-"BACKUP_SAVE_KEY_PW_MGR_CONFIRM_SHEET_MESSAGE" = "복구 키는 안전성을 신뢰할 수 있는 비밀번호 관리자에만 저장하세요. Tellomi은 특정 비밀번호 관리자를 별도로 추천하지 않습니다.";
+"BACKUP_SAVE_KEY_PW_MGR_CONFIRM_SHEET_MESSAGE" = "복구 키는 안전성을 신뢰할 수 있는 비밀번호 관리자에만 저장하세요. Tellomi는 특정 비밀번호 관리자를 별도로 추천하지 않습니다.";
 
 /* Title for a confirmation sheet shown before saving the user's Recovery Key to their password manager. */
 "BACKUP_SAVE_KEY_PW_MGR_CONFIRM_SHEET_TITLE" = "비밀번호 관리자에 저장할까요?";
@@ -785,7 +785,7 @@
 "BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_GO_TO_SETTINGS_BUTTON" = "설정으로 이동";
 
 /* Message for a sheet warning the user about the Background App Refresh permission. \"Background App Refresh\" should be localized the same way it is in iOS Settings app permissions. */
-"BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_MESSAGE" = "Tellomi이 자동으로 메시지를 백업하도록 하려면 아래의 '설정으로 이동'을 탭하여 '백그라운드 앱 새로고침'을 활성화하세요.";
+"BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_MESSAGE" = "Tellomi가 자동으로 메시지를 백업하도록 하려면 아래의 '설정으로 이동'을 탭하여 '백그라운드 앱 새로고침'을 활성화하세요.";
 
 /* Title for a sheet warning the user about the Background App Refresh permission. \"Background App Refresh\" should be localized the same way it is in iOS Settings app permissions. */
 "BACKUP_SETTINGS_BACKGROUND_APP_REFRESH_DISABLED_SHEET_TITLE" = "자동 백업 비활성화됨";
@@ -968,7 +968,7 @@
 "BACKUP_SETTINGS_DISABLING_CONFIRMATION_ACTION_SHEET_TITLE" = "백업을 끄고 삭제할까요?";
 
 /* Message shown in an action sheet when the user disables Backups, explaining that their media is downloading first. */
-"BACKUP_SETTINGS_DISABLING_DOWNLOADS_STARTED_ACTION_SHEET_MESSAGE" = "백업에 이 기기에 없는 미디어가 있습니다. 백업 다운로드에 시간이 오래 걸릴 수 있습니다. 다운로드가 중단되는 걸 방지하려면 Tellomi을 계속 열어두세요.";
+"BACKUP_SETTINGS_DISABLING_DOWNLOADS_STARTED_ACTION_SHEET_MESSAGE" = "백업에 이 기기에 없는 미디어가 있습니다. 백업 다운로드에 시간이 오래 걸릴 수 있습니다. 다운로드가 중단되는 걸 방지하려면 Tellomi를 계속 열어두세요.";
 
 /* Title shown in an action sheet when the user disables Backups, explaining that their media is downloading first. */
 "BACKUP_SETTINGS_DISABLING_DOWNLOADS_STARTED_ACTION_SHEET_TITLE" = "백업을 다운로드하는 중";
@@ -1067,7 +1067,7 @@
 "BACKUP_SETTINGS_LANDING_OTHER_WAYS_HEADER" = "다른 백업 방법";
 
 /* Subtitle on the Backups settings landing page. */
-"BACKUP_SETTINGS_LANDING_PAGE_SUBTITLE" = "새 휴대폰을 사용하거나 Tellomi을 다시 설치할 때 데이터를 잃지 않도록 메시지 기록을 백업하세요.";
+"BACKUP_SETTINGS_LANDING_PAGE_SUBTITLE" = "새 휴대폰을 사용하거나 Tellomi를 다시 설치할 때 데이터를 잃지 않도록 메시지 기록을 백업하세요.";
 
 /* Button to begin setting up Signal Secure Backups on the Backups settings landing page. */
 "BACKUP_SETTINGS_LANDING_SET_UP_BUTTON" = "설정";
@@ -1103,7 +1103,7 @@
 "BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_LATER_ACTION" = "나중에 다운로드";
 
 /* Message for an action sheet allowing users to download their offloaded media. */
-"BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_MESSAGE" = "백업에 이 기기에 없는 미디어가 있습니다. 다운로드하는 데 시간이 오래 걸릴 수 있으므로 다운로드가 중단되지 않도록 Tellomi을 계속 열어두세요.";
+"BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_MESSAGE" = "백업에 이 기기에 없는 미디어가 있습니다. 다운로드하는 데 시간이 오래 걸릴 수 있으므로 다운로드가 중단되지 않도록 Tellomi를 계속 열어두세요.";
 
 /* Action in an action sheet allowing users to download their offloaded media now. */
 "BACKUP_SETTINGS_OPTIMIZE_LOCAL_STORAGE_DOWNLOAD_SHEET_NOW_ACTION" = "지금 다운로드";
@@ -1214,7 +1214,7 @@
 "BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_BUTTON_TITLE" = "지금 백업";
 
 /* Message for a sheet shown after the user enables backups. */
-"BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_MESSAGE" = "완료하는 데 다소 시간이 걸릴 수 있어요. 백업하는 동안에도 Tellomi은 정상적으로 사용할 수 있습니다.";
+"BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_MESSAGE" = "완료하는 데 다소 시간이 걸릴 수 있어요. 백업하는 동안에도 Tellomi는 정상적으로 사용할 수 있습니다.";
 
 /* Footer for a toggle shown after the user enables backups, letting them enable the Optimize Storage feature. */
 "BACKUP_SETTINGS_WELCOME_TO_BACKUPS_SHEET_OPTIMIZE_MEDIA_TOGGLE_FOOTER" = "다음 백업 시 오래된 미디어는 오프로드되지만, 언제든지 백업에서 다시 다운로드할 수 있습니다.";
@@ -1259,7 +1259,7 @@
 "BACKUPS_BACK_UP_YOUR_MEDIA_MEGAPHONE_TITLE" = "모든 미디어를 백업하세요";
 
 /* Body for a Backup plan upsell view encouraging users to subscribe to a paid Backup plan to back up all their media. Embeds {{ the amount of storage included in the paid plan, preformatted as a localized byte count, e.g. '100 GB' }}. */
-"BACKUPS_BACK_UP_YOUR_MEDIA_UPSELL_BODY" = "유료 Tellomi 안전 백업 플랜은 최대 %1$@까지 모든 미디어를 보존합니다. 새 휴대폰을 구매하거나 Tellomi을 다시 설치하는 경우에도 사진이나 동영상을 손실할 염려가 없습니다.";
+"BACKUPS_BACK_UP_YOUR_MEDIA_UPSELL_BODY" = "유료 Tellomi 안전 백업 플랜은 최대 %1$@까지 모든 미디어를 보존합니다. 새 휴대폰을 구매하거나 Tellomi를 다시 설치하는 경우에도 사진이나 동영상을 손실할 염려가 없습니다.";
 
 /* Title for a Backup plan upsell view encouraging users to subscribe to a paid Backup plan to back up all their media. */
 "BACKUPS_BACK_UP_YOUR_MEDIA_UPSELL_TITLE" = "업그레이드하고 모든 미디어 저장하기";
@@ -1292,7 +1292,7 @@
 "BACKUPS_SAVE_SPACE_MEGAPHONE_TITLE" = "유료 백업으로 공간 절약";
 
 /* Body for a Backup plan upsell view encouraging users to subscribe to a paid Backup plan to save on-device storage space. Embeds {{ the amount of storage space being consumed on-device by media, preformatted as a localized byte count, e.g. '1.2 GB' }}. */
-"BACKUPS_SAVE_SPACE_UPSELL_BODY" = "Tellomi이 미디어 저장 공간으로 %1$@를 사용하고 있습니다. 유료 Tellomi 안전 백업 요금제를 사용하면 미디어를 오프로드하여 저장 공간을 절약하는 동시에, 백업에 전체 대화 기록을 그대로 보존할 수 있습니다.";
+"BACKUPS_SAVE_SPACE_UPSELL_BODY" = "Tellomi가 미디어 저장 공간으로 %1$@를 사용하고 있습니다. 유료 Tellomi 안전 백업 요금제를 사용하면 미디어를 오프로드하여 저장 공간을 절약하는 동시에, 백업에 전체 대화 기록을 그대로 보존할 수 있습니다.";
 
 /* Title for a Backup plan upsell view encouraging users to subscribe to a paid Backup plan to save on-device storage space. */
 "BACKUPS_SAVE_SPACE_UPSELL_TITLE" = "유료 백업으로 공간 절약";
@@ -1301,7 +1301,7 @@
 "BACKUPS_SETTINGS_TITLE" = "안전 백업";
 
 /* Message for an action sheet shown on iPad saying you need to set up backups on your phone */
-"BACKUPS_SETUP_ON_PRIMARY_MESSAGE" = "백업을 설정하려면 주 기기인 iPhone 또는 Android에서 Tellomi을 열고 설정 > 백업으로 이동하세요.";
+"BACKUPS_SETUP_ON_PRIMARY_MESSAGE" = "백업을 설정하려면 주 기기인 iPhone 또는 Android에서 Tellomi를 열고 설정 > 백업으로 이동하세요.";
 
 /* Body for system notification or megaphone when backups is enabled. Embeds {{ time backups was enabled }} */
 "BACKUPS_TURNED_ON_NOTIFICATION_BODY_FORMAT" = "%1$@에 이 계정의 Tellomi 백업을 켰습니다. 탭하여 확인하세요.";
@@ -1322,7 +1322,7 @@
 "BADGE_DETAILS_DONATE_TO_SIGNAL" = "지금 후원하기";
 
 /* When viewing someone else's donor badge, you'll see a sheet. This is the title on that sheet. Embeds {badge owner's short name} */
-"BADGE_DETAILS_TITLE_FOR_SUPPORTER" = "%1$@ 님은 Tellomi을 후원 중입니다";
+"BADGE_DETAILS_TITLE_FOR_SUPPORTER" = "%1$@ 님은 Tellomi를 후원 중입니다";
 
 /* String explaining to the user that their boost badge has expired on the badge expiry sheet. */
 "BADGE_EXPIRED_BOOST_BODY" = "부스트 배지가 만료되어 더 이상 프로필에 표시되지 않습니다.\n\nTellomi은 계속 이용하실 수 있지만, 매월 소액의 후원으로 함께해 주시면 Tellomi의 지속적인 운영에 큰 힘이 될 수 있어요.";
@@ -1370,7 +1370,7 @@
 "BANK_DONATION_FOOTER_FIND_ACCOUNT_INFO" = "계좌 정보 찾기";
 
 /* On the bank transfer donation screen, a small amount of information text is shown. This is that text. It should (1) instruct users to enter their bank information (2) tell them that Signal does not collect or store their personal information. */
-"BANK_DONATION_SUBHEADER_TEXT" = "은행 세부 정보를 입력하세요. Tellomi은 개인 정보를 수집하거나 저장하지 않습니다.";
+"BANK_DONATION_SUBHEADER_TEXT" = "은행 세부 정보를 입력하세요. Tellomi는 개인 정보를 수집하거나 저장하지 않습니다.";
 
 /* Users can donate to Signal with a bank account. We are required to show them a mandate with information about bank transfers. This is a label for a button to agree to the mandate. */
 "BANK_MANDATE_AGREE" = "동의";
@@ -1379,7 +1379,7 @@
 "BANK_MANDATE_READ_MORE" = "더 보기";
 
 /* Users can donate to Signal with a bank account. We are required to show them a mandate with information about bank transfers. This is a subtitle about the payment processor Stripe above that mandate. */
-"BANK_MANDATE_SUBTITLE" = "Stripe에서 Tellomi에 대한 후원을 처리합니다. Tellomi은 개인정보를 수집하거나 저장하지 않습니다.";
+"BANK_MANDATE_SUBTITLE" = "Stripe에서 Tellomi에 대한 후원을 처리합니다. Tellomi는 개인정보를 수집하거나 저장하지 않습니다.";
 
 /* Users can donate to Signal with a bank account. We are required to show them a mandate with information about bank transfers. This is the title above that mandate. */
 "BANK_MANDATE_TITLE" = "계좌 이체";
@@ -1400,7 +1400,7 @@
 "BLOCK_LIST_BLOCK_GROUP_TITLE_FORMAT" = "'%1$@' 그룹을 차단하고 나갈까요?";
 
 /* Label for 'block release notes' action sheet title. */
-"BLOCK_LIST_BLOCK_RELEASE_NOTES_TITLE" = "Tellomi을 차단할까요?";
+"BLOCK_LIST_BLOCK_RELEASE_NOTES_TITLE" = "Tellomi를 차단할까요?";
 
 /* A format for the 'block user' action sheet title. Embeds {{the blocked user's name or phone number}}. */
 "BLOCK_LIST_BLOCK_USER_TITLE_FORMAT" = "%1$@ 님을 차단할까요?";
@@ -1634,7 +1634,7 @@
 "CALL_LINK_REQUIRE_APPROVAL" = "관리자 승인 필요";
 
 /* Button to open UI to share a Call Link with someone on Signal. */
-"CALL_LINK_SHARE_VIA_SIGNAL" = "Tellomi을 통해 링크 공유";
+"CALL_LINK_SHARE_VIA_SIGNAL" = "Tellomi를 통해 링크 공유";
 
 /* Button to open the system share sheet to share a Call Link. */
 "CALL_LINK_SHARE_VIA_SYSTEM" = "링크 공유";
@@ -2000,7 +2000,7 @@
 "CARD_DONATION_EXPIRATION_DATE_PLACEHOLDER" = "MM/YY";
 
 /* Users can choose to learn more about their credit/debit card donations, which will open a sheet with additional information. This is the body text of that sheet. */
-"CARD_DONATION_READ_MORE_SHEET_BODY" = "후원금 처리 과정에서 Tellomi은 어떠한 개인정보도 수집하거나 저장하지 않습니다.\n\n후원금 결제는 Stripe를 통해 처리되며, Tellomi은 Stripe에 제공된 정보에 접근하지 않고 이를 저장하거나 보관하지도 않습니다.\n\n또한 후원 내역을 Tellomi 계정과 연결할 수 없으며, 실제로도 연결되지 않습니다.\n\nTellomi을 지지해 주셔서 감사합니다!";
+"CARD_DONATION_READ_MORE_SHEET_BODY" = "후원금 처리 과정에서 Tellomi는 어떠한 개인정보도 수집하거나 저장하지 않습니다.\n\n후원금 결제는 Stripe를 통해 처리되며, Tellomi는 Stripe에 제공된 정보에 접근하지 않고 이를 저장하거나 보관하지도 않습니다.\n\n또한 후원 내역을 Tellomi 계정과 연결할 수 없으며, 실제로도 연결되지 않습니다.\n\nTellomi을 지지해 주셔서 감사합니다!";
 
 /* Users can choose to learn more about their credit/debit card donations, which will open a sheet with additional information. This is the title of that sheet. */
 "CARD_DONATION_READ_MORE_SHEET_TITLE" = "개인 정보는 비공개로 유지됩니다.";
@@ -2009,7 +2009,7 @@
 "CARD_DONATION_SUBHEADER_LEARN_MORE" = "더 알아보세요.";
 
 /* On the credit/debit card donation screen, a small amount of information text is shown. This is that text. It should (1) instruct users to enter their credit/debit card information (2) tell them that Signal does not collect or store their personal information. */
-"CARD_DONATION_SUBHEADER_TEXT" = "카드 세부 정보를 입력하세요. Tellomi은 개인 정보를 수집하거나 저장하지 않습니다.";
+"CARD_DONATION_SUBHEADER_TEXT" = "카드 세부 정보를 입력하세요. Tellomi는 개인 정보를 수집하거나 저장하지 않습니다.";
 
 /* Title for the 'censorship circumvention country' view. */
 "CENSORSHIP_CIRCUMVENTION_COUNTRY_VIEW_TITLE" = "국가 선택";
@@ -2111,7 +2111,7 @@
 "CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_BUTTON" = "계속하기";
 
 /* Message shown in an action sheet when the user tries to resume backup using cellular data. */
-"CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_MESSAGE" = "셀룰러 데이터를 사용하여 미디어를 백업하면 데이터 요금이 부과될 수 있습니다. 백업을 업로드하는 데 다소 긴 시간이 걸릴 수 있으니, 업로드가 중단되는 걸 방지하려면 Tellomi을 계속 열어두세요.";
+"CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_MESSAGE" = "셀룰러 데이터를 사용하여 미디어를 백업하면 데이터 요금이 부과될 수 있습니다. 백업을 업로드하는 데 다소 긴 시간이 걸릴 수 있으니, 업로드가 중단되는 걸 방지하려면 Tellomi를 계속 열어두세요.";
 
 /* Title for the action sheet shown when the user tries to resume backup using cellular data. */
 "CHAT_LIST_BACKUP_PROGRESS_VIEW_RESUME_CELLULAR_DATA_TITLE" = "셀룰러 데이터를 사용하여 계속할까요?";
@@ -2189,7 +2189,7 @@
 "CHOOSE_BACKUP_PLAN_BULLET_STORAGE_AMOUNT" = "%1$@의 저장 공간";
 
 /* Text for a bullet point in a list of Backup features, thanking the user for supporting Signal by subscribing to the paid Backup plan. */
-"CHOOSE_BACKUP_PLAN_BULLET_THANKS_FOR_SUPPORTING_SIGNAL" = "Tellomi을 후원해 주셔서 감사합니다!";
+"CHOOSE_BACKUP_PLAN_BULLET_THANKS_FOR_SUPPORTING_SIGNAL" = "Tellomi를 후원해 주셔서 감사합니다!";
 
 /* Message shown in an action sheet when the user tries to confirm a plan selection, but is not registered. */
 "CHOOSE_BACKUP_PLAN_CONFIRMATION_ERROR_NOT_REGISTERED" = "백업을 활성화하려면 먼저 등록해야 합니다.";
@@ -2234,7 +2234,7 @@
 "CHOOSE_BACKUP_PLAN_SUBSCRIBE_PAID_BUTTON_TEXT" = "월 %1$@로 구독";
 
 /* Subtitle for a view allowing users to choose a Backup plan. */
-"CHOOSE_BACKUP_PLAN_SUBTITLE" = "모든 백업 내용은 종단간 암호화로 보호됩니다. Tellomi은 비영리 단체로, 백업을 유료로 이용하시면 Tellomi 운영에 큰 힘이 됩니다.";
+"CHOOSE_BACKUP_PLAN_SUBTITLE" = "모든 백업 내용은 종단간 암호화로 보호됩니다. Tellomi는 비영리 단체로, 백업을 유료로 이용하시면 Tellomi 운영에 큰 힘이 됩니다.";
 
 /* Title for a view allowing users to choose a Backup plan. */
 "CHOOSE_BACKUP_PLAN_TITLE" = "백업 플랜 선택";
@@ -2243,7 +2243,7 @@
 "CLOCK_SKEW_APP_BLOCKING_DEVICE_TIME_FORMAT" = "기기의 현재 시간은 UTC 기준 %1$@입니다.";
 
 /* Subtitle for a screen shown when the app can't be used until the user corrects their device's date and time. */
-"CLOCK_SKEW_APP_BLOCKING_SUBTITLE" = "기기의 날짜와 시간이 잘못 설정되어 있으면 Tellomi을 사용할 수 없습니다. 설정을 열어서 날짜와 시간을 올바르게 수정하세요.";
+"CLOCK_SKEW_APP_BLOCKING_SUBTITLE" = "기기의 날짜와 시간이 잘못 설정되어 있으면 Tellomi를 사용할 수 없습니다. 설정을 열어서 날짜와 시간을 올바르게 수정하세요.";
 
 /* Title for a screen shown when the app can't be used until the user corrects their device's date and time. */
 "CLOCK_SKEW_APP_BLOCKING_TITLE" = "날짜 설정이 올바르지 않습니다";
@@ -2297,7 +2297,7 @@
 "COMPOSE_SCREEN_MISSING_CONTACTS_CTA" = "설정 열기";
 
 /* Multi-line label explaining why compose-screen contact picker is empty. */
-"COMPOSE_SCREEN_MISSING_CONTACTS_PERMISSION" = "iOS 설정 앱에서 연락처 권한을 허용하면 내 연락처에서 누가 Tellomi을 사용하고 있는지 알 수 있습니다.";
+"COMPOSE_SCREEN_MISSING_CONTACTS_PERMISSION" = "iOS 설정 앱에서 연락처 권한을 허용하면 내 연락처에서 누가 Tellomi를 사용하고 있는지 알 수 있습니다.";
 
 /* Configure reactions title text */
 "CONFIGURE_REACTIONS" = "반응 설정";
@@ -2498,7 +2498,7 @@
 "CONTACT_SUPPORT_FILTER_SOMETHING_NOT_WORKING_SHORT" = "제대로 작동하지 않아요";
 
 /* Alert body */
-"CONTACT_SUPPORT_PROMPT_ERROR_ALERT_BODY" = "Tellomi이 사용자의 지원 요청을 완료하지 못했습니다.";
+"CONTACT_SUPPORT_PROMPT_ERROR_ALERT_BODY" = "Tellomi가 사용자의 지원 요청을 완료하지 못했습니다.";
 
 /* Alert body */
 "CONTACT_SUPPORT_PROMPT_TO_INCLUDE_DEBUG_LOG_MESSAGE" = "디버그 로그를 보내 문제 해결에 도움을 주실 수 있습니다. 로그 보내기는 선택 사항입니다.";
@@ -2618,7 +2618,7 @@
 "CONVERSATION_SETTINGS_ATTRIBUTES_ACCESS_SECTION_FOOTER_V2" = "그룹 이름, 사진, 설명, 자동 삭제 메시지 시간, 고정 메시지를 수정할 수 있는 사람을 선택하세요.";
 
 /* Footer string for a contact's badges in conversation settings */
-"CONVERSATION_SETTINGS_BADGES_FOOTER" = "Tellomi을 후원하고 프로필 배지를 받아보세요. 자세히 알아보려면 배지를 탭하세요.";
+"CONVERSATION_SETTINGS_BADGES_FOOTER" = "Tellomi를 후원하고 프로필 배지를 받아보세요. 자세히 알아보려면 배지를 탭하세요.";
 
 /* Header title for a contact's badges in conversation settings */
 "CONVERSATION_SETTINGS_BADGES_HEADER" = "배지";
@@ -2921,7 +2921,7 @@
 "DATABASE_RECOVERY_MORE_STORAGE_SPACE_NEEDED_TITLE" = "저장공간 부족";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) This is the description on the screen where we show an error message. */
-"DATABASE_RECOVERY_RECOVERY_FAILED_DESCRIPTION" = "메시지 기록을 복구할 수 없습니다. Tellomi을 다시 설치하고 계속 사용할 수 있습니다. 어디에 문제가 있었는지 확인할 수 있도록 디버그 로그를 제출해 주세요.";
+"DATABASE_RECOVERY_RECOVERY_FAILED_DESCRIPTION" = "메시지 기록을 복구할 수 없습니다. Tellomi를 다시 설치하고 계속 사용할 수 있습니다. 어디에 문제가 있었는지 확인할 수 있도록 디버그 로그를 제출해 주세요.";
 
 /* The user has tried to recover their data after it was lost due to corruption. (They have not been hacked.) This button lets them delete all of their data. */
 "DATABASE_RECOVERY_RECOVERY_FAILED_RESET_APP_BUTTON" = "Tellomi 초기화";
@@ -3161,7 +3161,7 @@
 "DEVICE_TRANSFER_CHOICE_TRANSFER_LINKED_TITLE" = "다른 iPad에서 이전";
 
 /* An error indicating that the other device closed signal mid-transfer and it could not complete */
-"DEVICE_TRANSFER_ERROR_BACKGROUNDED" = "이전을 완료할 수 없습니다. 두 기기 모두에 Tellomi이 열려 있는지 확인하고 다시 시도하세요.";
+"DEVICE_TRANSFER_ERROR_BACKGROUNDED" = "이전을 완료할 수 없습니다. 두 기기 모두에 Tellomi가 열려 있는지 확인하고 다시 시도하세요.";
 
 /* An error indicating that something went wrong with the transfer and it could not complete */
 "DEVICE_TRANSFER_ERROR_GENERIC" = "이전을 완료할 수 없습니다. 두 기기를 가까이 두고 다시 시도하세요.";
@@ -3185,7 +3185,7 @@
 "DEVICE_TRANSFER_PAIR_OLD_DEVICE_TITLE" = "기존 기기 연결하기";
 
 /* The explanation on the view that shows receiving progress */
-"DEVICE_TRANSFER_RECEIVING_EXPLANATION" = "두 기기를 서로 가까이 두고 Tellomi을 계속 열어 두세요. 모든 과정은 종단간 암호화로 안전하게 보호됩니다.";
+"DEVICE_TRANSFER_RECEIVING_EXPLANATION" = "두 기기를 서로 가까이 두고 Tellomi를 계속 열어 두세요. 모든 과정은 종단간 암호화로 안전하게 보호됩니다.";
 
 /* The title on the view that shows receiving progress */
 "DEVICE_TRANSFER_RECEIVING_TITLE" = "데이터 수신 중";
@@ -3218,7 +3218,7 @@
 "DEVICE_TRANSFER_STATUS_NEW_DEVICE_TRANSFERRING" = "이전 중";
 
 /* Description in the progress view displayed during device transfer. */
-"DEVICE_TRANSFER_STATUS_NEW_DEVICE_TRANSFERRING_DESCRIPTION" = "두 기기를 서로 가까이 두고 Tellomi을 계속 열어 두세요. 모든 과정은 종단간 암호화로 안전하게 보호됩니다.";
+"DEVICE_TRANSFER_STATUS_NEW_DEVICE_TRANSFERRING_DESCRIPTION" = "두 기기를 서로 가까이 두고 Tellomi를 계속 열어 두세요. 모든 과정은 종단간 암호화로 안전하게 보호됩니다.";
 
 /* Status message on old device when cancelling transfer. */
 "DEVICE_TRANSFER_STATUS_OLD_DEVICE_CANCELLING" = "새 iPhone에 대한 연결을 취소하는 중…";
@@ -3464,7 +3464,7 @@
 "DONATION_ON_BEHALF_OF_A_FRIEND_BADGE_REDEEMED" = "사용함";
 
 /* Users can donate on behalf of a friend, and the friend will receive a badge. This is a short paragraph on the screen where users choose the badge their friend will receive. */
-"DONATION_ON_BEHALF_OF_A_FRIEND_CHOOSE_BADGE_DESCRIPTION" = "Tellomi을 사용하는 친구나 가족을 대신해 Tellomi을 후원해 보세요. 해당 사용자는 Tellomi 후원 사실을 프로필 배지로 표시할 수 있습니다.";
+"DONATION_ON_BEHALF_OF_A_FRIEND_CHOOSE_BADGE_DESCRIPTION" = "Tellomi를 사용하는 친구나 가족을 대신해 Tellomi를 후원해 보세요. 해당 사용자는 Tellomi 후원 사실을 프로필 배지로 표시할 수 있습니다.";
 
 /* Users can donate on behalf of a friend, and the friend will receive a badge. This is the title on the screen where users choose the badge their friend will receive. */
 "DONATION_ON_BEHALF_OF_A_FRIEND_CHOOSE_BADGE_TITLE" = "친구를 대신해 후원하세요.";
@@ -3500,7 +3500,7 @@
 "DONATION_ON_BEHALF_OF_A_FRIEND_PREVIEW_OUTGOING" = "✨ %1$@ 님을 대신해 후원했어요";
 
 /* You received a donation from a friend. This is the title of that message in the chat. Embeds {{short contact name}}. */
-"DONATION_ON_BEHALF_OF_A_FRIEND_RECEIVED_TITLE_FORMAT" = "%1$@ 님이 나를 대신해 Tellomi을 후원했어요";
+"DONATION_ON_BEHALF_OF_A_FRIEND_RECEIVED_TITLE_FORMAT" = "%1$@ 님이 나를 대신해 Tellomi를 후원했어요";
 
 /* Users can donate on a friend's behalf. This is the error message that appears if the try to do this, but the recipient is blocked. */
 "DONATION_ON_BEHALF_OF_A_FRIEND_RECIPIENT_IS_BLOCKED_ERROR_BODY" = "이 사용자를 대신해 후원하려면 차단을 해제해 주세요.";
@@ -3581,7 +3581,7 @@
 "DONATION_RECEIPTS" = "후원 영수증";
 
 /* Text at the bottom of the donation receipts list, telling users that receipts might not be available */
-"DONATION_RECEIPTS_MIGHT_BE_MISSING_IF_YOU_REINSTALLED" = "Tellomi을 다시 설치했다면 이전 후원 영수증은 사용할 수 없습니다.";
+"DONATION_RECEIPTS_MIGHT_BE_MISSING_IF_YOU_REINSTALLED" = "Tellomi를 다시 설치했다면 이전 후원 영수증은 사용할 수 없습니다.";
 
 /* Error message displayed if something goes wrong with 3DSecure/iDEAL payment authorization.  This will be encountered if the user cancels the webview before authrizing the payment. */
 "DONATION_REDIRECT_ERROR_CANCELLED_MESSAGE" = "결제를 취소했습니다. 다시 시도해 주세요.";
@@ -3707,13 +3707,13 @@
 "EDIT_CONTACT_WITHOUT_CONTACTS_PERMISSION_ALERT_BODY" = "iOS 설정 앱에서 접근 권한을 허용할 수 있습니다.";
 
 /* Alert title for when the user has just tried to edit a contacts after declining to give Signal contacts permissions */
-"EDIT_CONTACT_WITHOUT_CONTACTS_PERMISSION_ALERT_TITLE" = "Tellomi이 연락처 정보를 수정하려면 연락처 접근 권한이 필요합니다";
+"EDIT_CONTACT_WITHOUT_CONTACTS_PERMISSION_ALERT_TITLE" = "Tellomi가 연락처 정보를 수정하려면 연락처 접근 권한이 필요합니다";
 
 /* The navbar title for the 'update group' view. */
 "EDIT_GROUP_DEFAULT_TITLE" = "그룹 편집";
 
 /* Error message indicating the a user can't be added to a group. */
-"EDIT_GROUP_ERROR_CANNOT_ADD_MEMBER" = "이 사용자가 Tellomi을 업그레이드하기 전에는 그룹에 추가할 수 없습니다.";
+"EDIT_GROUP_ERROR_CANNOT_ADD_MEMBER" = "이 사용자가 Tellomi를 업그레이드하기 전에는 그룹에 추가할 수 없습니다.";
 
 /* Error message indicating that an avatar image is invalid and cannot be used. */
 "EDIT_GROUP_ERROR_INVALID_AVATAR" = "유효하지 않은 사진입니다.";
@@ -3740,7 +3740,7 @@
 "EDIT_MESSAGE_SEND_MESSAGE_UNKNOWN_ERROR" = "EDIT_MESSAGE_SEND_MESSAGE_UNKNOWN_ERROR";
 
 /* body of email sent to contacts when inviting to install Signal. Embeds {{link to install Signal}} and {{link to the Signal home page}} */
-"EMAIL_INVITE_BODY" = "안녕하세요!\n\n요즘 휴대폰 대화 보안을 위해 Tellomi을 쓰고 있는데요, 같이 Tellomi을 설치해 주시면 저희가 나누는 메시지와 통화가 안전하게 보호될 수 있어요.\n\nTellomi은 iPhone과 Android, PC에서 모두 이용 가능합니다. %1$@에서 다운로드해 보세요.\n\nTellomi은 기존 메시지 앱과 동일한 방식으로 작동합니다. 사진이랑 동영상도 보낼 수 있고, 1:1 개인 통화와 그룹 통화도 가능합니다. 무엇보다 좋은 점은 Tellomi 개발팀조차 저희가 나누는 대화를 볼 수 없다는 거예요.\n\nTellomi에 관한 자세한 정보는 %2$@에서 확인해 보세요.";
+"EMAIL_INVITE_BODY" = "안녕하세요!\n\n요즘 휴대폰 대화 보안을 위해 Tellomi를 쓰고 있는데요, 같이 Tellomi를 설치해 주시면 저희가 나누는 메시지와 통화가 안전하게 보호될 수 있어요.\n\nTellomi은 iPhone과 Android, PC에서 모두 이용 가능합니다. %1$@에서 다운로드해 보세요.\n\nTellomi은 기존 메시지 앱과 동일한 방식으로 작동합니다. 사진이랑 동영상도 보낼 수 있고, 1:1 개인 통화와 그룹 통화도 가능합니다. 무엇보다 좋은 점은 Tellomi 개발팀조차 저희가 나누는 대화를 볼 수 없다는 거예요.\n\nTellomi에 관한 자세한 정보는 %2$@에서 확인해 보세요.";
 
 /* subject of email sent to contacts when inviting to install Signal */
 "EMAIL_INVITE_SUBJECT" = "Tellomi로 같이 옮겨요";
@@ -3881,7 +3881,7 @@
 "ERROR_DESCRIPTION_UNKNOWN_ERROR" = "알 수 없는 오류가 발생했습니다.";
 
 /* Error message when attempting to send message */
-"ERROR_DESCRIPTION_UNREGISTERED_RECIPIENT" = "해당 사용자가 더 이상 Tellomi을 사용하지 않아 메시지를 보낼 수 없습니다.";
+"ERROR_DESCRIPTION_UNREGISTERED_RECIPIENT" = "해당 사용자가 더 이상 Tellomi를 사용하지 않아 메시지를 보낼 수 없습니다.";
 
 /* Error message indicating that attachment upload(s) failed. */
 "ERROR_MESSAGE_ATTACHMENT_UPLOAD_FAILED" = "첨부 파일 업로드에 실패했습니다.";
@@ -3959,7 +3959,7 @@
 "EXPIRATION_WARNING_TODAY" = "이 Tellomi 버전은 오늘 만료됩니다. 업데이트하여 계속 메시지를 주고받으세요.";
 
 /* action sheet header when re-sending message which failed because of an invalid key signature */
-"FAILED_SENDING_BECAUSE_INVALID_KEY_SIGNATURE" = "메시지를 전송하지 못했습니다. %1$@님이 Tellomi을 업데이트한 후 다시 열어야 합니다.";
+"FAILED_SENDING_BECAUSE_INVALID_KEY_SIGNATURE" = "메시지를 전송하지 못했습니다. %1$@님이 Tellomi를 업데이트한 후 다시 열어야 합니다.";
 
 /* action sheet header when re-sending message which failed because of untrusted identity keys */
 "FAILED_SENDING_BECAUSE_UNTRUSTED_IDENTITY_KEY" = "%1$@ 님과의 안전 번호가 최근 변경되었습니다. 메시지를 보내기 전 안전 번호를 검증해보세요.";
@@ -4640,10 +4640,10 @@
 "GROUP_NAME_EDUCATION_SHEET_BULLET_1" = "다른 조직이나 비즈니스를 사칭하는 그룹에 유의하세요";
 
 /* Second bullet point for the explainer sheet for group names */
-"GROUP_NAME_EDUCATION_SHEET_BULLET_2" = "Tellomi은 프로필 이름과 사진을 별도로 인증할 수 없습니다.";
+"GROUP_NAME_EDUCATION_SHEET_BULLET_2" = "Tellomi는 프로필 이름과 사진을 별도로 인증할 수 없습니다.";
 
 /* Third bullet point for the explainer sheet for group names */
-"GROUP_NAME_EDUCATION_SHEET_BULLET_3" = "Tellomi은 사용자에게 먼저 연락하여 등록 코드나 PIN, 복구 키를 요구하지 않습니다.";
+"GROUP_NAME_EDUCATION_SHEET_BULLET_3" = "Tellomi는 사용자에게 먼저 연락하여 등록 코드나 PIN, 복구 키를 요구하지 않습니다.";
 
 /* Fourth bullet point for the explainer sheet for group names */
 "GROUP_NAME_EDUCATION_SHEET_BULLET_4" = "모르는 사람과 개인 정보를 공유하지 마세요";
@@ -4967,13 +4967,13 @@
 "HOME_VIEW_DRAFT_PREFIX" = "작성 중: ";
 
 /* Format string for a label offering to start a new conversation with your contacts, if you have 1 Signal contact.  Embeds {{The name of 1 of your Signal contacts}}. */
-"HOME_VIEW_FIRST_CONVERSATION_OFFER_1_CONTACT_FORMAT" = "%1$@ 님 등 이미 내 연락처에 있는 사람이 Tellomi을 사용하고 있습니다.";
+"HOME_VIEW_FIRST_CONVERSATION_OFFER_1_CONTACT_FORMAT" = "%1$@ 님 등 이미 내 연락처에 있는 사람이 Tellomi를 사용하고 있습니다.";
 
 /* Format string for a label offering to start a new conversation with your contacts, if you have 2 Signal contacts.  Embeds {{The names of 2 of your Signal contacts}}. */
-"HOME_VIEW_FIRST_CONVERSATION_OFFER_2_CONTACTS_FORMAT" = "%1$@, %2$@ 님 등 이미 내 연락처에 있는 사람이 Tellomi을 사용하고 있습니다.";
+"HOME_VIEW_FIRST_CONVERSATION_OFFER_2_CONTACTS_FORMAT" = "%1$@, %2$@ 님 등 이미 내 연락처에 있는 사람이 Tellomi를 사용하고 있습니다.";
 
 /* Format string for a label offering to start a new conversation with your contacts, if you have at least 3 Signal contacts.  Embeds {{The names of 3 of your Signal contacts}}. */
-"HOME_VIEW_FIRST_CONVERSATION_OFFER_3_CONTACTS_FORMAT" = "%1$@, %2$@, %3$@ 님 등 이미 내 연락처에 있는 사람이 Tellomi을 사용하고 있습니다.";
+"HOME_VIEW_FIRST_CONVERSATION_OFFER_3_CONTACTS_FORMAT" = "%1$@, %2$@, %3$@ 님 등 이미 내 연락처에 있는 사람이 Tellomi를 사용하고 있습니다.";
 
 /* A label offering to start a new conversation with your contacts, if you have no Signal contacts. */
 "HOME_VIEW_FIRST_CONVERSATION_OFFER_NO_CONTACTS" = "여기서 첫 대화를 시작하세요.";
@@ -5192,7 +5192,7 @@
 "INACTIVE_LINKED_DEVICE_REMINDER_MEGAPHONE_TITLE" = "미사용 연동 기기";
 
 /* Body for an in-app megaphone about a user's inactive primary device. */
-"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_BODY" = "계정을 활성화 상태로 유지하려면 주요 기기에서 Tellomi을 여세요.";
+"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_BODY" = "계정을 활성화 상태로 유지하려면 주요 기기에서 Tellomi를 여세요.";
 
 /* Title for a button in an in-app megaphone about a user's inactive primary device, temporarily dismissing the megaphone. */
 "INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_GOT_IT_BUTTON" = "확인";
@@ -5201,7 +5201,7 @@
 "INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_LEARN_MORE_BUTTON" = "자세히 알아보기";
 
 /* Title for an in-app megaphone about a user's inactive primary device. */
-"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_TITLE" = "휴대전화에서 Tellomi을 여세요.";
+"INACTIVE_PRIMARY_DEVICE_REMINDER_MEGAPHONE_TITLE" = "휴대전화에서 Tellomi를 여세요.";
 
 /* Label reminding the user that they are in archive mode, and that muted chats remain archived when they receive a new message. */
 "INBOX_VIEW_ARCHIVE_MODE_MUTED_CHATS_REMINDER" = "알림을 끈 상태로 보관한 대화는 새 메시지가 도착해도 보관 상태로 유지됩니다.";
@@ -5270,7 +5270,7 @@
 "INFO_MESSAGE_REPORTED_SPAM" = "스팸으로 신고함";
 
 /* Body message of the alert shown when a user taps on 'learn more' via the spam info message. */
-"INFO_MESSAGE_REPORTED_SPAM_LEARN_MORE_MESSAGE" = "Tellomi에 이 사람이 스팸을 보내는 것 같다는 알림이 전송되었습니다. Tellomi은 대화의 내용을 볼 수 없습니다.";
+"INFO_MESSAGE_REPORTED_SPAM_LEARN_MORE_MESSAGE" = "Tellomi에 이 사람이 스팸을 보내는 것 같다는 알림이 전송되었습니다. Tellomi는 대화의 내용을 볼 수 없습니다.";
 
 /* Title of the alert shown when a user taps on 'learn more' via the spam info message. */
 "INFO_MESSAGE_REPORTED_SPAM_LEARN_MORE_TITLE" = "스팸으로 신고함";
@@ -5489,7 +5489,7 @@
 "LINK_NEW_DEVICE_SYNC_FAILED_TITLE" = "메시지를 동기화하지 못함";
 
 /* On a progress modal */
-"LINK_NEW_DEVICE_SYNC_PROGRESS_DO_NOT_CLOSE_APP" = "Tellomi을 닫지 마세요";
+"LINK_NEW_DEVICE_SYNC_PROGRESS_DO_NOT_CLOSE_APP" = "Tellomi를 닫지 마세요";
 
 /* On a progress modal indicating the percent complete the sync process is. Embeds {{ formatted percentage }} */
 "LINK_NEW_DEVICE_SYNC_PROGRESS_PERCENT" = "%1$@ 완료";
@@ -5510,7 +5510,7 @@
 "LINK_PREVIEW_UNKNOWN_DOMAIN" = "링크 미리보기";
 
 /* Shown in an alert when trying to edit a contact. */
-"LINKED_DEVICE_CONTACTS_NOT_ALLOWED" = "연동 기기에서는 더 이상 연락처 관리 기능을 이용할 수 없습니다. 휴대폰 연락처에 Tellomi 친구를 추가하려면 기본 기기에서 Tellomi을 여세요.";
+"LINKED_DEVICE_CONTACTS_NOT_ALLOWED" = "연동 기기에서는 더 이상 연락처 관리 기능을 이용할 수 없습니다. 휴대폰 연락처에 Tellomi 친구를 추가하려면 기본 기기에서 Tellomi를 여세요.";
 
 /* Bullet point on the linked devices info sheet, describing what can be linked. */
 "LINKED_DEVICE_INFO_SHEET_BULLET_1" = "데스크톱, 태블릿 또는 추가 휴대폰을 연동할 수 있습니다.";
@@ -5561,7 +5561,7 @@
 "LINKED_DEVICES_EMPTY_STATE" = "연동된 기기 없음";
 
 /* Description for header of the linked devices list */
-"LINKED_DEVICES_HEADER_DESCRIPTION" = "데스크톱 또는 iPad에서 Tellomi을 이용하세요.";
+"LINKED_DEVICES_HEADER_DESCRIPTION" = "데스크톱 또는 iPad에서 Tellomi를 이용하세요.";
 
 /* Footer text below the list of currently-linked devices */
 "LINKED_DEVICES_LIST_FOOTER" = "메시지와 대화 정보는 모든 기기에서 종단간 암호화로 보호됩니다.";
@@ -5603,7 +5603,7 @@
 "LINKING_SYNCING_TIMING_INFO" = "몇 분 정도 소요됩니다";
 
 /* Shown to users while the app is loading, asking them not to close the app. */
-"LOADING_VIEW_CONTROLLER_DONT_CLOSE_APP" = "Tellomi을 닫지 마세요.";
+"LOADING_VIEW_CONTROLLER_DONT_CLOSE_APP" = "Tellomi를 닫지 마세요.";
 
 /* Body for an error sheet shown when the user's folder choice does not contain a backup file. */
 "LOCAL_BACKUPS_MISSING_BACKUP_ACTION_SHEET_BODY" = "선택한 폴더에서 Tellomi 백업 파일을 찾을 수 없습니다. 다른 폴더를 선택해 보세요.";
@@ -5654,7 +5654,7 @@
 "LOCAL_FILE_BACKUP_ONBOARDING_INTRO_BULLET_3" = "언제든지 백업 중단 가능";
 
 /* Subtitle for a view introducing local file backups during the onboarding flow. */
-"LOCAL_FILE_BACKUP_ONBOARDING_INTRO_SUBTITLE" = "메시지를 내 기기의 폴더에 백업합니다. 백업은 종단간 암호화로 보호되며, Tellomi을 새로 설치한 후 '복원 또는 이전'을 선택하여 복구할 수 있습니다.";
+"LOCAL_FILE_BACKUP_ONBOARDING_INTRO_SUBTITLE" = "메시지를 내 기기의 폴더에 백업합니다. 백업은 종단간 암호화로 보호되며, Tellomi를 새로 설치한 후 '복원 또는 이전'을 선택하여 복구할 수 있습니다.";
 
 /* Title for a view introducing local file backups during the onboarding flow. */
 "LOCAL_FILE_BACKUP_ONBOARDING_INTRO_TITLE" = "기기 내 백업";
@@ -5696,7 +5696,7 @@
 "LOGGING_SECTION" = "로깅";
 
 /* Footer for the 'logging' help section. */
-"LOGGING_SECTION_FOOTER" = "디버그 로그는 Tellomi이 문제 및 충돌을 해결하는 데 도움이 될 수 있습니다.";
+"LOGGING_SECTION_FOOTER" = "디버그 로그는 Tellomi가 문제 및 충돌을 해결하는 데 도움이 될 수 있습니다.";
 
 /* Title for the 'long text message' view. */
 "LONG_TEXT_VIEW_TITLE" = "메시지";
@@ -5879,7 +5879,7 @@
 "MESSAGE_ACTION_DELETE_FOR_EVERYONE" = "모두에게서 삭제";
 
 /* A one-time confirmation that you want to delete for everyone */
-"MESSAGE_ACTION_DELETE_FOR_EVERYONE_CONFIRMATION" = "이 대화에 참여하고 최신 버전 Tellomi을 설치한 모든 기기에서 이 메시지를 삭제합니다. 다른 사용자는 내가 메시지를 삭제했다는 것을 볼 수 있습니다.";
+"MESSAGE_ACTION_DELETE_FOR_EVERYONE_CONFIRMATION" = "이 대화에 참여하고 최신 버전 Tellomi를 설치한 모든 기기에서 이 메시지를 삭제합니다. 다른 사용자는 내가 메시지를 삭제했다는 것을 볼 수 있습니다.";
 
 /* The title for the action sheet asking who the user wants to delete the message for. */
 "MESSAGE_ACTION_DELETE_FOR_TITLE" = "이 메시지를 누구에게서 삭제할까요?";
@@ -6071,7 +6071,7 @@
 "MESSAGE_REQUEST_CONFIRM_ACCEPT_MESSAGE" = "신뢰할 수 있는 사람의 요청만 수락하세요. %1$@ 사용자의 등록 코드나 PIN, 복구 키를 요청하는 메시지를 보내지 않습니다.";
 
 /* Embedded text in the message for an action sheet asking the user to confirm if they want to accept a message request. */
-"MESSAGE_REQUEST_CONFIRM_ACCEPT_MESSAGE_EMBEDDED_BOLD_TEXT" = "Tellomi은 절대";
+"MESSAGE_REQUEST_CONFIRM_ACCEPT_MESSAGE_EMBEDDED_BOLD_TEXT" = "Tellomi는 절대";
 
 /* Title for an action sheet asking the user to confirm if they want to accept a message request */
 "MESSAGE_REQUEST_CONFIRM_ACCEPT_TITLE" = "요청을 수락할까요?";
@@ -6107,7 +6107,7 @@
 "MESSAGE_REQUEST_NAME_COLLISON_UPDATE_CONTACT_ACTION" = "연락처 업데이트";
 
 /* Action sheet message to confirm reporting a conversation as spam via a message request. */
-"MESSAGE_REQUEST_REPORT_CONVERSATION_MESSAGE" = "해당 사용자에 대한 스팸 신고가 Tellomi에 전달됩니다. Tellomi은 대화 내용을 확인할 수 없습니다.";
+"MESSAGE_REQUEST_REPORT_CONVERSATION_MESSAGE" = "해당 사용자에 대한 스팸 신고가 Tellomi에 전달됩니다. Tellomi는 대화 내용을 확인할 수 없습니다.";
 
 /* Action sheet title to confirm reporting a conversation as spam via a message request. */
 "MESSAGE_REQUEST_REPORT_CONVERSATION_TITLE" = "스팸으로 신고할까요?";
@@ -6488,13 +6488,13 @@
 "NO_OTHER_GROUPS_IN_COMMON" = "공통된 다른 그룹이 없습니다.";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. The embedded value is 'Re-link' (translated via NOT_LINKED_BOTTOM_RELINK), and it will be formatted as a tappable link. */
-"NOT_LINKED_BOTTOM" = "이 기기는 연동이 해제되었습니다. 이 기기에서 Tellomi을 계속 사용하려면 %1$@하세요.";
+"NOT_LINKED_BOTTOM" = "이 기기는 연동이 해제되었습니다. 이 기기에서 Tellomi를 계속 사용하려면 %1$@하세요.";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. This value is a tappable link embedded in a larger sentence. */
 "NOT_LINKED_BOTTOM_RELINK" = "다시 연동";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. The embedded value is 'Re-register' (translated via NOT_REGISTERED_BOTTOM_REREGISTER), and it will be formatted as a tappable link. */
-"NOT_REGISTERED_BOTTOM" = "이 기기는 등록이 해제되었습니다. Tellomi을 계속 사용하려면 %1$@하세요.";
+"NOT_REGISTERED_BOTTOM" = "이 기기는 등록이 해제되었습니다. Tellomi를 계속 사용하려면 %1$@하세요.";
 
 /* Shown in place of the text input box in a conversation when the user is no longer registered can't send messages. This value is a tappable link embedded in a larger sentence. */
 "NOT_REGISTERED_BOTTOM_REREGISTER" = "다시 등록";
@@ -6509,7 +6509,7 @@
 "NOTIFICATION_BODY_INCOMING_MESSAGE_REQUEST" = "메시지 요청";
 
 /* Body for a notification shown when Signal can't fetch messages because the device is low on storage space. */
-"NOTIFICATION_BODY_LOW_STORAGE_SPACE" = "새 메시지가 도착했을 수 있으나, 기기의 저장 공간이 부족하여 Tellomi을 실행할 수 없습니다. 탭하여 자세한 내용을 알아보세요.";
+"NOTIFICATION_BODY_LOW_STORAGE_SPACE" = "새 메시지가 도착했을 수 있으나, 기기의 저장 공간이 부족하여 Tellomi를 실행할 수 없습니다. 탭하여 자세한 내용을 알아보세요.";
 
 /* Lock screen notification text presented after user powers on their device without unlocking. Embeds {{device model}} (either 'iPad' or 'iPhone') */
 "NOTIFICATION_BODY_PHONE_LOCKED_FORMAT" = "%1$@가 다시 시작했을 때 메시지를 받았을 수 있습니다.";
@@ -6686,7 +6686,7 @@
 "ONBOARDING_MODE_SWITCH_BUTTON_REGISTERING" = "기기 연동";
 
 /* explanation to the user they're switching from linking to registering flow */
-"ONBOARDING_MODE_SWITCH_EXPLANATION_PROVISIONING" = "'iPad 등록하기'를 탭하면 새로운 Tellomi 계정을 만들거나, 기존 계정을 이 iPad로 이전할 수 있습니다. 이 경우 동일한 전화번호로 등록된 다른 기기에서는 Tellomi이 비활성화됩니다.";
+"ONBOARDING_MODE_SWITCH_EXPLANATION_PROVISIONING" = "'iPad 등록하기'를 탭하면 새로운 Tellomi 계정을 만들거나, 기존 계정을 이 iPad로 이전할 수 있습니다. 이 경우 동일한 전화번호로 등록된 다른 기기에서는 Tellomi가 비활성화됩니다.";
 
 /* explanation to the user they're switching from registering to linking flow */
 "ONBOARDING_MODE_SWITCH_EXPLANATION_REGISTERING" = "'기기 연동'을 탭하면 이 기기가 기존 Tellomi 계정에 연동됩니다.";
@@ -6698,7 +6698,7 @@
 "ONBOARDING_MODE_SWITCH_TITLE_REGISTERING" = "기기를 연동할까요?";
 
 /* warning to the user that registering an ipad is not recommended */
-"ONBOARDING_MODE_SWITCH_WARNING_PROVISIONING" = "이 iPad를 등록하면 동일한 전화번호로 등록된 다른 기기에서는 Tellomi이 비활성화됩니다.";
+"ONBOARDING_MODE_SWITCH_WARNING_PROVISIONING" = "이 iPad를 등록하면 동일한 전화번호로 등록된 다른 기기에서는 Tellomi가 비활성화됩니다.";
 
 /* Description of the 'Contacts' permission in the 'onboarding permissions' view. */
 "ONBOARDING_PERMISSIONS_CONTACTS_DESCRIPTION" = "내가 아는 사람들을 찾아보세요. 연락처 정보는 암호화되며 Tellomi도 확인할 수 없습니다.";
@@ -6746,7 +6746,7 @@
 "ONBOARDING_PIN_ATTEMPTS_EXHAUSTED_WITH_UNKNOWN_REGLOCK_EXPLANATION" = "PIN 입력 횟수를 모두 초과했으나, 전화번호 인증을 통해 Tellomi 계정에 다시 접속할 수 있습니다. 보안 및 개인정보 보호를 위해 프로필 정보나 설정 등 저장된 데이터 없이 계정이 복원됩니다.";
 
 /* Explanation of 'do not have old device' flow for the 'Restore or Transfer' prompt */
-"ONBOARDING_SPLASH_DO_NOT_HAVE_OLD_DEVICE_BODY" = "또는 동일한 기기에 Tellomi을 다시 설치하는 중입니다";
+"ONBOARDING_SPLASH_DO_NOT_HAVE_OLD_DEVICE_BODY" = "또는 동일한 기기에 Tellomi를 다시 설치하는 중입니다";
 
 /* Title for the 'do not have my old device' choice of the 'Restore or Transfer' prompt */
 "ONBOARDING_SPLASH_DO_NOT_HAVE_OLD_DEVICE_TITLE" = "이전 휴대폰이 없음";
@@ -6806,19 +6806,19 @@
 "OPEN_SETTINGS_BUTTON" = "설정";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're on unsupported version. Some users can upgrade their device to a newer version of iOS to continue using Signal. If that's the case, they'll be shown this text. */
-"OS_EXPIRED_AND_CAN_UPGRADE_OS" = "이 기기에서 Tellomi이 더 이상 작동하지 않습니다. Tellomi을 다시 시작하려면 기기를 최신 iOS 버전으로 업데이트하세요.";
+"OS_EXPIRED_AND_CAN_UPGRADE_OS" = "이 기기에서 Tellomi가 더 이상 작동하지 않습니다. Tellomi를 다시 시작하려면 기기를 최신 iOS 버전으로 업데이트하세요.";
 
 /* Signal doesn't support old devices. If that's the case, they'll be shown this action, and tapping it will open information about Signal's minimum supported operating systems. */
-"OS_EXPIRED_AND_DEVICE_IS_STUCK" = "이 기기에서 Tellomi이 더 이상 작동하지 않습니다. Tellomi을 다시 시용하려면 최신 기기로 전환하세요.";
+"OS_EXPIRED_AND_DEVICE_IS_STUCK" = "이 기기에서 Tellomi가 더 이상 작동하지 않습니다. Tellomi를 다시 시용하려면 최신 기기로 전환하세요.";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're on an old version. Some users can upgrade their device to a newer version of iOS to continue using Signal. If that's the case, they'll be shown this action, and tapping it will open device update instructions. */
 "OS_SOON_TO_EXPIRE_ACTION_TITLE" = "지금 업데이트";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're an old version that will soon lose support. Some users can upgrade their device to a newer version of iOS to continue using Signal. If that's the case, they'll be shown this text. Embeds {{expiration date}}. */
-"OS_SOON_TO_EXPIRE_AND_CAN_UPGRADE_OS_FORMAT" = "곧 이 기기의 iOS 버전에서는 Tellomi이 지원되지 않습니다. Tellomi을 계속 사용하려면 %1$@까지 기기를 최신 iOS 버전으로 업데이트하세요.";
+"OS_SOON_TO_EXPIRE_AND_CAN_UPGRADE_OS_FORMAT" = "곧 이 기기의 iOS 버전에서는 Tellomi가 지원되지 않습니다. Tellomi를 계속 사용하려면 %1$@까지 기기를 최신 iOS 버전으로 업데이트하세요.";
 
 /* Signal doesn't support old versions of iOS and shows a warning if you're on an old version that will soon lose support. This is the text on that warning when users can't upgrade iOS without getting a new device. Embeds {{expiration date}}. */
-"OS_SOON_TO_EXPIRE_AND_DEVICE_WILL_BE_STUCK_FORMAT" = "곧 이 기기의 iOS 버전에서는 Tellomi이 지원되지 않습니다. Tellomi을 계속 사용하려면 %1$@까지 최신 기기로 전환하세요.";
+"OS_SOON_TO_EXPIRE_AND_DEVICE_WILL_BE_STUCK_FORMAT" = "곧 이 기기의 iOS 버전에서는 Tellomi가 지원되지 않습니다. Tellomi를 계속 사용하려면 %1$@까지 최신 기기로 전환하세요.";
 
 /* Info Message when another user disabled disappearing messages. Embeds {{name of other user}}. */
 "OTHER_DISABLED_DISAPPEARING_MESSAGES_CONFIGURATION" = "%1$@ 님이 사라지는 메시지 기능을 껐습니다.";
@@ -6833,7 +6833,7 @@
 "OUTDATED_PAYMENT_CLIENT_ACTION_TITLE" = "지금 업데이트하세요.";
 
 /* Label warning the user that they should update Signal to continue using payments. */
-"OUTDATED_PAYMENT_CLIENT_REMINDER_TEXT" = "결제를 계속 사용하려면 Tellomi을 업데이트하세요. 잔액이 최신 상태가 아닐 수 있습니다.";
+"OUTDATED_PAYMENT_CLIENT_REMINDER_TEXT" = "결제를 계속 사용하려면 Tellomi를 업데이트하세요. 잔액이 최신 상태가 아닐 수 있습니다.";
 
 /* Body of prompt notifying restore was cancelled. */
 "OUTGOING_DEVICE_REGISTRATION_CANCELLED_RESTORE_BODY" = "복원이 취소되었습니다. 다시 시도해 주세요.";
@@ -6842,7 +6842,7 @@
 "OUTGOING_DEVICE_REGISTRATION_CANCELLED_RESTORE_TITLE" = "복원 취소됨";
 
 /* Body of prompt notifying registration without restore completed on the new device. */
-"OUTGOING_DEVICE_REGISTRATION_COMPLETE_BODY" = "Tellomi 계정이 다른 기기에서 활성화되었습니다. 이 기기의 Tellomi이 이제 비활성화됩니다.";
+"OUTGOING_DEVICE_REGISTRATION_COMPLETE_BODY" = "Tellomi 계정이 다른 기기에서 활성화되었습니다. 이 기기의 Tellomi가 이제 비활성화됩니다.";
 
 /* Title of prompt notifying registration without restore completed on the new device. */
 "OUTGOING_DEVICE_REGISTRATION_COMPLETE_TITLE" = "등록 완료";
@@ -6875,7 +6875,7 @@
 "OUTGOING_DEVICE_RESTORE_BACKUP_RESTORE_DESCRIPTION" = "마지막 백업이 완료된 시간은 %1$@ %2$@입니다.";
 
 /* Body of prompt notifying device restore started on the new device. */
-"OUTGOING_DEVICE_RESTORE_COMPLETE_BODY" = "Tellomi 계정과 메시지를 다른 기기로 이전하고 있습니다. 이제 이 기기의 Tellomi이 비활성화됩니다.";
+"OUTGOING_DEVICE_RESTORE_COMPLETE_BODY" = "Tellomi 계정과 메시지를 다른 기기로 이전하고 있습니다. 이제 이 기기의 Tellomi가 비활성화됩니다.";
 
 /* Title of prompt notifying device restore started on the new device. */
 "OUTGOING_DEVICE_RESTORE_COMPLETE_TITLE" = "복구가 완료되었습니다.";
@@ -6899,7 +6899,7 @@
 "OUTGOING_DEVICE_RESTORE_INITIAL_VIEW_TITLE" = "계정 이전";
 
 /* Body of prompt notifying device transfer completed. */
-"OUTGOING_DEVICE_TRANSFER_COMPLETE_BODY" = "Tellomi 계정과 메시지를 다른 기기로 이전했습니다. 이제 이 기기의 Tellomi이 비활성화됩니다.";
+"OUTGOING_DEVICE_TRANSFER_COMPLETE_BODY" = "Tellomi 계정과 메시지를 다른 기기로 이전했습니다. 이제 이 기기의 Tellomi가 비활성화됩니다.";
 
 /* Title of prompt notifying device transfer completed. */
 "OUTGOING_DEVICE_TRANSFER_COMPLETE_TITLE" = "이전 완료";
@@ -6923,7 +6923,7 @@
 "OUTGOING_TRANSFER_COMPLETE_EXIT_ACTION" = "Tellomi 종료";
 
 /* Message for action sheet shown when device transfer completes */
-"OUTGOING_TRANSFER_COMPLETE_MESSAGE" = "이제 이 기기에서 Tellomi을 종료합니다.";
+"OUTGOING_TRANSFER_COMPLETE_MESSAGE" = "이제 이 기기에서 Tellomi를 종료합니다.";
 
 /* Title for action sheet shown when device transfer completes */
 "OUTGOING_TRANSFER_COMPLETE_TITLE" = "이전 완료!";
@@ -7079,7 +7079,7 @@
 "PAYMENTS_NEW_PAYMENT_ERROR_INVALID_TRANSACTION" = "잘못된 거래";
 
 /* Indicates that a payment failed due to an outdated client. */
-"PAYMENTS_NEW_PAYMENT_ERROR_OUTDATED_CLIENT" = "결제 기능을 사용하려면 Tellomi을 업데이트하세요.";
+"PAYMENTS_NEW_PAYMENT_ERROR_OUTDATED_CLIENT" = "결제 기능을 사용하려면 Tellomi를 업데이트하세요.";
 
 /* Indicates that an outgoing payment could not be verified in a timely way. */
 "PAYMENTS_NEW_PAYMENT_ERROR_OUTGOING_VERIFICATION_TAKING_TOO_LONG" = "결제가 아직 인증되지 않았습니다";
@@ -7322,7 +7322,7 @@
 "PHONE_NUMBER_DISCOVERABILITY_EVERYBODY" = "모두";
 
 /* A user friendly description of the 'everybody' phone number discoverability mode. */
-"PHONE_NUMBER_DISCOVERABILITY_EVERYBODY_DESCRIPTION" = "내 전화번호가 있는 사람은 내가 Tellomi을 사용 중임을 알 수 있으며, 나와 대화를 시작할 수 있습니다.";
+"PHONE_NUMBER_DISCOVERABILITY_EVERYBODY_DESCRIPTION" = "내 전화번호가 있는 사람은 내가 Tellomi를 사용 중임을 알 수 있으며, 나와 대화를 시작할 수 있습니다.";
 
 /* A user friendly name for the 'nobody' phone number discoverability mode. */
 "PHONE_NUMBER_DISCOVERABILITY_NOBODY" = "없음";
@@ -7424,7 +7424,7 @@
 "PIN_CREATION_DISABLE_CONFIRMATION_TITLE" = "경고";
 
 /* The explanation in the 'pin creation' view. */
-"PIN_CREATION_EXPLANATION" = "PIN 번호는 Tellomi에 저장된 정보를 암호화하여 오직 나만 접근할 수 있게 만듭니다. 내 프로필, 설정, 그리고 연락처는 Tellomi을 다시 설치할 때 복원됩니다.";
+"PIN_CREATION_EXPLANATION" = "PIN 번호는 Tellomi에 저장된 정보를 암호화하여 오직 나만 접근할 수 있게 만듭니다. 내 프로필, 설정, 그리고 연락처는 Tellomi를 다시 설치할 때 복원됩니다.";
 
 /* Message when a generic error occurs while creating a PIN. */
 "PIN_CREATION_GENERIC_ERROR_MESSAGE" = "PIN 생성 중 문제가 발생했습니다. 고객 지원팀으로 문의해 주세요.";
@@ -7706,19 +7706,19 @@
 "PRIVACY_VERIFICATION_FAILED_MISMATCHED_SAFETY_NUMBERS_IN_CLIPBOARD" = "클립보드에 있는 번호가 이 대화의 안전 번호와 일치하지 않습니다.";
 
 /* Alert body for user error */
-"PRIVACY_VERIFICATION_FAILED_NO_SAFETY_NUMBERS_IN_CLIPBOARD" = "Tellomi이 클립보드에서 안전 번호를 찾을 수 없습니다. 올바르게 복사하셨나요?";
+"PRIVACY_VERIFICATION_FAILED_NO_SAFETY_NUMBERS_IN_CLIPBOARD" = "Tellomi가 클립보드에서 안전 번호를 찾을 수 없습니다. 올바르게 복사하셨나요?";
 
 /* Alert body when verifying with {{contact name}} */
 "PRIVACY_VERIFICATION_FAILED_THEY_HAVE_WRONG_KEY_FOR_ME" = "모든 Tellomi 사용자 쌍은 각자 다른 안전 번호를 가지고 있습니다. %1$@ 님이 *나와의* 안전 번호를 가졌는지 다시 한 번 확인하세요.";
 
 /* alert body */
-"PRIVACY_VERIFICATION_FAILED_WITH_OLD_LOCAL_VERSION" = "이전 버전의 Tellomi을 사용 중입니다. 인증 전에 먼저 업데이트해야 합니다.";
+"PRIVACY_VERIFICATION_FAILED_WITH_OLD_LOCAL_VERSION" = "이전 버전의 Tellomi를 사용 중입니다. 인증 전에 먼저 업데이트해야 합니다.";
 
 /* alert body */
-"PRIVACY_VERIFICATION_FAILED_WITH_OLD_REMOTE_VERSION" = "파트너가 이전 버전의 Tellomi을 사용 중입니다. 인증 전에 먼저 업데이트해야 합니다.";
+"PRIVACY_VERIFICATION_FAILED_WITH_OLD_REMOTE_VERSION" = "파트너가 이전 버전의 Tellomi를 사용 중입니다. 인증 전에 먼저 업데이트해야 합니다.";
 
 /* alert body */
-"PRIVACY_VERIFICATION_FAILURE_INVALID_QRCODE" = "스캔한 코드는 안전 번호가 아닌 것 같습니다. 모두가 최신 버전의 Tellomi을 사용하고 있는지 확인하세요.";
+"PRIVACY_VERIFICATION_FAILURE_INVALID_QRCODE" = "스캔한 코드는 안전 번호가 아닌 것 같습니다. 모두가 최신 버전의 Tellomi를 사용하고 있는지 확인하세요.";
 
 /* Navbar title */
 "PRIVACY_VERIFICATION_TITLE" = "안전 번호 검증";
@@ -7784,10 +7784,10 @@
 "PROFILE_NAME_CHANGE_SYSTEM_NONCONTACT_FORMAT" = "%1$@ 님이 프로필 이름을 %2$@(으)로 변경했습니다.";
 
 /* First bullet point for the explainer sheet for profile names */
-"PROFILE_NAME_EDUCATION_SHEET_BULLET_1" = "Tellomi은 프로필 이름과 사진을 별도로 인증할 수 없습니다.";
+"PROFILE_NAME_EDUCATION_SHEET_BULLET_1" = "Tellomi는 프로필 이름과 사진을 별도로 인증할 수 없습니다.";
 
 /* Second bullet point for the explainer sheet for profile names */
-"PROFILE_NAME_EDUCATION_SHEET_BULLET_2" = "Tellomi은 사용자에게 먼저 연락하여 등록 코드나 PIN, 복구 키를 요구하지 않습니다.";
+"PROFILE_NAME_EDUCATION_SHEET_BULLET_2" = "Tellomi는 사용자에게 먼저 연락하여 등록 코드나 PIN, 복구 키를 요구하지 않습니다.";
 
 /* Third bullet point for the explainer sheet for profile names */
 "PROFILE_NAME_EDUCATION_SHEET_BULLET_3" = "사칭 계정에 유의하세요";
@@ -8240,7 +8240,7 @@
 "REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_ENABLE_BACKUPS" = "백업을 활성화하고 백업이 완료될까지 기다립니다";
 
 /* First step in directions for how to make a backup */
-"REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_OPEN_SIGNAL" = "이전 장치에서 Tellomi을 엽니다";
+"REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_OPEN_SIGNAL" = "이전 장치에서 Tellomi를 엽니다";
 
 /* Second step in directions for how to make a backup */
 "REGISTRATION_RESTORE_METHOD_MAKE_BACKUP_TUTORIAL_TAP_SETTINGS" = "설정 > 백업을 탭합니다";
@@ -8258,7 +8258,7 @@
 "REGISTRATION_SCAN_QR_CODE_TITLE" = "이전 기기로 이 코드를 스캔하세요";
 
 /* Tutorial text describing the first step to scanning the restore/transfer QR code with your old phone: opening Signal */
-"REGISTRATION_SCAN_QR_CODE_TUTORIAL_OPEN_SIGNAL" = "이전 장치에서 Tellomi을 엽니다";
+"REGISTRATION_SCAN_QR_CODE_TUTORIAL_OPEN_SIGNAL" = "이전 장치에서 Tellomi를 엽니다";
 
 /* Tutorial text describing the third step to scanning the restore/transfer QR code with your old phone: scan the code */
 "REGISTRATION_SCAN_QR_CODE_TUTORIAL_SCAN" = "카메라로 이 코드를 스캔합니다";
@@ -8306,7 +8306,7 @@
 "REGISTRATION_VOICE_CODE_FAILED_TRY_SMS_ERROR" = "음성 통화를 통해 확인 코드를 보내지 못했습니다. SMS를 통해 대신 받아보세요.";
 
 /* Bottom bar label for the release notes thread */
-"RELEASE_NOTES_BOTTOM_BAR_LABEL" = "Tellomi이 운영하는 유일한 공식 채팅";
+"RELEASE_NOTES_BOTTOM_BAR_LABEL" = "Tellomi가 운영하는 유일한 공식 채팅";
 
 /* Display name for the release notes channel */
 "RELEASE_NOTES_CHANNEL_NAME" = "Tellomi";
@@ -8318,10 +8318,10 @@
 "RELEASE_NOTES_DESCRIPTION_KEEP_UPDATED" = "최신 소식과 릴리스 노트를 확인하세요";
 
 /* Details text for the thread details view of the release notes channel */
-"RELEASE_NOTES_DETAILS" = "Tellomi이 운영하는 유일한 공식 채널. 최신 소식과 릴리스 노트를 확인하세요";
+"RELEASE_NOTES_DETAILS" = "Tellomi가 운영하는 유일한 공식 채널. 최신 소식과 릴리스 노트를 확인하세요";
 
 /* Settings description label for the release notes thread telling a user this is the only official chat */
-"RELEASE_NOTES_SETTINGS_DESCRIPTION_ONLY_OFFICAL_CHAT" = "Tellomi이 운영하는 유일한 공식 채팅";
+"RELEASE_NOTES_SETTINGS_DESCRIPTION_ONLY_OFFICAL_CHAT" = "Tellomi가 운영하는 유일한 공식 채팅";
 
 /* Button below the warning to fix a corrupted username. */
 "REMINDER_VIEW_USERNAME_CORRUPTED_FIX_BUTTON" = "지금 해결";
@@ -8498,13 +8498,13 @@
 "SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_BUTTON_VERIFYING" = "암호화 인증 중…";
 
 /* Body for a sheet introducing Key Transparency. */
-"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_EDUCATION_SHEET_BODY" = "전화번호를 통해 연결된 사용자의 경우, Tellomi은 키 투명성이라는 프로세스를 사용하여 연결이 안전한지 자동으로 확인할 수 있습니다. 하지만 더 강력한 보안을 원한다면, QR 코드를 사용하거나 안전 번호를 대조하여 수동으로 연결을 인증하는 것도 가능합니다.";
+"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_EDUCATION_SHEET_BODY" = "전화번호를 통해 연결된 사용자의 경우, Tellomi는 키 투명성이라는 프로세스를 사용하여 연결이 안전한지 자동으로 확인할 수 있습니다. 하지만 더 강력한 보안을 원한다면, QR 코드를 사용하거나 안전 번호를 대조하여 수동으로 연결을 인증하는 것도 가능합니다.";
 
 /* Title for a sheet introducing Key Transparency. */
 "SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_EDUCATION_SHEET_TITLE" = "이제 키 암호화를 자동으로 인증할 수 있어요";
 
 /* Body for a sheet explaining that encryption auto-verification did not succeed. Embeds {{ 1: the contact's name }}. */
-"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_FAILURE_SHEET_BODY_FORMAT" = "Tellomi이 이 채팅의 암호화를 자동으로 인증할 수 없습니다. %1$@ 님이 전화번호 또는 전화번호 개인정보보호 설정을 변경하여 발생한 문제일 수 있습니다. 이전 화면의 숫자를 대조하거나, 상대방 기기의 코드를 스캔하여 종단간 암호화를 수동으로 인증해 주세요.";
+"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_FAILURE_SHEET_BODY_FORMAT" = "Tellomi가 이 채팅의 암호화를 자동으로 인증할 수 없습니다. %1$@ 님이 전화번호 또는 전화번호 개인정보보호 설정을 변경하여 발생한 문제일 수 있습니다. 이전 화면의 숫자를 대조하거나, 상대방 기기의 코드를 스캔하여 종단간 암호화를 수동으로 인증해 주세요.";
 
 /* Title for a sheet explaining that encryption auto-verification did not succeed. */
 "SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_FAILURE_SHEET_TITLE" = "이 채팅에 더 이상 자동 인증을 사용할 수 없습니다";
@@ -8516,13 +8516,13 @@
 "SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_HEADER" = "자동 키 인증";
 
 /* Body for a sheet explaining that encryption auto-verification is not available. */
-"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_NOT_AVAILABLE_SHEET_BODY" = "Tellomi은 상대방과 전화번호를 통해 연결한 채팅에서만 자동으로 암호화를 인증할 수 있습니다. 사용자 이름이나 공통으로 속한 그룹을 통해 채팅을 시작한 경우, 이전 화면의 숫자를 대조하거나 상대방 기기에 있는 코드를 스캔하여 종단간 암호화를 인증해 주세요.";
+"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_NOT_AVAILABLE_SHEET_BODY" = "Tellomi는 상대방과 전화번호를 통해 연결한 채팅에서만 자동으로 암호화를 인증할 수 있습니다. 사용자 이름이나 공통으로 속한 그룹을 통해 채팅을 시작한 경우, 이전 화면의 숫자를 대조하거나 상대방 기기에 있는 코드를 스캔하여 종단간 암호화를 인증해 주세요.";
 
 /* Title for a sheet explaining that encryption auto-verification is not available. */
 "SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_NOT_AVAILABLE_SHEET_TITLE" = "이 채팅에 자동 인증을 사용할 수 없습니다";
 
 /* Body for a sheet explaining that encryption auto-verification succeeded. */
-"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_SUCCESS_SHEET_BODY" = "전화번호를 통해 연결된 연락처의 경우, Tellomi은 키 투명성이라는 프로세스를 사용하여 연결이 안전한지 자동으로 확인할 수 있습니다. 보안을 강화하려면 이전 화면의 숫자를 대조하거나, 상대방 기기의 코드를 스캔하여 종단간 암호화를 수동으로 인증해 주세요.";
+"SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_SUCCESS_SHEET_BODY" = "전화번호를 통해 연결된 연락처의 경우, Tellomi는 키 투명성이라는 프로세스를 사용하여 연결이 안전한지 자동으로 확인할 수 있습니다. 보안을 강화하려면 이전 화면의 숫자를 대조하거나, 상대방 기기의 코드를 스캔하여 종단간 암호화를 수동으로 인증해 주세요.";
 
 /* Title for a sheet explaining that encryption auto-verification succeeded. */
 "SAFETY_NUMBERS_AUTOMATIC_VERIFICATION_SUCCESS_SHEET_TITLE" = "이 채팅에 대한 암호화가 자동 인증되었습니다";
@@ -8579,10 +8579,10 @@
 "SAFETY_TIPS_REVIEW_NAMES_TITLE" = "이름과 사진 검토";
 
 /* Message body describing the signal chats tip. */
-"SAFETY_TIPS_SIGNAL_CHATS_BODY" = "Tellomi은 절대 사용자의 등록 코드나 PIN, 복구 키를 요청하는 메시지를 보내지 않습니다. Tellomi을 사칭하는 채팅에 절대 답장하지 마세요.";
+"SAFETY_TIPS_SIGNAL_CHATS_BODY" = "Tellomi는 절대 사용자의 등록 코드나 PIN, 복구 키를 요청하는 메시지를 보내지 않습니다. Tellomi를 사칭하는 채팅에 절대 답장하지 마세요.";
 
 /* Message body describing the signal chats tip in the 'view more' flow. */
-"SAFETY_TIPS_SIGNAL_CHATS_BODY_VIEW_MORE" = "Tellomi은 절대 사용자의 등록 코드나 PIN, 복구 키를 요청하는 메시지를 보내지 않습니다. Tellomi 또는 Tellomi 지원팀을 사칭하는 채팅에 답장하지 마세요. 악의적인 사용자가 가짜 이름을 설정해 계정 해킹을 시도할 수 있습니다.";
+"SAFETY_TIPS_SIGNAL_CHATS_BODY_VIEW_MORE" = "Tellomi는 절대 사용자의 등록 코드나 PIN, 복구 키를 요청하는 메시지를 보내지 않습니다. Tellomi 또는 Tellomi 지원팀을 사칭하는 채팅에 답장하지 마세요. 악의적인 사용자가 가짜 이름을 설정해 계정 해킹을 시도할 수 있습니다.";
 
 /* Message title describing the signal chats tip. */
 "SAFETY_TIPS_SIGNAL_CHATS_TITLE" = "Tellomi에서 보낸 채팅에 답하지 마세요";
@@ -8621,7 +8621,7 @@
 "SCREEN_LOCK_ERROR_LOCAL_AUTHENTICATION_PASSCODE_NOT_SET" = "화면 잠금을 사용하려면 iOS 설정에서 암호를 켜야 합니다.";
 
 /* Description of how and why Signal iOS uses Touch ID/Face ID/Phone Passcode to unlock 'screen lock'. */
-"SCREEN_LOCK_REASON_UNLOCK_SCREEN_LOCK" = "Tellomi을 열려면 인증하세요.";
+"SCREEN_LOCK_REASON_UNLOCK_SCREEN_LOCK" = "Tellomi를 열려면 인증하세요.";
 
 /* Title for alert indicating that screen lock could not be unlocked. */
 "SCREEN_LOCK_UNLOCK_FAILED" = "인증 실패";
@@ -8660,13 +8660,13 @@
 "SECONDARY_LINKING_ERROR_DIFFERENT_ACCOUNT_TITLE" = "계정이 일치하지 않음";
 
 /* Message for error alert indicating that a linked device must be upgraded before it can be linked. */
-"SECONDARY_LINKING_ERROR_OBSOLETE_LINKED_DEVICE_MESSAGE" = "이 기기를 휴대전화와 연동하려면 Tellomi을 업데이트하세요.";
+"SECONDARY_LINKING_ERROR_OBSOLETE_LINKED_DEVICE_MESSAGE" = "이 기기를 휴대전화와 연동하려면 Tellomi를 업데이트하세요.";
 
 /* Title for error alert indicating that a linked device must be upgraded before it can be linked. */
 "SECONDARY_LINKING_ERROR_OBSOLETE_LINKED_DEVICE_TITLE" = "지원되지 않는 버전";
 
 /* alert message for outdated linking device */
-"SECONDARY_LINKING_ERROR_OLD_VERSION_MESSAGE" = "다른 기기에서 실행 중인 Tellomi 버전이 iPad QR 코드 스캔을 지원하지 않습니다. Tellomi을 최신 버전으로 업데이트한 뒤 다시 시도해 주세요.";
+"SECONDARY_LINKING_ERROR_OLD_VERSION_MESSAGE" = "다른 기기에서 실행 중인 Tellomi 버전이 iPad QR 코드 스캔을 지원하지 않습니다. Tellomi를 최신 버전으로 업데이트한 뒤 다시 시도해 주세요.";
 
 /* alert title for outdated linking device */
 "SECONDARY_LINKING_ERROR_OLD_VERSION_TITLE" = "스캔 기기 업데이트";
@@ -8687,7 +8687,7 @@
 "SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_CHECK_FOR_UPDATE_BUTTON" = "업데이트 확인";
 
 /* Message for action sheet when the secondary device fails to sync messages due to an app update being required. */
-"SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_ERROR_MESSAGE" = "메시지 동기화를 완료하려면 지금 Tellomi을 업데이트하세요.";
+"SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_ERROR_MESSAGE" = "메시지 동기화를 완료하려면 지금 Tellomi를 업데이트하세요.";
 
 /* Title for action sheet when the secondary device fails to sync messages due to an app update being required. */
 "SECONDARY_LINKING_SYNCING_UPDATE_REQUIRED_ERROR_TITLE" = "업데이트 필요";
@@ -8696,16 +8696,16 @@
 "SECONDARY_ONBOARDING_CHOOSE_DEVICE_NAME_PLACEHOLDER" = "이름을 선택하세요";
 
 /* header text before the user can link this device */
-"SECONDARY_ONBOARDING_GET_STARTED_BY_OPENING_PRIMARY" = "내 계정에 이 iPad를 연동하려면 휴대폰에서 Tellomi을 실행하세요.";
+"SECONDARY_ONBOARDING_GET_STARTED_BY_OPENING_PRIMARY" = "내 계정에 이 iPad를 연동하려면 휴대폰에서 Tellomi를 실행하세요.";
 
 /* Link explaining what to do when trying to link a device before having a primary device. */
-"SECONDARY_ONBOARDING_GET_STARTED_DO_NOT_HAVE_PRIMARY" = "제 휴대전화에는 Tellomi이 없습니다…";
+"SECONDARY_ONBOARDING_GET_STARTED_DO_NOT_HAVE_PRIMARY" = "제 휴대전화에는 Tellomi가 없습니다…";
 
 /* alert body */
-"SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_BODY" = "휴대폰에서 App Store로 이동해 Tellomi을 설치한 뒤 등록을 완료하세요. 완료 후 같은 계정으로 iPad를 연동할 수 있습니다.";
+"SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_BODY" = "휴대폰에서 App Store로 이동해 Tellomi를 설치한 뒤 등록을 완료하세요. 완료 후 같은 계정으로 iPad를 연동할 수 있습니다.";
 
 /* alert title */
-"SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_TITLE" = "휴대전화에 Tellomi을 설치하세요";
+"SECONDARY_ONBOARDING_INSTALL_PRIMARY_FIRST_TITLE" = "휴대전화에 Tellomi를 설치하세요";
 
 /* Link text for page with troubleshooting info shown on the QR scanning screen */
 "SECONDARY_ONBOARDING_SCAN_CODE_HELP_TEXT" = "도움이 필요하신가요?";
@@ -8717,7 +8717,7 @@
 "SECONDARY_ONBOARDING_SCAN_CODE_STEP_LINK_DEVICE" = "'연동 기기'와 '새 기기 연동'을 차례로 탭합니다.";
 
 /* First bullet point on the QR code screen for linking a device */
-"SECONDARY_ONBOARDING_SCAN_CODE_STEP_OPEN_PRIMARY" = "기본 기기에서 Tellomi을 엽니다.";
+"SECONDARY_ONBOARDING_SCAN_CODE_STEP_OPEN_PRIMARY" = "기본 기기에서 Tellomi를 엽니다.";
 
 /* Second bullet point on the QR code screen for linking a device */
 "SECONDARY_ONBOARDING_SCAN_CODE_STEP_OPEN_SETTINGS" = "프로필 사진을 탭하여 Tellomi 설정을 엽니다.";
@@ -8726,7 +8726,7 @@
 "SECONDARY_ONBOARDING_SCAN_CODE_TITLE" = "이 코드를 스캔하여 계정을 연동하세요";
 
 /* header text before the user can transfer to this device */
-"SECONDARY_TRANSFER_GET_STARTED_BY_OPENING_IPAD" = "계정을 이전하려면 기존 iPad에서 Tellomi을 실행하세요";
+"SECONDARY_TRANSFER_GET_STARTED_BY_OPENING_IPAD" = "계정을 이전하려면 기존 iPad에서 Tellomi를 실행하세요";
 
 /* No comment provided by engineer. */
 "SECURE_SESSION_RESET" = "보안 세션이 초기화되었습니다.";
@@ -8822,7 +8822,7 @@
 "SEPA_DONATION_NAME_PLACEHOLDER" = "계좌 소유자 이름";
 
 /* Description for the session refresh alert */
-"SESSION_REFRESH_ALERT_MESSAGE" = "Tellomi은 종단간 암호화를 사용하며, 때에 따라 대화 세션을 새로고침해야 할 수 있습니다. 이 과정은 보안에 영향을 주지 않지만, 간혹 메시지가 수신되지 않을 수 있습니다. 이런 경우 상대방에게 메시지 재전송을 요청해 주세요.";
+"SESSION_REFRESH_ALERT_MESSAGE" = "Tellomi는 종단간 암호화를 사용하며, 때에 따라 대화 세션을 새로고침해야 할 수 있습니다. 이 과정은 보안에 영향을 주지 않지만, 간혹 메시지가 수신되지 않을 수 있습니다. 이런 경우 상대방에게 메시지 재전송을 요청해 주세요.";
 
 /* Title for the session refresh alert */
 "SESSION_REFRESH_ALERT_TITLE" = "대화 세션을 새로 고침";
@@ -8858,7 +8858,7 @@
 "SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_COUNTRY" = "위치";
 
 /* Table footer for the 'censorship circumvention' section when censorship circumvention can be manually enabled. */
-"SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_FOOTER" = "이 기능을 활성화하면 Tellomi이 검열을 우회하려고 시도합니다. Tellomi이 검열되는 지역에 있는 경우가 아니라면 이 기능을 활성화하지 마세요.";
+"SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_FOOTER" = "이 기능을 활성화하면 Tellomi가 검열을 우회하려고 시도합니다. Tellomi가 검열되는 지역에 있는 경우가 아니라면 이 기능을 활성화하지 마세요.";
 
 /* Table footer for the 'censorship circumvention' section shown when censorship circumvention has been auto-enabled based on local phone number. */
 "SETTINGS_ADVANCED_CENSORSHIP_CIRCUMVENTION_FOOTER_AUTO_ENABLED" = "검열 우회가 계정의 휴대전화에서 활성화되습니다.";
@@ -8894,13 +8894,13 @@
 "SETTINGS_ADVANCED_SUBMIT_DEBUGLOG" = "디버그 로그 보내기";
 
 /* Information on sheet about changing the app icon - first line */
-"SETTINGS_APP_ICON_EDUCATION_APP_NAME" = "홈 화면, 알림, 앱 보관함에 앱 이름 'Tellomi'이 표시됩니다.";
+"SETTINGS_APP_ICON_EDUCATION_APP_NAME" = "홈 화면, 알림, 앱 보관함에 앱 이름 'Tellomi'가 표시됩니다.";
 
 /* Information on sheet about changing the app icon - second line */
-"SETTINGS_APP_ICON_EDUCATION_HOME_SCREEN_DOCK" = "홈 화면 맨 아래에 있는 Dock으로 앱을 옮겨 홈 화면에서 앱 이름 'Tellomi'을 숨길 수 있습니다.";
+"SETTINGS_APP_ICON_EDUCATION_HOME_SCREEN_DOCK" = "홈 화면 맨 아래에 있는 Dock으로 앱을 옮겨 홈 화면에서 앱 이름 'Tellomi'를 숨길 수 있습니다.";
 
 /* The footer for the app icon selection settings page. */
-"SETTINGS_APP_ICON_FOOTER" = "홈 화면, 알림, 앱 보관함에 앱 이름 'Tellomi'이 표시됩니다.";
+"SETTINGS_APP_ICON_FOOTER" = "홈 화면, 알림, 앱 보관함에 앱 이름 'Tellomi'가 표시됩니다.";
 
 /* The title for the app icon selection settings page. */
 "SETTINGS_APP_ICON_TITLE" = "앱 아이콘";
@@ -9083,7 +9083,7 @@
 "SETTINGS_KEEP_MUTED_ARCHIVED_LABEL" = "알림을 끈 대화 보관 유지";
 
 /* Footer for settings section describing Key Transparency. */
-"SETTINGS_KEY_TRANSPARENCY_OPT_OUT_FOOTER" = "이 기능을 활성화하면 Tellomi이 1:1 대화의 암호화를 자동으로 인증하려고 시도합니다.";
+"SETTINGS_KEY_TRANSPARENCY_OPT_OUT_FOOTER" = "이 기능을 활성화하면 Tellomi가 1:1 대화의 암호화를 자동으로 인증하려고 시도합니다.";
 
 /* Title for for a settings option describing that Key Transparency is enabled. */
 "SETTINGS_KEY_TRANSPARENCY_OPT_OUT_SWITCH_TITLE" = "자동 키 인증";
@@ -9092,7 +9092,7 @@
 "SETTINGS_LINK_PREVIEWS" = "링크 미리보기 생성";
 
 /* Subtitle of a card on a linked device's account settings, explaining that account settings are managed on the primary device. */
-"SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "계정 설정을 관리하려면 기본 사용 기기에서 Tellomi을 열어 주세요.";
+"SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_SUBTITLE" = "계정 설정을 관리하려면 기본 사용 기기에서 Tellomi를 열어 주세요.";
 
 /* Title of a card on a linked device's account settings, indicating that this is a linked device. */
 "SETTINGS_LINKED_DEVICE_ACCOUNT_CARD_TITLE" = "이 기기는 연동 기기입니다";
@@ -9143,7 +9143,7 @@
 "SETTINGS_LOCAL_FILE_BACKUPS_REMOTE_BACKUP_IN_PROGRESS_MESSAGE" = "Tellomi 안전 백업이 진행 중이므로 기기 내 백업을 실행할 수 없습니다. 나중에 다시 시도하세요.";
 
 /* Footer text on the on-device backups settings page explaining how to restore a backup. */
-"SETTINGS_LOCAL_FILE_BACKUPS_RESTORE_FOOTER" = "백업을 복원하려면 Tellomi을 다시 설치해 주세요. 설치한 후에는 앱을 열고 '복원 또는 이전'을 탭한 다음, '기기 내 백업'을 선택해 주세요.";
+"SETTINGS_LOCAL_FILE_BACKUPS_RESTORE_FOOTER" = "백업을 복원하려면 Tellomi를 다시 설치해 주세요. 설치한 후에는 앱을 열고 '복원 또는 이전'을 탭한 다음, '기기 내 백업'을 선택해 주세요.";
 
 /* Label for the button that turns off on-device backups. */
 "SETTINGS_LOCAL_FILE_BACKUPS_TURN_OFF" = "백업 끄기 및 삭제";
@@ -9251,7 +9251,7 @@
 "SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_AGREE" = "활성화";
 
 /* Description for the 'activate payments confirmation' UI in the payment settings. */
-"SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_DESCRIPTION" = "Tellomi을 사용하여 MobileCoin을 주고받으세요. 모든 결제에는 MobileCoin과 MobileCoin Wallet의 사용 약관이 적용됩니다. 일부 문제가 발생할 수 있으며, 손실된 결제나 잔액은 복구할 수 없습니다.";
+"SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_DESCRIPTION" = "Tellomi를 사용하여 MobileCoin을 주고받으세요. 모든 결제에는 MobileCoin과 MobileCoin Wallet의 사용 약관이 적용됩니다. 일부 문제가 발생할 수 있으며, 손실된 결제나 잔액은 복구할 수 없습니다.";
 
 /* Title for the 'activate payments confirmation' UI in the payment settings. */
 "SETTINGS_PAYMENTS_ACTIVATE_PAYMENTS_CONFIRM_TITLE" = "활성화";
@@ -9404,7 +9404,7 @@
 "SETTINGS_PAYMENTS_OPT_IN_ACTIVATED_TOAST" = "결제가 활성화되었습니다.";
 
 /* Message for the 'payments opt-in' view in the app settings. */
-"SETTINGS_PAYMENTS_OPT_IN_MESSAGE" = "Tellomi을 사용하여 개인 정보에 중점을 둔 새로운 디지털 통화인 MobileCoin을 보내고 받으세요. 시작하려면 활성화하세요.";
+"SETTINGS_PAYMENTS_OPT_IN_MESSAGE" = "Tellomi를 사용하여 개인 정보에 중점을 둔 새로운 디지털 통화인 MobileCoin을 보내고 받으세요. 시작하려면 활성화하세요.";
 
 /* Label for 'activate' button in the 'payments opt-in' view in the app settings. */
 "SETTINGS_PAYMENTS_OPT_IN_REACTIVATE_BUTTON" = "결제 재활성화";
@@ -9422,7 +9422,7 @@
 "SETTINGS_PAYMENTS_PASSPHRASE_DISCARD_CONFIRMATION_TITLE" = "저장하지 않고 계속하시겠어요?";
 
 /* Explanation of the 'payments passphrase' in the 'view payments passphrase' settings. */
-"SETTINGS_PAYMENTS_PASSPHRASE_EXPLANATION" = "Tellomi을 재설치할 때 PIN 번호를 입력하면 잔액이 자동으로 복구됩니다. 또한 24개 단어로 구성된 복원 문구를 사용하여 복구할 수도 있습니다. 복원 문구는 종이에 적어 안전한 곳에 보관하세요.";
+"SETTINGS_PAYMENTS_PASSPHRASE_EXPLANATION" = "Tellomi를 재설치할 때 PIN 번호를 입력하면 잔액이 자동으로 복구됩니다. 또한 24개 단어로 구성된 복원 문구를 사용하여 복구할 수도 있습니다. 복원 문구는 종이에 적어 안전한 곳에 보관하세요.";
 
 /* Explanation of the 'payments passphrase' when there is a balance. */
 "SETTINGS_PAYMENTS_PASSPHRASE_EXPLANATION_FROM_BALANCE" = "잔액이 있어요! 잔액을 복원할 때 사용할 복원 문구(24단어)를 지금 저장해 두세요.";
@@ -9776,7 +9776,7 @@
 "SETTINGS_PIN_REMINDER_SWITCH_LABEL" = "PIN 리마인더";
 
 /* Footer for the 'PINs' section of the privacy settings. */
-"SETTINGS_PINS_FOOTER" = "PIN은 Tellomi에 저장된 정보를 암호화하여 본인만 접근할 수 있도록 보호합니다. PIN은 복구할 수 없습니다. Tellomi을 다시 설치하면 프로필, 설정 및 연락처가 복원됩니다.";
+"SETTINGS_PINS_FOOTER" = "PIN은 Tellomi에 저장된 정보를 암호화하여 본인만 접근할 수 있도록 보호합니다. PIN은 복구할 수 없습니다. Tellomi를 다시 설치하면 프로필, 설정 및 연락처가 복원됩니다.";
 
 /* Label for the 'pins' item of the privacy settings when the user does have a pin. */
 "SETTINGS_PINS_ITEM" = "PIN 변경";
@@ -9860,16 +9860,16 @@
 "SETTINGS_SECURITY_DETAIL" = "Touch ID, Face ID 또는 iOS 장치 비밀번호를 사용하여 Tellomi의 잠금을 해제하세요.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_FACEID" = "Tellomi을 잠금 해제하려면 Face ID를 사용하세요.";
+"SETTINGS_SECURITY_DETAIL_FACEID" = "Tellomi를 잠금 해제하려면 Face ID를 사용하세요.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_OPTICID" = "Optic ID를 사용하여 Tellomi을 잠금 해제하세요.";
+"SETTINGS_SECURITY_DETAIL_OPTICID" = "Optic ID를 사용하여 Tellomi를 잠금 해제하세요.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_PASSCODE" = "Tellomi을 잠금 해제하려면 기기 비밀번호를 사용하세요.";
+"SETTINGS_SECURITY_DETAIL_PASSCODE" = "Tellomi를 잠금 해제하려면 기기 비밀번호를 사용하세요.";
 
 /* Section footer */
-"SETTINGS_SECURITY_DETAIL_TOUCHID" = "Tellomi을 잠금 해제하려면 Touch ID를 사용하세요.";
+"SETTINGS_SECURITY_DETAIL_TOUCHID" = "Tellomi를 잠금 해제하려면 Touch ID를 사용하세요.";
 
 /* Section header */
 "SETTINGS_SECURITY_TITLE" = "애플리케이션 보안";
@@ -10688,13 +10688,13 @@
 "TRANSFER_COMPLETE_SHEET_BUTTON" = "Tellomi 종료";
 
 /* Subtitle for bottom sheet shown when device transfer completes on the receiving device. */
-"TRANSFER_COMPLETE_SHEET_SUBTITLE" = "이 기기에서 계정을 사용하려면 Tellomi을 종료했다가 다시 시작하세요.";
+"TRANSFER_COMPLETE_SHEET_SUBTITLE" = "이 기기에서 계정을 사용하려면 Tellomi를 종료했다가 다시 시작하세요.";
 
 /* Title for bottom sheet shown when device transfer completes on the receiving device. */
 "TRANSFER_COMPLETE_SHEET_TITLE" = "이전 완료";
 
 /* Notification prompting the user to relaunch Signal after a device transfer completed. */
-"TRANSFER_RELAUNCH_NOTIFICATION" = "Tellomi을 열어 메시지를 보내기 시작하세요.";
+"TRANSFER_RELAUNCH_NOTIFICATION" = "Tellomi를 열어 메시지를 보내기 시작하세요.";
 
 /* Label for a button that says 'Try Again'. */
 "TRY_AGAIN_BUTTON_TITLE" = "다시 시도";
@@ -10739,10 +10739,10 @@
 "UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_FROM_LINKED_DEVICE" = "최신 Tellomi 버전으로 업데이트되었습니다. 이제 내 기기에서 해당 메시지 유형을 수신할 수 있어요.";
 
 /* Info message recorded in conversation history when local user has received an unknown message and has upgraded. Embeds {{user's name or phone number}}. */
-"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITH_NAME_FORMAT" = "이제 최신 버전의 Tellomi을 이용하고 계시네요. %1$@ 님에게 다시 메시지를 보내달라고 요청해보세요.";
+"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITH_NAME_FORMAT" = "이제 최신 버전의 Tellomi를 이용하고 계시네요. %1$@ 님에게 다시 메시지를 보내달라고 요청해보세요.";
 
 /* Info message recorded in conversation history when local user has received an unknown message and has upgraded. */
-"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITHOUT_NAME" = "이제 최신 버전의 Tellomi을 이용하고 계시네요. 발신자에게 다시 메시지를 보내달라고 요청해보세요.";
+"UNKNOWN_PROTOCOL_VERSION_UPGRADE_COMPLETE_WITHOUT_NAME" = "이제 최신 버전의 Tellomi를 이용하고 계시네요. 발신자에게 다시 메시지를 보내달라고 요청해보세요.";
 
 /* Label indicating an unknown user. */
 "UNKNOWN_USER" = "알 수 없음";
@@ -10793,7 +10793,7 @@
 "UNSUPPORTED_FEATURE_ERROR" = "이 기기는 해당 기능을 지원하지 않습니다.";
 
 /* Description for the unverified safety number change. Embeds {name of contact with identity change} */
-"UNVERIFIED_SAFETY_NUMBER_CHANGE_DESCRIPTION_FORMAT" = "Tellomi을 다시 설치했거나 장치를 변경했기 때문에 %1$@이(가) 포함된 안전 번호가 변경되었을 수 있습니다. 확인을 눌러 새 안전 번호를 확인합니다. 선택 사항입니다.";
+"UNVERIFIED_SAFETY_NUMBER_CHANGE_DESCRIPTION_FORMAT" = "Tellomi를 다시 설치했거나 장치를 변경했기 때문에 %1$@이(가) 포함된 안전 번호가 변경되었을 수 있습니다. 확인을 눌러 새 안전 번호를 확인합니다. 선택 사항입니다.";
 
 /* Action to verify a safety number after it has changed */
 "UNVERIFIED_SAFETY_NUMBER_VERIFY_ACTION" = "검증";
@@ -10952,7 +10952,7 @@
 "VERIFICATION_CODE_REQUESTED_HERO_BODY_FIRST" = "인증 코드 요청됨";
 
 /* Second part of body for a hero sheet informing the user a verification code was requested. */
-"VERIFICATION_CODE_REQUESTED_HERO_BODY_SECOND" = "인증 코드를 다른 사람과 공유하지 마세요. Tellomi은 절대 인증 코드를 요청하는 메시지를 보내지 않습니다. Tellomi을 사칭한 메시지를 받았다면 사기일 수 있으니, 유의해 주세요.\n본인이 직접 코드를 요청하신 경우, 이 메시지는 무시하셔도 됩니다.";
+"VERIFICATION_CODE_REQUESTED_HERO_BODY_SECOND" = "인증 코드를 다른 사람과 공유하지 마세요. Tellomi는 절대 인증 코드를 요청하는 메시지를 보내지 않습니다. Tellomi를 사칭한 메시지를 받았다면 사기일 수 있으니, 유의해 주세요.\n본인이 직접 코드를 요청하신 경우, 이 메시지는 무시하셔도 됩니다.";
 
 /* Format for info message indicating that the verification state was unverified on this device. Embeds {{user's name or phone number}}. */
 "VERIFICATION_STATE_CHANGE_FORMAT_NOT_VERIFIED_LOCAL" = "%1$@ 님을 검증하지 않았다고 표시했습니다.";
