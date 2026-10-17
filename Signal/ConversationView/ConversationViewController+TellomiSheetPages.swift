@@ -65,36 +65,23 @@ extension ConversationViewController {
     /// 「位置」页：上游的 `LocationPicker`（Apple 地图、搜索、长按选点、当前位置），发出走会话页现有的 `didPickLocation`；
     /// 发完、✕ 都收起整个 Sheet。同 Telegram iOS `.location`。
     /// 地图要拖，Sheet 不许下拉关（✕ 照样能关），进来就展开到全屏。
+    /// 2026-10-17：位置页换成照 Telegram 做的 `TellomiLocationPickerViewController`（发送当前位置 + 精度、拖地图选点、附近地点、
+    /// 分组搜索、地图类型；docs/product/specs/attachment-files-location.md §3 L-3…L-8）。发出去的消息格式不变（`Location`）。
     func makeTellomiLocationPage() -> UIViewController {
-        let adapter = TellomiAttachmentLocationAdapter(conversation: self)
-        let picker = LocationPicker()
-        picker.delegate = adapter
+        let picker = TellomiLocationPickerViewController()
+        picker.onPick = { [weak self] location in
+            self?.sendPickedLocation(location)
+        }
         picker.onFinish = { [weak self] in
             self?.dismiss(animated: true)
         }
+        picker.onCancel = { [weak self] in
+            self?.dismiss(animated: true)
+        }
         let page = TellomiAttachmentNavigationPage(root: picker, dockItem: .location, dockItems: TellomiAttachmentDockItem.attachmentSheetItems)
-        page.retainedObjects.append(adapter)
         page.isModalInPresentation = true
         page.delegate = self
         return page
-    }
-}
-
-/// 位置页的代理：上游 `LocationPicker` 只弱引用代理，由页面持有它。
-final class TellomiAttachmentLocationAdapter: LocationPickerDelegate {
-
-    private weak var conversation: ConversationViewController?
-
-    init(conversation: ConversationViewController) {
-        self.conversation = conversation
-    }
-
-    func didPickLocation(_ locationPicker: LocationPicker, location: Location) {
-        conversation?.didPickLocation(locationPicker, location: location)
-    }
-
-    func locationPickerDidCancel() {
-        conversation?.dismiss(animated: true)
     }
 }
 

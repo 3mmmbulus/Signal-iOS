@@ -5966,6 +5966,60 @@
 /* A string indicating that the user can search for a location */
 "LOCATION_PICKER_SEARCH_PLACEHOLDER" = "Search by name or address";
 
+/* Subtitle of the 'send my current location' row. Embeds {{ a distance such as '25 meters' }}. */
+"LOCATION_PICKER_TELLOMI_ACCURATE_TO_FORMAT" = "Accurate to %@";
+
+/* Last row of the nearby places list in the location picker: where the place data comes from. */
+"LOCATION_PICKER_TELLOMI_DATA_SOURCE" = "Place data: Apple Maps";
+
+/* Subtitle of an address result in the location picker search. Embeds {{ a distance such as '2 kilometers' }}. */
+"LOCATION_PICKER_TELLOMI_DISTANCE_FROM_HERE_FORMAT" = "%@ from here";
+
+/* Shown while the location or the address under the pin is not known yet. */
+"LOCATION_PICKER_TELLOMI_LOCATING" = "Locating…";
+
+/* Map type option in the location picker: satellite imagery with street names. */
+"LOCATION_PICKER_TELLOMI_MAP_HYBRID" = "Hybrid";
+
+/* Map type option in the location picker: satellite imagery. */
+"LOCATION_PICKER_TELLOMI_MAP_SATELLITE" = "Satellite";
+
+/* Map type option in the location picker: the plain street map. */
+"LOCATION_PICKER_TELLOMI_MAP_STANDARD" = "Map";
+
+/* Accessibility label of the button that picks the map type (map, satellite, hybrid) in the location picker. */
+"LOCATION_PICKER_TELLOMI_MAP_TYPE" = "Map type";
+
+/* Accessibility label of the button that moves the map back to the user's own location in the location picker. */
+"LOCATION_PICKER_TELLOMI_MY_LOCATION" = "Show my location";
+
+/* Header above the list of nearby places in the location picker. */
+"LOCATION_PICKER_TELLOMI_NEARBY_HEADER" = "Or choose a place";
+
+/* Shown in the location picker when no places were found around the map's center. */
+"LOCATION_PICKER_TELLOMI_NO_PLACES" = "No known places nearby. Try another location.";
+
+/* Subtitle of the 'send my current location' row when location access is off. Tapping it opens Settings. */
+"LOCATION_PICKER_TELLOMI_PERMISSION_OFF" = "Location access is off · Open Settings";
+
+/* Header of the address results when searching in the location picker. */
+"LOCATION_PICKER_TELLOMI_SEARCH_ADDRESSES" = "Addresses on the map";
+
+/* Shown when a search in the location picker found nothing. Embeds {{ the search term }}. */
+"LOCATION_PICKER_TELLOMI_SEARCH_NO_RESULTS_FORMAT" = "Nothing found for “%@”. Try another word.";
+
+/* Header of the place results when searching in the location picker. */
+"LOCATION_PICKER_TELLOMI_SEARCH_PLACES" = "Places nearby";
+
+/* Button on the map in the location picker that looks up places around the map's center after the user moved the map. */
+"LOCATION_PICKER_TELLOMI_SEARCH_THIS_AREA" = "Search this area";
+
+/* First row of the location picker: sends the user's current location. */
+"LOCATION_PICKER_TELLOMI_SEND_CURRENT" = "Send My Current Location";
+
+/* First row of the location picker after the user moved the map: sends the location under the pin. */
+"LOCATION_PICKER_TELLOMI_SEND_THIS" = "Send This Location";
+
 /* The title for the location picker view */
 "LOCATION_PICKER_TITLE" = "Select Location";
 

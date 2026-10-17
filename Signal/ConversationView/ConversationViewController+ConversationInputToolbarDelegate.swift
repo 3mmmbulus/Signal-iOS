@@ -745,6 +745,11 @@ public extension ConversationViewController {
 extension ConversationViewController: LocationPickerDelegate {
 
     public func didPickLocation(_ locationPicker: LocationPicker, location: Location) {
+        sendPickedLocation(location)
+    }
+
+    /// Tellomi（2026-10-17）：上游 `LocationPicker` 与附件 Sheet 的位置页（`TellomiLocationPickerViewController`）共用的发送。
+    func sendPickedLocation(_ location: Location) {
         AssertIsOnMainThread()
 
         Task { @MainActor in
