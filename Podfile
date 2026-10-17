@@ -342,6 +342,17 @@ def copy_acknowledgements
        LICENSE
        "License" => "MIT",
      }
+     # Tellomi (interaction audit A-06): the reaction bar's animated emoji (Signal/Lottie/tellomi_reaction_*.json).
+     specifiers << {
+       "Type" => "PSGroupSpecifier",
+       "Title" => "Noto Emoji Animation",
+       "FooterText" => <<~'LICENSE'.chomp,
+         Noto Emoji Animation by Google (https://googlefonts.github.io/noto-emoji-animation/): the animated emoji in the long-press reaction bar. Used unmodified.
+
+         Licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+       LICENSE
+       "License" => "CC-BY-4.0",
+     }
   end
 
   specifier_groups = get_specifier_groups(acknowledgements_files)

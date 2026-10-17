@@ -9277,6 +9277,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		</dict>
 		<dict>
 			<key>FooterText</key>
+			<string>Noto Emoji Animation by Google (https://googlefonts.github.io/noto-emoji-animation/): the animated emoji in the long-press reaction bar. Used unmodified.
+
+Licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/</string>
+			<key>License</key>
+			<string>CC-BY-4.0</string>
+			<key>Title</key>
+			<string>Noto Emoji Animation</string>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+		</dict>
+		<dict>
+			<key>FooterText</key>
 			<string>Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"),to deal
 in the Software without restriction, including without limitation the rights

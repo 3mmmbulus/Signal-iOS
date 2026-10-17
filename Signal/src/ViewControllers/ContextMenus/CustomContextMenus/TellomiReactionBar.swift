@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
+import Lottie
 import SignalServiceKit
 import SignalUI
 import UIKit
@@ -62,6 +63,8 @@ struct TellomiReactionBarLayout: Equatable {
     static let growthOriginSize: CGFloat = 46
     /// 已选中的表情缩到 0.8，背后垫一个和条目一样大的圆。
     static let selectedEmojiScale: CGFloat = 0.8
+    /// 动画表情占条目宽度的比例：字形字号是条目的 0.78，Noto 的画在画布里四周各留一点边，放大到 0.86 两者看起来一样大。
+    static let animatedEmojiSizeRatio: CGFloat = 0.86
     /// 按住滑到某个表情上：放大到 2 倍，下沿比原位置低 4 pt。
     static let focusedScale: CGFloat = 2
     static let focusedBottomOffset: CGFloat = 4
@@ -165,6 +168,7 @@ struct TellomiReactionBarLayout: Equatable {
 /// - 7 个表情 + 展开键，条目 36、间距 8、两头 6，屏幕窄时条目缩小；
 /// - 出现：底板从锚点处一个小圆弹出来再拉到全宽，尾巴两个圆弹出来，条目从 0.01 按离锚点的距离错峰弹到原大，
 ///   内容 0.15 s 淡入；收起 0.2 s 淡出。减弱动态效果时只淡入淡出。
+/// - 有动画素材的表情在弹出的同时播一遍自己的动画，停在静止帧（`TellomiReactionAnimations`）。
 ///
 /// 上游的 `MessageReactionPicker` 还给「回应设置」和通话里的回应用，那两处不动。
 final class TellomiReactionBar: UIView {
@@ -473,6 +477,8 @@ final class TellomiReactionBar: UIView {
             let delay = TellomiReactionBarLayout.appearDelay(itemMidX: view.center.x, originMinX: origin.minX, barWidth: bounds.width)
             view.transform = .scale(0.01)
             animate(TellomiMotion.reactionItemAppear, delay: delay) { view.transform = .identity }
+            // Telegram 的出场动画和弹出用同一个延迟。
+            (view as? ItemView)?.playAppearAnimation(after: delay)
         }
     }
 
@@ -564,9 +570,22 @@ final class TellomiReactionBar: UIView {
         private let label = UILabel()
         private let selectionCircle = UIView()
         private let isSelectedReaction: Bool
+        /// 有 Noto 动画素材、又允许动画时，用它代替字形；否则是 nil，显示 `label`。
+        private let animationView: LottieAnimationView?
+        private var appearWorkItem: DispatchWorkItem?
 
         init(emoji: String, isSelected: Bool) {
             self.isSelectedReaction = isSelected
+            if TellomiReactionAnimations.isPlaybackAllowed, let animation = TellomiReactionAnimations.animation(for: emoji) {
+                let animationView = LottieAnimationView(animation: animation)
+                animationView.contentMode = .scaleAspectFit
+                animationView.backgroundBehavior = .pauseAndRestore
+                animationView.isUserInteractionEnabled = false
+                animationView.currentFrame = TellomiReactionAnimations.restFrame(of: animation)
+                self.animationView = animationView
+            } else {
+                self.animationView = nil
+            }
             super.init(frame: .zero)
 
             if isSelected {
@@ -577,7 +596,11 @@ final class TellomiReactionBar: UIView {
             label.text = emoji
             label.textAlignment = .center
             label.isUserInteractionEnabled = false
+            label.isHidden = animationView != nil
             addSubview(label)
+            if let animationView {
+                addSubview(animationView)
+            }
 
             isAccessibilityElement = true
             accessibilityLabel = emoji
@@ -607,15 +630,53 @@ final class TellomiReactionBar: UIView {
             if isSelectedReaction {
                 label.transform = .scale(TellomiReactionBarLayout.selectedEmojiScale)
             }
+            if let animationView {
+                // Noto 的画几乎占满画布；和同一格里的字形一样大。
+                let side = floor(bounds.width * TellomiReactionBarLayout.animatedEmojiSizeRatio)
+                animationView.transform = .identity
+                animationView.frame = CGRect(x: (bounds.width - side) / 2, y: (bounds.height - side) / 2, width: side, height: side)
+                animationView.transform = label.transform
+            }
         }
 
         override var isHighlighted: Bool {
-            didSet { label.alpha = isHighlighted ? 0.7 : 1 }
+            didSet {
+                label.alpha = isHighlighted ? 0.7 : 1
+                animationView?.alpha = label.alpha
+            }
+        }
+
+        /// 条出现时播一遍：从静止帧播一整圈回到静止帧。
+        func playAppearAnimation(after delay: TimeInterval) {
+            guard let animationView, let animation = animationView.animation else { return }
+            let segments = TellomiReactionAnimations.appearSegments(of: animation)
+            let restFrame = TellomiReactionAnimations.restFrame(of: animation)
+            appearWorkItem?.cancel()
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.play(segments[...], restFrame: restFrame)
+            }
+            appearWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+        }
+
+        private func play(_ segments: ArraySlice<ClosedRange<AnimationFrameTime>>, restFrame: AnimationFrameTime) {
+            guard let animationView else { return }
+            guard let segment = segments.first else {
+                animationView.currentFrame = restFrame
+                return
+            }
+            animationView.play(fromFrame: segment.lowerBound, toFrame: segment.upperBound, loopMode: .playOnce) { [weak self] finished in
+                guard finished else { return }
+                self?.play(segments.dropFirst(), restFrame: restFrame)
+            }
         }
 
         // 用 isHidden 而不是 alpha，免得高亮状态变化又把它显示出来。
         func hideEmojiForFlyIn() {
             label.isHidden = true
+            appearWorkItem?.cancel()
+            animationView?.stop()
+            animationView?.isHidden = true
         }
     }
 
