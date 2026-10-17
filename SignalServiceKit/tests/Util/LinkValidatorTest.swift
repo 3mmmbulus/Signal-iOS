@@ -107,6 +107,21 @@ class LinkValidatorTest: XCTestCase {
             // Code points that are valid outside the link, but not inside
             ("▶ https://signal.org", "https://signal.org"),
             ("https://si▶gnal.org", nil),
+
+            // Tellomi: text glued right after the link (no space) is not part of it
+            ("看这个https://b23.tv/abc很好", "https://b23.tv/abc"),
+            ("https://www.163.com/news/article/ABC123.html网易新闻", "https://www.163.com/news/article/ABC123.html"),
+            ("https://signal.org/hello世界", "https://signal.org/hello"),
+            ("https://signal.org/v2很好 https://signal.org/other", "https://signal.org/v2"),
+            // Tellomi: a cut right after a URL delimiter would point at another page, so no preview (as upstream)
+            ("https://zh.wikipedia.org/wiki/中国", nil),
+            ("https://v.douyin.com/iABC/复制此链接", nil),
+            // Tellomi: the cut link must still pass every upstream rule
+            ("http://xhslink.com/a/b很好", nil),
+            ("https://example.org/a很好", nil),
+            // Tellomi: never cut inside the host (a mixed-script host is a spoofing risk), only in path / query / fragment
+            ("https://b23.tv很好", nil),
+            ("https://www.wikipediа.org/wiki/Main", nil),
         ]
         for (entireMessage, expectedValue) in testCases {
             let actualValue = LinkValidator.firstLinkPreviewURL(in: .init(text: entireMessage, ranges: .empty))

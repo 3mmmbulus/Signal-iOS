@@ -79,17 +79,50 @@ public enum LinkValidator {
                 }
             }
             guard !parsedUrl.absoluteString.isEmpty else { return }
-            guard
-                LinkPreviewHelper.isPermittedLinkPreviewUrl(
-                    parsedUrl,
-                    parsedFrom: String(entireMessage.text[matchedRange]),
-                )
-            else {
+            let matchedText = String(entireMessage.text[matchedRange])
+            if LinkPreviewHelper.isPermittedLinkPreviewUrl(parsedUrl, parsedFrom: matchedText) {
+                result = parsedUrl
+            } else if let trimmedUrl = tellomiUrlTrimmedBeforeGluedText(matchedText) {
+                result = trimmedUrl
+            } else {
                 return
             }
-            result = parsedUrl
             stop.pointee = true
         }
         return result
+    }
+
+    /// Tellomi（2026-10-17，TestFlight 0.1.0 (16) 反馈「很多链接没有出信息卡片」）：中文（或别的非 ASCII 文字）紧贴在链接后面，
+    /// 比如「看这个https://b23.tv/abc很好」，NSDataDetector 会把「很好」也算进链接，整条因为路径里有非 RFC 3986 字符被拒，一张卡片都没有。
+    /// 这里在第一个非 ASCII 字符处截断再验一次：只在截断处前一个字符是 ASCII 字母或数字时截（「abc很好」「.html网易新闻」），
+    /// 截断处紧跟在 `/ ? = & #` 后面的不截——那是链接自己的一段（「/wiki/中国」「?q=你好」），截了就成了另一页，照上游不出卡片。
+    /// 只在路径 / 查询 / 片段里截，**域名里一个字都不截**：「https://www.wikipediа.org」（а 是西里尔字母）截成「https://www.wikipedi」
+    /// 就成了仿冒域名的入口（上游 `LinkValidatorTest` 的混写域名用例守着这一条）。
+    /// 只用在整条不合规的时候，原来能出卡片的链接一条都不变；收方 libsignal `url_appears_in_body` 本来就把非 ASCII 当链接的结尾。
+    static func tellomiUrlTrimmedBeforeGluedText(_ linkText: String) -> URL? {
+        let scalars = linkText.unicodeScalars
+        guard let cut = scalars.firstIndex(where: { !$0.isASCII }), cut > scalars.startIndex else {
+            return nil
+        }
+        // 域名（authority）在「://」之后、第一个 / ? # 之前；截断处必须在它后面
+        guard
+            let schemeEnd = linkText.range(of: "://")?.upperBound.samePosition(in: scalars),
+            let authorityEnd = scalars[schemeEnd...].firstIndex(where: { $0 == "/" || $0 == "?" || $0 == "#" }),
+            authorityEnd < cut
+        else {
+            return nil
+        }
+        let last = scalars[scalars.index(before: cut)]
+        guard ("0"..."9").contains(last) || ("a"..."z").contains(last) || ("A"..."Z").contains(last) else {
+            return nil
+        }
+        let prefix = String(scalars[..<cut])
+        guard let url = URL(string: prefix), url.host?.isEmpty == false else {
+            return nil
+        }
+        guard LinkPreviewHelper.isPermittedLinkPreviewUrl(url, parsedFrom: prefix) else {
+            return nil
+        }
+        return url
     }
 }
