@@ -27,13 +27,20 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     private lazy var topBar = FeedTopBarView(tabs: tabs)
     private let pagingScrollView = UIScrollView()
 
-    init(source: FeedSource = FeedSources.current()) {
+    /// 作者主页入口开着没有（`TellomiFeed.isProfilePageEnabled`，默认关）。单测 / 截图可以直接传 true。
+    let profilePageEnabled: Bool
+
+    init(source: FeedSource = FeedSources.current(), profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled) {
         self.source = source
+        self.profilePageEnabled = profilePageEnabled
         store = FeedStore(source: source)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
         for page in pages {
             page.onOpenPost = { [weak self] card in self?.openPost(card) }
+            if profilePageEnabled {
+                page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+            }
         }
 
         // 和帖子详情页订阅同一个 store：详情里点了赞，这里的那一行也跟着变（拿着回执就订着，页面销毁时一起放掉）
@@ -184,7 +191,17 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     private func openPost(_ card: FeedCard) {
         // 详情页用列表的 store（单一数据源）：赞、评论数改在 store 里，列表这边通过订阅同步
         let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: store.showsIpRegion, feed: store)
+        if profilePageEnabled {
+            detail.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+        }
         navigationController?.pushViewController(detail, animated: true)
+    }
+
+    /// 点作者的头像 / 名字：推作者主页（和列表、详情共用同一个 `FeedStore`）。外部作者没有主页，不响应。
+    func openAuthor(_ author: FeedAuthor) {
+        guard profilePageEnabled, tellomiFeedCanOpenProfile(of: author) else { return }
+        let profile = FeedProfileViewController(profileId: author.profileId, titleHint: author.displayName, source: source, feed: store)
+        navigationController?.pushViewController(profile, animated: true)
     }
 
     /// 底栏再点一次「动态」：当前这一栏回到顶部（和聊天列表一样）。

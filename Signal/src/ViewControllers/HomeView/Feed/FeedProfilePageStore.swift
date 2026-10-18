@@ -68,7 +68,7 @@ struct FeedProfilePageState: Equatable {
 /// 关注是乐观的：先改按钮和粉丝数，引擎说不行再改回来。私密账号对非好友先是「已请求」。
 @MainActor
 final class FeedProfilePageStore {
-    private let profileId: String
+    let profileId: String
     private let source: FeedSource
     private let savedMessages: FeedSavedMessages?
     /// 和信息流共用的 store（nil = 独立运行，单测和还没接上的页面用）。有它的时候，主页上每条帖子的唯一数据在它里面：

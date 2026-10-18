@@ -22,12 +22,33 @@ final class FeedCommentCell: UITableViewCell {
     private let replyLabel = UILabel()
     private let bodyLabel = UILabel()
     private var leadingConstraint: NSLayoutConstraint?
+    private var author: FeedAuthor?
+
+    /// 点头像 / 名字（作者主页入口）。nil = 不响应，也不拦截点击（点整行照旧是「回复」）。
+    var onAuthorTap: ((FeedAuthor) -> Void)? {
+        didSet { setAuthorTapEnabled(onAuthorTap != nil) }
+    }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
         backgroundColor = .clear
         buildLayout()
+        for view in [avatarView, nameLabel] {
+            view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(authorTapped)))
+        }
+        setAuthorTapEnabled(false)
+    }
+
+    private func setAuthorTapEnabled(_ enabled: Bool) {
+        for view in [avatarView, nameLabel] {
+            view.isUserInteractionEnabled = enabled
+        }
+    }
+
+    @objc private func authorTapped() {
+        guard let author, tellomiFeedCanOpenProfile(of: author) else { return }
+        onAuthorTap?(author)
     }
 
     @available(*, unavailable)
@@ -75,6 +96,7 @@ final class FeedCommentCell: UITableViewCell {
 
     func configure(row: FeedPostDetailPresentation.CommentRow, now: Date = Date()) {
         let comment = row.comment
+        author = comment.author
         leadingConstraint?.constant = Self.horizontalMargin + (row.isReply ? Self.replyIndent : 0)
 
         avatarView.configure(name: comment.author?.displayName)

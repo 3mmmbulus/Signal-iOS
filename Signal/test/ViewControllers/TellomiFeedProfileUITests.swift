@@ -35,9 +35,9 @@ final class TellomiFeedProfileUITests: XCTestCase {
     }
 
     @MainActor
-    private func makeHarness() async -> Harness {
+    private func makeHarness(profilePageEnabled: Bool = false) async -> Harness {
         let source = SampleFeedSource(now: { Date(timeIntervalSince1970: 1_791_889_200) }, commentsLatencyNanos: 0)
-        let feed = FeedViewController(source: source)
+        let feed = FeedViewController(source: source, profilePageEnabled: profilePageEnabled)
         let navigation = OWSNavigationController(rootViewController: feed)
         let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = navigation
@@ -491,5 +491,64 @@ final class TellomiFeedProfileUITests: XCTestCase {
             XCTAssertFalse(title.hasPrefix("TELLOMI_"), "\(item) 的文案没有翻译")
         }
         XCTAssertEqual(Set(items.map { FeedProfileViewController.menuTitle(for: $0) }).count, 7, "七项文案各不相同")
+    }
+
+    // MARK: - 入口（默认关）
+
+    @MainActor
+    func testEntryPointsAreOffByDefaultAndTheCellsStayInert() async throws {
+        XCTAssertFalse(TellomiFeed.isProfilePageEnabled, "默认关（测试里没人打开过）")
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        XCTAssertFalse(harness.feed.profilePageEnabled)
+        XCTAssertNil(harness.feed.pages[0].onOpenAuthor)
+        let table = harness.feed.pages[0].tableView
+        table.layoutIfNeeded()
+        let cell = try XCTUnwrap(table.cellForRow(at: IndexPath(row: 0, section: 0)) as? FeedPostCell)
+        XCTAssertNil(cell.onAuthorTap)
+
+        harness.feed.openAuthor(FeedAuthor(profileId: "s-1", displayName: "山风"))
+        XCTAssertEqual(harness.navigation.viewControllers.count, 1, "关着：不推主页")
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testWhenOnTappingAnAuthorPushesTheProfileFromTheFeedAndFromTheDetail() async throws {
+        let harness = await makeHarness(profilePageEnabled: true)
+        defer { harness.window.isHidden = true }
+        let page = harness.feed.pages[0]
+        XCTAssertNotNil(page.onOpenAuthor)
+        page.tableView.layoutIfNeeded()
+        let cell = try XCTUnwrap(page.tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? FeedPostCell)
+        let author = try XCTUnwrap(cell.card?.author)
+        XCTAssertNotNil(cell.onAuthorTap)
+
+        cell.onAuthorTap?(author)
+        let profile = try XCTUnwrap(harness.navigation.topViewController as? FeedProfileViewController)
+        XCTAssertEqual(profile.store.profileId, author.profileId)
+        XCTAssertEqual(profile.navigationItem.title, author.displayName, "标题先用帖子上的名字")
+        harness.navigation.popViewController(animated: false)
+
+        // 帖子详情：同样的入口
+        page.onOpenPost?(try XCTUnwrap(cell.card))
+        let detail = try XCTUnwrap(harness.navigation.topViewController as? FeedPostDetailViewController)
+        detail.loadViewIfNeeded()
+        harness.window.layoutIfNeeded()
+        XCTAssertNotNil(detail.onOpenAuthor)
+        XCTAssertNotNil(detail.postCell?.onAuthorTap)
+        detail.onOpenAuthor?(author)
+        XCTAssertTrue(harness.navigation.topViewController is FeedProfileViewController)
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testAnExternalAuthorHasNoProfileToOpen() async throws {
+        let harness = await makeHarness(profilePageEnabled: true)
+        defer { harness.window.isHidden = true }
+        var external = FeedAuthor(profileId: "ext-1", displayName: "外部")
+        external.isNative = false
+        harness.feed.openAuthor(external)
+        XCTAssertEqual(harness.navigation.viewControllers.count, 1)
+        harness.window.isHidden = true
     }
 }

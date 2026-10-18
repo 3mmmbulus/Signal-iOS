@@ -5,6 +5,12 @@
 
 import Foundation
 
+/// 点作者的头像 / 名字能不能打开主页：开放内容的外部作者（`isNative == false`）没有 Tellomi 主页，没有 profileId 的也不行。
+func tellomiFeedCanOpenProfile(of author: FeedAuthor?) -> Bool {
+    guard let author else { return false }
+    return author.isNative && !author.profileId.isEmpty
+}
+
 /// 主页「···」里的一项（别人的主页；自己的主页没有）。
 enum FeedProfileMenuItem: Equatable {
     /// 不看 TA 的动态：`on` 是点了之后的状态（现在没开 = 点了就开）。

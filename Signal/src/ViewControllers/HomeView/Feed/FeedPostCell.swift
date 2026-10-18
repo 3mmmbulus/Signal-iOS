@@ -29,6 +29,10 @@ final class FeedPostCell: UITableViewCell {
 
     var onLike: ((FeedCard) -> Void)?
     var onNotInterested: ((FeedCard) -> Void)?
+    /// 点头像 / 名字（作者主页入口）。nil = 不响应，也不拦截点击（整行照旧是「打开帖子」）。
+    var onAuthorTap: ((FeedAuthor) -> Void)? {
+        didSet { setAuthorTapEnabled(onAuthorTap != nil) }
+    }
     /// 帖子详情页最上面那条（这一刀只读）：点赞和「···」不响应，免得点了没反应。
     var isReadOnly = false
     /// 只读时点赞仍然可以点（帖子详情页：「···」收起来，赞可以点）。
@@ -56,6 +60,21 @@ final class FeedPostCell: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .clear
         buildLayout()
+        for view in [avatarView, nameLabel] {
+            view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(authorTapped)))
+        }
+        setAuthorTapEnabled(false)
+    }
+
+    private func setAuthorTapEnabled(_ enabled: Bool) {
+        for view in [avatarView, nameLabel] {
+            view.isUserInteractionEnabled = enabled
+        }
+    }
+
+    @objc private func authorTapped() {
+        guard let author = card?.author, tellomiFeedCanOpenProfile(of: author) else { return }
+        onAuthorTap?(author)
     }
 
     @available(*, unavailable)

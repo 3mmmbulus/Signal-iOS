@@ -412,6 +412,15 @@ final class TellomiFeedProfileSyncTests: XCTestCase {
 // MARK: - 页面画什么
 
 final class TellomiFeedProfilePresentationTests: XCTestCase {
+    func testOnlyNativeAuthorsWithAnIdOpenAProfile() {
+        XCTAssertTrue(tellomiFeedCanOpenProfile(of: FeedAuthor(profileId: "p1", displayName: "Ann")))
+        var external = FeedAuthor(profileId: "ext", displayName: "X")
+        external.isNative = false
+        XCTAssertFalse(tellomiFeedCanOpenProfile(of: external))
+        XCTAssertFalse(tellomiFeedCanOpenProfile(of: FeedAuthor(profileId: "", displayName: "Nobody")))
+        XCTAssertFalse(tellomiFeedCanOpenProfile(of: nil))
+    }
+
     private func state(_ change: (inout FeedProfilePageState, inout FeedProfilePage) -> Void = { _, _ in }) -> FeedProfilePageState {
         var page = FeedProfilePage(id: "p1", displayName: "Ann")
         var state = FeedProfilePageState()
