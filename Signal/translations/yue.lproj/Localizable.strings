@@ -10492,11 +10492,17 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "撳一下替換另一個表情符號";
 
+/* Tellomi (chat-telegram-parity F01): read out by VoiceOver on the button that jumps to my messages with reactions I haven't seen yet. */
+"TELLOMI_NEXT_UNSEEN_REACTION" = "下一個新回應";
+
 /* Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}. */
 "TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT" = "已回應 %1$@";
 
 /* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
 "TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "已取消回應";
+
+/* Tellomi (chat-telegram-parity F01): long press on the button that jumps to my messages with reactions I haven't seen, as in Telegram. */
+"TELLOMI_READ_ALL_REACTIONS" = "所有回應標為已讀";
 
 /* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "Delete Scheduled Message";

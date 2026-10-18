@@ -16,6 +16,8 @@ class ConversationViewModel {
     let isSystemContact: Bool
     let badgeType: BadgeType?
     let unreadMentionMessageIds: [String]
+    /// Tellomi (chat-telegram-parity F01): my messages with reactions I haven't seen in the chat yet, oldest first.
+    let unseenReactionMessageIds: [String]
 
     static func load(for thread: TSThread, tx: DBReadTransaction) -> ConversationViewModel {
         let groupCallInProgress = GroupCallInteractionFinder().unendedCallsForGroupThread(thread, transaction: tx)
@@ -36,6 +38,7 @@ class ConversationViewModel {
             isSystemContact: isSystemContact,
             badgeType: badgeType(for: thread, tx: tx),
             unreadMentionMessageIds: unreadMentionMessageIds,
+            unseenReactionMessageIds: TellomiUnseenReactions.unseenMessageIds(threadUniqueId: thread.uniqueId, tx: tx),
         )
     }
 
@@ -44,11 +47,13 @@ class ConversationViewModel {
         isSystemContact: Bool,
         badgeType: BadgeType?,
         unreadMentionMessageIds: [String],
+        unseenReactionMessageIds: [String] = [],
     ) {
         self.groupCallInProgress = groupCallInProgress
         self.isSystemContact = isSystemContact
         self.badgeType = badgeType
         self.unreadMentionMessageIds = unreadMentionMessageIds
+        self.unseenReactionMessageIds = unseenReactionMessageIds
     }
 
     private static func badgeType(for thread: TSThread, tx: DBReadTransaction) -> BadgeType? {

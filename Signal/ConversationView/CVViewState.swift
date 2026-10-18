@@ -99,6 +99,18 @@ public class CVViewState: NSObject {
     public var isHidingScrollDownButton = false
     public let scrollToNextMentionButton = ConversationScrollButton(iconName: "at")
     public var isHidingScrollToNextMentionButton = false
+    /// Tellomi（chat-telegram-parity F01）：我的消息上有还没看到的回应时出现，点一下跳到最早那条。
+    public let scrollToNextReactionButton = ConversationScrollButton(iconName: "heart")
+    public var isHidingScrollToNextReactionButton = false
+    /// Tellomi（chat-telegram-parity F01 / F02）：提及按钮叠在滚到底上、回应按钮叠在提及上；下面那颗不在时落下来（两端 Telegram 一样）。
+    var tellomiMentionButtonStackConstraint: NSLayoutConstraint?
+    var tellomiReactionButtonStackConstraint: NSLayoutConstraint?
+    /// Tellomi（chat-telegram-parity F01）：在聊天里看到了、还在等 load 把它从 `unseenReactionMessageIds` 里去掉的消息。
+    var tellomiReactionsSeenHere = Set<String>()
+    /// Tellomi（chat-telegram-parity F01）：点回应按钮跳去的那条，滚到了再爆开（消息、什么时候点的）。
+    var tellomiReactionJumpTarget: (messageUniqueId: String, time: Date)?
+    /// Tellomi（chat-telegram-parity F01）：看到了、等列表停下再爆开的（消息 → 表情）。
+    var tellomiReactionBurstsWhenIdle = [String: String]()
     /// Tellomi（交互审计 A-14）：滚到底 / 下一个提及两个按钮进出动画的代数，只让最近一次的收尾生效。
     public var tellomiScrollButtonsAnimationGeneration = 0
     public var scrollUpdateTimer: Timer?
@@ -219,6 +231,7 @@ extension ConversationViewController {
                 let tintColor = newValue.chatColorValue.asChatUIElementTintColor()
                 viewState.scrollDownButton.badgeTintColor = tintColor
                 viewState.scrollToNextMentionButton.badgeTintColor = tintColor
+                viewState.scrollToNextReactionButton.badgeTintColor = tintColor
             }
         }
     }

@@ -22,6 +22,12 @@ extension ConversationViewController {
         set { viewState.isHidingScrollToNextMentionButton = newValue }
     }
 
+    private var scrollToNextReactionButton: ConversationScrollButton { viewState.scrollToNextReactionButton }
+    private var isHidingScrollToNextReactionButton: Bool {
+        get { viewState.isHidingScrollToNextReactionButton }
+        set { viewState.isHidingScrollToNextReactionButton = newValue }
+    }
+
     public var scrollUpdateTimer: Timer? {
         get { viewState.scrollUpdateTimer }
         set { viewState.scrollUpdateTimer = newValue }
@@ -51,6 +57,7 @@ extension ConversationViewController {
         guard hasAppearedAndHasAppliedFirstLoad else {
             scrollDownButton.isHidden = true
             scrollToNextMentionButton.isHidden = true
+            scrollToNextReactionButton.isHidden = true
             return
         }
 
@@ -67,33 +74,38 @@ extension ConversationViewController {
         let hasLaterMessageOffscreen = (lastSortIdInLoadedWindow > lastVisibleSortId) || canLoadNewerItems
 
         let scrollDownWasHidden = isHidingScrollDownButton || scrollDownButton.isHidden
-        var scrollDownIsHidden = scrollDownWasHidden
-
         let scrollToNextMentionWasHidden = isHidingScrollToNextMentionButton || scrollToNextMentionButton.isHidden
-        var scrollToNextMentionIsHidden = scrollToNextMentionWasHidden
+        let scrollToNextReactionWasHidden = isHidingScrollToNextReactionButton || scrollToNextReactionButton.isHidden
 
-        if viewState.inProgressVoiceMessage?.isRecording == true {
-            scrollDownIsHidden = true
-            scrollToNextMentionIsHidden = true
-        } else if isInPreviewPlatter {
-            scrollDownIsHidden = true
-            scrollToNextMentionIsHidden = true
-        } else {
-            let shouldScrollDownAppear = isScrolledUpOnePage || hasLaterMessageOffscreen
-            scrollDownIsHidden = !shouldScrollDownAppear
+        let unseenReactionMessageIds = tellomiUnseenReactionMessageIds
 
-            let shouldScrollToMentionAppear = shouldScrollDownAppear && !conversationViewModel.unreadMentionMessageIds.isEmpty
-            scrollToNextMentionIsHidden = !shouldScrollToMentionAppear
-        }
+        let layout = Self.tellomiScrollButtonsLayout(
+            shouldScrollDownAppear: isScrolledUpOnePage || hasLaterMessageOffscreen,
+            isSuppressed: viewState.inProgressVoiceMessage?.isRecording == true || isInPreviewPlatter,
+            unreadMentionCount: conversationViewModel.unreadMentionMessageIds.count,
+            unseenReactionCount: unseenReactionMessageIds.count,
+        )
+        let scrollDownIsHidden = layout.scrollDownHidden
+        let scrollToNextMentionIsHidden = layout.mentionHidden
+        let scrollToNextReactionIsHidden = layout.reactionHidden
 
         self.scrollDownButton.unreadCount = threadViewModel.unreadCount
         self.scrollToNextMentionButton.unreadCount = UInt(conversationViewModel.unreadMentionMessageIds.count)
+        self.scrollToNextReactionButton.unreadCount = UInt(unseenReactionMessageIds.count)
 
-        let scrollDownVisibilityDidChange = scrollDownIsHidden != scrollDownWasHidden
-        let scrollToNextMentionVisibilityDidChange = scrollToNextMentionIsHidden != scrollToNextMentionWasHidden
+        var changes: [(button: ConversationScrollButton, isHidden: Bool, setHiding: (Bool) -> Void)] = []
+        if scrollDownIsHidden != scrollDownWasHidden {
+            changes.append((scrollDownButton, scrollDownIsHidden, { self.isHidingScrollDownButton = $0 }))
+        }
+        if scrollToNextMentionIsHidden != scrollToNextMentionWasHidden {
+            changes.append((scrollToNextMentionButton, scrollToNextMentionIsHidden, { self.isHidingScrollToNextMentionButton = $0 }))
+        }
+        if scrollToNextReactionIsHidden != scrollToNextReactionWasHidden {
+            changes.append((scrollToNextReactionButton, scrollToNextReactionIsHidden, { self.isHidingScrollToNextReactionButton = $0 }))
+        }
         let shouldAnimateChanges = self.hasAppearedAndHasAppliedFirstLoad
 
-        guard scrollDownVisibilityDidChange || scrollToNextMentionVisibilityDidChange else {
+        guard !changes.isEmpty else {
             return
         }
 
@@ -102,45 +114,36 @@ extension ConversationViewController {
         // 先跳到上一段的终点再往回。减弱动态效果时只变透明度。
         let reduceMotion = TellomiMotion.isReduceMotionEnabled
         let hiddenTransform: CGAffineTransform = (shouldAnimateChanges && !reduceMotion) ? .scale(0.2) : .identity
-        if scrollDownVisibilityDidChange {
-            if !scrollDownIsHidden, self.scrollDownButton.isHidden {
-                self.scrollDownButton.transform = hiddenTransform
+        for change in changes {
+            if !change.isHidden, change.button.isHidden {
+                change.button.transform = hiddenTransform
             }
-            self.scrollDownButton.isHidden = false
-            self.isHidingScrollDownButton = scrollDownIsHidden
-        }
-        if scrollToNextMentionVisibilityDidChange {
-            if !scrollToNextMentionIsHidden, self.scrollToNextMentionButton.isHidden {
-                self.scrollToNextMentionButton.transform = hiddenTransform
-            }
-            self.scrollToNextMentionButton.isHidden = false
-            self.isHidingScrollToNextMentionButton = scrollToNextMentionIsHidden
+            change.button.isHidden = false
+            change.setHiding(change.isHidden)
         }
 
+        // Tellomi（chat-telegram-parity F01 / F02）：按钮一列叠着，下面那颗不在时上面的落下来，和出场 / 退场同一段动画
+        // （Telegram iOS `updateLayout` 按 down / mentions 在不在排 mentions / reactions 的位置）。先把别的布局落定，只动按钮。
+        view.layoutIfNeeded()
+        viewState.tellomiMentionButtonStackConstraint?.constant = layout.mentionStack
+        viewState.tellomiReactionButtonStackConstraint?.constant = layout.reactionStack
+
         let alphaBlock = {
-            if scrollDownVisibilityDidChange {
-                self.scrollDownButton.alpha = scrollDownIsHidden ? 0 : 1
-                self.scrollDownButton.transform = scrollDownIsHidden ? hiddenTransform : .identity
+            for change in changes {
+                change.button.alpha = change.isHidden ? 0 : 1
+                change.button.transform = change.isHidden ? hiddenTransform : .identity
             }
-            if scrollToNextMentionVisibilityDidChange {
-                self.scrollToNextMentionButton.alpha = scrollToNextMentionIsHidden ? 0 : 1
-                self.scrollToNextMentionButton.transform = scrollToNextMentionIsHidden ? hiddenTransform : .identity
-            }
+            self.view.layoutIfNeeded()
         }
         // 只收尾最近这一次：上一段动画在反向之后才结束时，不能按它的目标把按钮藏掉。
         viewState.tellomiScrollButtonsAnimationGeneration += 1
         let generation = viewState.tellomiScrollButtonsAnimationGeneration
         let completionBlock = {
             guard generation == self.viewState.tellomiScrollButtonsAnimationGeneration else { return }
-            if scrollDownVisibilityDidChange {
-                self.scrollDownButton.isHidden = scrollDownIsHidden
-                self.scrollDownButton.transform = .identity
-                self.isHidingScrollDownButton = false
-            }
-            if scrollToNextMentionVisibilityDidChange {
-                self.scrollToNextMentionButton.isHidden = scrollToNextMentionIsHidden
-                self.scrollToNextMentionButton.transform = .identity
-                self.isHidingScrollToNextMentionButton = false
+            for change in changes {
+                change.button.isHidden = change.isHidden
+                change.button.transform = .identity
+                change.setHiding(false)
             }
         }
 
@@ -152,6 +155,39 @@ extension ConversationViewController {
             alphaBlock()
             completionBlock()
         }
+    }
+
+    /// Tellomi：上面一颗按钮的底边离下面一颗的底边（按钮 40 pt + Signal 原来的 30 pt 间距）。
+    static let tellomiScrollButtonStackStep: CGFloat = -70
+
+    struct TellomiScrollButtonsLayout: Equatable {
+        var scrollDownHidden: Bool
+        var mentionHidden: Bool
+        var reactionHidden: Bool
+        /// 提及按钮底边相对滚到底按钮底边、回应按钮底边相对提及按钮底边（pt，往上为负）。
+        var mentionStack: CGFloat
+        var reactionStack: CGFloat
+    }
+
+    /// Tellomi（chat-telegram-parity F01 / F02）：三颗按钮各自藏不藏、怎么叠。提及、回应按钮有东西可跳就出现，不管滚到哪——
+    /// Telegram 两端都这样（iOS `ChatHistoryNavigationButtons` 看 `mentionCount != 0` / `reactionsCount != 0`，安卓
+    /// `showMentionDownButton` / `updateReactionsMentionButton`）；Signal 原来提及按钮只跟着滚到底按钮出现。录音、预览时都藏。
+    static func tellomiScrollButtonsLayout(
+        shouldScrollDownAppear: Bool,
+        isSuppressed: Bool,
+        unreadMentionCount: Int,
+        unseenReactionCount: Int,
+    ) -> TellomiScrollButtonsLayout {
+        let scrollDownHidden = isSuppressed || !shouldScrollDownAppear
+        let mentionHidden = isSuppressed || unreadMentionCount == 0
+        let reactionHidden = isSuppressed || unseenReactionCount == 0
+        return TellomiScrollButtonsLayout(
+            scrollDownHidden: scrollDownHidden,
+            mentionHidden: mentionHidden,
+            reactionHidden: reactionHidden,
+            mentionStack: scrollDownHidden ? 0 : tellomiScrollButtonStackStep,
+            reactionStack: mentionHidden ? 0 : tellomiScrollButtonStackStep,
+        )
     }
 }
 
@@ -213,6 +249,10 @@ extension ConversationViewController: UIScrollViewDelegate {
 
         // Tellomi（交互审计 A-08）：滚到（或滚过）滚到底按钮记着的来处，就不记了。
         tellomiFilterJumpBackStack()
+
+        // Tellomi（chat-telegram-parity F01）：露出来的回应算看到；列表停下时爆开。
+        tellomiMarkVisibleUnseenReactions()
+        tellomiPlayUnseenReactionBurstsIfIdle()
     }
 
     public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
@@ -322,7 +362,41 @@ extension ConversationViewController {
         view.addSubview(scrollToNextMentionButton)
         scrollToNextMentionButton.accessibilityIdentifier = "scrollToNextMentionButton"
 
-        scrollToNextMentionButton.autoPinEdge(.bottom, to: .top, of: scrollDownButton, withOffset: -30)
+        // Tellomi（chat-telegram-parity F01 / F02）：叠在滚到底按钮上，滚到底不在时落到它的位置（见 configureScrollDownButtons）。
+        let mentionStack = scrollToNextMentionButton.bottomAnchor.constraint(equalTo: scrollDownButton.bottomAnchor, constant: 0)
+        mentionStack.isActive = true
+        viewState.tellomiMentionButtonStackConstraint = mentionStack
         scrollToNextMentionButton.autoPinEdge(.trailing, to: .trailing, of: scrollDownButton)
+
+        scrollToNextReactionButton.addAction(
+            UIAction { [weak self] _ in self?.tellomiScrollToNextReactionButtonTapped() },
+            for: .primaryActionTriggered,
+        )
+        // Telegram 两端长按回应按钮都是「Read All Reactions」（iOS `reactionsButton.activated`、安卓 `ReadAllMentionsMenu`）。
+        scrollToNextReactionButton.menu = UIMenu(children: [
+            UIAction(
+                title: OWSLocalizedString(
+                    "TELLOMI_READ_ALL_REACTIONS",
+                    comment: "Tellomi (chat-telegram-parity F01): long press on the button that jumps to my messages with reactions I haven't seen, as in Telegram.",
+                ),
+                image: UIImage(named: "check-circle"),
+            ) { [weak self] _ in
+                self?.tellomiMarkAllReactionsSeen()
+            },
+        ])
+        scrollToNextReactionButton.showsMenuAsPrimaryAction = false
+        scrollToNextReactionButton.accessibilityLabel = OWSLocalizedString(
+            "TELLOMI_NEXT_UNSEEN_REACTION",
+            comment: "Tellomi (chat-telegram-parity F01): read out by VoiceOver on the button that jumps to my messages with reactions I haven't seen yet.",
+        )
+        scrollToNextReactionButton.isHidden = true
+        scrollToNextReactionButton.alpha = 0
+        view.addSubview(scrollToNextReactionButton)
+        scrollToNextReactionButton.accessibilityIdentifier = "scrollToNextReactionButton"
+
+        let reactionStack = scrollToNextReactionButton.bottomAnchor.constraint(equalTo: scrollToNextMentionButton.bottomAnchor, constant: 0)
+        reactionStack.isActive = true
+        viewState.tellomiReactionButtonStackConstraint = reactionStack
+        scrollToNextReactionButton.autoPinEdge(.trailing, to: .trailing, of: scrollDownButton)
     }
 }

@@ -11391,6 +11391,9 @@
 /* Tellomi: Switch on the log out page (off by default, shown only when there are linked devices): also log out the linked devices such as computers. */
 "TELLOMI_LOGOUT_UNLINK_DEVICES_SWITCH" = "同时让已链接的设备退出";
 
+/* Tellomi (chat-telegram-parity F01): read out by VoiceOver on the button that jumps to my messages with reactions I haven't seen yet. */
+"TELLOMI_NEXT_UNSEEN_REACTION" = "下一条新回应";
+
 /* Chat list banner shown while system notifications for Tellomi are turned off. */
 "TELLOMI_NOTIFICATIONS_DISABLED_REMINDER" = "通知已关闭。Tellomi 不在前台时，你不会收到新消息和来电的提醒。";
 
@@ -11411,6 +11414,9 @@
 
 /* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
 "TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "已取消回应";
+
+/* Tellomi (chat-telegram-parity F01): long press on the button that jumps to my messages with reactions I haven't seen, as in Telegram. */
+"TELLOMI_READ_ALL_REACTIONS" = "所有回应标为已读";
 
 /* Destructive confirmation in the scheduled messages list: delete this scheduled message. */
 "TELLOMI_SCHEDULED_MESSAGES_DELETE_MESSAGE" = "删除定时消息";

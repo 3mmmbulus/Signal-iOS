@@ -292,6 +292,8 @@ extension ConversationViewController: CVLoadCoordinatorDelegate {
 
         self.updateLastKnownDistanceFromBottom()
         self.showMessageRequestDialogIfRequired()
+        // Tellomi (chat-telegram-parity F01): before the buttons read the unseen reactions.
+        self.tellomiUnseenReactionsDidLoad()
         self.configureScrollDownButtons()
 
         let hasViewDidAppearEverCompleted = self.hasViewDidAppearEverCompleted

@@ -211,6 +211,9 @@ public extension TSMessage {
         // out. Everything else can be automatically read.
         if !(self is TSOutgoingMessage) { newReaction.markAsRead(transaction: tx) }
 
+        // Tellomi (chat-telegram-parity F01): remembered until seen in the chat, separately from `read` above.
+        TellomiUnseenReactions.didRecordReaction(on: self, reactor: reactor, tx: tx)
+
         SSKEnvironment.shared.databaseStorageRef.touch(interaction: self, shouldReindex: false, tx: tx)
 
         return (oldReaction, newReaction)
@@ -223,6 +226,7 @@ public extension TSMessage {
         }
 
         reaction.anyRemove(transaction: tx)
+        TellomiUnseenReactions.didRemoveReaction(on: self, tx: tx)
         SSKEnvironment.shared.databaseStorageRef.touch(interaction: self, shouldReindex: false, tx: tx)
 
         SSKEnvironment.shared.notificationPresenterRef.cancelNotifications(reactionId: reaction.uniqueId)

@@ -433,6 +433,9 @@ extension ConversationViewController {
         performMessageHighlightAnimationIfNeeded()
 
         focusVoiceoverElementAfterScroll()
+
+        // Tellomi（chat-telegram-parity F01）：点回应按钮跳的那条滚到了。
+        tellomiMarkVisibleUnseenReactions()
     }
 
     func resetForSizeOrOrientationChange() {

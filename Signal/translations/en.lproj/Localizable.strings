@@ -11634,6 +11634,9 @@
 /* Tellomi: Switch on the log out page (off by default, shown only when there are linked devices): also log out the linked devices such as computers. */
 "TELLOMI_LOGOUT_UNLINK_DEVICES_SWITCH" = "Also log out linked devices";
 
+/* Tellomi (chat-telegram-parity F01): read out by VoiceOver on the button that jumps to my messages with reactions I haven't seen yet. */
+"TELLOMI_NEXT_UNSEEN_REACTION" = "Next new reaction";
+
 /* Body of the one-time notification permission explanation sheet. Explains the purpose and that the system will ask next. */
 "TELLOMI_NOTIFICATION_PRIMER_BODY" = "When Tellomi isn't open, notifications tell you about new messages and calls. After you tap Continue, iOS will ask once. You can change this anytime in Settings.";
 
@@ -11654,6 +11657,9 @@
 
 /* Tellomi (interaction audit A-07): read out by VoiceOver after taking a reaction back. */
 "TELLOMI_REACTION_REMOVED_ANNOUNCEMENT" = "Reaction removed";
+
+/* Tellomi (chat-telegram-parity F01): long press on the button that jumps to my messages with reactions I haven't seen, as in Telegram. */
+"TELLOMI_READ_ALL_REACTIONS" = "Read All Reactions";
 
 /* Tellomi (ADR-0078): chat list notice while the account may not send any messages. Embeds the date and time the restriction ends. */
 "TELLOMI_RESTRICTION_ALL" = "Your account can't send messages until %@ because it broke the Tellomi Community Guidelines. You can still receive messages and read your chats.";
