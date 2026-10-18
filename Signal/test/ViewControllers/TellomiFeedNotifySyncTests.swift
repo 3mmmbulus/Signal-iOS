@@ -259,6 +259,33 @@ final class TellomiFeedNotifyUnreadTests: XCTestCase {
         XCTAssertEqual(other.count("list"), 2, "不带 Retry-After 的 5xx 不是限速，force 可以再问")
     }
 
+    func testBackoffWithoutRetryAfterGrowsAndASuccessStartsItOver() async {
+        let source = NSource()
+        source.listError = throttled(nil)
+        let clock = NClock(t0)
+        let feed = make(source, clock: clock)
+        feed.refreshNotificationUnread()
+        await feed.waitForNotificationUnread()
+        clock.advance(10)
+        feed.refreshNotificationUnread(force: true)
+        await feed.waitForNotificationUnread()
+        XCTAssertEqual(source.count("list"), 1, "第一次退避 15 秒（抖动取 0）")
+        clock.advance(6)
+        source.listError = nil
+        feed.refreshNotificationUnread(force: true)
+        await feed.waitForNotificationUnread()
+        XCTAssertEqual(source.count("list"), 2, "15 秒过了可以问；这次成功，退避从头算")
+        source.listError = throttled(nil)
+        feed.refreshNotificationUnread(force: true)
+        await feed.waitForNotificationUnread()
+        XCTAssertEqual(source.count("list"), 3)
+        clock.advance(16)
+        source.listError = nil
+        feed.refreshNotificationUnread(force: true)
+        await feed.waitForNotificationUnread()
+        XCTAssertEqual(source.count("list"), 4, "成功之后再被限速又是 15 秒，不是 30 秒")
+    }
+
     func testAFailureKeepsTheOldCountsAndIsSilent() async {
         let source = NSource()
         let feed = make(source)
@@ -674,7 +701,7 @@ final class TellomiFeedNotifyPresentationTests: XCTestCase {
         XCTAssertEqual(summary(note("1", "comment", actor: "e")), .commented(name: nil), "名字是空的当没查到")
         XCTAssertEqual(summary(note("1", "reply", actor: "b")), .replied(name: "乙"))
         XCTAssertEqual(summary(note("1", "comment", actor: "a", detail: FeedNotificationDetail(held: true))), .commentHeld(name: "甲"))
-        XCTAssertEqual(summary(note("1", "reply", actor: "a", detail: FeedNotificationDetail(held: true))), .commentHeld(name: "甲"))
+        XCTAssertEqual(summary(note("1", "reply", actor: "a", detail: FeedNotificationDetail(held: true))), .replyHeld(name: "甲"))
         XCTAssertEqual(summary(note("1", "follow", actor: "c", content: nil)), .followed(name: "丙"))
         XCTAssertEqual(summary(note("1", "follow_request", actor: "c", content: nil)), .followRequested(name: "丙"))
         XCTAssertEqual(summary(note("1", "system", actor: nil, detail: FeedNotificationDetail(type: "rejected"))), .system(.rejected))

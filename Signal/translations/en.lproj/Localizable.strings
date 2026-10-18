@@ -11476,6 +11476,114 @@
 "TELLOMI_FEED_NETWORK_ERROR" = "Couldn't refresh. Check your connection.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_COMMENT" = "%1$@ commented on your post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_COMMENT_HELD" = "%1$@ commented on your post. It's waiting for your approval.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_DELETE" = "Delete";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_DELETED" = "Notification deleted";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EARLIER" = "Earlier";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EMPTY_FOLLOWS" = "New followers and follow requests will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EMPTY_INTERACTIONS" = "Likes, comments and replies on your posts will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EMPTY_SYSTEM" = "Review results and appeal outcomes will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_FOLLOW" = "%1$@ started following you";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_FOLLOW_REQUEST" = "%1$@ asked to follow you";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LIKE" = "%1$@ liked your post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LIKE_MANY" = "%1$@ and %2$@ more liked your post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LIKE_PEOPLE" = "%@ people liked your post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LOAD_FAILED" = "Couldn't load notifications";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LOAD_MORE_FAILED" = "Couldn't load more notifications";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTED" = "You won't get notifications for this post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTED_LIKES" = "You won't get like notifications for this post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTE_ALL" = "Turn off notifications for this post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTE_LIKES" = "Turn off like notifications for this post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_POST_GONE" = "This post isn't available anymore";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_REPLY" = "%1$@ replied to your comment";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_REPLY_HELD" = "%1$@ replied to your comment. It's waiting for your approval.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SOMEONE" = "Someone";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_APPEAL_OVERTURNED" = "We reviewed your appeal. Your post is visible again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_APPEAL_UPHELD" = "We reviewed your appeal. The original decision stands.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_CLOSE_PERSON" = "%1$@ added you as a close person";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_EDIT_REJECTED" = "Your edit wasn't approved.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_OTHER" = "There's an update about your post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_REJECTED" = "Your post wasn't approved.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_TAKEN_DOWN" = "Your post was taken down.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TAB_FOLLOWS" = "Followers";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TAB_INTERACTIONS" = "Interactions";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TAB_SYSTEM" = "System";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_THIS_WEEK" = "This week";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TITLE" = "Notifications";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TODAY" = "Today";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOT_INTERESTED" = "Not interested";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

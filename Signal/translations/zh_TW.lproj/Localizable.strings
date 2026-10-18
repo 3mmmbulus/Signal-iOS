@@ -11362,6 +11362,114 @@
 "TELLOMI_FEED_NETWORK_ERROR" = "重新整理失敗，請檢查網路";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_COMMENT" = "%1$@ 留言了你的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_COMMENT_HELD" = "%1$@ 留言了你的動態，等你批准後公開";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_DELETE" = "刪除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_DELETED" = "已刪除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EARLIER" = "更早";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EMPTY_FOLLOWS" = "新的關注和關注請求會出現在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EMPTY_INTERACTIONS" = "別人讚、留言、回覆你的動態時會出現在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_EMPTY_SYSTEM" = "審核結果和申訴結果會出現在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_FOLLOW" = "%1$@ 關注了你";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_FOLLOW_REQUEST" = "%1$@ 請求關注你";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LIKE" = "%1$@ 讚了你的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LIKE_MANY" = "%1$@ 和另外 %2$@ 人讚了你的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LIKE_PEOPLE" = "%@ 人讚了你的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LOAD_FAILED" = "通知載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_LOAD_MORE_FAILED" = "更多通知載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTED" = "這則動態不會再通知你";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTED_LIKES" = "這則動態的讚不會再通知你";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTE_ALL" = "這則動態不再通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_MUTE_LIKES" = "這則動態只關閉讚的通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_POST_GONE" = "這則動態已經看不到了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_REPLY" = "%1$@ 回覆了你的留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_REPLY_HELD" = "%1$@ 回覆了你的留言，等你批准後公開";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SOMEONE" = "有人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_APPEAL_OVERTURNED" = "申訴結果：已恢復你的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_APPEAL_UPHELD" = "申訴結果：維持原處理";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_CLOSE_PERSON" = "%1$@ 把你設為關心的人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_EDIT_REJECTED" = "你的修改未通過審核";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_OTHER" = "你的動態有新消息";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_REJECTED" = "你的動態未通過審核";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SYSTEM_TAKEN_DOWN" = "你的動態已被下架";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TAB_FOLLOWS" = "新關注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TAB_INTERACTIONS" = "互動";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TAB_SYSTEM" = "系統通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_THIS_WEEK" = "七天內";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TITLE" = "通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_TODAY" = "今天";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOT_INTERESTED" = "不感興趣";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

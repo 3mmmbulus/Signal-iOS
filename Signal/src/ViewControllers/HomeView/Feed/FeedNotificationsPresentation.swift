@@ -21,8 +21,9 @@ enum FeedNotificationSummary: Equatable {
     case liked(names: [String], total: Int)
     case commented(name: String?)
     case replied(name: String?)
-    /// 评论在等我批准（被限制的人、或者开了评论审核）。
+    /// 评论 / 回复在等我批准（被限制的人、或者开了评论审核）。
     case commentHeld(name: String?)
+    case replyHeld(name: String?)
     case followed(name: String?)
     case followRequested(name: String?)
     case system(FeedSystemNotificationKind)
@@ -125,7 +126,7 @@ struct FeedNotificationsPresentation: Equatable {
         case FeedNotification.kindComment:
             return row.held ? .commentHeld(name: first) : .commented(name: first)
         case FeedNotification.kindReply:
-            return row.held ? .commentHeld(name: first) : .replied(name: first)
+            return row.held ? .replyHeld(name: first) : .replied(name: first)
         case FeedNotification.kindFollow:
             return .followed(name: first)
         case FeedNotification.kindFollowRequest:
