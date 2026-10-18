@@ -11689,6 +11689,48 @@
 "TELLOMI_FEED_RETRY" = "Retry";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_CLEAR" = "Clear";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_FAILED" = "Search failed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_HINT" = "Search for people and posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_MORE_FAILED" = "Couldn't load more results";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_NO_RESULTS_FORMAT" = "No results for “%@”";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_PLACEHOLDER" = "Search people and posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_POSTS_HEADER" = "Posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_RECENT_PEOPLE" = "Recently viewed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_RECENT_QUERIES" = "Recent searches";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_REMOVE" = "Remove";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_SCOPE_ALL" = "All";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_SCOPE_POSTS" = "Posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_SCOPE_USERS" = "People";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_USERS_HEADER" = "People";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TAB_FOLLOWING" = "Following";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

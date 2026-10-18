@@ -11575,6 +11575,48 @@
 "TELLOMI_FEED_RETRY" = "重試";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_CLEAR" = "清除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_FAILED" = "搜尋失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_HINT" = "搜尋用戶同動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_MORE_FAILED" = "無法載入更多結果";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_NO_RESULTS_FORMAT" = "搵唔到「%@」嘅結果";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_PLACEHOLDER" = "搜尋用戶同動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_POSTS_HEADER" = "動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_RECENT_PEOPLE" = "最近睇過";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_RECENT_QUERIES" = "最近搜尋";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_REMOVE" = "刪除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_SCOPE_ALL" = "全部";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_SCOPE_POSTS" = "動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_SCOPE_USERS" = "用戶";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_USERS_HEADER" = "用戶";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TAB_FOLLOWING" = "關注";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
