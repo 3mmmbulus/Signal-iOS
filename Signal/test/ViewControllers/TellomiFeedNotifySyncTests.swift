@@ -727,6 +727,7 @@ final class TellomiFeedNotifyPresentationTests: XCTestCase {
         XCTAssertNil(FeedNotificationsPresentation.target(for: row(note("1", "follow", actor: nil, content: nil))))
         XCTAssertEqual(FeedNotificationsPresentation.target(for: row(note("1", "system", actor: nil, content: nil, detail: FeedNotificationDetail(type: "close_person_request", profileId: "o")))), .profile(id: "o"))
         XCTAssertNil(FeedNotificationsPresentation.target(for: row(note("1", "system", actor: nil, detail: FeedNotificationDetail(type: "taken_down")))), "被下架的通知不能点")
+        XCTAssertNil(FeedNotificationsPresentation.target(for: row(note("1", "system", actor: nil, content: nil, detail: FeedNotificationDetail(type: "rejected", profileId: "o")))), "只有亲密好友请求能点，别的系统通知哪怕带了 profile_id 也不能")
         XCTAssertNil(FeedNotificationsPresentation.target(for: row(note("1", "weird"))))
 
         XCTAssertTrue(FeedNotificationsPresentation.canMute(row(note("1", "like"))))
@@ -778,6 +779,7 @@ final class TellomiFeedNotifySampleTests: XCTestCase {
         response = try await source.notifications(tab: "interactions", before: nil)
         XCTAssertFalse(response.notifications.contains { $0.id == "n-i-4" })
         XCTAssertFalse(response.notifications.contains { $0.contentId == "sample-0" && $0.kind == "like" })
+        XCTAssertTrue(response.notifications.contains { $0.id == "n-i-12" && $0.contentId == "sample-0" }, "只关赞：sample-0 上的评论还在")
         try await source.muteNotifications(contentId: "sample-1", likesOnly: false)
         response = try await source.notifications(tab: "interactions", before: nil)
         XCTAssertFalse(response.notifications.contains { $0.contentId == "sample-1" })
