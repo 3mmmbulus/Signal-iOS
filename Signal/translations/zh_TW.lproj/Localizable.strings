@@ -11344,10 +11344,16 @@
 "TELLOMI_FEED_NOT_INTERESTED" = "不感興趣";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REQUIRED" = "需要先建立公開主頁";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "推薦的動態會出現在這裡。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "還沒有內容";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SENT" = "已收到你的檢舉，我們會盡快處理。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RETRY" = "重試";
@@ -11363,6 +11369,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TELLOMI_NUMBER_FORMAT" = "Tellomi 號：%@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_THROTTLED" = "操作太頻繁，請稍後再試。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_THROTTLED_FORMAT" = "操作太頻繁，請 %@ 秒後再試。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNDO" = "復原";

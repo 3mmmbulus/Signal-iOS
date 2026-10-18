@@ -588,4 +588,122 @@ final class TellomiFeedDetailUITests: XCTestCase {
         }
     }
 
+    // MARK: - 「···」做完之后：提示、关页
+
+    /// 新的几种提示都有本地化文字（不是键名），限速带秒数、没有秒数各一句。
+    @MainActor
+    func testTheNewNoticesHaveLocalizedToasts() {
+        typealias VC = FeedPostDetailViewController
+        for notice in [FeedPostDetailState.Notice.commentDeleted, .reported, .throttled, .hideProfileRequired, .failed] {
+            let text = VC.toastText(for: notice)
+            XCTAssertNotNil(text, "\(notice)")
+            XCTAssertFalse(text?.hasPrefix("TELLOMI_") ?? true)
+        }
+        XCTAssertTrue(VC.toastText(for: .throttled, retryAfterSeconds: 30)?.contains("30") ?? false, "带秒数")
+        XCTAssertFalse(VC.toastText(for: .throttled)?.contains("%") ?? true)
+        XCTAssertNotEqual(VC.toastText(for: .throttled), VC.toastText(for: .throttled, retryAfterSeconds: 30))
+        XCTAssertNil(VC.toastText(for: .holdToRecord))
+    }
+
+    /// 删自己的评论成功：提示「评论已删除」，评论没了；失败：评论留着，提示「操作失败」；限速：提示带秒数。
+    @MainActor
+    func testDeleteCommentToastsForSuccessFailureAndThrottle() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        open.confirmDestructive = { _, proceed in proceed() }
+
+        func postMine(_ text: String) async throws -> FeedCard {
+            type(text, into: open.commentInput)
+            open.commentInput.sendButton.sendActions(for: .touchUpInside)
+            await open.detailStore.waitForTasks()
+            try await Task.sleep(nanoseconds: 50_000_000)
+            return try XCTUnwrap(open.detailStore.state.comments.last)
+        }
+
+        let first = try await postMine("第一条")
+        source.simulation.failsDeletes = true
+        open.handleMenuItem(.deleteComment, comment: first)
+        await open.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(open.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
+        XCTAssertTrue(open.detailStore.state.comments.contains { $0.id == first.id }, "失败：留着")
+
+        source.simulation.failsDeletes = false
+        source.simulation.throttledRetryAfterSeconds = 42
+        open.handleMenuItem(.deleteComment, comment: first)
+        await open.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertTrue(open.lastToastText?.contains("42") ?? false, "限速：说要等几秒")
+        XCTAssertTrue(open.detailStore.state.comments.contains { $0.id == first.id })
+
+        source.simulation.throttledRetryAfterSeconds = nil
+        open.handleMenuItem(.deleteComment, comment: first)
+        await open.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(open.lastToastText, OWSLocalizedString("TELLOMI_FEED_COMMENT_DELETED", comment: ""))
+        XCTAssertFalse(open.detailStore.state.comments.contains { $0.id == first.id })
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 「不感兴趣」成了：详情页关掉，列表那一行换成可撤销的反馈卡。失败：留在页面、提示「操作失败」。
+    @MainActor
+    func testNotInterestedClosesThePageAndTheListRowBecomesAFeedbackCard() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let id = harness.store.tab(.recommend).cards[2].id
+
+        source.simulation.failsNotInterested = true
+        let failing = try XCTUnwrap(harness.openPost(row: 2))
+        failing.handleMenuItem(.notInterested)
+        await failing.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertNil(failing.closeReason)
+        XCTAssertTrue(harness.navigation.topViewController === failing, "失败：还在这一页")
+        XCTAssertEqual(failing.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
+        XCTAssertFalse(harness.store.hiddenIds.contains(id))
+        harness.pop()
+
+        source.simulation.failsNotInterested = false
+        let detail = try XCTUnwrap(harness.openPost(row: 2))
+        detail.handleMenuItem(.notInterested)
+        await detail.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertEqual(detail.closeReason, .notInterested)
+        XCTAssertTrue(harness.navigation.topViewController === harness.feed, "成了：页面关掉")
+        XCTAssertTrue(harness.store.hiddenIds.contains(id), "列表那一行是反馈卡")
+        harness.window.isHidden = true
+    }
+
+    /// 动态被关了（404 feed_hidden）：页面关掉、不弹「操作失败」；限速时留在页面并提示秒数。
+    @MainActor
+    func testFeedHiddenClosesThePageAndThrottleKeepsIt() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+
+        source.simulation.throttledRetryAfterSeconds = 15
+        let throttled = try XCTUnwrap(harness.openPost(row: 1))
+        throttled.handleMenuItem(.notInterested)
+        await throttled.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertNil(throttled.closeReason)
+        XCTAssertTrue(throttled.lastToastText?.contains("15") ?? false)
+        harness.pop()
+
+        source.simulation.throttledRetryAfterSeconds = nil
+        source.simulation.feedHidden = true
+        let hidden = try XCTUnwrap(harness.openPost(row: 1))
+        hidden.handleMenuItem(.notInterested)
+        await hidden.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertEqual(hidden.closeReason, .feedHidden)
+        XCTAssertNil(hidden.lastToastText, "不弹「操作失败」")
+        XCTAssertTrue(harness.navigation.topViewController === harness.feed)
+        harness.window.isHidden = true
+    }
+
 }

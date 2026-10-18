@@ -154,6 +154,7 @@ final class FeedPostDetailViewController: OWSViewController {
         post = state.post
         showIpRegion = state.showIpRegion || fallbackShowIpRegion
         updateNavigationMenu(items: FeedDetailMenu.shown(state.postMenu, reportAvailable: onReport != nil))
+        closeIfFinished(state)
 
         var newRows: [Row] = [.post]
         let phase = FeedPostDetailPresentation.commentsPhase(for: state)
@@ -271,13 +272,52 @@ final class FeedPostDetailViewController: OWSViewController {
         }
     }
 
+    // MARK: - 做完就关页
+
+    /// 页面为什么关的（单测 / 截图用）。
+    enum CloseReason: Equatable {
+        /// 「不感兴趣」成了：列表那一行已经换成可撤销的反馈卡。
+        case notInterested
+        /// 自己的帖子删掉了：列表里已经去掉。
+        case deleted
+        /// 引擎说这个区域的动态关了（404 `feed_hidden`）。
+        case feedHidden
+    }
+
+    private(set) var closeReason: CloseReason?
+
+    /// 不感兴趣 / 删帖成了、或动态被关了：关掉这一页（只关一次）。`apply` 是 store 改 `state` 的 didSet 里调进来的，所以放到下一轮主线程里再弹出。
+    private func closeIfFinished(_ state: FeedPostDetailState) {
+        guard closeReason == nil else { return }
+        let reason: CloseReason
+        if state.leaving != nil {
+            reason = .notInterested
+        } else if state.deleted {
+            reason = .deleted
+        } else if state.feedHidden {
+            reason = .feedHidden
+        } else {
+            return
+        }
+        closeReason = reason
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let navigationController = self.navigationController else { return }
+            if navigationController.topViewController === self {
+                navigationController.popViewController(animated: true)
+            } else {
+                // 上面盖着别的页面（比如举报页）：把自己从栈里拿掉，不动上面那页
+                navigationController.viewControllers.removeAll { $0 === self }
+            }
+        }
+    }
+
     /// 最近一次弹出的提示文字（单测 / 截图用）。
     private(set) var lastToastText: String?
 
     /// store 里的一次性提示（`notice`）：有对应文案就弹一句，然后清掉。点赞失败（已经改回）用列表同一句「操作失败」。
     private func consumeNotice() {
         guard let notice = store.state.notice else { return }
-        if let text = Self.toastText(for: notice) {
+        if let text = Self.toastText(for: notice, retryAfterSeconds: store.state.retryAfterSeconds) {
             lastToastText = text
             let placement = Self.toastPlacement(inputVisible: !commentInput.isHidden, keyboardUp: commentInput.textView.isFirstResponder)
             lastToastPlacement = placement
@@ -318,8 +358,22 @@ final class FeedPostDetailViewController: OWSViewController {
         }
     }
 
-    static func toastText(for notice: FeedPostDetailState.Notice) -> String? {
+    static func toastText(for notice: FeedPostDetailState.Notice, retryAfterSeconds: Int? = nil) -> String? {
         switch notice {
+        case .commentDeleted:
+            return OWSLocalizedString("TELLOMI_FEED_COMMENT_DELETED", comment: "Feed: toast after the user deleted their own comment.")
+        case .reported:
+            return OWSLocalizedString("TELLOMI_FEED_REPORT_SENT", comment: "Feed: toast after a report was submitted.")
+        case .throttled:
+            if let seconds = retryAfterSeconds {
+                return String(
+                    format: OWSLocalizedString("TELLOMI_FEED_THROTTLED_FORMAT", comment: "Feed: toast when the server says to slow down. Embeds {{the number of seconds to wait}}."),
+                    OWSFormat.formatInt(seconds),
+                )
+            }
+            return OWSLocalizedString("TELLOMI_FEED_THROTTLED", comment: "Feed: toast when the server says to slow down and gives no time.")
+        case .hideProfileRequired:
+            return OWSLocalizedString("TELLOMI_FEED_PROFILE_REQUIRED", comment: "Feed: toast when an action needs the user to set up their public profile first.")
         case .failed:
             // 点赞失败（已改回）、发评论失败（文字还留在输入框里）都用列表那句「操作失败」
             return OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: "Feed: toast when liking or another action on a post failed.")

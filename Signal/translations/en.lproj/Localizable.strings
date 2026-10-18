@@ -11458,10 +11458,16 @@
 "TELLOMI_FEED_NOT_INTERESTED" = "Not interested";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REQUIRED" = "Set up your public profile first";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "Recommended posts will show up here.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "Nothing here yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SENT" = "Thanks. We'll review your report.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RETRY" = "Retry";
@@ -11477,6 +11483,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TELLOMI_NUMBER_FORMAT" = "Tellomi No. %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_THROTTLED" = "Too many requests. Please try again later.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_THROTTLED_FORMAT" = "Too many requests. Try again in %@ seconds.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNDO" = "Undo";
