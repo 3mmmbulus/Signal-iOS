@@ -27,6 +27,19 @@ final class SampleFeedSource: FeedSource {
     /// 已经让它失败过一次的帖子（见 `failsFirstCommentLoad`）：重试就成功。
     private var failedCommentLoads = Set<String>()
 
+    /// 给人看界面 / 截图用的开关（只在样例里有，默认全是 0 / false：行为和以前一样）。可以随时改。
+    struct Simulation {
+        /// 取最新卡片（Card API）前先等一会儿：帖子详情页打开后这么久才知道「已不可见」，能截到中间那一帧。
+        var cardLatencyNanos: UInt64 = 0
+    }
+
+    private var storedSimulation = Simulation()
+
+    var simulation: Simulation {
+        get { locked { storedSimulation } }
+        set { locked { storedSimulation = newValue } }
+    }
+
     init(now: @escaping () -> Date = Date.init, commentsLatencyNanos: UInt64 = 500_000_000) {
         self.now = now
         self.commentsLatencyNanos = commentsLatencyNanos
@@ -128,6 +141,10 @@ final class SampleFeedSource: FeedSource {
     }
 
     func card(contentId: String) async throws -> FeedCard? {
+        let latency = simulation.cardLatencyNanos
+        if latency > 0 {
+            try? await Task.sleep(nanoseconds: latency)
+        }
         return locked {
             guard !Self.goneIds.contains(contentId) else { return nil }
             guard var card = (mine + recommend).first(where: { $0.id == contentId }) else { return nil }

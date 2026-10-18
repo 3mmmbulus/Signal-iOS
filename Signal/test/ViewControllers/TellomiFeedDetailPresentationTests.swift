@@ -238,6 +238,18 @@ final class TellomiFeedSampleDetailStoreTests: XCTestCase {
         XCTAssertFalse(FeedPostDetailPresentation.hasMoreComments(for: store.state))
     }
 
+    func testTheCardLatencyKnobDelaysTheGoneStateAndDefaultsToNone() async throws {
+        let source = SampleFeedSource(now: { Date(timeIntervalSince1970: 1_791_889_200) }, commentsLatencyNanos: 0)
+        XCTAssertEqual(source.simulation.cardLatencyNanos, 0, "默认不等")
+        source.simulation.cardLatencyNanos = 400_000_000
+        let store = FeedPostDetailStore(initial: FeedCard(id: "sample-7"), source: source)
+        store.start()
+        try await Task.sleep(nanoseconds: 60_000_000)
+        XCTAssertFalse(store.state.postGone, "还在等 Card API：先显示帖子")
+        await store.waitForTasks()
+        XCTAssertTrue(store.state.postGone)
+    }
+
     func testAPostWithoutCommentsEndsInEmpty() async throws {
         let store = try await store("sample-4")
         store.start()

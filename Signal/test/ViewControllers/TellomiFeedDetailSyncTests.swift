@@ -548,6 +548,42 @@ final class TellomiFeedDetailSyncTests: XCTestCase {
         XCTAssertNotNil(feed.card(id: "a"))
     }
 
+    func testDetachStopsListeningAndLetsGoOfTheBorrowedCardWhileTheListKeepsWorking() async {
+        let source = SyncSource()
+        let feed = await loadedStore(source, cards: [card("a", likes: 3)])
+        let detail = FeedPostDetailStore(initial: card("z", likes: 5), source: source, feed: feed)
+        XCTAssertTrue(detail.isObservingFeed)
+        XCTAssertEqual(feed.subscriberCount, 1)
+        XCTAssertNotNil(feed.card(id: "z"))
+
+        detail.detach()
+        XCTAssertFalse(detail.isObservingFeed)
+        XCTAssertEqual(feed.subscriberCount, 0)
+        XCTAssertNil(feed.card(id: "z"), "不在两栏里的卡片，放手后从 store 清掉")
+
+        feed.toggleLike(id: "a")
+        await feed.waitForActions()
+        XCTAssertEqual(feed.card(id: "a")?.stats.likes, 4)
+        XCTAssertEqual(source.likeCalls, ["a:true"])
+
+        detail.detach()
+        XCTAssertEqual(feed.subscriberCount, 0, "重复放手没事")
+    }
+
+    func testADetachedDetailNoLongerFollowsTheList() async {
+        let source = SyncSource()
+        let feed = await loadedStore(source, cards: [card("a", likes: 3)])
+        let detail = FeedPostDetailStore(initial: feed.tab(.recommend).cards[0], source: source, feed: feed)
+        feed.toggleLike(id: "a")
+        XCTAssertTrue(detail.state.post.viewer.liked, "放手前跟着")
+        await feed.waitForActions()
+        detail.detach()
+        feed.toggleLike(id: "a")
+        XCTAssertFalse(feed.card(id: "a")?.viewer.liked ?? true)
+        XCTAssertTrue(detail.state.post.viewer.liked, "放手后不再跟")
+        await feed.waitForActions()
+    }
+
     func testTheFreshCardFromTheDetailRefreshesTheListCopyAndKeepsWhoReposted() async {
         let source = SyncSource()
         var listCard = card("a", likes: 3, comments: 1)

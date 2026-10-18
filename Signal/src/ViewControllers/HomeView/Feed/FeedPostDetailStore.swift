@@ -137,6 +137,19 @@ final class FeedPostDetailStore {
 
     // MARK: - 和信息流 store 同步
 
+    /// 还在订阅信息流 store 吗（单测 / 页面检查用）。
+    var isObservingFeed: Bool {
+        return subscription?.isActive == true
+    }
+
+    /// 页面离开了（弹出、关闭）：不再订阅信息流 store、放掉借着的卡片。可以重复调用；放手之后 `state.post` 不再跟着列表变。
+    /// 页面销毁时这两样本来就会随 store 一起释放（store 里只弱引用），这里是让页面在 `viewDidDisappear` 里就能明确放手、并且能被测试到。
+    func detach() {
+        subscription?.cancel()
+        subscription = nil
+        lease = nil
+    }
+
     private func onFeedChange(_ change: FeedChange) {
         switch change {
         case .cards(let ids):
