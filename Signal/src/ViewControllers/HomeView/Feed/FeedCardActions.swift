@@ -288,4 +288,8 @@ struct FeedInFlight {
     mutating func end(_ id: String) {
         ids.remove(id)
     }
+
+    func contains(_ id: String) -> Bool {
+        return ids.contains(id)
+    }
 }

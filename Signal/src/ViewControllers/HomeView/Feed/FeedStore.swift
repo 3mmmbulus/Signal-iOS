@@ -50,13 +50,27 @@ final class FeedStore {
     /// 点了「不感兴趣」、还没撤销的。卡片留在列表里，显示成反馈卡。
     private(set) var hiddenIds = Set<String>()
 
-    /// 某一栏（nil = 全部）变了。
+    /// 某一栏（nil = 全部）变了。只有一个接收者（列表页）；要多个页面一起订阅用 `subscribe`。
     var onChange: ((FeedTab?) -> Void)?
     var onTransientError: ((TransientError) -> Void)?
     var onNotice: ((Notice) -> Void)?
 
     /// 「查看数据」弹窗；nil = 没开。变了会走 `onChange(nil)`。
     private(set) var insights: FeedInsightsState?
+
+    private struct Weak<T: AnyObject> {
+        weak var value: T?
+        init(_ value: T) { self.value = value }
+    }
+
+    private var subscriptions = [Weak<FeedSubscription>]()
+    /// 被详情页借走的卡片（见 `retain`）。只有卡片被借着的时候才有；借的人都放手了就清掉。
+    private var heldCards = [String: FeedCard]()
+    private var leases = [Weak<FeedCardLease>]()
+    /// 每张卡片正在路上的点赞请求数（连点会有几个）：路上有请求时，刚取回来的卡片不能把界面上的赞改回服务端的旧值。
+    private var likesInFlight = [String: Int]()
+    private var likeConfirmed = [String: Bool]()
+    private var likeTails = [String: Task<Void, Never>]()
 
     private var saving = FeedInFlight()
     private var reposting = FeedInFlight()
@@ -85,6 +99,120 @@ final class FeedStore {
         self.blockedKeywords = blockedKeywords
         self.now = now
         self.jitter = jitter
+    }
+
+    // MARK: - 订阅、按 id 取卡片、借卡片（列表页和详情页共用一个 store）
+
+    /// 订阅所有变化（`FeedChange`）。返回的回执要一直拿着（`cancel()` 或放掉就停）；通知在主线程、改动发生的当下同步发出，
+    /// 收到时 `card(id:)` 已经是新值。可以在回调里取消自己或再改 store（通知发出前先取了一份接收者名单）。
+    func subscribe(_ handler: @escaping (FeedChange) -> Void) -> FeedSubscription {
+        let subscription = FeedSubscription(handler)
+        subscriptions.append(Weak(subscription))
+        return subscription
+    }
+
+    /// 现在订着的接收者数（单测用）。
+    var subscriberCount: Int {
+        return subscriptions.filter { $0.value?.isActive == true }.count
+    }
+
+    /// 订阅列表里占着的位子数，包括已经取消 / 放掉、还没清掉的（单测用：确认通知一轮之后会清干净，不会越攒越多）。
+    var subscriptionSlotCount: Int {
+        return subscriptions.count
+    }
+
+    private func notify(_ change: FeedChange) {
+        switch change {
+        case .list(let tab):
+            onChange?(tab)
+        case .cards:
+            onChange?(nil)
+        case .actionFailed:
+            break
+        }
+        subscriptions.removeAll { $0.value?.isActive != true }
+        for subscription in subscriptions.compactMap(\.value) {
+            subscription.deliver(change)
+        }
+    }
+
+    /// 按 id 取一张卡片的**当前**样子：被借着的先取借着的，否则取两栏里找到的第一张（改动会同时改到所有副本，所以一样）。找不到是 nil。
+    func card(id: String) -> FeedCard? {
+        pruneLeases()
+        if let held = heldCards[id] {
+            return held
+        }
+        for feedTab in FeedTab.allCases {
+            if let card = self.tab(feedTab).cards.first(where: { $0.id == id }) {
+                return card
+            }
+        }
+        return nil
+    }
+
+    /// 详情页打开一张卡片时借一下：返回凭证，页面拿着。卡片在 store 里已经有（两栏里）就用 store 里的当前样子，不用传进来的。
+    func retain(_ card: FeedCard) -> FeedCardLease {
+        pruneLeases()
+        let lease = FeedCardLease(id: card.id)
+        leases.append(Weak(lease))
+        if heldCards[card.id] == nil {
+            heldCards[card.id] = self.card(id: card.id) ?? card
+        }
+        return lease
+    }
+
+    private func pruneLeases() {
+        leases.removeAll { $0.value == nil }
+        let live = Set(leases.compactMap { $0.value?.id })
+        for id in heldCards.keys where !live.contains(id) {
+            heldCards.removeValue(forKey: id)
+        }
+    }
+
+    /// 取到了一张最新的卡片（详情页的 Card API）：换掉 store 里这张的所有副本，列表马上看到新的赞数、评论数。
+    /// 保留：列表专有的「谁转发了」（Card API 不带）、路上还没回来的点赞 / 收藏 / 转发（界面上的改动不被旧值盖掉）。
+    func ingest(_ fresh: FeedCard) {
+        var changed = false
+        for tab in FeedTab.allCases {
+            var state = self.tab(tab)
+            guard let index = state.cards.firstIndex(where: { $0.id == fresh.id }) else { continue }
+            let merged = reconciled(fresh, local: state.cards[index], keepListOnlyFields: true)
+            if merged != state.cards[index] {
+                state.cards[index] = merged
+                tabStates[tab] = state
+                changed = true
+            }
+        }
+        if let held = heldCards[fresh.id] {
+            let merged = reconciled(fresh, local: held, keepListOnlyFields: true)
+            if merged != held {
+                heldCards[fresh.id] = merged
+                changed = true
+            }
+        }
+        if changed {
+            notify(.cards([fresh.id]))
+        }
+    }
+
+    private func reconciled(_ fresh: FeedCard, local: FeedCard?, keepListOnlyFields: Bool) -> FeedCard {
+        var card = fresh
+        guard let local else { return card }
+        if keepListOnlyFields {
+            card.repostedBy = local.repostedBy
+        }
+        if likesInFlight[card.id, default: 0] > 0 {
+            card.viewer.liked = local.viewer.liked
+            card.stats.likes = local.stats.likes
+        }
+        if saving.contains(card.id) {
+            card.viewer.saved = local.viewer.saved
+        }
+        if reposting.contains(card.id) {
+            card.viewer.reposted = local.viewer.reposted
+            card.stats.reposts = local.stats.reposts
+        }
+        return card
     }
 
     // MARK: - Impressions（契约 6.1）
@@ -226,7 +354,7 @@ final class FeedStore {
             let config = try await source.config()
             self.config = config
             tabs = FeedTab.fromApiNames(config.tabs)
-            onChange?(nil)
+            notify(.list(nil))
         } catch {
             Logger.warn("feed config failed: \(error)")
         }
@@ -269,7 +397,8 @@ final class FeedStore {
                 guard !Task.isCancelled, let self else { return }
                 // 「完全屏蔽」的词在本机过滤（第三节第 12 条）；只作用于信息流这两栏
                 let blocked = self.blockedKeywords?.active(now: self.now()) ?? []
-                let incoming = page.cards.filter { $0.isRenderable && !$0.matchesAny(blocked) }
+                let incoming = page.cards.filter { $0.isRenderable && !$0.matchesAny(blocked) }.map { self.reconciled($0, local: self.card(id: $0.id), keepListOnlyFields: false) }
+                self.refreshHeldCopies(from: incoming)
                 self.update(tab) { state in
                     state.cards = refresh ? Self.mergeRefresh(incoming: incoming, existing: state.cards) : Self.appendPage(existing: state.cards, incoming: incoming)
                     state.nextCursor = page.nextCursor
@@ -295,19 +424,60 @@ final class FeedStore {
     }
 
     func toggleLike(_ card: FeedCard) {
-        let nowLiked = !card.viewer.liked
-        updateCard(card.id) { $0 = Self.withLiked($0, nowLiked) }
+        setLike(id: card.id, to: !card.viewer.liked)
+    }
 
-        Task { [weak self, source] in
+    /// 按 id 点赞 / 取消：以 store 里这张卡片**现在**的样子为准（详情页没有自己的副本，不会拿着过期的卡片反着点）。找不到这张卡片就什么都不做。
+    func toggleLike(id: String) {
+        guard let current = card(id: id) else { return }
+        setLike(id: id, to: !current.viewer.liked)
+    }
+
+    /// 先改界面（所有副本一起改、所有订阅者都收到），再发请求。
+    /// 同一张卡片的点赞请求**排队一个一个发**（后一个等前一个回来），不会乱序、服务器上最后落的一定是最后一次点的。
+    /// 失败：前面还有后续请求在路上的，由后续的结果说了算；最后一个失败才改回「服务器已确认的那个状态」，发 `actionFailed`，列表页另有 `onTransientError`。
+    private func setLike(id: String, to nowLiked: Bool) {
+        if likesInFlight[id] == nil, let current = card(id: id) {
+            likeConfirmed[id] = current.viewer.liked
+        }
+        updateCard(id) { $0 = Self.withLiked($0, nowLiked) }
+        likesInFlight[id, default: 0] += 1
+        let previous = likeTails[id]
+        let task = Task { [weak self, source] in
+            await previous?.value
+            var failed = false
             do {
-                try await source.setLiked(contentId: card.id, liked: nowLiked)
+                try await source.setLiked(contentId: id, liked: nowLiked)
             } catch {
                 Logger.warn("feed like failed: \(error)")
-                guard let self else { return }
-                self.updateCard(card.id) { $0 = Self.withLiked($0, !nowLiked) }
+                failed = true
+            }
+            guard let self else { return }
+            if !failed { self.likeConfirmed[id] = nowLiked }
+            let remaining = self.finishLike(id)
+            guard remaining == 0 else { return }
+            let confirmed = self.likeConfirmed.removeValue(forKey: id)
+            self.likeTails.removeValue(forKey: id)
+            if failed {
+                self.updateCard(id) { $0 = Self.withLiked($0, confirmed ?? !nowLiked) }
+                self.notify(.actionFailed(cardId: id))
                 self.onTransientError?(.actionFailed)
             }
         }
+        likeTails[id] = task
+        actionTasks.append(task)
+    }
+
+    /// 返回这张卡片还在路上的点赞请求数。
+    @discardableResult
+    private func finishLike(_ id: String) -> Int {
+        let remaining = likesInFlight[id, default: 0] - 1
+        if remaining > 0 {
+            likesInFlight[id] = remaining
+            return remaining
+        }
+        likesInFlight.removeValue(forKey: id)
+        return 0
     }
 
     // MARK: - 卡片上的动作（I-3）
@@ -418,7 +588,7 @@ final class FeedStore {
 
     private func loadInsights(_ contentId: String) {
         insights = .loading
-        onChange?(nil)
+        notify(.list(nil))
         actionTasks.append(Task { [weak self, source] in
             let result: FeedInsightsState
             do {
@@ -429,18 +599,18 @@ final class FeedStore {
             }
             guard let self, self.insights != nil else { return }   // 等的时候关掉了弹窗就不再弹
             self.insights = result
-            self.onChange?(nil)
+            self.notify(.list(nil))
         })
     }
 
     func onInsightsDismissed() {
         insights = nil
-        onChange?(nil)
+        notify(.list(nil))
     }
 
     func notInterested(_ card: FeedCard) {
         hiddenIds.insert(card.id)
-        onChange?(nil)
+        notify(.list(nil))
         Task { [source] in
             do {
                 try await source.notInterested(contentId: card.id)
@@ -452,7 +622,7 @@ final class FeedStore {
 
     func undoNotInterested(_ cardId: String) {
         guard hiddenIds.remove(cardId) != nil else { return }
-        onChange?(nil)
+        notify(.list(nil))
         Task { [source] in
             do {
                 try await source.undoNotInterested(contentId: cardId)
@@ -475,16 +645,28 @@ final class FeedStore {
         var state = self.tab(tab)
         transform(&state)
         tabStates[tab] = state
-        onChange?(tab)
+        notify(.list(tab))
     }
 
-    private func updateCard(_ id: String, _ transform: (inout FeedCard) -> Void) {
+    /// 改一张卡片：两栏里的、被借着的，所有副本一起改，然后通知所有订阅者。详情页的收藏 / 转发 / 投票 / 置顶也走这里。
+    func updateCard(_ id: String, _ transform: (inout FeedCard) -> Void) {
         for (tab, var state) in tabStates {
             guard let index = state.cards.firstIndex(where: { $0.id == id }) else { continue }
             transform(&state.cards[index])
             tabStates[tab] = state
         }
-        onChange?(nil)
+        if var held = heldCards[id] {
+            transform(&held)
+            heldCards[id] = held
+        }
+        notify(.cards([id]))
+    }
+
+    /// 一页新取回来的卡片里，有被借着的就同步一下借着的那份（两份来自同一个服务端，不能一份新一份旧）。
+    private func refreshHeldCopies(from incoming: [FeedCard]) {
+        for card in incoming where heldCards[card.id] != nil {
+            heldCards[card.id] = reconciled(card, local: heldCards[card.id], keepListOnlyFields: true)
+        }
     }
 
     /// 下拉刷新：新结果在上，旧的里面和新结果重复的去掉（契约 4.1）。

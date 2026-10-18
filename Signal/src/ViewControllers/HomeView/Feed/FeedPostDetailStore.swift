@@ -97,6 +97,12 @@ struct FeedPostDetailState {
 final class FeedPostDetailStore {
     private let source: FeedSource
     private let savedMessages: FeedSavedMessages?
+    /// 和信息流共用的 store（nil = 独立运行，帖子只在 `state.post` 里，单测和还没接上的页面用）。
+    /// 有它的时候，帖子的**唯一**数据在它里面：`state.post` 只是每次它变了之后从它重新读的投影，详情页自己从不单独改；
+    /// 赞、收藏、转发、投票、置顶、评论数都改到 store 里，列表（也订阅着它）同时看到。
+    private let feed: FeedStore?
+    private var lease: FeedCardLease?
+    private var subscription: FeedSubscription?
 
     private(set) var state: FeedPostDetailState {
         didSet { onChange?(state) }
@@ -112,10 +118,49 @@ final class FeedPostDetailStore {
     private var leaving = false
     private var tasks = [Task<Void, Never>]()
 
-    init(initial: FeedCard, source: FeedSource, savedMessages: FeedSavedMessages? = nil) {
+    init(initial: FeedCard, source: FeedSource, savedMessages: FeedSavedMessages? = nil, feed: FeedStore? = nil) {
         self.source = source
         self.savedMessages = savedMessages
-        self.state = FeedPostDetailState(post: initial)
+        self.feed = feed
+        if let feed {
+            let lease = feed.retain(initial)
+            self.lease = lease
+            // 信息流里已经有这张卡片时，用 store 里现在的样子（可能比传进来的新：刚点过赞）
+            self.state = FeedPostDetailState(post: feed.card(id: initial.id) ?? initial)
+            self.subscription = feed.subscribe { [weak self] change in
+                self?.onFeedChange(change)
+            }
+        } else {
+            self.state = FeedPostDetailState(post: initial)
+        }
+    }
+
+    // MARK: - 和信息流 store 同步
+
+    private func onFeedChange(_ change: FeedChange) {
+        switch change {
+        case .cards(let ids):
+            if ids.contains(state.post.id) { adoptFromFeed() }
+        case .list:
+            adoptFromFeed()
+        case .actionFailed(let cardId):
+            if cardId == state.post.id { state.notice = .failed }
+        }
+    }
+
+    /// 从 store 里重新读这张卡片（和现在显示的一样就不动，免得白白通知界面）。
+    private func adoptFromFeed() {
+        guard let feed, let card = feed.card(id: state.post.id), card != state.post else { return }
+        state.post = card
+    }
+
+    /// 改帖子：有信息流 store 就改在 store 里（`state.post` 随通知更新），没有就改自己的 `state.post`。
+    private func updatePost(_ transform: (inout FeedCard) -> Void) {
+        if let feed {
+            feed.updateCard(state.post.id, transform)
+        } else {
+            transform(&state.post)
+        }
     }
 
     /// 单测用：等已经发出去的请求都做完。
@@ -124,6 +169,7 @@ final class FeedPostDetailStore {
             await task.value
             tasks.removeFirst()
         }
+        await feed?.waitForActions()
     }
 
     private func run(_ body: @escaping @MainActor () async -> Void) {
@@ -153,7 +199,11 @@ final class FeedPostDetailStore {
             do {
                 let fresh = try await source.card(contentId: self.state.post.id)
                 if let fresh {
-                    self.state.post = fresh
+                    if let feed = self.feed {
+                        feed.ingest(fresh)
+                    } else {
+                        self.state.post = fresh
+                    }
                     self.state.canComment = fresh.viewer.canComment
                 } else {
                     self.state.postGone = true
@@ -227,6 +277,11 @@ final class FeedPostDetailStore {
     // MARK: - 帖子上的动作（同信息流，Android 同一套规则）
 
     func toggleLike() {
+        if let feed {
+            // 赞的乐观更新、失败回滚、连点都在 FeedStore 里；失败时它发 `.actionFailed`，这里变成 `.failed` 提示
+            feed.toggleLike(id: state.post.id)
+            return
+        }
         let post = state.post
         let nowLiked = !post.viewer.liked
         state.post = FeedStore.withLiked(post, nowLiked)
@@ -248,7 +303,7 @@ final class FeedPostDetailStore {
         saving = true
         let post = state.post
         let nowSaved = !post.viewer.saved
-        state.post = state.post.withSaved(nowSaved)
+        updatePost { $0 = $0.withSaved(nowSaved) }
         run { [weak self, source, savedMessages] in
             do {
                 guard let savedMessages else { throw FeedPublishError.feedNotAvailable }
@@ -261,7 +316,7 @@ final class FeedPostDetailStore {
                 Logger.warn("feed detail saved messages failed: \(error)")
                 guard let self else { return }
                 self.saving = false
-                self.state.post = self.state.post.withSaved(!nowSaved)
+                self.updatePost { $0 = $0.withSaved(!nowSaved) }
                 self.state.notice = .failed
             }
         }
@@ -272,7 +327,7 @@ final class FeedPostDetailStore {
         reposting = true
         let post = state.post
         let nowReposted = !post.viewer.reposted
-        state.post = state.post.withReposted(nowReposted)
+        updatePost { $0 = $0.withReposted(nowReposted) }
         run { [weak self, source] in
             do {
                 try await source.setReposted(contentId: post.id, reposted: nowReposted)
@@ -282,7 +337,7 @@ final class FeedPostDetailStore {
                 Logger.warn("feed detail repost failed: \(error)")
                 guard let self else { return }
                 self.reposting = false
-                self.state.post = self.state.post.withReposted(!nowReposted)
+                self.updatePost { $0 = $0.withReposted(!nowReposted) }
                 self.state.notice = .failed
             }
         }
@@ -297,7 +352,7 @@ final class FeedPostDetailStore {
             do {
                 let result = try await source.vote(contentId: postId, options: options)
                 self?.voting = false
-                if let self { self.state.post = self.state.post.withPollState(result) }
+                self?.updatePost { $0 = $0.withPollState(result) }
             } catch {
                 Logger.warn("feed detail vote failed: \(error)")
                 self?.voting = false
@@ -344,7 +399,11 @@ final class FeedPostDetailStore {
                 self.state.draft = ""
                 self.state.replyTarget = nil
                 self.state.notice = pending ? .pending : .published
-                if !pending { self.refreshComments() }
+                if !pending {
+                    // 发出去就直接显示的评论：帖子上的评论数 +1（列表上的数也同步）；待审的别人看不到，不算
+                    self.updatePost { $0.stats.comments += 1 }
+                    self.refreshComments()
+                }
             } catch {
                 Logger.warn("feed detail comment failed: \(error)")
                 self?.applyCommentError(error, voice: false)
@@ -455,15 +514,17 @@ final class FeedPostDetailStore {
             if action == .insights { loadInsights(post.id) }   // 回复选项卡片自己处理
             return
         }
-        state.post = state.post.withSettings(update)
+        updatePost { $0 = $0.withSettings(update) }
         run { [weak self, source] in
             do {
                 try await source.updatePostSettings(contentId: post.id, update: update)
             } catch {
                 Logger.warn("feed detail post settings failed: \(error)")
                 guard let self else { return }
-                self.state.post.pinned = post.pinned
-                self.state.post.stats.likeCountHidden = post.stats.likeCountHidden
+                self.updatePost {
+                    $0.pinned = post.pinned
+                    $0.stats.likeCountHidden = post.stats.likeCountHidden
+                }
                 self.state.notice = FeedOwnPostAction.isPinLimit(error) ? .pinLimit : .failed
             }
         }
