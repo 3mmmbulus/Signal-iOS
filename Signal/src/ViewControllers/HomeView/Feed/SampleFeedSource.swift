@@ -22,9 +22,14 @@ final class SampleFeedSource: FeedSource {
     private var published = [String: FeedCreatePostResponse]()
 
     private let now: () -> Date
+    /// 样例取评论前先等一会儿，界面上才看得到「加载中」。单测传 0。
+    private let commentsLatencyNanos: UInt64
+    /// 已经让它失败过一次的帖子（见 `failsFirstCommentLoad`）：重试就成功。
+    private var failedCommentLoads = Set<String>()
 
-    init(now: @escaping () -> Date = Date.init) {
+    init(now: @escaping () -> Date = Date.init, commentsLatencyNanos: UInt64 = 500_000_000) {
         self.now = now
+        self.commentsLatencyNanos = commentsLatencyNanos
     }
 
     static let me = FeedAuthor(profileId: "s-me", displayName: "我", tellomiNumber: "1000000001")
@@ -61,6 +66,37 @@ final class SampleFeedSource: FeedSource {
 
     static let ipLabels = ["四川", "重庆", "浙江", "广东", "云南"]
 
+    private static let commentTexts = [
+        "拍得真好，我也想去看看。",
+        "哈哈，我家楼下也有一家这样的小店。",
+        "收藏了，周末试试。",
+        "好久没看到这么安静的画面了。",
+        "谢谢分享！",
+        "同感，下班路上最治愈。",
+        "能说说具体在哪儿吗？",
+        "第二张最喜欢。",
+    ]
+
+    static let commentPageSize = 5
+
+    /// 样例帖子详情页里能看到各个状态（内部用户在没有内容引擎时看界面用）：
+    /// - 评论数是 0 的帖子（`sample-0`、`sample-4`…）：「还没有评论」
+    /// - `sample-2`、`sample-6`…：第一次取评论失败，点「重试」后成功
+    /// - `sample-7`：打开后 Card API 说这条看不到了（「已不可见」）
+    /// - 评论多于一页的（如 `sample-3`、`sample-5`）：滑到底取下一页
+    static let goneIds: Set<String> = ["sample-7"]
+
+    static func failsFirstCommentLoad(postId: String) -> Bool {
+        guard let index = sampleIndex(of: postId) else { return false }
+        return index % 4 == 2
+    }
+
+    static func sampleIndex(of id: String) -> Int? {
+        let prefix = "sample-"
+        guard id.hasPrefix(prefix) else { return nil }
+        return Int(id.dropFirst(prefix.count))
+    }
+
     private lazy var recommend: [FeedCard] = (0..<24).map(sampleCard)
     private lazy var following: [FeedCard] = recommend.filter { ["s-1", "s-3"].contains($0.author?.profileId) }
 
@@ -89,6 +125,35 @@ final class SampleFeedSource: FeedSource {
             }
             return FeedTimelinePage(cards: cards, nextCursor: end < all.count ? String(end) : nil)
         }
+    }
+
+    func card(contentId: String) async throws -> FeedCard? {
+        return locked {
+            guard !Self.goneIds.contains(contentId) else { return nil }
+            guard var card = (mine + recommend).first(where: { $0.id == contentId }) else { return nil }
+            let isLiked = liked.contains(card.id)
+            card.viewer.liked = isLiked
+            card.stats.likes += isLiked ? 1 : 0
+            return card
+        }
+    }
+
+    func comments(postId: String, cursor: String?) async throws -> FeedCommentsPage {
+        if commentsLatencyNanos > 0 {
+            try? await Task.sleep(nanoseconds: commentsLatencyNanos)
+        }
+        let failNow = locked { () -> Bool in
+            guard cursor == nil, Self.failsFirstCommentLoad(postId: postId), !failedCommentLoads.contains(postId) else { return false }
+            failedCommentLoads.insert(postId)
+            return true
+        }
+        if failNow {
+            throw SampleFeedError.simulatedCommentFailure
+        }
+        let all = sampleComments(postId: postId)
+        let start = min(max(cursor.flatMap { Int($0) } ?? 0, 0), all.count)
+        let end = min(start + Self.commentPageSize, all.count)
+        return FeedCommentsPage(comments: Array(all[start..<end]), cursor: end < all.count ? String(end) : nil)
     }
 
     func setLiked(contentId: String, liked isLiked: Bool) async throws {
@@ -155,6 +220,28 @@ final class SampleFeedSource: FeedSource {
         return body()
     }
 
+    /// 一个样例帖子的评论，按时间正序（和引擎一样）。每三条一组：第 0 条直接评论帖子，第 1 条回复它，第 2 条回复第 1 条（楼中楼里「回复 @某人」）。
+    /// 条数和帖子卡片上的评论数一致；找不到这个帖子（自己发的、别的 id）就没有评论。
+    private func sampleComments(postId: String) -> [FeedCard] {
+        guard let index = Self.sampleIndex(of: postId) else { return [] }
+        let count = (index * 3) % 12
+        let current = now()
+        return (0..<count).map { j -> FeedCard in
+            var comment = FeedCard(
+                id: "\(postId)-c\(j)",
+                kind: FeedCard.kindComment,
+                publishedAt: FeedDates.format(current.addingTimeInterval(-Double(count - j) * 7 * 60)),
+                author: Self.authors[(index + j + 1) % Self.authors.count],
+                text: Self.commentTexts[(index + j) % Self.commentTexts.count],
+            )
+            comment.rootId = postId
+            if j % 3 != 0 {
+                comment.parentId = "\(postId)-c\(j - 1)"
+            }
+            return comment
+        }
+    }
+
     private func sampleCard(_ index: Int) -> FeedCard {
         let author = Self.authors[index % Self.authors.count]
         let imageCount: Int
@@ -177,4 +264,9 @@ final class SampleFeedSource: FeedSource {
             stats: FeedStats(likes: (index * 7) % 50, comments: (index * 3) % 12, reposts: index % 4),
         )
     }
+}
+
+enum SampleFeedError: Error {
+    /// 样例里「评论加载失败」的状态（只失败第一次，重试成功）。
+    case simulatedCommentFailure
 }
