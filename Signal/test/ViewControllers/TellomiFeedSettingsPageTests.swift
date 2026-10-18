@@ -445,6 +445,41 @@ final class TellomiFeedSettingsStoreSyncTests: XCTestCase {
         XCTAssertEqual(store.state.interests?.authors.map(\.key), ["n:1"], "别的维度不动")
     }
 
+    func testAnEarlierFailingInterestDeleteDoesNotBringBackALaterOneThatWorked() async {
+        let source = SSource()
+        let store = await loaded(source)
+        let gate = SGate()
+        source.hold("deleteInterest food", gate)
+        source.deleteInterestErrors["food"] = SBoom()
+        store.deleteInterest(dimension: "topic", interest: FeedInterest(key: "food"))
+        await waitForArrival(gate)
+        store.deleteInterest(dimension: "topic", interest: FeedInterest(key: "tech"))
+        await Task.yield()
+        XCTAssertEqual(store.state.interests?.topics.map(\.key), ["travel"])
+        await gate.open()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.interests?.topics.map(\.key), ["food", "travel"], "food 失败放回；tech 已经删成功，不能被 food 失败时的旧快照带回来")
+        XCTAssertEqual(store.state.notice, .failed)
+    }
+
+    func testAnEarlierFailingKeywordDeleteDoesNotBringBackALaterOneThatWorked() async {
+        let source = SSource()
+        let store = await loaded(source)
+        XCTAssertEqual(store.state.keywords.map(\.keyword), ["a", "b", "c"])
+        let gate = SGate()
+        source.hold("delete a", gate)
+        source.deleteKeywordErrors["a"] = SBoom()
+        store.removeKeyword(FeedKeyword(keyword: "a", mode: .downrank, expiresAt: nil))
+        await waitForArrival(gate)
+        store.removeKeyword(FeedKeyword(keyword: "b", mode: .downrank, expiresAt: nil))
+        await Task.yield()
+        XCTAssertEqual(store.state.keywords.map(\.keyword), ["c"])
+        await gate.open()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.keywords.map(\.keyword), ["a", "c"], "a 失败放回；b 已经删成功，不能被带回来")
+        XCTAssertEqual(store.state.notice, .failed)
+    }
+
     func testInterestDeleteThrottledAndHiddenAreClassified() async {
         let source = SSource()
         source.deleteInterestErrors["tech"] = throttled(5)
