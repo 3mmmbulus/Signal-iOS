@@ -504,4 +504,88 @@ final class TellomiFeedDetailUITests: XCTestCase {
         harness.pop()
         harness.window.isHidden = true
     }
+    // MARK: - 「···」菜单
+
+    /// 别人的帖子：导航栏有「···」（现在只有「不感兴趣」，举报页接上之前没有「举报」）；评论关了的帖子照样有。
+    @MainActor
+    func testTheNavigationMenuHasNotInterestedForSomeoneElsesPost() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        XCTAssertEqual(open.shownPostMenu, [.notInterested])
+        XCTAssertNotNil(open.navigationItem.rightBarButtonItem)
+        XCTAssertEqual(
+            FeedPostDetailViewController.menuTitle(for: .notInterested),
+            OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: ""),
+        )
+        harness.pop()
+
+        let gone = try await openComments(of: "sample-7", source: source, harness: harness)
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(gone.shownPostMenu, [], "帖子已不可见：没有菜单")
+        XCTAssertNil(gone.navigationItem.rightBarButtonItem)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 长按评论：自己的评论有「删除」，别人的评论在举报页接上之前没有菜单。删除先确认，确认了才删。
+    @MainActor
+    func testDeletingMyCommentAsksFirstAndOnlyThenDeletes() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        type("我的评论", into: open.commentInput)
+        open.commentInput.sendButton.sendActions(for: .touchUpInside)
+        await open.detailStore.waitForTasks()
+        harness.window.layoutIfNeeded()
+
+        let mine = try XCTUnwrap(open.detailStore.state.comments.last)
+        XCTAssertTrue(mine.viewer.isAuthor)
+        XCTAssertEqual(open.commentMenuItems(for: mine), [.deleteComment])
+        let other = try XCTUnwrap(open.detailStore.state.comments.first)
+        XCTAssertEqual(open.commentMenuItems(for: other), [], "举报页没接上：别人的评论没有菜单")
+
+        let table = open.detailTableView
+        let lastRow = table.numberOfRows(inSection: 0) - 1
+        XCTAssertNotNil(open.tableView(table, contextMenuConfigurationForRowAt: IndexPath(row: lastRow, section: 0), point: .zero), "长按自己的评论有菜单")
+        XCTAssertNil(open.tableView(table, contextMenuConfigurationForRowAt: IndexPath(row: 1, section: 0), point: .zero), "别人的评论没有")
+        XCTAssertNil(open.tableView(table, contextMenuConfigurationForRowAt: IndexPath(row: 0, section: 0), point: .zero), "帖子那一行不弹评论菜单")
+
+        var asked = [FeedDetailMenuItem]()
+        var proceed: (() -> Void)?
+        open.confirmDestructive = { item, go in
+            asked.append(item)
+            proceed = go
+        }
+        let before = open.detailStore.state.comments.count
+        open.handleMenuItem(.deleteComment, comment: mine)
+        await open.detailStore.waitForTasks()
+        XCTAssertEqual(asked, [.deleteComment])
+        XCTAssertEqual(open.detailStore.state.comments.count, before, "还没确认：不删")
+
+        proceed?()
+        await open.detailStore.waitForTasks()
+        XCTAssertEqual(open.detailStore.state.comments.count, before - 1)
+        XCTAssertFalse(open.detailStore.state.comments.contains { $0.id == mine.id })
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 菜单文字和确认问题都是本地化过的，不是键名。
+    @MainActor
+    func testMenuTextsAreLocalizedNotKeys() {
+        for item in [FeedDetailMenuItem.notInterested, .deleteComment, .deletePost] {
+            let title = FeedPostDetailViewController.menuTitle(for: item)
+            XCTAssertFalse(title.isEmpty)
+            XCTAssertFalse(title.hasPrefix("TELLOMI_"), "\(item) 的菜单文字没有翻译")
+        }
+        for item in [FeedDetailMenuItem.deleteComment, .deletePost] {
+            let title = FeedPostDetailViewController.confirmationTitle(for: item)
+            XCTAssertFalse(title.isEmpty)
+            XCTAssertFalse(title.hasPrefix("TELLOMI_"))
+        }
+    }
+
 }

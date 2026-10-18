@@ -35,6 +35,13 @@ final class FeedPostDetailViewController: OWSViewController {
         body: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_BODY", comment: "Feed: explanation under the title when the post can no longer be seen."),
     )
 
+    /// 举报页接上之后设置（参数是被举报的评论，nil = 举报帖子）；nil 时菜单里不显示「举报」（免得点了没反应）。
+    var onReport: ((FeedCard?) -> Void)?
+    /// 删除前的确认；nil = 用自带的确认弹窗。单测 / 截图里换掉，免得弹真的弹窗。
+    var confirmDestructive: ((FeedDetailMenuItem, @escaping () -> Void) -> Void)?
+    /// 导航栏「···」现在放的几项（没变就不重建菜单）。
+    private(set) var shownPostMenu = [FeedDetailMenuItem]()
+
     private var rows = [Row]()
     private var post: FeedCard
     private var showIpRegion: Bool
@@ -136,6 +143,7 @@ final class FeedPostDetailViewController: OWSViewController {
             tableView.isHidden = true
             commentInput.isHidden = true
             goneView.isHidden = false
+            updateNavigationMenu(items: [])
             return
         case .post:
             tableView.isHidden = false
@@ -145,6 +153,7 @@ final class FeedPostDetailViewController: OWSViewController {
 
         post = state.post
         showIpRegion = state.showIpRegion || fallbackShowIpRegion
+        updateNavigationMenu(items: FeedDetailMenu.shown(state.postMenu, reportAvailable: onReport != nil))
 
         var newRows: [Row] = [.post]
         let phase = FeedPostDetailPresentation.commentsPhase(for: state)
@@ -176,6 +185,89 @@ final class FeedPostDetailViewController: OWSViewController {
             DispatchQueue.main.async { [weak self] in
                 self?.consumeNotice()
             }
+        }
+    }
+
+    // MARK: - 「···」菜单
+
+    /// 导航栏右上角的「···」：别人的帖子是「不感兴趣」「举报」，自己的帖子是「删除」。没有可放的项就不显示按钮。
+    private func updateNavigationMenu(items: [FeedDetailMenuItem]) {
+        guard items != shownPostMenu else { return }
+        shownPostMenu = items
+        guard !items.isEmpty else {
+            navigationItem.rightBarButtonItem = nil
+            return
+        }
+        let button = UIBarButtonItem.contextMenuButton(actions: items.map { menuAction($0, comment: nil) })
+        button.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_MORE", comment: "Feed: accessibility label for the ··· button on a post.")
+        navigationItem.rightBarButtonItem = button
+    }
+
+    private func menuAction(_ item: FeedDetailMenuItem, comment: FeedCard?) -> UIAction {
+        return UIAction(title: Self.menuTitle(for: item), attributes: item.isDestructive ? .destructive : []) { [weak self] _ in
+            self?.handleMenuItem(item, comment: comment)
+        }
+    }
+
+    /// 一条评论的「···」里放哪几项（长按评论弹出；没有项就不弹）。
+    func commentMenuItems(for comment: FeedCard) -> [FeedDetailMenuItem] {
+        return FeedDetailMenu.shown(FeedDetailMenu.items(forComment: comment), reportAvailable: onReport != nil)
+    }
+
+    /// 点了菜单里的一项（`comment` 是 nil = 帖子本身）。删除先确认，确认了才调 store。单测 / 截图直接调它。
+    func handleMenuItem(_ item: FeedDetailMenuItem, comment: FeedCard? = nil) {
+        switch item {
+        case .notInterested:
+            store.notInterested()
+        case .report:
+            onReport?(comment)
+        case .deleteComment:
+            guard let comment else { return }
+            confirm(item) { [weak self] in self?.store.deleteComment(comment) }
+        case .deletePost:
+            confirm(item) { [weak self] in self?.store.deletePost() }
+        case .own:
+            break
+        }
+    }
+
+    private func confirm(_ item: FeedDetailMenuItem, proceed: @escaping () -> Void) {
+        if let confirmDestructive {
+            confirmDestructive(item, proceed)
+            return
+        }
+        OWSActionSheets.showConfirmationAlert(
+            title: Self.confirmationTitle(for: item),
+            proceedTitle: CommonStrings.deleteButton,
+            proceedStyle: .destructive,
+            proceedAction: { _ in proceed() },
+            fromViewController: self,
+        )
+    }
+
+    static func menuTitle(for item: FeedDetailMenuItem) -> String {
+        switch item {
+        case .notInterested:
+            return OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: "Feed: ··· menu item that hides a post and tells the recommender to show fewer like it.")
+        case .report:
+            return OWSLocalizedString("TELLOMI_FEED_MENU_REPORT", comment: "Feed: ··· menu item that reports a post or a comment.")
+        case .deleteComment:
+            return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_COMMENT", comment: "Feed: ··· menu item that deletes the user's own comment.")
+        case .deletePost:
+            return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_POST", comment: "Feed: ··· menu item that deletes the user's own post.")
+        case .own:
+            return ""
+        }
+    }
+
+    static func confirmationTitle(for item: FeedDetailMenuItem) -> String {
+        switch item {
+        case .deleteComment:
+            return OWSLocalizedString("TELLOMI_FEED_DELETE_COMMENT_CONFIRM", comment: "Feed: confirmation question before deleting the user's own comment.")
+        case .deletePost:
+            return OWSLocalizedString("TELLOMI_FEED_DELETE_POST_CONFIRM", comment: "Feed: confirmation question before deleting the user's own post.")
+        case .notInterested, .report, .own:
+            return ""
         }
     }
 
@@ -250,6 +342,18 @@ final class FeedPostDetailViewController: OWSViewController {
 }
 
 extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelegate {
+    /// 长按一条评论：自己的评论「删除」，别人的「举报」（举报页接上之后）。
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard rows.indices.contains(indexPath.row), case .comment(let row) = rows[indexPath.row] else { return nil }
+        let comment = row.comment
+        let items = commentMenuItems(for: comment)
+        guard !items.isEmpty else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            guard let self else { return nil }
+            return UIMenu(children: items.map { self.menuAction($0, comment: comment) })
+        }
+    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return rows.count
     }

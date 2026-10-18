@@ -11053,6 +11053,9 @@
 "TELLOMI_FEED_COMMENT_CLOSED" = "这条动态已关闭评论";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_DELETED" = "评论已删除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENT_PARENT_GONE" = "你回复的评论已不存在";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11170,6 +11173,12 @@
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "谁可以看";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DELETE_COMMENT_CONFIRM" = "要删除这条评论吗？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DELETE_POST_CONFIRM" = "要删除这条动态吗？删除后无法恢复。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_BODY" = "可能已被删除，或你已无法查看。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11201,6 +11210,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LOAD_FAILED" = "加载失败";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_DELETE_COMMENT" = "删除评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_DELETE_POST" = "删除动态";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "更多";

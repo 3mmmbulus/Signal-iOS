@@ -11170,6 +11170,9 @@
 "TELLOMI_FEED_COMMENT_CLOSED" = "這則動態已關閉留言";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_DELETED" = "留言已刪除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENT_PARENT_GONE" = "你回覆的留言已不存在";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11287,6 +11290,12 @@
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "誰可以看";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DELETE_COMMENT_CONFIRM" = "要刪除這則留言嗎？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DELETE_POST_CONFIRM" = "要刪除這則動態嗎？刪除後無法復原。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_BODY" = "可能已被刪除，或你已無法查看。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11318,6 +11327,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LOAD_FAILED" = "載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_DELETE_COMMENT" = "刪除留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_DELETE_POST" = "刪除動態";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "更多";

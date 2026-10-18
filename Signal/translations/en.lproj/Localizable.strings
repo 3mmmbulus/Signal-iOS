@@ -11284,6 +11284,9 @@
 "TELLOMI_FEED_COMMENT_CLOSED" = "Comments are turned off for this post";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_DELETED" = "Comment deleted";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENT_PARENT_GONE" = "The comment you replied to is no longer there";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11401,6 +11404,12 @@
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "Who can see this";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DELETE_COMMENT_CONFIRM" = "Delete this comment?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DELETE_POST_CONFIRM" = "Delete this post? This can't be undone.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_BODY" = "It may have been deleted, or you can no longer see it.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11432,6 +11441,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LOAD_FAILED" = "Couldn't load posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_DELETE_COMMENT" = "Delete comment";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_DELETE_POST" = "Delete post";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "More";
