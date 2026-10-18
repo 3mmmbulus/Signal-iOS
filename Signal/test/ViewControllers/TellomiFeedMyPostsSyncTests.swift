@@ -401,10 +401,12 @@ final class TellomiFeedMyPostsOpenTests: XCTestCase {
         XCTAssertEqual(store.state.notice, .failed)
         store.onNoticeShown()
 
+        let listsBefore = source.count("list")
         source.cardError = FeedAPIError(status: 404, code: "not_found")
         store.openPost(mine("a"))
         await store.waitForTasks()
         XCTAssertEqual(store.state.notice, .postGone)
+        XCTAssertEqual(source.count("list"), listsBefore + 1, "404：状态过时了，重新拉列表")
         store.onNoticeShown()
 
         source.cardError = hidden
@@ -491,6 +493,35 @@ final class TellomiFeedMyPostsListErrorTests: XCTestCase {
         XCTAssertNil(store.state.retryAfterSeconds)
     }
 
+    func testAfterFeedHiddenNothingPagesAnymore() async {
+        let source = MSource()
+        source.pages[""] = FeedMyPostsPage(posts: [mine("a")], nextBefore: "a")
+        let store = await started(source)
+        store.onFeedHidden()
+        store.loadMore()
+        await store.waitForTasks()
+        XCTAssertEqual(source.count("list"), 1)
+        XCTAssertFalse(store.state.loadingMore)
+    }
+
+    func testARefreshClearsAPagingFailure() async {
+        let source = MSource()
+        source.pages[""] = FeedMyPostsPage(posts: [mine("a")], nextBefore: "a")
+        let store = await started(source)
+        source.listError = throttled(15)
+        source.listErrorOnlyForBefore = true
+        store.loadMore()
+        await store.waitForTasks()
+        XCTAssertTrue(store.state.loadMoreFailed)
+        source.listError = nil
+        store.refresh()
+        XCTAssertFalse(store.state.loadMoreFailed, "下拉刷新一开始就清掉翻页失败")
+        XCTAssertNil(store.state.retryAfterSeconds)
+        await store.waitForTasks()
+        XCTAssertFalse(store.state.loadMoreFailed)
+        XCTAssertEqual(FeedMyPostsPresentation(state: store.state).rows.count, 1)
+    }
+
     func testARefreshFailureKeepsWhatIsShown() async {
         let source = MSource()
         source.pages[""] = FeedMyPostsPage(posts: [mine("a")], nextBefore: nil)
@@ -518,6 +549,8 @@ final class TellomiFeedMyPostsListErrorTests: XCTestCase {
         await waitForArrival(gate)
         source.pages[""] = FeedMyPostsPage(posts: [mine("n"), mine("a")], nextBefore: nil)
         store.refresh()
+        for _ in 0..<100 where store.state.loading { try? await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertEqual(store.state.posts.map(\.id), ["n", "a"])
         await gate.open()
         await store.waitForTasks()
         XCTAssertEqual(store.state.posts.map(\.id), ["n", "a"], "旧的翻页结果不接在新列表后面")
@@ -826,10 +859,15 @@ final class TellomiFeedMyPostsSampleTests: XCTestCase {
         func status(_ id: String, _ text: String = "reason") async -> Int? {
             do { try await source.appeal(contentId: id, text: text); return nil } catch let error as FeedAPIError { return error.status } catch { return -1 }
         }
-        let wrongState = await status("mine-seed-w1")
-        XCTAssertEqual(wrongState, 409, "已撤回的引擎当前不收（A-6）")
-        let published = await status("mine-seed-1")
-        XCTAssertEqual(published, 409)
+        func code(_ id: String) async -> String? {
+            do { try await source.appeal(contentId: id, text: "reason"); return nil } catch let error as FeedAPIError { return error.code } catch { return "other" }
+        }
+        let wrongState = await code("mine-seed-w1")
+        XCTAssertEqual(wrongState, "not_rejected", "已撤回的引擎当前不收（A-6）")
+        let published = await code("mine-seed-1")
+        XCTAssertEqual(published, "not_rejected")
+        let pending = await code("mine-seed-p1")
+        XCTAssertEqual(pending, "not_rejected")
         let unknown = await status("nope")
         XCTAssertEqual(unknown, 404)
         let blank = await status("mine-seed-r1", "  ")
