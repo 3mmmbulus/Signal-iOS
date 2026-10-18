@@ -21,6 +21,14 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
 
     static let goToMessageButtonSize: CGFloat = 36
 
+    /// Tellomi (pinned-messages.md 3.5): "N pinned messages"; the pins for me only (ADR-0081 §4.3); whether I may unpin everyone's
+    /// pins here; the list opens at the newest, at the bottom.
+    private let tellomiTitleLabel = UILabel()
+    private var tellomiPinnedForMeIds = Set<Int64>()
+    private var tellomiCanPinForEveryone = false
+    private weak var tellomiScrollView: UIScrollView?
+    private var tellomiScrollToNewestPending = false
+
     init(
         pinnedMessages: [TSMessage],
         threadViewModel: ThreadViewModel,
@@ -30,7 +38,7 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
         pinnedMessageManager: PinnedMessageManager,
         spoilerState: SpoilerRenderState,
     ) {
-        self.pinnedMessages = pinnedMessages
+        self.pinnedMessages = Self.tellomiInChatOrder(pinnedMessages)
         self.threadViewModel = threadViewModel
         self.db = database
         self.delegate = delegate
@@ -43,11 +51,8 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
 
         databaseChangeObserver.appendDatabaseChangeDelegate(self)
 
-        let titleLabel = UILabel()
-        titleLabel.text = OWSLocalizedString(
-            "PINNED_MESSAGES_DETAILS_TITLE",
-            comment: "Title for Pinned Messages detail view",
-        )
+        // Tellomi (pinned-messages.md 3.5): the title says how many — set with each layout.
+        let titleLabel = tellomiTitleLabel
         titleLabel.font = .dynamicTypeHeadlineClamped.semibold()
         titleLabel.textColor = UIColor.Signal.label
         titleLabel.textAlignment = .center
@@ -70,6 +75,7 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
     private func layoutPinnedMessages(tx: DBReadTransaction) {
         messageLongPressDelegates = []
         view.subviews.forEach { $0.removeFromSuperview() }
+        tellomiRefresh(tx: tx)
 
         let scrollView = UIScrollView()
         let paddedContainerView = UIView()
@@ -79,7 +85,8 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
         stack.spacing = 12
 
         var currentDaysBefore = -1
-        for (index, message) in pinnedMessages.reversed().enumerated() {
+        // Tellomi (pinned-messages.md 3.5): in chat order, oldest at the top (`tellomiInChatOrder`).
+        for (index, message) in pinnedMessages.enumerated() {
             guard let renderItem = buildRenderItem(thread: threadViewModel.threadRecord, message: message, tx: tx)
             else {
                 continue
@@ -103,13 +110,16 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
                     stack.addArrangedSubview(cellView)
                 }
             }
-            stack.addArrangedSubview(
-                buildButtonAndCellStack(
-                    renderItem: renderItem,
-                    message: message,
-                    reversedIndex: index,
-                ),
+            let cellRow = buildButtonAndCellStack(
+                renderItem: renderItem,
+                message: message,
+                reversedIndex: index,
             )
+            stack.addArrangedSubview(cellRow)
+            if let rowId = message.sqliteRowId, tellomiPinnedForMeIds.contains(rowId) {
+                stack.setCustomSpacing(4, after: cellRow)
+                stack.addArrangedSubview(tellomiOnlyVisibleToYouRow(isOutgoing: message.isOutgoing))
+            }
         }
 
         paddedContainerView.addSubview(stack)
@@ -121,25 +131,94 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
 
         stack.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(top: 16, left: 16, bottom: 64, right: 16))
         paddedContainerView.autoMatch(.width, to: .width, of: scrollView)
+        tellomiScrollView = scrollView
+        tellomiScrollToNewestPending = true
 
+        // Tellomi (pinned-messages.md 3.5, as in both Telegram apps): no question and no spinner — the list closes and the chat
+        // shows "N messages unpinned · Undo" before the unpins go out. Someone who may not unpin them all hides them here instead
+        // (also in a group that has ended).
+        let canUnpinAll = tellomiCanUnpinAll
         let unpinAllButton = UIButton(
-            configuration: .largeSecondary(title: OWSLocalizedString(
-                "PINNED_MESSAGES_UNPIN_ALL",
-                comment: "Title for a button to unpin all pinned messages.",
-            )),
+            configuration: .largeSecondary(title: canUnpinAll
+                ? OWSLocalizedString(
+                    "TELLOMI_PINNED_LIST_UNPIN_ALL",
+                    comment: "Tellomi (pinned-messages.md 3.5): button at the bottom of the pinned list that unpins every message, with Undo.",
+                )
+                : OWSLocalizedString(
+                    "TELLOMI_PINNED_BAR_HIDE",
+                    comment: "Tellomi (pinned-messages.md 3.4): accessibility label of × on the pinned bar when you may not unpin; it hides the bar on this device until there is a newer pin.",
+                )),
             primaryAction: UIAction { [weak self] _ in
                 self?.dismiss(animated: true)
-                self?.delegate?.unpinAllMessages()
+                if canUnpinAll {
+                    self?.delegate?.unpinAllMessages()
+                } else {
+                    self?.delegate?.tellomiHidePinnedMessages()
+                }
             },
         )
-        if !threadViewModel.threadRecord.isTerminatedGroup {
-            view.addSubview(unpinAllButton)
-            unpinAllButton.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                unpinAllButton.bottomAnchor.constraint(equalTo: contentLayoutGuide.bottomAnchor, constant: -16),
-                unpinAllButton.centerXAnchor.constraint(equalTo: contentLayoutGuide.centerXAnchor),
-            ])
+        view.addSubview(unpinAllButton)
+        unpinAllButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            unpinAllButton.bottomAnchor.constraint(equalTo: contentLayoutGuide.bottomAnchor, constant: -16),
+            unpinAllButton.centerXAnchor.constraint(equalTo: contentLayoutGuide.centerXAnchor),
+        ])
+    }
+
+    // MARK: - Tellomi (pinned-messages.md 3.5)
+
+    /// In the order the messages are in the chat (newest at the bottom) — the order of the pinned bar, not of pinning.
+    private static func tellomiInChatOrder(_ messages: [TSMessage]) -> [TSMessage] {
+        return messages.sorted { $0.sortId < $1.sortId }
+    }
+
+    private func tellomiRefresh(tx: DBReadTransaction) {
+        let thread = threadViewModel.threadRecord
+        tellomiPinnedForMeIds = thread.sqliteRowId.map { TellomiPinsForMe.pinnedForMeInteractionIds(threadId: $0, tx: tx) } ?? []
+        let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci
+        tellomiCanPinForEveryone = localAci.map { thread.canUserEditPinnedMessages(aci: $0, tx: tx) } ?? false
+        let format = OWSLocalizedString(
+            "TELLOMI_PINNED_LIST_TITLE_%ld",
+            tableName: "PluralAware",
+            comment: "Tellomi (pinned-messages.md 3.5): title of the pinned messages list. Embeds {{ number of pinned messages }}.",
+        )
+        tellomiTitleLabel.text = String.localizedStringWithFormat(format, pinnedMessages.count)
+    }
+
+    /// Every pin here can be unpinned (`TellomiPinChoice.canUnpinAll`) — otherwise the button hides them on this device.
+    private var tellomiCanUnpinAll: Bool {
+        return TellomiPinChoice.canUnpinAll(
+            pinnedForMe: pinnedMessages.map { $0.sqliteRowId.map { tellomiPinnedForMeIds.contains($0) } ?? false },
+            canPinForEveryone: tellomiCanPinForEveryone,
+            isTerminatedGroup: threadViewModel.threadRecord.isTerminatedGroup,
+        )
+    }
+
+    /// "Only visible to you" under a pin for me only (ADR-0081 §4.3), on the bubble's side — the cell is as wide as the bubble here.
+    /// The same as Android's `TellomiPinnedForMeLabelDecoration`.
+    private func tellomiOnlyVisibleToYouRow(isOutgoing: Bool) -> UIView {
+        let label = UILabel()
+        label.text = OWSLocalizedString(
+            "TELLOMI_PINNED_LIST_ONLY_YOU_CAN_SEE",
+            comment: "Tellomi (ADR-0081 §4.3, pinned-messages.md 3.5): under a message pinned for me only, in the pinned list.",
+        )
+        label.font = .dynamicTypeCaption1Clamped
+        label.textColor = UIColor.Signal.secondaryLabel
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let row = UIStackView(arrangedSubviews: isOutgoing ? [spacer, label] : [label, spacer])
+        row.axis = .horizontal
+        return row
+    }
+
+    /// The list opens at the newest pin, at the bottom (Android's list is the same; the chat itself ends there too).
+    private func tellomiScrollToNewestIfPending() {
+        guard tellomiScrollToNewestPending, let scrollView = tellomiScrollView, scrollView.bounds.height > 0 else {
+            return
         }
+        tellomiScrollToNewestPending = false
+        let bottom = scrollView.contentSize.height + scrollView.adjustedContentInset.bottom - scrollView.bounds.height
+        scrollView.contentOffset.y = max(-scrollView.adjustedContentInset.top, bottom)
     }
 
     private func updatePinnedMessageState() {
@@ -147,7 +226,7 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
             return
         }
         db.read { tx in
-            pinnedMessages = pinnedMessageManager.fetchPinnedMessagesForThread(threadId: threadId, tx: tx)
+            pinnedMessages = Self.tellomiInChatOrder(pinnedMessageManager.fetchPinnedMessagesForThread(threadId: threadId, tx: tx))
             layoutPinnedMessages(tx: tx)
         }
         view.layoutIfNeeded()
@@ -157,7 +236,10 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
         super.viewDidLayoutSubviews()
 
         let currentWidth = view.bounds.width
-        guard currentWidth != lastKnownWidth else { return }
+        guard currentWidth != lastKnownWidth else {
+            tellomiScrollToNewestIfPending()
+            return
+        }
         lastKnownWidth = currentWidth
         db.read { tx in
             layoutPinnedMessages(tx: tx)
@@ -283,13 +365,11 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
     // MARK: - Interactions
 
     private func goToMessage(_ messageIndex: Int) {
-        // We index in reverse order because of how UIKit lays out the pinned messages (top to bottom)
-        // versus how we store them for displaying in the CVC banner view (most -> least recent)
-        let reversedArray = pinnedMessages.reversed().map { $0 }
-        guard reversedArray.indices.contains(messageIndex) else {
+        // Tellomi (pinned-messages.md 3.5): `pinnedMessages` is in chat order, the order they're laid out in.
+        guard pinnedMessages.indices.contains(messageIndex) else {
             return
         }
-        let message = reversedArray[messageIndex]
+        let message = pinnedMessages[messageIndex]
         delegate?.goToMessage(message: message)
         dismiss(animated: true)
     }

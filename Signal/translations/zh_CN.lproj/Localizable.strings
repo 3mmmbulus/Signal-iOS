@@ -11436,6 +11436,15 @@
 /* Tellomi (pinned-messages.md 3.4): asked after tapping × on the pinned bar when you may unpin the message. */
 "TELLOMI_PINNED_BAR_UNPIN_QUESTION" = "取消置顶这条消息？";
 
+/* Tellomi (pinned-messages.md 3.5): toast after 'Hide pinned messages' in the pinned list. Has an Undo button. */
+"TELLOMI_PINNED_LIST_HIDDEN" = "置顶消息已隐藏，有新的置顶时会再显示";
+
+/* Tellomi (ADR-0081 §4.3, pinned-messages.md 3.5): under a message pinned for me only, in the pinned list. */
+"TELLOMI_PINNED_LIST_ONLY_YOU_CAN_SEE" = "仅自己可见";
+
+/* Tellomi (pinned-messages.md 3.5): button at the bottom of the pinned list that unpins every message, with Undo. */
+"TELLOMI_PINNED_LIST_UNPIN_ALL" = "取消所有置顶";
+
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): the last row of the pin sheet; tapping it picks how long the pin lasts. Embeds {{ how long, e.g. Forever }}. */
 "TELLOMI_PIN_DURATION" = "时长：%@ ›";
 

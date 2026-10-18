@@ -25,6 +25,10 @@ protocol PinnedMessageInteractionManagerDelegate: AnyObject {
 
     /// Tellomi (pinned-messages.md 3.4): × on the bar when there is one pin — unpin (with Undo) or, without the permission, hide it here.
     func tellomiClosePinnedBar()
+
+    /// Tellomi (pinned-messages.md 3.5): "Hide pinned messages" in the pinned list, for someone who may not unpin them — hidden here
+    /// until there's a newer pin, with Undo.
+    func tellomiHidePinnedMessages()
 }
 
 public struct PinnedMessageBannerData {
@@ -321,14 +325,8 @@ extension ConversationViewController: PinnedMessageInteractionManagerDelegate {
     }
 
     func unpinAllMessages() {
-        Task {
-            for message in threadViewModel.pinnedMessages {
-                await handleActionUnpinAsync(message: message)
-            }
-            presentToastCVC(OWSLocalizedString(
-                "PINNED_MESSAGE_TOAST",
-                comment: "Text to show on a toast when someone unpins a message",
-            ))
-        }
+        // Tellomi (pinned-messages.md 3.5, as in both Telegram apps): no question and no spinner — "N messages unpinned · Undo" for
+        // 5 s, then the unpins go out.
+        tellomiUnpinAllWithUndo()
     }
 }

@@ -40,4 +40,11 @@ public enum TellomiPinChoice: Equatable {
     public static func canUnpin(isPinnedForMe: Bool, canPinForEveryone: Bool, isTerminatedGroup: Bool) -> Bool {
         return isPinnedForMe || (canPinForEveryone && !isTerminatedGroup)
     }
+
+    /// 置顶列表底下是「取消所有置顶」还是「隐藏置顶消息」（pinned-messages.md 3.5）：每一条都能取消才是前者，否则只能在本机藏起置顶栏。
+    /// 两端 Telegram 同样按能不能置顶分（安卓 `ChatActivity` `UnpinAllMessages` / `HidePinnedMessages`，iOS `ChatControllerLoadDisplayNode`
+    /// `canManagePin()`）；Tellomi 多了「仅为我」的置顶，这几条总能取消。与安卓 `TellomiPinChoice.canUnpinAll` 一致。
+    public static func canUnpinAll(pinnedForMe: [Bool], canPinForEveryone: Bool, isTerminatedGroup: Bool) -> Bool {
+        return pinnedForMe.allSatisfy { canUnpin(isPinnedForMe: $0, canPinForEveryone: canPinForEveryone, isTerminatedGroup: isTerminatedGroup) }
+    }
 }

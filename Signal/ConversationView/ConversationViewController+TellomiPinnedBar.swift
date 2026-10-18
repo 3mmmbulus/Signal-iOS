@@ -15,19 +15,17 @@ extension ConversationViewController {
 
     static let tellomiUnpinUndoSeconds = 5
 
-    /// 置顶栏上的置顶：最早的在前；取消了、在等「撤销」或正在发的已经不在栏上。
+    /// 置顶栏上的置顶：最早的在前；取消了、在等「撤销」或正在发的已经不在栏上（`TellomiHeldUnpins`）。
     var tellomiPinnedBarPins: [TSMessage] {
-        threadViewModel.pinnedMessages
-            .filter { !viewState.tellomiHeldUnpins.contains($0.uniqueId) }
+        let held = viewState.tellomiHeldUnpins.held
+        return threadViewModel.pinnedMessages
+            .filter { !held.contains($0.uniqueId) }
             .sorted { $0.sortId < $1.sortId }
     }
 
     /// 同上，顺手放掉已经发出去、置顶也真没了的那几条（再被置顶时要回到栏上）。
     func tellomiPrunedPinnedBarPins() -> [TSMessage] {
-        let pinned = Set(threadViewModel.pinnedMessages.map(\.uniqueId))
-        viewState.tellomiHeldUnpins = viewState.tellomiHeldUnpins.filter {
-            viewState.tellomiUndoableUnpins.contains($0) || pinned.contains($0)
-        }
+        viewState.tellomiHeldUnpins.prune(pinned: Set(threadViewModel.pinnedMessages.map(\.uniqueId)))
         return tellomiPinnedBarPins
     }
 
@@ -164,19 +162,44 @@ extension ConversationViewController {
         presentActionSheet(actionSheet)
     }
 
-    /// 取消置顶，带「已取消置顶 · 撤销」5 秒；没撤销才发出去（两端 Telegram 都这样延后发）。这 5 秒里离开会话也照样发：等的时候拿着会话页。
-    /// 与安卓 `ConversationFragment.tellomiUnpinWithUndo` 一致。
     func tellomiUnpinWithUndo(_ message: TSMessage) {
-        let uniqueId = message.uniqueId
-        guard viewState.tellomiHeldUnpins.insert(uniqueId).inserted else {
+        tellomiUnpinWithUndo([message], text: OWSLocalizedString(
+            "TELLOMI_PINNED_BAR_UNPINNED",
+            comment: "Tellomi (pinned-messages.md 3.6): toast after unpinning a message. Has an Undo button for 5 seconds.",
+        ))
+    }
+
+    /// 置顶列表底下的「取消所有置顶」（pinned-messages.md 3.5，两端 Telegram 同样）：不问，这里给「N 条消息已取消置顶 · 撤销」5 秒后才发出。
+    func tellomiUnpinAllWithUndo() {
+        let pins = tellomiPinnedBarPins
+        guard !pins.isEmpty else {
             return
         }
-        viewState.tellomiUndoableUnpins.insert(uniqueId)
+        let format = OWSLocalizedString(
+            "TELLOMI_PINNED_LIST_MESSAGES_UNPINNED_%ld",
+            tableName: "PluralAware",
+            comment: "Tellomi (pinned-messages.md 3.5): toast after 'Unpin all' in the pinned list. Has an Undo button for 5 seconds. Embeds {{ number of messages }}.",
+        )
+        tellomiUnpinWithUndo(pins, text: String.localizedStringWithFormat(format, pins.count))
+    }
+
+    /// 置顶列表底下的「隐藏置顶消息」（没有权限取消的人）：只在本机藏起置顶栏，直到有新的置顶，可撤销。两端 Telegram 同样
+    /// （安卓 `onUnpin(true, hide)`，iOS `performUpdatedClosedPinnedMessageId`）。
+    func tellomiHidePinnedMessages() {
+        guard let rowId = tellomiPinnedBarPins.last?.sqliteRowId else {
+            return
+        }
+        let threadUniqueId = thread.uniqueId
+        let hiddenBefore = SSKEnvironment.shared.databaseStorageRef.write { tx in
+            let hiddenBefore = TellomiPinnedBar.hiddenPinRowId(threadUniqueId: threadUniqueId, tx: tx)
+            TellomiPinnedBar.hide(threadUniqueId: threadUniqueId, newestPinRowId: rowId, tx: tx)
+            return hiddenBefore
+        }
         ensureBannerState()
 
         let toast = ToastController(text: OWSLocalizedString(
-            "TELLOMI_PINNED_BAR_UNPINNED",
-            comment: "Tellomi (pinned-messages.md 3.6): toast after unpinning a message. Has an Undo button for 5 seconds.",
+            "TELLOMI_PINNED_LIST_HIDDEN",
+            comment: "Tellomi (pinned-messages.md 3.5): toast after 'Hide pinned messages' in the pinned list. Has an Undo button.",
         ))
         toast.tellomiAction = (
             title: OWSLocalizedString(
@@ -184,10 +207,36 @@ extension ConversationViewController {
                 comment: "Tellomi (pinned-messages.md 3.6): button on the 'message unpinned' toast that keeps the message pinned.",
             ),
             handler: { [weak self] in
-                guard let self, viewState.tellomiUndoableUnpins.remove(uniqueId) != nil else {
+                SSKEnvironment.shared.databaseStorageRef.write { tx in
+                    TellomiPinnedBar.hide(threadUniqueId: threadUniqueId, newestPinRowId: hiddenBefore, tx: tx)
+                }
+                self?.ensureBannerState()
+            },
+        )
+        let bottomInset = 10 + collectionView.contentInset.bottom + view.layoutMargins.bottom
+        toast.presentToastView(from: .bottom, of: view, inset: bottomInset, dismissAfter: .seconds(Self.tellomiUnpinUndoSeconds))
+    }
+
+    /// 取消置顶，带「`text` · 撤销」5 秒；没撤销才发出去（两端 Telegram 都这样延后发），发出去、置顶真没了以前栏上也不显示
+    /// （`TellomiHeldUnpins`）。这 5 秒里离开会话也照样发：等的时候拿着会话页。与安卓 `ConversationFragment.tellomiUnpinWithUndo` 一致。
+    private func tellomiUnpinWithUndo(_ messages: [TSMessage], text: String) {
+        let uniqueIds = messages.map(\.uniqueId).filter { !viewState.tellomiHeldUnpins.held.contains($0) }
+        guard !uniqueIds.isEmpty else {
+            return
+        }
+        viewState.tellomiHeldUnpins.hold(uniqueIds)
+        ensureBannerState()
+
+        let toast = ToastController(text: text)
+        toast.tellomiAction = (
+            title: OWSLocalizedString(
+                "TELLOMI_PINNED_BAR_UNDO",
+                comment: "Tellomi (pinned-messages.md 3.6): button on the 'message unpinned' toast that keeps the message pinned.",
+            ),
+            handler: { [weak self] in
+                guard let self, !viewState.tellomiHeldUnpins.undo(uniqueIds).isEmpty else {
                     return
                 }
-                viewState.tellomiHeldUnpins.remove(uniqueId)
                 ensureBannerState()
             },
         )
@@ -195,42 +244,48 @@ extension ConversationViewController {
         toast.presentToastView(from: .bottom, of: view, inset: bottomInset, dismissAfter: .seconds(Self.tellomiUnpinUndoSeconds))
 
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(Self.tellomiUnpinUndoSeconds)) {
-            // Intentionally strong: the unpin goes out even if the chat closed in the meantime.
-            guard self.viewState.tellomiUndoableUnpins.remove(uniqueId) != nil else {
-                return
-            }
-            self.tellomiSendUnpin(message)
+            // Intentionally strong: the unpins go out even if the chat closed in the meantime.
+            let toSend = self.viewState.tellomiHeldUnpins.commit(uniqueIds)
+            self.tellomiSendUnpins(messages.filter { toSend.contains($0.uniqueId) })
         }
     }
 
-    /// 发出取消置顶，不挡住界面；它真没了以后才回到栏上的计算（`tellomiPrunedPinnedBarPins`）。发不出去就放回栏上并照 Signal 提示。
-    private func tellomiSendUnpin(_ message: TSMessage) {
-        let uniqueId = message.uniqueId
-        let unpinMessage = SSKEnvironment.shared.databaseStorageRef.write { tx in
-            tellomiOutgoingUnpinMessage(for: message, tx: tx)
-        }
-        guard let unpinMessage else {
-            viewState.tellomiHeldUnpins.remove(uniqueId)
-            ensureBannerState()
+    /// 一条一条发出取消置顶，不挡住界面；置顶真没了以后才不再记着（`tellomiPrunedPinnedBarPins`）。发不出去的放回栏上，照 Signal 提示一次。
+    private func tellomiSendUnpins(_ messages: [TSMessage]) {
+        guard !messages.isEmpty else {
             return
         }
+        let unpins: [(uniqueId: String, unpin: OutgoingUnpinMessage?)] = SSKEnvironment.shared.databaseStorageRef.write { tx in
+            messages.map { (uniqueId: $0.uniqueId, unpin: tellomiOutgoingUnpinMessage(for: $0, tx: tx)) }
+        }
         Task {
-            do {
-                try await sendPinMessageChange(pinMessage: unpinMessage)
-            } catch {
-                viewState.tellomiHeldUnpins.remove(uniqueId)
-                ensureBannerState()
-                OWSActionSheets.showActionSheet(
-                    title: OWSLocalizedString(
-                        "PINNED_MESSAGE_SEND_ERROR_SHEET_TITLE",
-                        comment: "Title for error sheet shown if the pinned message failed to send",
-                    ),
-                    message: OWSLocalizedString(
-                        "PINNED_MESSAGE_SEND_ERROR_SHEET_BODY",
-                        comment: "Body for error sheet shown if the pinned message failed to send",
-                    ),
-                )
+            var failed: [String] = []
+            for (uniqueId, unpin) in unpins {
+                guard let unpin else {
+                    failed.append(uniqueId)
+                    continue
+                }
+                do {
+                    try await sendPinMessageChange(pinMessage: unpin)
+                } catch {
+                    failed.append(uniqueId)
+                }
             }
+            guard !failed.isEmpty else {
+                return
+            }
+            viewState.tellomiHeldUnpins.failed(failed)
+            ensureBannerState()
+            OWSActionSheets.showActionSheet(
+                title: OWSLocalizedString(
+                    "PINNED_MESSAGE_SEND_ERROR_SHEET_TITLE",
+                    comment: "Title for error sheet shown if the pinned message failed to send",
+                ),
+                message: OWSLocalizedString(
+                    "PINNED_MESSAGE_SEND_ERROR_SHEET_BODY",
+                    comment: "Body for error sheet shown if the pinned message failed to send",
+                ),
+            )
         }
     }
 }

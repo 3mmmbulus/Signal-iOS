@@ -11679,6 +11679,15 @@
 /* Tellomi (pinned-messages.md 3.4): asked after tapping × on the pinned bar when you may unpin the message. */
 "TELLOMI_PINNED_BAR_UNPIN_QUESTION" = "Unpin this message?";
 
+/* Tellomi (pinned-messages.md 3.5): toast after 'Hide pinned messages' in the pinned list. Has an Undo button. */
+"TELLOMI_PINNED_LIST_HIDDEN" = "Pinned messages hidden until a new message is pinned";
+
+/* Tellomi (ADR-0081 §4.3, pinned-messages.md 3.5): under a message pinned for me only, in the pinned list. */
+"TELLOMI_PINNED_LIST_ONLY_YOU_CAN_SEE" = "Only visible to you";
+
+/* Tellomi (pinned-messages.md 3.5): button at the bottom of the pinned list that unpins every message, with Undo. */
+"TELLOMI_PINNED_LIST_UNPIN_ALL" = "Unpin all messages";
+
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): the last row of the pin sheet; tapping it picks how long the pin lasts. Embeds {{ how long, e.g. Forever }}. */
 "TELLOMI_PIN_DURATION" = "Duration: %@ ›";
 

@@ -87,10 +87,16 @@ public enum TellomiPinnedBar {
     /// 最新那条还是它就一直藏着（两端 Telegram 同样：iOS `closedPinnedMessageId`，安卓 `pin_<会话>`）。只在本机，不进备份。
     /// 与安卓 `TellomiPinnedBarValues` 一致。
     public static func isHidden(threadUniqueId: String, newestPinRowId: Int64, tx: DBReadTransaction) -> Bool {
-        return hiddenStore.fetchValue(Int64.self, forKey: threadUniqueId, tx: tx) == newestPinRowId
+        return hiddenPinRowId(threadUniqueId: threadUniqueId, tx: tx) == newestPinRowId
     }
 
-    public static func hide(threadUniqueId: String, newestPinRowId: Int64, tx: DBWriteTransaction) {
+    /// 藏起置顶栏时最新那条置顶；没藏过是 nil。
+    public static func hiddenPinRowId(threadUniqueId: String, tx: DBReadTransaction) -> Int64? {
+        return hiddenStore.fetchValue(Int64.self, forKey: threadUniqueId, tx: tx)
+    }
+
+    /// `newestPinRowId` 为 nil：不再藏（置顶列表里「隐藏置顶消息」的撤销，回到藏之前的样子）。
+    public static func hide(threadUniqueId: String, newestPinRowId: Int64?, tx: DBWriteTransaction) {
         hiddenStore.writeValue(newestPinRowId, forKey: threadUniqueId, tx: tx)
     }
 }

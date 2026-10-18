@@ -1618,6 +1618,34 @@
 			<string>%ld 首</string>
 		</dict>
 	</dict>
+	<key>TELLOMI_PINNED_LIST_MESSAGES_UNPINNED_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>other</key>
+			<string>%ld 條訊息已取消置頂</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_PINNED_LIST_TITLE_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>other</key>
+			<string>%ld 條置頂訊息</string>
+		</dict>
+	</dict>
 	<key>USERNAME_SELECTION_TOO_LONG_ERROR_MESSAGE_TELLOMI_%d</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

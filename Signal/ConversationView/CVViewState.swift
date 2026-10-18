@@ -158,11 +158,10 @@ public class CVViewState: NSObject {
     var tellomiJumpBackStack = TellomiJumpBackStack()
     var tellomiDidHighlightInitialFocus = false
     /// Tellomi（pinned-messages.md 3.4 / 3.6）：置顶栏——点过之后定住的那条、上一次屏幕上最新那条消息的位置；
-    /// 取消了置顶、还在等「撤销」或正在发的（栏上已经没有它们），其中还能撤销的。
+    /// 取消了置顶、还在等「撤销」或正在发的（栏上已经没有它们）。
     var tellomiForcedPinUniqueId: String?
     var tellomiPinnedBarNewestVisible: UInt64 = .max
-    var tellomiHeldUnpins = Set<String>()
-    var tellomiUndoableUnpins = Set<String>()
+    var tellomiHeldUnpins = TellomiHeldUnpins<String>()
 
     public var collectionViewActiveContextMenuInteraction: ChatHistoryContextMenuInteraction?
     public var longPressHandler: CVLongPressHandler?

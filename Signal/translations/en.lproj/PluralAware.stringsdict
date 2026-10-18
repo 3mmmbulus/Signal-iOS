@@ -1756,6 +1756,38 @@ Try again in %d hours.</string>
 			<string>%ld tracks</string>
 		</dict>
 	</dict>
+	<key>TELLOMI_PINNED_LIST_MESSAGES_UNPINNED_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld message unpinned</string>
+			<key>other</key>
+			<string>%ld messages unpinned</string>
+		</dict>
+	</dict>
+	<key>TELLOMI_PINNED_LIST_TITLE_%ld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@text@</string>
+		<key>text</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld pinned message</string>
+			<key>other</key>
+			<string>%ld pinned messages</string>
+		</dict>
+	</dict>
 	<key>THREAD_DETAILS_MORE_MUTUAL_GROUP_%3$ld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

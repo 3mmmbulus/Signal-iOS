@@ -75,6 +75,13 @@ class TellomiPinnedBarTest: XCTestCase {
         XCTAssertFalse(TellomiPinChoice.canUnpin(isPinnedForMe: false, canPinForEveryone: true, isTerminatedGroup: true), "the group has ended")
     }
 
+    func testTheListUnpinsAllOnlyWhenEveryPinCanBeUnpinnedOtherwiseItHidesThemHere() {
+        XCTAssertTrue(TellomiPinChoice.canUnpinAll(pinnedForMe: [false, true], canPinForEveryone: true, isTerminatedGroup: false))
+        XCTAssertTrue(TellomiPinChoice.canUnpinAll(pinnedForMe: [true, true], canPinForEveryone: false, isTerminatedGroup: false), "all of them mine only")
+        XCTAssertFalse(TellomiPinChoice.canUnpinAll(pinnedForMe: [true, false], canPinForEveryone: false, isTerminatedGroup: false), "someone else's pin without permission")
+        XCTAssertFalse(TellomiPinChoice.canUnpinAll(pinnedForMe: [false], canPinForEveryone: true, isTerminatedGroup: true))
+    }
+
     func testHidingTheBarLastsUntilThereIsANewerPinAndOnlyInThatChat() {
         let db = InMemoryDB()
         db.read { tx in
@@ -87,6 +94,15 @@ class TellomiPinnedBarTest: XCTestCase {
             XCTAssertTrue(TellomiPinnedBar.isHidden(threadUniqueId: "a", newestPinRowId: 5, tx: tx))
             XCTAssertFalse(TellomiPinnedBar.isHidden(threadUniqueId: "a", newestPinRowId: 9, tx: tx), "a newer pin brings it back")
             XCTAssertFalse(TellomiPinnedBar.isHidden(threadUniqueId: "b", newestPinRowId: 5, tx: tx), "another chat")
+            XCTAssertEqual(TellomiPinnedBar.hiddenPinRowId(threadUniqueId: "a", tx: tx), 5)
+        }
+        db.write { tx in
+            // "Undo" on "Hide pinned messages" puts back what was there before: here, not hidden.
+            TellomiPinnedBar.hide(threadUniqueId: "a", newestPinRowId: nil, tx: tx)
+        }
+        db.read { tx in
+            XCTAssertFalse(TellomiPinnedBar.isHidden(threadUniqueId: "a", newestPinRowId: 5, tx: tx))
+            XCTAssertNil(TellomiPinnedBar.hiddenPinRowId(threadUniqueId: "a", tx: tx))
         }
     }
 }
