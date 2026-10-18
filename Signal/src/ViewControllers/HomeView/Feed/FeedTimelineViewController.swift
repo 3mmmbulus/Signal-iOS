@@ -35,6 +35,8 @@ final class FeedTimelineViewController: OWSViewController {
     var onOpenPost: ((FeedCard) -> Void)?
     /// 点了帖子上的头像 / 名字。nil（默认）= 不响应，帖子行为不变。要在页面出现前设好。
     var onOpenAuthor: ((FeedAuthor) -> Void)?
+    /// 点了帖子上的 `#话题`。nil（默认）= 不响应。要在页面出现前设好。
+    var onOpenTopic: ((FeedTopic) -> Void)?
 
     private lazy var emptyStateView = FeedEmptyStateView(title: feedTab.emptyTitle, body: feedTab.emptyBody)
     private lazy var errorStateView = FeedErrorStateView { [weak self] in
@@ -191,6 +193,7 @@ extension FeedTimelineViewController: UITableViewDataSource, UITableViewDelegate
         cell.onLike = { [weak self] card in self?.store.toggleLike(card) }
         cell.onNotInterested = { [weak self] card in self?.store.notInterested(card) }
         cell.onAuthorTap = onOpenAuthor
+        cell.onTopicTap = onOpenTopic
         return cell
     }
 

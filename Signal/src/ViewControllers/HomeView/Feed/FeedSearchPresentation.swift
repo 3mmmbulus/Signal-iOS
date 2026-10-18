@@ -188,3 +188,37 @@ struct FeedTopicPresentation: Equatable {
         }
     }
 }
+
+/// 帖子上那一行 `#话题  #话题`：文字怎么排、点到的字符属于哪个话题（纯逻辑；界面里按点击位置换成字符位置再问这里）。
+enum FeedTopicChips {
+    static let separator = "  "
+
+    static func label(_ topic: FeedTopic) -> String {
+        return "#\(topic.label)"
+    }
+
+    static func text(for topics: [FeedTopic]) -> String {
+        return topics.map(label).joined(separator: separator)
+    }
+
+    /// 每个话题在 `text(for:)` 里的范围（UTF-16 位置，和 `NSRange` / `NSLayoutManager` 一致）。
+    static func ranges(for topics: [FeedTopic]) -> [NSRange] {
+        var location = 0
+        var result = [NSRange]()
+        for topic in topics {
+            let length = label(topic).utf16.count
+            result.append(NSRange(location: location, length: length))
+            location += length + separator.utf16.count
+        }
+        return result
+    }
+
+    /// 点到的字符位置属于第几个话题；点在两个话题之间的空格上算前一个（手指不用点得很准），点在最前面 / 最后面之外是 nil。
+    static func index(atCharacter character: Int, in topics: [FeedTopic]) -> Int? {
+        let ranges = ranges(for: topics)
+        guard let first = ranges.first, let last = ranges.last, character >= first.location, character < last.location + last.length else {
+            return nil
+        }
+        return ranges.lastIndex { $0.location <= character }
+    }
+}

@@ -801,3 +801,43 @@ final class TellomiFeedSampleSearchTests: XCTestCase {
         } catch {}
     }
 }
+
+// MARK: - 帖子上的 #话题 怎么排、点到哪个
+
+final class TellomiFeedTopicChipsTests: XCTestCase {
+    private func topics(_ labels: String...) -> [FeedTopic] {
+        labels.enumerated().map { FeedTopic(slug: "t\($0.offset)", label: $0.element) }
+    }
+
+    func testTheTextIsHashLabelsSeparatedByTwoSpaces() {
+        XCTAssertEqual(FeedTopicChips.text(for: topics("日常", "美食")), "#日常  #美食")
+        XCTAssertEqual(FeedTopicChips.text(for: []), "")
+    }
+
+    func testRangesCountUTF16UnitsSoEmojiLabelsStayAligned() {
+        let list = topics("a", "😀b", "c")
+        XCTAssertEqual(FeedTopicChips.text(for: list), "#a  #😀b  #c")
+        let ranges = FeedTopicChips.ranges(for: list)
+        XCTAssertEqual(ranges, [NSRange(location: 0, length: 2), NSRange(location: 4, length: 4), NSRange(location: 10, length: 2)])
+        let text = FeedTopicChips.text(for: list) as NSString
+        XCTAssertEqual(text.substring(with: ranges[1]), "#😀b")
+    }
+
+    func testAPositionMapsToItsTopicAndASpaceMapsToTheOneBefore() {
+        let list = topics("日常", "美食", "读书")   // "#日常  #美食  #读书"：0-2 | 空格 3-4 | 5-7 | 空格 8-9 | 10-12
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 0, in: list), 0)
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 2, in: list), 0)
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 3, in: list), 0, "空格算前一个")
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 4, in: list), 0)
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 5, in: list), 1)
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 9, in: list), 1)
+        XCTAssertEqual(FeedTopicChips.index(atCharacter: 12, in: list), 2)
+    }
+
+    func testOutsideTheTextOrWithNoTopicsIsNil() {
+        let list = topics("日常")
+        XCTAssertNil(FeedTopicChips.index(atCharacter: -1, in: list))
+        XCTAssertNil(FeedTopicChips.index(atCharacter: 3, in: list), "最后一个话题后面没有东西")
+        XCTAssertNil(FeedTopicChips.index(atCharacter: 0, in: []))
+    }
+}

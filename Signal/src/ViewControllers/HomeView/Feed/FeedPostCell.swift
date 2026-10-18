@@ -33,6 +33,10 @@ final class FeedPostCell: UITableViewCell {
     var onAuthorTap: ((FeedAuthor) -> Void)? {
         didSet { setAuthorTapEnabled(onAuthorTap != nil) }
     }
+    /// 点帖子上的某个 `#话题`（话题页入口）。nil = 不响应，也不拦截点击（整行照旧是「打开帖子」）。
+    var onTopicTap: ((FeedTopic) -> Void)? {
+        didSet { topicsLabel.isUserInteractionEnabled = onTopicTap != nil }
+    }
     /// 帖子详情页最上面那条（这一刀只读）：点赞和「···」不响应，免得点了没反应。
     var isReadOnly = false
     /// 只读时点赞仍然可以点（帖子详情页：「···」收起来，赞可以点）。
@@ -64,6 +68,24 @@ final class FeedPostCell: UITableViewCell {
             view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(authorTapped)))
         }
         setAuthorTapEnabled(false)
+        topicsLabel.isUserInteractionEnabled = false
+        topicsLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(topicsTapped(_:))))
+    }
+
+    /// 按点击位置找到点的是哪个话题：照标签同样的字体和宽度排一遍字，问「这个点落在第几个字符」，再交给 `FeedTopicChips`。
+    @objc private func topicsTapped(_ gesture: UITapGestureRecognizer) {
+        guard let card, let onTopicTap, !card.topics.isEmpty else { return }
+        let storage = NSTextStorage(string: FeedTopicChips.text(for: card.topics), attributes: [.font: topicsLabel.font as UIFont])
+        let container = NSTextContainer(size: topicsLabel.bounds.size)
+        container.lineFragmentPadding = 0
+        let layout = NSLayoutManager()
+        layout.addTextContainer(container)
+        storage.addLayoutManager(layout)
+        let point = gesture.location(in: topicsLabel)
+        let character = layout.characterIndex(for: point, in: container, fractionOfDistanceBetweenInsertionPoints: nil)
+        if let index = FeedTopicChips.index(atCharacter: character, in: card.topics) {
+            onTopicTap(card.topics[index])
+        }
     }
 
     private func setAuthorTapEnabled(_ enabled: Bool) {
@@ -226,7 +248,7 @@ final class FeedPostCell: UITableViewCell {
         bodyLabel.isHidden = body == nil
         bodyLabel.numberOfLines = card.isArticle ? Self.articlePreviewLines : 0
 
-        let topics = card.topics.map { "#\($0.label)" }.joined(separator: "  ")
+        let topics = FeedTopicChips.text(for: card.topics)
         topicsLabel.text = topics
         topicsLabel.isHidden = topics.isEmpty
 

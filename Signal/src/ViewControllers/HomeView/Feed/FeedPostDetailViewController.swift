@@ -39,6 +39,8 @@ final class FeedPostDetailViewController: OWSViewController {
     var onReport: ((FeedCard?) -> Void)?
     /// 点了帖子 / 评论上的头像 / 名字。nil（默认）= 不响应。要在页面出现前设好。
     var onOpenAuthor: ((FeedAuthor) -> Void)?
+    /// 点了帖子上的 `#话题`。nil（默认）= 不响应。要在页面出现前设好。
+    var onOpenTopic: ((FeedTopic) -> Void)?
     /// 删除前的确认；nil = 用自带的确认弹窗。单测 / 截图里换掉，免得弹真的弹窗。
     var confirmDestructive: ((FeedDetailMenuItem, @escaping () -> Void) -> Void)?
     /// 导航栏「···」现在放的几项（没变就不重建菜单）。
@@ -465,6 +467,7 @@ extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelega
             cell.allowsLikeWhenReadOnly = true
             cell.onLike = { [weak self] _ in self?.store.toggleLike() }
             cell.onAuthorTap = onOpenAuthor
+            cell.onTopicTap = onOpenTopic
             cell.configure(card: post, showIpRegion: showIpRegion)
             return cell
         case .comment(let row):
