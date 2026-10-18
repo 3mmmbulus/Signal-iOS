@@ -239,6 +239,7 @@ final class TellomiFeedDetailUITests: XCTestCase {
         return true
     }
 
+    @MainActor
     private func openComments(of id: String, source: SampleFeedSource, harness: Harness) async throws -> FeedPostDetailViewController {
         let fetched = try await source.card(contentId: id)
         let card = try XCTUnwrap(fetched)
@@ -257,9 +258,9 @@ final class TellomiFeedDetailUITests: XCTestCase {
         let open = try await openComments(of: "sample-1", source: source, harness: harness)
         XCTAssertFalse(open.commentInput.isHidden)
         let frame = open.commentInput.convert(open.commentInput.bounds, to: open.view)
-        XCTAssertGreaterThan(frame.height, 40)
-        XCTAssertGreaterThan(frame.minY, open.view.bounds.height / 2, "在下半屏")
-        XCTAssertLessThanOrEqual(frame.maxY, open.view.bounds.height + 0.5)
+        XCTAssertGreaterThan(frame.size.height, 40)
+        XCTAssertGreaterThan(frame.minY, open.view.bounds.size.height / 2, "在下半屏")
+        XCTAssertLessThanOrEqual(frame.maxY, open.view.bounds.size.height + 0.5)
         let table = open.detailTableView.convert(open.detailTableView.bounds, to: open.view)
         XCTAssertLessThanOrEqual(table.maxY, frame.minY + 0.5, "表格在输入框上面，不重叠")
         harness.pop()
