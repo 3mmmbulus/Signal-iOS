@@ -348,7 +348,10 @@ final class TellomiFeedClientTests: XCTestCase {
         store.undoNotInterested("b")
         XCTAssertEqual(store.hiddenIds, [])
         await source.waitForActions(2)
-        XCTAssertEqual(source.notInterested, ["+b", "-b"])
+        // 两件事都报给了来源。不断言先后：`FeedStore` 为每个动作各开一个独立的 `Task`，来源的 async 方法在全局执行器上跑，
+        // 两个调用谁先到并没有保证（Linux 压测里 "-b" 先到、甚至丢一条记录都出现过）。顺序不是这个测试要验证的事。
+        XCTAssertEqual(source.notInterested.count, 2)
+        XCTAssertEqual(Set(source.notInterested), ["+b", "-b"])
     }
 
     // MARK: - 卡片
@@ -506,43 +509,70 @@ private final class FakeTransport: FeedHTTPTransport {
     }
 }
 
-private final class ScriptedSource: FeedSource {
-    var pages = [FeedTimelinePage]()
-    var fail = false
-    var failActions = false
-    private(set) var cursors = [String?]()
-    private(set) var likes = [String]()
-    private(set) var notInterested = [String]()
+/// 测试替身。`FeedStore` 的动作 `Task` 在全局执行器上调用来源的方法，所以这里所有状态都由锁保护（原来是裸数组和裸计数，
+/// 两个 `Task` 同时 `append` 会丢一条）；`waitForActions` 靠 continuation 在第 N 个动作到达时立刻返回，不轮询、不睡觉。
+/// 只有「永远等不到」（被测代码退化）时，10 秒后的看门狗才会放行，让后面的断言失败而不是整个测试挂住。
+private final class ScriptedSource: FeedSource, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _pages = [FeedTimelinePage]()
+    private var _fail = false
+    private var _failActions = false
+    private var _cursors = [String?]()
+    private var _likes = [String]()
+    private var _notInterested = [String]()
     private var actionCount = 0
+    private var waiters = [UUID: (count: Int, continuation: CheckedContinuation<Void, Never>)]()
 
     struct Failure: Error {}
+
+    var pages: [FeedTimelinePage] {
+        get { locked { _pages } }
+        set { locked { _pages = newValue } }
+    }
+
+    var fail: Bool {
+        get { locked { _fail } }
+        set { locked { _fail = newValue } }
+    }
+
+    var failActions: Bool {
+        get { locked { _failActions } }
+        set { locked { _failActions = newValue } }
+    }
+
+    var cursors: [String?] { locked { _cursors } }
+    var likes: [String] { locked { _likes } }
+    var notInterested: [String] { locked { _notInterested } }
 
     func config() async throws -> FeedConfig { FeedConfig() }
 
     func timeline(tab: FeedTab, cursor: String?) async throws -> FeedTimelinePage {
-        cursors.append(cursor)
-        if fail {
+        let (shouldFail, page): (Bool, FeedTimelinePage) = locked {
+            _cursors.append(cursor)
+            return (_fail, _fail || _pages.isEmpty ? FeedTimelinePage() : _pages.removeFirst())
+        }
+        if shouldFail {
             throw Failure()
         }
-        return pages.isEmpty ? FeedTimelinePage() : pages.removeFirst()
+        return page
     }
 
     func setLiked(contentId: String, liked: Bool) async throws {
-        likes.append("\(contentId):\(liked)")
-        actionCount += 1
-        if failActions {
+        let shouldFail = locked { _likes.append("\(contentId):\(liked)"); return _failActions }
+        actionDone()
+        if shouldFail {
             throw Failure()
         }
     }
 
     func notInterested(contentId: String) async throws {
-        notInterested.append("+\(contentId)")
-        actionCount += 1
+        locked { _notInterested.append("+\(contentId)") }
+        actionDone()
     }
 
     func undoNotInterested(contentId: String) async throws {
-        notInterested.append("-\(contentId)")
-        actionCount += 1
+        locked { _notInterested.append("-\(contentId)") }
+        actionDone()
     }
 
     func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
@@ -551,9 +581,43 @@ private final class ScriptedSource: FeedSource {
 
     func reportEvents(_ events: [FeedEventPayload]) async throws {}
 
+    /// 返回时至少已有 `count` 个动作到达（或者 10 秒看门狗放行）。
     func waitForActions(_ count: Int) async {
-        for _ in 0..<200 where actionCount < count {
-            try? await Task.sleep(nanoseconds: 5_000_000)
+        let id = UUID()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let ready: Bool = locked {
+                if actionCount >= count { return true }
+                waiters[id] = (count, continuation)
+                return false
+            }
+            if ready {
+                continuation.resume()
+                return
+            }
+            Task.detached { [weak self] in
+                try? await Task.sleep(nanoseconds: 10_000_000_000)
+                self?.releaseWaiter(id)
+            }
         }
+    }
+
+    private func actionDone() {
+        let ready: [CheckedContinuation<Void, Never>] = locked {
+            actionCount += 1
+            let ids = waiters.filter { actionCount >= $0.value.count }.map(\.key)
+            return ids.compactMap { waiters.removeValue(forKey: $0)?.continuation }
+        }
+        ready.forEach { $0.resume() }
+    }
+
+    private func releaseWaiter(_ id: UUID) {
+        let continuation = locked { waiters.removeValue(forKey: id)?.continuation }
+        continuation?.resume()
+    }
+
+    private func locked<T>(_ body: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return body()
     }
 }
