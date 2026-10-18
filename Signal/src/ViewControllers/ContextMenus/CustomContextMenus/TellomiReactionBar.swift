@@ -43,6 +43,10 @@ struct TellomiReactionBarLayout: Equatable {
     static let cornerRadius: CGFloat = 23
     static let maxItemSize: CGFloat = 36
     static let itemSpacing: CGFloat = 8
+    /// 手指点按找格子：点在格子外这么远以内也算（Telegram iOS `ReactionContextNode.reactionItemNode(at:)` 第二轮的 touchInset）。
+    static let tapSlop: CGFloat = 8
+    /// 展开键的命中区比它本身四周各大 10 pt（Telegram 展开键同样）。
+    static let expandButtonHitOutset: CGFloat = 10
     static let sideInset: CGFloat = 6
     static let externalSideInset: CGFloat = 4
     /// 7 个表情 + 展开键。
@@ -259,25 +263,25 @@ final class TellomiReactionBar: UIView {
         contentMaskView.layer.cornerRadius = TellomiReactionBarLayout.cornerRadius
         contentMaskView.layer.cornerCurve = .continuous
 
-        for (index, emoji) in emojis.enumerated() {
+        for emoji in emojis {
             let itemView = ItemView(emoji: emoji, isSelected: emoji == selectedEmoji)
-            itemView.addAction(
-                UIAction { [weak self] _ in
-                    guard let self, let delegate = self.delegate else { return }
-                    ImpactHapticFeedback.impactOccurred(style: .light)
-                    delegate.didSelectReaction(reaction: emoji, isRemoving: emoji == self.selectedEmoji, inPosition: index)
-                },
-                for: .primaryActionTriggered,
-            )
+            itemView.onActivate = { [weak self] in self?.select(.emoji(emoji)) }
             itemViews.append(itemView)
             contentView.addSubview(itemView)
         }
 
-        expandButton.addAction(
-            UIAction { [weak self] _ in self?.delegate?.didSelectShowFullEmojiPicker() },
-            for: .primaryActionTriggered,
-        )
+        expandButton.onActivate = { [weak self] in self?.select(.expand) }
         contentView.addSubview(expandButton)
+
+        // Tellomi（owner 2026-10-18 真机：条上的表情、展开键点不动）：照 Telegram iOS `ReactionContextNode`，整条只挂一个单击手势，
+        // 松手时按位置找点中的那一格（[tappedSlot(at:)]），格子本身不接点按。原来每格各等自己的 `.primaryActionTriggered`：
+        // 自定义的 UIControl 被手指点按时 UIKit 只发 touchDown / touchUpInside，不发它（模拟器上真实点按核实过），所以点了没反应。
+        // 触控板 / 鼠标的点击另有一个只认指针的手势（`ContextMenuReactionBarAccessory`）。展开成面板以后这个手势不接触摸，
+        // 面板里的格子、按钮照常自己接。
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapRecognized(_:)))
+        tap.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.direct.rawValue)]
+        tap.delegate = self
+        addGestureRecognizer(tap)
     }
 
     required init?(coder: NSCoder) {
@@ -523,6 +527,55 @@ final class TellomiReactionBar: UIView {
         return ReactionFlyIn.Source(frameInWindow: frameInWindow, fontSize: itemView.visibleFontSize)
     }
 
+    // MARK: - 手指点按
+
+    @objc
+    private func tapRecognized(_ recognizer: UITapGestureRecognizer) {
+        guard recognizer.state == .ended else { return }
+        handleTap(at: recognizer.location(in: contentView))
+    }
+
+    /// 手指点在 [position]（`contentView` 坐标）。展开成面板以后不理（Telegram 展开中、收起中同样不理）。
+    func handleTap(at position: CGPoint) {
+        guard !isExpanded, let slot = tappedSlot(at: position) else { return }
+        select(slot)
+    }
+
+    /// 手指点按落在哪一格（Telegram iOS `ReactionContextNode.reactionItemNode(at:)`）：先按格子本身找（展开键按它放大过的命中区），
+    /// 找不到再四周各放宽 [TellomiReactionBarLayout.tapSlop]；放宽以后两格都够得着时取横向更近的那一格。
+    /// 只算条上露出来的格子（窄屏放不下的不算）；点在格子之外（尾巴、两端）不算。
+    func tappedSlot(at position: CGPoint) -> Slot? {
+        let layout = barLayout
+        var slots: [(slot: Slot, frame: CGRect)] = []
+        for (index, emoji) in emojis.enumerated() where index < layout.slotCount - 1 {
+            slots.append((.emoji(emoji), layout.itemFrame(at: index, isRTL: isRTL)))
+        }
+        let expandOutset = TellomiReactionBarLayout.expandButtonHitOutset
+        slots.append((.expand, layout.expandButtonFrame(isRTL: isRTL).insetBy(dx: -expandOutset, dy: -expandOutset)))
+
+        for slop in [0, TellomiReactionBarLayout.tapSlop] {
+            let hits = slots.filter { $0.frame.insetBy(dx: -slop, dy: -slop).contains(position) }
+            if let nearest = hits.min(by: { abs($0.frame.midX - position.x) < abs($1.frame.midX - position.x) }) {
+                return nearest.slot
+            }
+        }
+        return nil
+    }
+
+    /// 点中（或读屏双击）一格：表情就回应（点自己已经回应过的那个是撤回），展开键就原地展开。
+    private func select(_ slot: Slot) {
+        switch slot {
+        case .expand:
+            delegate?.didSelectShowFullEmojiPicker()
+        case .emoji(let emoji):
+            guard let delegate, let index = emojis.firstIndex(of: emoji) else { return }
+            ImpactHapticFeedback.impactOccurred(style: .light)
+            delegate.didSelectReaction(reaction: emoji, isRemoving: emoji == selectedEmoji, inPosition: index)
+        }
+    }
+
+    // MARK: - 按住滑动
+
     private(set) var focusedSlot: Slot?
 
     func updateFocusPosition(_ position: CGPoint, animated: Bool) {
@@ -567,6 +620,8 @@ final class TellomiReactionBar: UIView {
     // MARK: - Views
 
     private final class ItemView: UIControl {
+        /// 读屏双击这一格（手指点按由条上的单击手势按位置找格子）。
+        var onActivate: (() -> Void)?
         private let label = UILabel()
         private let selectionCircle = UIView()
         private let isSelectedReaction: Bool
@@ -646,6 +701,11 @@ final class TellomiReactionBar: UIView {
             }
         }
 
+        override func accessibilityActivate() -> Bool {
+            onActivate?()
+            return onActivate != nil
+        }
+
         /// 条出现时播一遍：从静止帧播一整圈回到静止帧。
         func playAppearAnimation(after delay: TimeInterval) {
             guard let animationView, let animation = animationView.animation else { return }
@@ -682,6 +742,8 @@ final class TellomiReactionBar: UIView {
 
     /// 最后一格：圆底上一个向下的箭头，点开全部表情。
     private final class ExpandButton: UIControl {
+        /// 读屏双击（手指点按由条上的单击手势按位置找格子）。
+        var onActivate: (() -> Void)?
         private let circle = UIView()
         private let arrow = UIImageView()
 
@@ -719,9 +781,22 @@ final class TellomiReactionBar: UIView {
             didSet { alpha = isHighlighted ? 0.7 : 1 }
         }
 
-        /// 命中区放大 20 pt（Telegram 展开键同样）。
-        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-            bounds.insetBy(dx: -10, dy: -10).contains(point)
+        override func accessibilityActivate() -> Bool {
+            onActivate?()
+            return onActivate != nil
         }
+
+        /// 命中区四周各大 10 pt（Telegram 展开键同样）。
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            let outset = TellomiReactionBarLayout.expandButtonHitOutset
+            return bounds.insetBy(dx: -outset, dy: -outset).contains(point)
+        }
+    }
+}
+
+extension TellomiReactionBar: UIGestureRecognizerDelegate {
+    /// 展开成面板以后条上的单击手势不接触摸：它要是认出来，会把面板里格子的触摸取消掉，格子就选不中了。
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        !isExpanded
     }
 }

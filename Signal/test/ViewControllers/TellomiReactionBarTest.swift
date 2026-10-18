@@ -212,45 +212,108 @@ final class TellomiReactionBarTest: SignalBaseTest {
         window.isHidden = true
     }
 
-    // MARK: - 手指点按（owner 2026-10-18 真机：条上的表情点不动）
+    // MARK: - 手指点按（owner 2026-10-18 真机：条上的表情、展开键点不动）
 
-    /// 条上挂着上游给触控板 / 鼠标用的「悬停后点击」手势；它要是也接手指，会把每一下点按都吃掉——表情是自定义 UIControl，
-    /// 没有 UIButton 那样优先于父视图单击手势的待遇——而手指点按没有悬停选中的表情，于是什么也不做。
-    func testAFingerTapIsNotTakenByTheBarsPointerClickGesture() throws {
+    /// 照 Telegram iOS `ReactionContextNode`：整条只有一个接手指的单击手势，松手时按位置找格子；触控板 / 鼠标的点击另有一个
+    /// 只认指针的手势（选悬停中的那一格）。两个都不同时接手指和指针。
+    func testTheBarHasOneFingerTapAndOnePointerClick() throws {
         let thread = TSContactThread(contactAddress: SignalServiceAddress(Aci.randomForTesting()))
         let accessory = ContextMenuReactionBarAccessory(thread: thread, itemViewModel: nil)
         let bar = try XCTUnwrap(accessory.accessoryView as? TellomiReactionBar)
         let taps = (bar.gestureRecognizers ?? []).compactMap { $0 as? UITapGestureRecognizer }
-        XCTAssertEqual(taps.count, 1, "pointer clicks still pick the hovered emoji")
-        for tap in taps {
-            XCTAssertFalse(tap.allowedTouchTypes.contains(NSNumber(value: UITouch.TouchType.direct.rawValue)))
-            XCTAssertEqual(tap.allowedTouchTypes, [NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)])
-        }
+        let direct = NSNumber(value: UITouch.TouchType.direct.rawValue)
+        let pointer = NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)
+        XCTAssertEqual(taps.count, 2)
+        XCTAssertEqual(taps.filter { $0.allowedTouchTypes == [direct] }.count, 1, "手指点按")
+        XCTAssertEqual(taps.filter { $0.allowedTouchTypes == [pointer] }.count, 1, "触控板 / 鼠标点击")
     }
 
-    /// 点按落到表情上就回应：第几个、哪个表情、是不是撤回自己的回应。
-    func testTappingAnEmojiReactsWithIt() throws {
-        final class Recorder: MessageReactionPickerDelegate {
-            var selections = [(String, Bool, Int)]()
-            var expansions = 0
-            func didSelectReaction(reaction: String, isRemoving: Bool, inPosition position: Int) {
-                selections.append((reaction, isRemoving, position))
-            }
-            func didSelectShowFullEmojiPicker() { expansions += 1 }
-        }
-        let recorder = Recorder()
-        let bar = TellomiReactionBar(emojis: ["❤️", "👍", "👎"], selectedEmoji: "👍", delegate: recorder)
-        let controls = bar.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIControl }
-        XCTAssertEqual(controls.count, 4, "3 emoji + the expand button")
-
-        controls[0].sendActions(for: .primaryActionTriggered)
-        controls[1].sendActions(for: .primaryActionTriggered)
-        controls[3].sendActions(for: .primaryActionTriggered)
+    /// 点在哪一格就是哪一格：第几个、哪个表情、点自己回应过的那个是撤回；点展开键就展开。
+    func testATapPicksTheCellUnderTheFinger() {
+        let (bar, recorder, layout) = makeTappableBar()
+        bar.handleTap(at: center(of: layout.itemFrame(at: 0, isRTL: false)))
+        bar.handleTap(at: center(of: layout.itemFrame(at: 1, isRTL: false)))
+        bar.handleTap(at: center(of: layout.expandButtonFrame(isRTL: false)))
 
         XCTAssertEqual(recorder.selections.map(\.0), ["❤️", "👍"])
-        XCTAssertEqual(recorder.selections.map(\.1), [false, true], "tapping my own reaction takes it back")
+        XCTAssertEqual(recorder.selections.map(\.1), [false, true], "点自己回应过的那个是撤回")
         XCTAssertEqual(recorder.selections.map(\.2), [0, 1])
         XCTAssertEqual(recorder.expansions, 1)
+    }
+
+    /// 点在两格之间的空隙：取横向更近的那一格（Telegram 四周各放宽 8 pt 再找一遍）。
+    func testATapInTheGapPicksTheNearerCell() {
+        let (bar, _, layout) = makeTappableBar()
+        let first = layout.itemFrame(at: 0, isRTL: false)
+        let second = layout.itemFrame(at: 1, isRTL: false)
+        XCTAssertEqual(bar.tappedSlot(at: CGPoint(x: first.maxX + 1, y: first.midY)), .emoji("❤️"))
+        XCTAssertEqual(bar.tappedSlot(at: CGPoint(x: second.minX - 1, y: second.midY)), .emoji("👍"))
+        XCTAssertEqual(bar.tappedSlot(at: CGPoint(x: first.midX, y: first.maxY + 7)), .emoji("❤️"), "下沿外 8 pt 以内也算")
+    }
+
+    /// 点在格子外面（尾巴那里、离格子 8 pt 以外）：什么都不选。
+    func testATapAwayFromEveryCellDoesNothing() {
+        let (bar, recorder, layout) = makeTappableBar()
+        let first = layout.itemFrame(at: 0, isRTL: false)
+        bar.handleTap(at: CGPoint(x: first.midX, y: first.maxY + 9))
+        bar.handleTap(at: CGPoint(x: first.minX - 9, y: first.midY))
+        XCTAssertTrue(recorder.selections.isEmpty)
+        XCTAssertEqual(recorder.expansions, 0)
+    }
+
+    /// 展开键的命中区四周各大 10 pt（Telegram 展开键同样），再往外 8 pt 也算。
+    func testTheExpandButtonIsEasyToHit() {
+        let (bar, _, layout) = makeTappableBar()
+        let expand = layout.expandButtonFrame(isRTL: false)
+        XCTAssertEqual(bar.tappedSlot(at: CGPoint(x: expand.maxX + 9, y: expand.midY)), .expand)
+        XCTAssertEqual(bar.tappedSlot(at: CGPoint(x: expand.midX, y: expand.maxY + 17)), .expand)
+        XCTAssertNil(bar.tappedSlot(at: CGPoint(x: expand.midX, y: expand.maxY + 19)))
+    }
+
+    /// 展开成面板以后，条上的单击手势不接触摸（不然会取消面板里格子的选中），点按也不再按条上的格子选。
+    func testAfterExpandingTheBarLeavesTapsToThePanel() throws {
+        let (bar, recorder, layout) = makeTappableBar()
+        bar.prepareExpansion(panel: TellomiReactionPanel(message: nil))
+        let tap = try XCTUnwrap((bar.gestureRecognizers ?? []).compactMap { $0 as? UITapGestureRecognizer }.first)
+        XCTAssertFalse(bar.gestureRecognizer(tap, shouldReceive: UITouch()))
+        bar.handleTap(at: center(of: layout.itemFrame(at: 0, isRTL: false)))
+        XCTAssertTrue(recorder.selections.isEmpty)
+    }
+
+    /// 读屏双击一格：和手指点中一样。
+    func testVoiceOverActivationPicksTheCell() {
+        let (bar, recorder, _) = makeTappableBar()
+        let controls = bar.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIControl }
+        XCTAssertEqual(controls.count, 4, "3 个表情 + 展开键")
+        XCTAssertTrue(controls[0].accessibilityActivate())
+        XCTAssertTrue(controls[3].accessibilityActivate())
+        XCTAssertEqual(recorder.selections.map(\.0), ["❤️"])
+        XCTAssertEqual(recorder.expansions, 1)
+    }
+
+    private final class TapRecorder: MessageReactionPickerDelegate {
+        var selections = [(String, Bool, Int)]()
+        var expansions = 0
+        func didSelectReaction(reaction: String, isRemoving: Bool, inPosition position: Int) {
+            selections.append((reaction, isRemoving, position))
+        }
+        func didSelectShowFullEmojiPicker() { expansions += 1 }
+    }
+
+    /// 3 个表情（我回应过 👍）+ 展开键，摆在 390 宽的容器里；返回条、记录点中了什么的代理、条用的布局。
+    private func makeTappableBar() -> (TellomiReactionBar, TapRecorder, TellomiReactionBarLayout) {
+        let recorder = TapRecorder()
+        let bar = TellomiReactionBar(emojis: ["❤️", "👍", "👎"], selectedEmoji: "👍", delegate: recorder)
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 390, height: 200))
+        container.addSubview(bar)
+        bar.frame = CGRect(origin: .zero, size: bar.sizeThatFits(container.bounds.size))
+        bar.layoutIfNeeded()
+        addTeardownBlock { withExtendedLifetime((container, recorder)) {} }
+        return (bar, recorder, TellomiReactionBarLayout(availableWidth: 390, slotCount: 4))
+    }
+
+    private func center(of frame: CGRect) -> CGPoint {
+        CGPoint(x: frame.midX, y: frame.midY)
     }
 }
 
