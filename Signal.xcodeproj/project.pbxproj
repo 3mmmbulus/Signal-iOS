@@ -178,6 +178,7 @@
 		3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */; };
 		C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */; };
 		D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */; };
+		F438B6E84001A2405520CE01 /* FeedCommentInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8454BCDDA271C872B2BA3F /* FeedCommentInputView.swift */; };
 		D223D639B98B11B72CAA37AE /* FeedChangeSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BAA323AEAB28F9BB09590E /* FeedChangeSubscription.swift */; };
 		2FF7EE158FC2C97D45B29EB6 /* FeedCommentInputPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB6A63CB73C31D4FE1871AB7 /* FeedCommentInputPresentation.swift */; };
 		DFE5DCF0FF47C257E10361EB /* FeedCommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40BBBD47A25DDDE9C1DF23E /* FeedCommentCell.swift */; };
@@ -4787,6 +4788,7 @@
 		FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopBarView.swift; sourceTree = "<group>"; };
 		FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTab.swift; sourceTree = "<group>"; };
 		81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeed.swift; sourceTree = "<group>"; };
+		BC8454BCDDA271C872B2BA3F /* FeedCommentInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentInputView.swift; sourceTree = "<group>"; };
 		C3BAA323AEAB28F9BB09590E /* FeedChangeSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedChangeSubscription.swift; sourceTree = "<group>"; };
 		DB6A63CB73C31D4FE1871AB7 /* FeedCommentInputPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentInputPresentation.swift; sourceTree = "<group>"; };
 		B40BBBD47A25DDDE9C1DF23E /* FeedCommentCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentCell.swift; sourceTree = "<group>"; };
@@ -9397,6 +9399,7 @@
 				FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */,
 				FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */,
 				81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */,
+				BC8454BCDDA271C872B2BA3F /* FeedCommentInputView.swift */,
 				C3BAA323AEAB28F9BB09590E /* FeedChangeSubscription.swift */,
 				DB6A63CB73C31D4FE1871AB7 /* FeedCommentInputPresentation.swift */,
 				B40BBBD47A25DDDE9C1DF23E /* FeedCommentCell.swift */,
@@ -19571,6 +19574,7 @@
 				3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */,
 				C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */,
 				D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */,
+				F438B6E84001A2405520CE01 /* FeedCommentInputView.swift in Sources */,
 				D223D639B98B11B72CAA37AE /* FeedChangeSubscription.swift in Sources */,
 				2FF7EE158FC2C97D45B29EB6 /* FeedCommentInputPresentation.swift in Sources */,
 				DFE5DCF0FF47C257E10361EB /* FeedCommentCell.swift in Sources */,
