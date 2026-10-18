@@ -31,6 +31,10 @@ final class SampleFeedSource: FeedSource {
     struct Simulation {
         /// 取最新卡片（Card API）前先等一会儿：帖子详情页打开后这么久才知道「已不可见」，能截到中间那一帧。
         var cardLatencyNanos: UInt64 = 0
+        /// 点赞 / 取消赞的请求先等一会儿：能截到「已经点亮、请求还在路上」那一帧。
+        var likeLatencyNanos: UInt64 = 0
+        /// 点赞请求失败（界面会先点亮、再改回来、提示一句）。
+        var failsLikes = false
     }
 
     private var storedSimulation = Simulation()
@@ -174,6 +178,13 @@ final class SampleFeedSource: FeedSource {
     }
 
     func setLiked(contentId: String, liked isLiked: Bool) async throws {
+        let simulation = self.simulation
+        if simulation.likeLatencyNanos > 0 {
+            try? await Task.sleep(nanoseconds: simulation.likeLatencyNanos)
+        }
+        if simulation.failsLikes {
+            throw SampleFeedError.simulatedActionFailure
+        }
         locked {
             if isLiked {
                 liked.insert(contentId)
@@ -286,4 +297,6 @@ final class SampleFeedSource: FeedSource {
 enum SampleFeedError: Error {
     /// 样例里「评论加载失败」的状态（只失败第一次，重试成功）。
     case simulatedCommentFailure
+    /// 样例里「点赞失败」的状态（`Simulation.failsLikes`）。
+    case simulatedActionFailure
 }

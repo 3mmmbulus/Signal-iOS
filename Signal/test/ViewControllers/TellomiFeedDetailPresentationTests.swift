@@ -250,6 +250,34 @@ final class TellomiFeedSampleDetailStoreTests: XCTestCase {
         XCTAssertTrue(store.state.postGone)
     }
 
+    func testTheLikeKnobsDelayAndFailTheSampleLikeAndTheStoreRollsBack() async throws {
+        let source = SampleFeedSource(now: { Date(timeIntervalSince1970: 1_791_889_200) }, commentsLatencyNanos: 0)
+        XCTAssertEqual(source.simulation.likeLatencyNanos, 0)
+        XCTAssertFalse(source.simulation.failsLikes)
+        let feed = FeedStore(source: source)
+        feed.onTabShown(.recommend)
+        await feed.waitForLoad(.recommend)
+        let before = try XCTUnwrap(feed.card(id: "sample-3"))
+
+        source.simulation.likeLatencyNanos = 200_000_000
+        feed.toggleLike(id: "sample-3")
+        XCTAssertEqual(feed.card(id: "sample-3")?.viewer.liked, true, "请求在路上：界面已经点亮")
+        try await Task.sleep(nanoseconds: 40_000_000)
+        XCTAssertEqual(feed.card(id: "sample-3")?.viewer.liked, true, "还在路上")
+        let started = Date()
+        await feed.waitForActions()
+        XCTAssertGreaterThan(Date().timeIntervalSince(started), 0.1, "样例真的等了一会儿才回")
+        XCTAssertEqual(feed.card(id: "sample-3")?.stats.likes, before.stats.likes + 1)
+
+        source.simulation.likeLatencyNanos = 0
+        source.simulation.failsLikes = true
+        feed.toggleLike(id: "sample-3")
+        XCTAssertEqual(feed.card(id: "sample-3")?.viewer.liked, false)
+        await feed.waitForActions()
+        XCTAssertEqual(feed.card(id: "sample-3")?.viewer.liked, true, "失败：改回点过赞")
+        XCTAssertEqual(feed.card(id: "sample-3")?.stats.likes, before.stats.likes + 1)
+    }
+
     func testAPostWithoutCommentsEndsInEmpty() async throws {
         let store = try await store("sample-4")
         store.start()
