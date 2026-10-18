@@ -71,10 +71,24 @@ final class SampleFeedSource: FeedSource {
         var failsHideLists = false
         /// 取主页被限速：非 nil 时回 429 并带这么多秒的 `Retry-After`（加载失败页说「请 N 秒后再试」）。
         var profileThrottledRetryAfterSeconds: Int?
+        /// 搜索请求先等一会儿（搜索中那一帧）。
+        var searchLatencyNanos: UInt64 = 0
+        /// 搜索失败（第一页）；`failsSearchMore` 只让翻页失败（结果留着，末尾给重试）。
+        var failsSearch = false
+        var failsSearchMore = false
+        /// 搜索被限速：回 429 带这么多秒的 `Retry-After`；nil = 不限速。
+        var searchThrottledRetryAfterSeconds: Int?
+        /// 话题页的同样几个开关。
+        var topicLatencyNanos: UInt64 = 0
+        var failsTopic = false
+        var failsTopicMore = false
+        var topicThrottledRetryAfterSeconds: Int?
+        var failsTopicFollow = false
     }
 
     /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
     let profiles = SampleProfileState()
+    let topicFollows = SampleTopicState()
 
     private var storedSimulation = Simulation()
 
@@ -113,7 +127,7 @@ final class SampleFeedSource: FeedSource {
         "给猫换了新猫砂，它研究了半个小时才肯进去。",
     ]
 
-    private static let topics = [
+    static let topics = [
         FeedTopic(slug: "daily", label: "日常"),
         FeedTopic(slug: "food", label: "美食"),
         FeedTopic(slug: "outdoors", label: "户外"),

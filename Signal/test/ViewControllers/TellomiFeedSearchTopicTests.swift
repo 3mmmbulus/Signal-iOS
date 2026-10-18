@@ -698,7 +698,8 @@ final class TellomiFeedTopicStoreTests: XCTestCase {
         source.topicError = Boom()
         store.loadMore()
         await store.waitForTasks()
-        XCTAssertTrue(store.state.failed)
+        XCTAssertFalse(store.state.failed, "翻页失败不算整页失败（帖子还在）")
+        XCTAssertTrue(store.state.loadMoreFailed, "列表末尾给「重试」")
         XCTAssertEqual(store.state.posts.map(\.id), ["a"])
         XCTAssertEqual(store.state.cursor, "c1")
         source.topicError = nil
@@ -706,6 +707,7 @@ final class TellomiFeedTopicStoreTests: XCTestCase {
         await store.waitForTasks()
         XCTAssertEqual(store.state.posts.map(\.id), ["a", "b"])
         XCTAssertFalse(store.state.failed)
+        XCTAssertFalse(store.state.loadMoreFailed)
     }
 
     func testFollowIsOptimisticGivesAFollowedNoticeAndRollsBackOnFailure() async {

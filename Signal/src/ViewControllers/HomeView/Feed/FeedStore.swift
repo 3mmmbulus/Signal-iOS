@@ -66,6 +66,9 @@ final class FeedStore {
     private var subscriptions = [Weak<FeedSubscription>]()
     /// 被详情页借走的卡片（见 `retain`）。只有卡片被借着的时候才有；借的人都放手了就清掉。
     private var heldCards = [String: FeedCard]()
+    /// 屏蔽了的作者 / 删掉了的帖子：被页面借着的那份不动，但借着它们的页面（搜索、话题）靠这两个集合知道该把它们去掉（`isRemoved`）。
+    private var removedAuthorIds = Set<String>()
+    private var removedCardIds = Set<String>()
     private var leases = [Weak<FeedCardLease>]()
     /// 每张卡片正在路上的点赞请求数（连点会有几个）：路上有请求时，刚取回来的卡片不能把界面上的赞改回服务端的旧值。
     private var likesInFlight = [String: Int]()
@@ -622,7 +625,8 @@ final class FeedStore {
 
     /// 自己的帖子删掉了（引擎说成了）：两栏里去掉这一条，列表马上少一行。被详情页借着的那份不动（页面马上关，放手就清）。
     func removeCard(id: String) {
-        var changed = false
+        pruneLeases()
+        var changed = removedCardIds.insert(id).inserted && heldCards[id] != nil
         for tab in tabs {
             var state = self.tab(tab)
             let before = state.cards.count
@@ -638,7 +642,9 @@ final class FeedStore {
 
     /// 屏蔽了一个作者（引擎说成了）：两栏里这个人的帖子都去掉。被页面借着的那份不动。
     func removeCards(byAuthor profileId: String) {
-        var changed = false
+        pruneLeases()
+        removedAuthorIds.insert(profileId)
+        var changed = heldCards.values.contains { $0.author?.profileId == profileId }
         for tab in tabs {
             var state = self.tab(tab)
             let before = state.cards.count
@@ -649,6 +655,18 @@ final class FeedStore {
             }
         }
         if changed { notify(.list(nil)) }
+    }
+
+    /// 取消屏蔽：这个作者的帖子可以再出现在借着它们的页面里（信息流里去掉的要等下次刷新才回来）。
+    func allowCards(byAuthor profileId: String) {
+        removedAuthorIds.remove(profileId)
+    }
+
+    /// 这张卡片因为屏蔽了作者、删了帖子，已经不该再显示（借着它的页面据此去掉）。
+    func isRemoved(_ card: FeedCard) -> Bool {
+        if removedCardIds.contains(card.id) { return true }
+        guard let author = card.author?.profileId else { return false }
+        return removedAuthorIds.contains(author)
     }
 
     /// 详情页已经把「不感兴趣」报给引擎并且成功了：列表里这条换成可撤销的反馈卡，和在列表里点「不感兴趣」同样的显示。

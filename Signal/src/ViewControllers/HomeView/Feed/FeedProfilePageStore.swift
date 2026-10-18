@@ -421,6 +421,7 @@ final class FeedProfilePageStore {
                 } else {
                     self.state.followBusy = false
                     self.state.notice = .unblocked
+                    self.feed?.allowCards(byAuthor: self.profileId)
                     self.refresh()
                 }
             } catch {

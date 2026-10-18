@@ -238,6 +238,10 @@ struct FeedSearchState: Equatable {
         case saved
         case reposted
         case failed
+        /// 被限速；要等几秒在 `retryAfterSeconds`。
+        case throttled
+        /// 要先建自己的公开主页。
+        case profileRequired
     }
 
     var query = ""
@@ -245,7 +249,14 @@ struct FeedSearchState: Equatable {
     var results: FeedSearchResults?
     var loading = false
     var loadingMore = false
+    /// 第一页搜失败（结果被清掉，界面说「搜索失败」+ 重试）。
     var failed = false
+    /// 翻页失败：已有的结果留着，列表末尾给「重试」。
+    var loadMoreFailed = false
+    /// 被限速时还要等几秒（`failed` / `loadMoreFailed` 页或 `notice == .throttled` 时说）；没有 `Retry-After` 是 nil。
+    var retryAfterSeconds: Int?
+    /// 引擎说这个区域的动态被关了（404 `feed_hidden`）：页面该收起，不是「搜索失败」。
+    var feedHidden = false
     var recentQueries = [String]()
     var recentPeople = [FeedPersonSummary]()
     var notice: Notice?
@@ -253,6 +264,9 @@ struct FeedSearchState: Equatable {
 
 /// 动态搜索（第三节第 34 条）。边打边搜（停 `debounceNanos` 再发）；按键盘「搜索」或点开结果才记进本机最近搜索。
 /// 范围：全部（5 个人 + 帖子）/ 用户（20 个人）/ 动态（帖子翻页）。
+///
+/// 和信息流共用 `FeedStore`（传了 `feed` 的时候）：结果里每条帖子的唯一数据在它里面，`state.results.posts` 只是每次它变了之后从它重新读的投影；
+/// 赞、收藏、转发都改在它里面，信息流、详情页、主页同时看到；屏蔽了作者、删了帖子，结果里也跟着没了。不传就自己独立运行（单测）。
 @MainActor
 final class FeedSearchStore {
     private let source: FeedSource
@@ -260,6 +274,7 @@ final class FeedSearchStore {
     private let savedMessages: FeedSavedMessages?
     private let sleep: (UInt64) async throws -> Void
     private let debounceNanos: UInt64
+    private let mirror: FeedCardMirror?
 
     private(set) var state: FeedSearchState {
         didSet { onChange?(state) }
@@ -275,6 +290,7 @@ final class FeedSearchStore {
         source: FeedSource,
         history: FeedSearchHistory,
         savedMessages: FeedSavedMessages? = nil,
+        feed: FeedStore? = nil,
         debounceNanos: UInt64 = 350_000_000,
         sleep: @escaping (UInt64) async throws -> Void = { try await Task.sleep(nanoseconds: $0) }
     ) {
@@ -283,7 +299,34 @@ final class FeedSearchStore {
         self.savedMessages = savedMessages
         self.debounceNanos = debounceNanos
         self.sleep = sleep
+        mirror = feed.map { FeedCardMirror(feed: $0) }
         state = FeedSearchState(recentQueries: history.queries(), recentPeople: history.people())
+        mirror?.shownIds = { [weak self] in Set(self?.state.results?.posts.map(\.id) ?? []) }
+        mirror?.onChange = { [weak self] in self?.reproject() }
+        mirror?.onActionFailed = { [weak self] in
+            self?.state.retryAfterSeconds = nil
+            self?.state.notice = .failed
+        }
+    }
+
+    // MARK: - 和信息流 store 同步
+
+    /// 还在订阅信息流 store 吗（单测 / 页面检查用）。
+    var isObservingFeed: Bool { mirror?.isObserving == true }
+    /// 借着的帖子数（单测用）。
+    var leaseCount: Int { mirror?.leaseCount ?? 0 }
+
+    /// 页面离开了：不再订阅、放掉借着的卡片。可以重复调用。
+    func detach() {
+        mirror?.detach()
+    }
+
+    private func reproject() {
+        guard let mirror, var results = state.results else { return }
+        let next = mirror.project(results.posts)
+        guard next != results.posts else { return }
+        results.posts = next
+        state.results = results
     }
 
     func waitForTasks() async {
@@ -291,16 +334,22 @@ final class FeedSearchStore {
             await task.value
             tasks.removeFirst()
         }
+        await mirror?.waitForActions()
     }
 
     func onQueryChange(_ query: String) {
         let clipped = FeedTextCap.cap(query, codePoints: FeedAPI.searchMaxQuery)   // 码点数，和引擎 `MaxSearchChars` 一致（FeedTextCap）
         state.query = clipped
         if clipped.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            // 清空：在路上的搜索 / 翻页都作废，所有「正在…/失败」一起收掉
             searchTask?.cancel()
+            mirror?.releaseAll()
             state.results = nil
             state.loading = false
+            state.loadingMore = false
             state.failed = false
+            state.loadMoreFailed = false
+            state.retryAfterSeconds = nil
         } else {
             search(debounce: true)
         }
@@ -321,7 +370,7 @@ final class FeedSearchStore {
     }
 
     func useRecentQuery(_ query: String) {
-        state.query = query
+        state.query = FeedTextCap.cap(query, codePoints: FeedAPI.searchMaxQuery)
         submit()
     }
 
@@ -351,12 +400,15 @@ final class FeedSearchStore {
         rememberCurrentQuery()
     }
 
+    /// 结果页往下翻（滚到底、或点末尾的「重试」）。
     func loadMore() {
         guard let results = state.results, let cursor = results.cursor else { return }
         if state.loading || state.loadingMore { return }
         let query = results.query
         let scope = results.scope
         state.loadingMore = true
+        state.loadMoreFailed = false
+        state.retryAfterSeconds = nil
         let task = Task { [weak self, source] in
             do {
                 let page = try await source.search(query: query, scope: scope, cursor: cursor)
@@ -364,13 +416,20 @@ final class FeedSearchStore {
                 self.state.loadingMore = false
                 guard var current = self.state.results, current.query == query, current.scope == scope else { return }
                 let known = Set(current.posts.map(\.id))
-                current.posts += page.posts.filter { !known.contains($0.id) }
+                current.posts += self.adopt(page.posts.filter { !known.contains($0.id) })
                 current.cursor = page.cursor
                 self.state.results = current
             } catch {
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, let self else { return }
                 Logger.warn("feed search more failed: \(error)")
-                self?.state.loadingMore = false
+                self.state.loadingMore = false
+                self.state.loadMoreFailed = true
+                // 末尾那一行说「重试」（限速带秒数），不再弹提示
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden: self.state.feedHidden = true
+                case .throttled(let seconds): self.state.retryAfterSeconds = seconds
+                default: self.state.retryAfterSeconds = nil
+                }
             }
         }
         searchTask = task
@@ -384,6 +443,11 @@ final class FeedSearchStore {
     // MARK: - 结果里的卡片
 
     func toggleLike(_ card: FeedCard) {
+        if let mirror {
+            // 赞的乐观更新、失败回滚、连点都在 FeedStore 里；失败时它发 `.actionFailed`，这里变成 `.failed` 提示
+            mirror.toggleLike(id: card.id)
+            return
+        }
         let nowLiked = !card.viewer.liked
         updatePost(card.id) { FeedStore.withLiked($0, nowLiked) }
         tasks.append(Task { [weak self, source] in
@@ -412,7 +476,7 @@ final class FeedSearchStore {
                 Logger.warn("feed search save failed: \(error)")
                 self?.saving.end(card.id)
                 self?.updatePost(card.id) { $0.withSaved(!nowSaved) }
-                self?.state.notice = .failed
+                self?.toldFailed(error)
             }
         })
     }
@@ -430,16 +494,52 @@ final class FeedSearchStore {
                 Logger.warn("feed search repost failed: \(error)")
                 self?.reposting.end(card.id)
                 self?.updatePost(card.id) { $0.withReposted(!nowReposted) }
-                self?.state.notice = .failed
+                self?.toldFailed(error)
             }
         })
     }
 
     func onNoticeShown() {
         state.notice = nil
+        state.retryAfterSeconds = state.failed || state.loadMoreFailed ? state.retryAfterSeconds : nil
+    }
+
+    /// 举报 / 别处让页面该收起（`feed_hidden`）。
+    func onFeedHidden() {
+        state.feedHidden = true
     }
 
     // MARK: - 内部
+
+    /// 同 `told`，但 404 也算「操作失败」。
+    private func toldFailed(_ error: Error) {
+        if told(error) == .gone { state.notice = .failed }
+    }
+
+    /// 失败了，按引擎的错误给提示（限速带秒数、`feed_hidden` 收页、要先建主页）。`.gone`（404）什么都不提示，由调用方决定。
+    @discardableResult
+    private func told(_ error: Error) -> FeedActionFailure {
+        let failure = FeedActionFailure.classify(error)
+        switch failure {
+        case .feedHidden:
+            state.feedHidden = true
+        case .throttled(let seconds):
+            state.retryAfterSeconds = seconds
+            state.notice = .throttled
+        case .profileRequired:
+            state.notice = .profileRequired
+        case .gone:
+            break
+        case .failed:
+            state.retryAfterSeconds = nil
+            state.notice = .failed
+        }
+        return failure
+    }
+
+    private func adopt(_ cards: [FeedCard]) -> [FeedCard] {
+        return mirror?.adopt(cards) ?? cards
+    }
 
     private func search(debounce: Bool) {
         searchTask?.cancel()
@@ -449,6 +549,9 @@ final class FeedSearchStore {
         state.loading = true
         state.failed = false
         state.loadingMore = false
+        state.loadMoreFailed = false
+        state.retryAfterSeconds = nil
+        state.feedHidden = false
         let nanos = debounceNanos
         let task = Task { [weak self, source, sleep] in
             if debounce {
@@ -459,13 +562,25 @@ final class FeedSearchStore {
                 let page = try await source.search(query: query, scope: scope, cursor: nil)
                 // 又打了字 / 换了范围：这一份已经过期，别盖掉新的
                 guard !Task.isCancelled, let self else { return }
+                self.mirror?.releaseAll()
                 self.state.loading = false
-                self.state.results = FeedSearchResults(query: query, scope: scope, users: page.users, posts: page.posts, cursor: page.cursor)
+                self.state.results = FeedSearchResults(query: query, scope: scope, users: page.users, posts: self.adopt(page.posts), cursor: page.cursor)
             } catch {
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, let self else { return }
                 Logger.warn("feed search failed: \(error)")
-                self?.state.loading = false
-                self?.state.failed = true
+                self.state.loading = false
+                self.state.results = nil
+                self.mirror?.releaseAll()
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.retryAfterSeconds = seconds
+                    self.state.failed = true
+                default:
+                    self.state.retryAfterSeconds = nil
+                    self.state.failed = true
+                }
             }
         }
         searchTask = task
@@ -482,7 +597,12 @@ final class FeedSearchStore {
         state.recentQueries = history.queries()
     }
 
+    /// 改一条帖子：有信息流 store 就改在 store 里（结果随通知更新），没有就改自己的。
     private func updatePost(_ id: String, _ change: (FeedCard) -> FeedCard) {
+        if let mirror, mirror.has(id) {
+            mirror.update(id, change)
+            return
+        }
         guard var results = state.results else { return }
         results.posts = results.posts.map { $0.id == id ? change($0) : $0 }
         state.results = results
