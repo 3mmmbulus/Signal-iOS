@@ -11655,6 +11655,30 @@
 /* Button on the chat list banner that opens the system notification settings for Tellomi. */
 "TELLOMI_NOTIFICATIONS_DISABLED_REMINDER_ACTION" = "Go to Settings";
 
+/* Tellomi (pinned-messages.md 3.4): accessibility label of × on the pinned bar when you may not unpin; it hides the bar on this device until there is a newer pin. */
+"TELLOMI_PINNED_BAR_HIDE" = "Hide pinned messages";
+
+/* Tellomi (pinned-messages.md 3.4): title of the pinned bar at the top of a chat for the only pin, or the newest of several. */
+"TELLOMI_PINNED_BAR_PINNED_MESSAGE" = "Pinned message";
+
+/* Tellomi (pinned-messages.md 3.4): title of the pinned bar for an older pin when there are three or more; #1 is the oldest. Embeds {{ number }}. */
+"TELLOMI_PINNED_BAR_PINNED_MESSAGE_N" = "Pinned message #%@";
+
+/* Tellomi (pinned-messages.md 3.4): title of the pinned bar when it shows the older of two pins. */
+"TELLOMI_PINNED_BAR_PREVIOUS_MESSAGE" = "Previous message";
+
+/* Tellomi (pinned-messages.md 3.6): button on the 'message unpinned' toast that keeps the message pinned. */
+"TELLOMI_PINNED_BAR_UNDO" = "Undo";
+
+/* Tellomi (pinned-messages.md 3.4): button that unpins the message, in the sheet after tapping × on the pinned bar. */
+"TELLOMI_PINNED_BAR_UNPIN" = "Unpin";
+
+/* Tellomi (pinned-messages.md 3.6): toast after unpinning a message. Has an Undo button for 5 seconds. */
+"TELLOMI_PINNED_BAR_UNPINNED" = "Message unpinned";
+
+/* Tellomi (pinned-messages.md 3.4): asked after tapping × on the pinned bar when you may unpin the message. */
+"TELLOMI_PINNED_BAR_UNPIN_QUESTION" = "Unpin this message?";
+
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): the last row of the pin sheet; tapping it picks how long the pin lasts. Embeds {{ how long, e.g. Forever }}. */
 "TELLOMI_PIN_DURATION" = "Duration: %@ ›";
 

@@ -22,6 +22,9 @@ protocol PinnedMessageInteractionManagerDelegate: AnyObject {
 
     /// Unpins all messages
     func unpinAllMessages()
+
+    /// Tellomi (pinned-messages.md 3.4): × on the bar when there is one pin — unpin (with Undo) or, without the permission, hide it here.
+    func tellomiClosePinnedBar()
 }
 
 public struct PinnedMessageBannerData {
@@ -31,23 +34,20 @@ public struct PinnedMessageBannerData {
 }
 
 public extension ConversationViewController {
-    private enum PinnedMessageBarSizing {
-        static let twoBarHeight = 12.0
-        static let threeBarHeight = 8.0
-        static let twoBarSpacing = 4.0
-        static let threeBarSpacing = 2.0
-    }
-
     func handleTappedPinnedMessage() {
-        guard threadViewModel.pinnedMessages.indices.contains(pinnedMessageIndex) else {
+        // Tellomi (pinned-messages.md 3.4): pins in message order (`tellomiPinnedBarPins`). Jump to the one shown, then show the one
+        // before it — after the oldest, the newest — and hold it there until the user scrolls it away (`TellomiPinnedBar`).
+        let pins = tellomiPinnedBarPins
+        guard pins.indices.contains(pinnedMessageIndex) else {
             owsFailDebug("Invalid pinned message index")
             return
         }
 
-        let currentPin = threadViewModel.pinnedMessages[pinnedMessageIndex]
+        let currentPin = pins[pinnedMessageIndex]
 
-        if threadViewModel.pinnedMessages.count > 1 {
-            pinnedMessageIndex = (pinnedMessageIndex + 1) % threadViewModel.pinnedMessages.count
+        if pins.count > 1 {
+            pinnedMessageIndex = TellomiPinnedBar.nextAfterTap(pinnedMessageIndex, count: pins.count)
+            viewState.tellomiForcedPinUniqueId = pins[pinnedMessageIndex].uniqueId
             animateToNextPinnedMessage()
         }
 
@@ -59,35 +59,12 @@ public extension ConversationViewController {
     }
 
     func pinnedMessageLeadingAccessoryView() -> UIView? {
-        let pinnedMessages = threadViewModel.pinnedMessages
-
-        guard pinnedMessages.count > 1 else {
+        // Tellomi (pinned-messages.md 3.4): one segment per pin, at most three, fading where there are more (`TellomiPinnedLineView`).
+        let count = tellomiPinnedBarPins.count
+        guard count > 1 else {
             return nil
         }
-
-        let accessoryViewContainer = UIStackView()
-        accessoryViewContainer.axis = .vertical
-        accessoryViewContainer.spacing = pinnedMessages.count == 2 ? PinnedMessageBarSizing.twoBarSpacing : PinnedMessageBarSizing.threeBarSpacing
-        accessoryViewContainer.alignment = .leading
-        accessoryViewContainer.translatesAutoresizingMaskIntoConstraints = false
-
-        let singleBarSize = pinnedMessages.count == 2 ? PinnedMessageBarSizing.twoBarHeight : PinnedMessageBarSizing.threeBarHeight
-
-        for (index, _) in pinnedMessages.enumerated().reversed() {
-            let verticalBar = UIView()
-            let color = index == pinnedMessageIndex ? UIColor.Signal.label : UIColor.Signal.tertiaryLabel
-            verticalBar.backgroundColor = color
-            verticalBar.layer.cornerRadius = 2
-            verticalBar.translatesAutoresizingMaskIntoConstraints = false
-
-            NSLayoutConstraint.activate([
-                verticalBar.widthAnchor.constraint(equalToConstant: 2),
-                verticalBar.heightAnchor.constraint(equalToConstant: singleBarSize),
-            ])
-            accessoryViewContainer.addArrangedSubview(verticalBar)
-        }
-        accessoryViewContainer.widthAnchor.constraint(equalToConstant: 2).isActive = true
-        return accessoryViewContainer
+        return TellomiPinnedLineView(index: pinnedMessageIndex, count: count)
     }
 
     func pinnedMessageData(for message: TSMessage) -> PinnedMessageBannerData? {
@@ -291,67 +268,18 @@ public extension ConversationViewController {
     }
 }
 
-extension ConversationViewController: UIContextMenuInteractionDelegate {
-    public func contextMenuInteraction(
-        _ interaction: UIContextMenuInteraction,
-        configurationForMenuAtLocation location: CGPoint,
-    ) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
-            var actions: [UIAction] = []
-            guard let self else { return UIMenu() }
-            if !thread.isTerminatedGroup {
-                actions.append(UIAction(
-                    title: OWSLocalizedString(
-                        "PINNED_MESSAGES_UNPIN",
-                        comment: "Action menu item to unpin a message",
-                    ),
-                    image: .pinSlash,
-                ) { [weak self] _ in
-                    guard let self else { return }
-                    if threadViewModel.pinnedMessages.indices.contains(pinnedMessageIndex) {
-                        handleActionUnpin(
-                            message: threadViewModel.pinnedMessages[pinnedMessageIndex],
-                            modalDelegate: self,
-                        )
-                    }
-                })
-            }
-
-            actions.append(contentsOf: [
-                UIAction(
-                    title: OWSLocalizedString(
-                        "PINNED_MESSAGES_GO_TO_MESSAGE",
-                        comment: "Action menu item to go to a message in the conversation view",
-                    ),
-                    image: .chatArrow,
-                ) { [weak self] _ in
-                    guard let self else { return }
-                    if threadViewModel.pinnedMessages.indices.contains(pinnedMessageIndex) {
-                        goToMessage(message: threadViewModel.pinnedMessages[pinnedMessageIndex])
-                    }
-                },
-                UIAction(title: OWSLocalizedString(
-                    "PINNED_MESSAGES_SEE_ALL_MESSAGES",
-                    comment: "Action menu item to see all pinned messages",
-                ), image: .listBullet) { [weak self] _ in
-                    self?.presentSeeAllMessages()
-                },
-            ])
-            return UIMenu(children: actions)
-        }
-    }
-}
-
 extension ConversationViewController: PinnedMessageInteractionManagerDelegate {
     func goToMessage(message: TSMessage?) {
         let targetMessage: TSMessage
         if let message {
             targetMessage = message
         } else {
-            guard threadViewModel.pinnedMessages.indices.contains(pinnedMessageIndex) else {
+            // Tellomi (pinned-messages.md 3.4): the index is into the pins in message order.
+            let pins = tellomiPinnedBarPins
+            guard pins.indices.contains(pinnedMessageIndex) else {
                 return
             }
-            targetMessage = threadViewModel.pinnedMessages[pinnedMessageIndex]
+            targetMessage = pins[pinnedMessageIndex]
         }
 
         ensureInteractionLoadedThenScrollToInteraction(
@@ -366,13 +294,16 @@ extension ConversationViewController: PinnedMessageInteractionManagerDelegate {
         if let message {
             messageToUnpin = message
         } else {
-            guard threadViewModel.pinnedMessages.indices.contains(pinnedMessageIndex) else {
+            // Tellomi (pinned-messages.md 3.4): the index is into the pins in message order.
+            let pins = tellomiPinnedBarPins
+            guard pins.indices.contains(pinnedMessageIndex) else {
                 return
             }
-            messageToUnpin = threadViewModel.pinnedMessages[pinnedMessageIndex]
+            messageToUnpin = pins[pinnedMessageIndex]
         }
 
-        handleActionUnpin(message: messageToUnpin, modalDelegate: modalDelegate ?? self)
+        // Tellomi (pinned-messages.md 3.6): with "Message unpinned · Undo", as from the bar and the message menu.
+        tellomiUnpinWithUndo(messageToUnpin)
     }
 
     func presentSeeAllMessages() {

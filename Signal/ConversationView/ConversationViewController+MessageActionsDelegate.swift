@@ -418,10 +418,8 @@ extension ConversationViewController: MessageActionsDelegate {
             return
         }
 
-        // Pinned messages are sorted from most -> least recent.
-        // Reset the index to 0 if someone pins or unpins. This will
-        // make sure we always show the most recent pin after a change.
-        pinnedMessageIndex = 0
+        // Tellomi (pinned-messages.md 3.4): the bar works out which pin it shows from where the chat is (`tellomiShownPinIndex`),
+        // so there's no index to reset after a pin or an unpin.
         completion?()
     }
 
@@ -603,6 +601,7 @@ extension ConversationViewController: MessageActionsDelegate {
             handleActionPin(message: message)
             return
         }
-        handleActionUnpin(message: message, modalDelegate: self)
+        // Tellomi (pinned-messages.md 3.6): unpin with "Message unpinned · Undo", as from the pinned bar.
+        tellomiUnpinWithUndo(message)
     }
 }

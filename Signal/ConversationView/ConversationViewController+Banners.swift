@@ -131,7 +131,9 @@ extension ConversationViewController {
         else {
             return false
         }
-        return threadViewModel.pinnedMessages.count > 1 && threadViewModel.pinnedMessages.count > oldConfig.totalPinnedMessageCount
+        // Tellomi (pinned-messages.md 3.4 / 3.6): the pins on the bar — without the unpins waiting on "Undo".
+        let count = tellomiPinnedBarPins.count
+        return count > 1 && count > oldConfig.totalPinnedMessageCount
     }
 
     /// Returns the pinned message banner if it exists. There should only ever be one.
@@ -214,6 +216,12 @@ private class ConversationBannerView: UIView {
         /// Whether the banner is in a group that has been terminated.
         let isTerminatedGroup: Bool
 
+        /// Tellomi (pinned-messages.md 3.4): which of the pins (in message order) the bar shows; an older one slides in from above.
+        var tellomiShownIndex: Int = 0
+
+        /// Tellomi (pinned-messages.md 3.4): with one pin, whether × unpins it (otherwise it only hides the bar here).
+        var tellomiCloseUnpins: Bool = false
+
         func makeContentView() -> any UIView & UIContentView {
             return ConversationBannerContentView(configuration: self)
         }
@@ -259,6 +267,9 @@ private class ConversationBannerView: UIView {
         var bodyLabel = UILabel()
         var thumbnail: UIImageView?
         var isAnimating: Bool = false
+        /// Tellomi: the pin shown before this rebuild, and the gestures added once (each rebuild used to add another tap).
+        private var tellomiShownIndex: Int?
+        private var tellomiHasGestures = false
 
         init(configuration: ContentConfiguration) {
             _configuration = configuration
@@ -329,11 +340,9 @@ private class ConversationBannerView: UIView {
                 textStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -PinnedMessageConstants.pinButtonTrailingPadding),
             ])
             textStack.isAccessibilityElement = true
-            let axLabelPrefix = OWSLocalizedString(
-                "PINNED_MESSAGE_BANNER_AX_LABEL",
-                comment: "Accessibility label prefix for banner showing a pinned message",
-            )
-            textStack.accessibilityLabel = axLabelPrefix + title + "," + body.string
+            // Tellomi (pinned-messages.md 3.4): the title is "Pinned message" / "Previous message" / "Pinned message #N" itself, so no
+            // "Pinned Message:" prefix in front of it.
+            textStack.accessibilityLabel = title + "," + body.string
             textStack.accessibilityTraits = .button
             return container
         }
@@ -365,6 +374,7 @@ private class ConversationBannerView: UIView {
                         newTitle: title,
                         newBody: configuration.body,
                         newThumbnail: configuration.thumbnail,
+                        tellomiOlder: configuration.tellomiShownIndex < (tellomiShownIndex ?? configuration.tellomiShownIndex),
                     )
                 } else {
                     // Otherwise build from scratch.
@@ -461,18 +471,37 @@ private class ConversationBannerView: UIView {
                 } else {
                     button = UIButton(configuration: .plain())
                 }
-                button.configuration?.image = .pin
                 button.configuration?.cornerStyle = .capsule
                 button.configuration?.contentInsets = .init(margin: 6)
-                button.accessibilityLabel = OWSLocalizedString(
-                    "PINNED_MESSAGE_MENU_ACCESSIBILITY_LABEL",
-                    comment: "Accessibility label for pin message button",
-                )
+                // Tellomi (pinned-messages.md 3.4, as in both Telegram apps): the list of pins when there are several, × when there
+                // is one — no menu.
+                if configuration.totalPinnedMessageCount > 1 {
+                    button.configuration?.image = .listBullet
+                    button.accessibilityLabel = OWSLocalizedString(
+                        "PINNED_MESSAGES_SEE_ALL_MESSAGES",
+                        comment: "Action menu item to see all pinned messages",
+                    )
+                    button.addAction(UIAction { [weak self] _ in
+                        self?.pinnedMessageInteractionDelegate?.presentSeeAllMessages()
+                    }, for: .primaryActionTriggered)
+                } else {
+                    button.configuration?.image = .x
+                    button.accessibilityLabel = configuration.tellomiCloseUnpins
+                        ? OWSLocalizedString(
+                            "TELLOMI_PINNED_BAR_UNPIN",
+                            comment: "Tellomi (pinned-messages.md 3.4): button that unpins the message, in the sheet after tapping × on the pinned bar.",
+                        )
+                        : OWSLocalizedString(
+                            "TELLOMI_PINNED_BAR_HIDE",
+                            comment: "Tellomi (pinned-messages.md 3.4): accessibility label of × on the pinned bar when you may not unpin; it hides the bar on this device until there is a newer pin.",
+                        )
+                    button.addAction(UIAction { [weak self] _ in
+                        self?.pinnedMessageInteractionDelegate?.tellomiClosePinnedBar()
+                    }, for: .primaryActionTriggered)
+                }
                 button.setCompressionResistanceHigh()
                 button.setContentHuggingHigh()
 
-                button.menu = pinMessageMenu()
-                button.showsMenuAsPrimaryAction = true
                 button.tintColor = .Signal.label
 
                 let buttonContainer = UIView.container()
@@ -497,52 +526,30 @@ private class ConversationBannerView: UIView {
                 ])
             }
 
-            if configuration.bannerTapAction != nil {
+            if configuration.bannerTapAction != nil, !tellomiHasGestures {
+                tellomiHasGestures = true
                 addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapBanner)))
+                if configuration.totalPinnedMessageCount > 0 {
+                    // Tellomi (pinned-messages.md 3.4): long-press opens all the pins (only Telegram iOS has a menu here).
+                    addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(tellomiDidLongPressBanner(_:))))
+                }
             }
+            tellomiShownIndex = configuration.tellomiShownIndex
         }
 
-        private func pinMessageMenu() -> UIMenu {
-            var actions: [UIAction] = []
-            guard let configuration = self.configuration as? ContentConfiguration else { return UIMenu() }
-
-            if !configuration.isTerminatedGroup {
-                actions.append(UIAction(
-                    title: OWSLocalizedString(
-                        "PINNED_MESSAGES_UNPIN",
-                        comment: "Action menu item to unpin a message",
-                    ),
-                    image: .pinSlash,
-                ) { [weak self] _ in
-                    self?.pinnedMessageInteractionDelegate?.unpinMessage(message: nil, modalDelegate: nil)
-                })
+        @objc
+        private func tellomiDidLongPressBanner(_ recognizer: UILongPressGestureRecognizer) {
+            guard recognizer.state == .began else {
+                return
             }
-            actions.append(
-                contentsOf: [
-                    UIAction(
-                        title: OWSLocalizedString(
-                            "PINNED_MESSAGES_GO_TO_MESSAGE",
-                            comment: "Action menu item to go to a message in the conversation view",
-                        ),
-                        image: .chatArrow,
-                    ) { [weak self] _ in
-                        self?.pinnedMessageInteractionDelegate?.goToMessage(message: nil)
-                    },
-                    UIAction(title: OWSLocalizedString(
-                        "PINNED_MESSAGES_SEE_ALL_MESSAGES",
-                        comment: "Action menu item to see all pinned messages",
-                    ), image: .listBullet) { [weak self] _ in
-                        self?.pinnedMessageInteractionDelegate?.presentSeeAllMessages()
-                    },
-                ],
-            )
-            return UIMenu(children: actions)
+            pinnedMessageInteractionDelegate?.presentSeeAllMessages()
         }
 
         private func animatePinnedMessageTransition(
             newTitle: String,
             newBody: NSAttributedString,
             newThumbnail: UIImageView?,
+            tellomiOlder: Bool,
         ) {
             guard
                 let titleText = titleLabel.text,
@@ -586,8 +593,10 @@ private class ConversationBannerView: UIView {
             ])
 
             // Initial positions
+            // Tellomi (pinned-messages.md 3.4): an older pin comes down from above, a newer one up from below (Telegram).
+            let travel = tellomiOlder ? -PinnedMessageConstants.bannerHeight : PinnedMessageConstants.bannerHeight
             oldContainer.transform = .identity
-            newContainer.transform = CGAffineTransform(translationX: 0, y: PinnedMessageConstants.bannerHeight)
+            newContainer.transform = CGAffineTransform(translationX: 0, y: travel)
 
             let pinAnimator = UIViewPropertyAnimator(
                 duration: 0.3,
@@ -596,7 +605,7 @@ private class ConversationBannerView: UIView {
             )
 
             pinAnimator.addAnimations {
-                oldContainer.transform = CGAffineTransform(translationX: 0, y: -PinnedMessageConstants.bannerHeight)
+                oldContainer.transform = CGAffineTransform(translationX: 0, y: -travel)
                 newContainer.transform = .identity
             }
 
@@ -1197,7 +1206,10 @@ extension ConversationViewController {
     func animateToNextPinnedMessage() {
         guard
             let nextPinnedMessage = createPinnedMessageBannerIfNecessary(),
-            let priorPinnedMessage = bannerStackView?.arrangedSubviews.last as? ConversationBannerView
+            let priorPinnedMessage = bannerStackView?.arrangedSubviews.last as? ConversationBannerView,
+            // Tellomi (pinned-messages.md 3.4): the bar also changes as the chat scrolls — only ever into the pinned banner.
+            let priorConfiguration = priorPinnedMessage.contentView.configuration as? ConversationBannerView.ContentConfiguration,
+            priorConfiguration.totalPinnedMessageCount > 0
         else {
             return
         }
@@ -1206,16 +1218,24 @@ extension ConversationViewController {
 
     /// Displays the first pinned message, sorted by most recently pinned.
     /// When tapped, it cycles to the next pinned message if one exists.
+    ///
+    /// Tellomi (pinned-messages.md 3.4 / 3.6): pins in message order, the one shown follows the chat as it scrolls, titled
+    /// "Pinned message" / "Previous message" / "Pinned message #N"; not shown here after × until there's a newer pin.
     private func createPinnedMessageBannerIfNecessary() -> ConversationBannerView? {
+        let pins = tellomiPrunedPinnedBarPins()
+        guard let newestPin = pins.last, !tellomiIsPinnedBarHidden(newestPin: newestPin) else {
+            return nil
+        }
+        pinnedMessageIndex = tellomiShownPinIndex(pins)
         guard
-            threadViewModel.pinnedMessages.indices.contains(pinnedMessageIndex),
-            let pinnedMessageData = pinnedMessageData(for: threadViewModel.pinnedMessages[pinnedMessageIndex])
+            pins.indices.contains(pinnedMessageIndex),
+            let pinnedMessageData = pinnedMessageData(for: pins[pinnedMessageIndex])
         else {
             return nil
         }
 
         let bannerConfiguration = ConversationBannerView.ContentConfiguration(
-            title: pinnedMessageData.authorName,
+            title: tellomiPinnedBarTitle(index: pinnedMessageIndex, count: pins.count),
             body: pinnedMessageData.previewText,
             thumbnail: pinnedMessageData.thumbnail,
             viewButtonTitle: nil,
@@ -1231,16 +1251,15 @@ extension ConversationViewController {
                     self?.handleTappedPinnedMessage()
                 }
             },
-            totalPinnedMessageCount: threadViewModel.pinnedMessages.count,
+            totalPinnedMessageCount: pins.count,
             isTerminatedGroup: thread.isTerminatedGroup,
+            tellomiShownIndex: pinnedMessageIndex,
+            tellomiCloseUnpins: pins.count == 1 && tellomiCanUnpin(newestPin),
         )
 
         let banner = ConversationBannerView(configuration: bannerConfiguration)
 
-        let longPressInteraction = UIContextMenuInteraction(delegate: self)
-        banner.blurBackgroundView?.addInteraction(longPressInteraction)
-
-        // Set up interaction delegate for pin icon menu
+        // Set up interaction delegate for the list / × button and the long-press
         banner.pinnedMessageDelegate = self
 
         return banner

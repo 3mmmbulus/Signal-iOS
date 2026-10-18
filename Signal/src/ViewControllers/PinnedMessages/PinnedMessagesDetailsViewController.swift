@@ -319,14 +319,11 @@ class PinnedMessagesDetailsViewController: OWSViewController, DatabaseChangeDele
     }
 
     func unpinMessage(itemViewModel: CVItemViewModelImpl) {
-        // if this is the last message, dismiss then unpin, otherwise, just unpin.
+        // Tellomi (pinned-messages.md 3.6): close the list, then the chat unpins with "Message unpinned · Undo" for 5 s, the same as
+        // from the bar or the message menu (Android's `PinnedMessagesBottomSheet` does the same).
         guard let message = itemViewModel.interaction as? TSMessage else { return }
-        if pinnedMessages.count <= 1 {
-            dismiss(animated: true)
-            delegate?.unpinMessage(message: message, modalDelegate: nil)
-            return
-        }
-        delegate?.unpinMessage(message: message, modalDelegate: self)
+        dismiss(animated: true)
+        delegate?.unpinMessage(message: message, modalDelegate: nil)
     }
 }
 

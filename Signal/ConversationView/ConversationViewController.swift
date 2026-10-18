@@ -399,6 +399,8 @@ public final class ConversationViewController: OWSViewController {
         self.startReadTimer()
         self.updateNavigationBarSubtitleLabel()
         self.autoLoadMoreIfNecessary()
+        // Tellomi (pinned-messages.md 3.4): the pinned bar goes with where the chat opened (e.g. at the first unread message).
+        self.tellomiTrackPinnedBar()
 
         let serviceIds = thread.recipientAddressesWithSneakyTransaction.compactMap(\.serviceId)
 

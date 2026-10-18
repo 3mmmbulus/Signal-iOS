@@ -317,6 +317,9 @@ extension ConversationViewController: CVLoadCoordinatorDelegate {
 
         // Tellomi（交互审计 A-07）：刚选的回应可能就在这一次画出来。
         landPendingReactionFlyInIfPossible()
+
+        // Tellomi (pinned-messages.md 3.4): the pinned bar goes with the messages now on screen.
+        tellomiTrackPinnedBar()
     }
 
     // The view's first appearance and the first load can race.

@@ -207,6 +207,9 @@ extension ConversationViewController: UIScrollViewDelegate {
         updateScrollingContent()
 
         updateContextMenuInteractionIfNeeded()
+
+        // Tellomi (pinned-messages.md 3.4): the pinned bar follows the chat as it scrolls.
+        tellomiTrackPinnedBar()
     }
 
     private func scheduleScrollUpdateTimer() {

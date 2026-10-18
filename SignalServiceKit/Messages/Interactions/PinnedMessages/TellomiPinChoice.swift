@@ -34,4 +34,10 @@ public enum TellomiPinChoice: Equatable {
         }
         return [.forMe]
     }
+
+    /// 能不能取消这条置顶：仅为我置顶的随时能取消（只动我自己的设备，群没了也行）；
+    /// 别的置顶照 Signal，要群里的置顶权限（`TSThread.canUserEditPinnedMessages`）且群还在。与安卓 `TellomiPinChoice.canUnpin` 一致。
+    public static func canUnpin(isPinnedForMe: Bool, canPinForEveryone: Bool, isTerminatedGroup: Bool) -> Bool {
+        return isPinnedForMe || (canPinForEveryone && !isTerminatedGroup)
+    }
 }

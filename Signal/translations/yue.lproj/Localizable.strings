@@ -10498,6 +10498,30 @@
 /* Tellomi (chat-telegram-parity F01): read out by VoiceOver on the button that jumps to my messages with reactions I haven't seen yet. */
 "TELLOMI_NEXT_UNSEEN_REACTION" = "下一個新回應";
 
+/* Tellomi (pinned-messages.md 3.4): accessibility label of × on the pinned bar when you may not unpin; it hides the bar on this device until there is a newer pin. */
+"TELLOMI_PINNED_BAR_HIDE" = "隱藏置頂訊息";
+
+/* Tellomi (pinned-messages.md 3.4): title of the pinned bar at the top of a chat for the only pin, or the newest of several. */
+"TELLOMI_PINNED_BAR_PINNED_MESSAGE" = "置頂訊息";
+
+/* Tellomi (pinned-messages.md 3.4): title of the pinned bar for an older pin when there are three or more; #1 is the oldest. Embeds {{ number }}. */
+"TELLOMI_PINNED_BAR_PINNED_MESSAGE_N" = "置頂訊息 #%@";
+
+/* Tellomi (pinned-messages.md 3.4): title of the pinned bar when it shows the older of two pins. */
+"TELLOMI_PINNED_BAR_PREVIOUS_MESSAGE" = "上一條置頂";
+
+/* Tellomi (pinned-messages.md 3.6): button on the 'message unpinned' toast that keeps the message pinned. */
+"TELLOMI_PINNED_BAR_UNDO" = "撤銷";
+
+/* Tellomi (pinned-messages.md 3.4): button that unpins the message, in the sheet after tapping × on the pinned bar. */
+"TELLOMI_PINNED_BAR_UNPIN" = "取消置頂";
+
+/* Tellomi (pinned-messages.md 3.6): toast after unpinning a message. Has an Undo button for 5 seconds. */
+"TELLOMI_PINNED_BAR_UNPINNED" = "已取消置頂";
+
+/* Tellomi (pinned-messages.md 3.4): asked after tapping × on the pinned bar when you may unpin the message. */
+"TELLOMI_PINNED_BAR_UNPIN_QUESTION" = "取消置頂呢條訊息？";
+
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): the last row of the pin sheet; tapping it picks how long the pin lasts. Embeds {{ how long, e.g. Forever }}. */
 "TELLOMI_PIN_DURATION" = "時長：%@ ›";
 
