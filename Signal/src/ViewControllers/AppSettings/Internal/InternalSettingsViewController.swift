@@ -171,7 +171,7 @@ class InternalSettingsViewController: OWSTableViewController2 {
 
         // Tellomi（M11 动态）：服务端还没下发 global.feed.enabled 时先打开「动态」标签，用本机样例数据
         let feedSection = OWSTableSection(title: "Tellomi Feed")
-        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. With \"Feed sample data\" on, the feed uses on-device sample data and sends no requests; off, it talks to the current region's content engine (needs the Signal-Server feed token endpoint)."
+        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. With \"Feed sample data\" on, the feed uses on-device sample data and sends no requests; off, it talks to the current region's content engine (needs the Signal-Server feed token endpoint). The \"Feed:\" entry switches below are all off by default and apply the next time the feed page is created (relaunch the app)."
         feedSection.add(.switch(
             withText: "Force feed tab",
             isOn: { TellomiFeed.isForcedByInternalUser },
@@ -185,6 +185,35 @@ class InternalSettingsViewController: OWSTableViewController2 {
             isEnabled: { TellomiFeed.isForcedByInternalUser },
             actionBlock: { uiSwitch in
                 TellomiFeed.useSampleData = uiSwitch.isOn
+            },
+        ))
+        // Feed entry flags (default off; read when the feed page is created, so a change applies after relaunching the app).
+        feedSection.add(.switch(
+            withText: "Feed: author profile page",
+            isOn: { TellomiFeed.isProfilePageEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isProfilePageEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: search and topics",
+            isOn: { TellomiFeed.isSearchEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isSearchEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: notifications",
+            isOn: { TellomiFeed.isNotificationsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isNotificationsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: my posts",
+            isOn: { TellomiFeed.isMyPostsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isMyPostsEnabled = uiSwitch.isOn
             },
         ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
