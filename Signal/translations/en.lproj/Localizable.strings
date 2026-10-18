@@ -11689,6 +11689,9 @@
 "TELLOMI_FEED_RETRY" = "Retry";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_BUTTON" = "Search";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_SEARCH_CLEAR" = "Clear";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

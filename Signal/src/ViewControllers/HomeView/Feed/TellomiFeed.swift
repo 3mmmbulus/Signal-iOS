@@ -88,6 +88,21 @@ enum TellomiFeed {
         }
     }
 
+    private static let searchKey = "TellomiFeed.search"
+
+    /// 搜索页和话题页入口（动态页右上角的搜索按钮、帖子上的 `#话题`）。默认关；只有内部构建认这个值（正式包里永远是 false），
+    /// 存在本机 UserDefaults，和 `isProfilePageEnabled` 一样只是开发开关。还没有 Internal Settings 的开关行（见报告「需要你定的」）。
+    static var isSearchEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: searchKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: searchKey)
+        }
+    }
+
     /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
     /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
     static var isSampleDataEnabled: Bool {

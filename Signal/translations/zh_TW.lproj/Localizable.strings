@@ -11575,6 +11575,9 @@
 "TELLOMI_FEED_RETRY" = "重試";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SEARCH_BUTTON" = "搜尋";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_SEARCH_CLEAR" = "清除";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

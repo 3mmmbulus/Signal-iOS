@@ -30,9 +30,17 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     /// 作者主页入口开着没有（`TellomiFeed.isProfilePageEnabled`，默认关）。单测 / 截图可以直接传 true。
     let profilePageEnabled: Bool
 
-    init(source: FeedSource = FeedSources.current(), profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled) {
+    /// 搜索页 / 话题页入口开着没有（`TellomiFeed.isSearchEnabled`，默认关）。单测 / 截图可以直接传 true。
+    let searchEnabled: Bool
+
+    init(
+        source: FeedSource = FeedSources.current(),
+        profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled,
+        searchEnabled: Bool = TellomiFeed.isSearchEnabled
+    ) {
         self.source = source
         self.profilePageEnabled = profilePageEnabled
+        self.searchEnabled = searchEnabled
         store = FeedStore(source: source)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
@@ -40,6 +48,9 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             page.onOpenPost = { [weak self] card in self?.openPost(card) }
             if profilePageEnabled {
                 page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+            }
+            if searchEnabled {
+                page.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
             }
         }
 
@@ -83,6 +94,11 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         navigationItem.titleView = topBar
         navigationItem.backButtonDisplayMode = .minimal
         topBar.onSelect = { [weak self] index in self?.scrollToPage(index, animated: true) }
+        if searchEnabled {
+            let search = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), primaryAction: UIAction { [weak self] _ in self?.openSearch() })
+            search.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_SEARCH_BUTTON", comment: "Feed: accessibility label of the search button at the top of the feed.")
+            navigationItem.rightBarButtonItem = search
+        }
 
         pagingScrollView.isPagingEnabled = true
         pagingScrollView.showsHorizontalScrollIndicator = false
@@ -194,7 +210,32 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         if profilePageEnabled {
             detail.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
         }
+        if searchEnabled {
+            detail.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
+        }
         navigationController?.pushViewController(detail, animated: true)
+    }
+
+    /// 点帖子上的 `#话题`：推话题页（和列表、详情共用同一个 `FeedStore`）。
+    func openTopic(_ topic: FeedTopic) {
+        guard searchEnabled, !topic.slug.isEmpty else { return }
+        let page = FeedTopicViewController(slug: topic.slug, labelHint: topic.label, source: source, feed: store)
+        if profilePageEnabled {
+            page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+        }
+        page.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
+        navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// 点右上角的搜索：推搜索页。搜索结果里点人默认推作者主页（不看作者主页那个开关：搜到人就是为了点进去）。
+    func openSearch() {
+        guard searchEnabled else { return }
+        let page = FeedSearchViewController(source: source, feed: store)
+        if profilePageEnabled {
+            page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+        }
+        page.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
+        navigationController?.pushViewController(page, animated: true)
     }
 
     /// 点作者的头像 / 名字：推作者主页（和列表、详情共用同一个 `FeedStore`）。外部作者没有主页，不响应。
