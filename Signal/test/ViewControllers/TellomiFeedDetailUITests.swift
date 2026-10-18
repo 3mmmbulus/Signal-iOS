@@ -272,6 +272,91 @@ final class TellomiFeedDetailUITests: XCTestCase {
         harness.window.isHidden = true
     }
 
+    /// Mac 截图（2026-10-18）：灰色输入区只有屏幕约 40% 宽，右边一大片空白。输入区应该占满一行里除了发送键以外的宽度。
+    @MainActor
+    func testTheTextBoxFillsTheRowAndSendKeepsItsWidth() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        let input = open.commentInput
+        let box = try XCTUnwrap(input.textView.superview)
+        let boxFrame = box.convert(box.bounds, to: input)
+        let sendFrame = input.sendButton.convert(input.sendButton.bounds, to: input)
+        XCTAssertGreaterThan(input.bounds.size.width, 200)
+        XCTAssertGreaterThanOrEqual(boxFrame.size.width, input.bounds.size.width * 0.6, "空的时候输入区也要占满")
+        XCTAssertGreaterThanOrEqual(input.textView.bounds.size.width, boxFrame.size.width - 0.5, "里面的文字区和灰框一样宽")
+        XCTAssertLessThanOrEqual(boxFrame.maxX, sendFrame.minX, "灰框在发送键左边，不重叠")
+        XCTAssertLessThan(sendFrame.minX - boxFrame.maxX, 24, "灰框和发送键之间没有大片空白")
+        XCTAssertLessThanOrEqual(sendFrame.maxX, input.bounds.size.width + 0.5)
+        XCTAssertGreaterThan(sendFrame.size.width, 20, "发送键没被挤没")
+
+        // 长文字也不改宽度（以前是按「一行排下来」的宽度算）
+        type(String(repeating: "很长的一句话。", count: 20), into: input)
+        harness.window.layoutIfNeeded()
+        let afterFrame = box.convert(box.bounds, to: input)
+        XCTAssertEqual(afterFrame.size.width, boxFrame.size.width, accuracy: 0.5)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 输入第一个字时不跳高；一行字在灰框里上下居中；长高有上限。
+    @MainActor
+    func testTheFirstCharacterDoesNotJumpTheHeightAndOneLineIsCentred() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        let input = open.commentInput
+        let before = input.currentTextHeight
+        XCTAssertEqual(before, FeedCommentInputView.minTextHeight, accuracy: 1)
+        XCTAssertEqual(input.textView.textContainerInset.top, input.textView.textContainerInset.bottom, "上下内边距一样 = 一行居中")
+        XCTAssertEqual(
+            input.textView.textContainerInset.top * 2 + UIFont.dynamicTypeBody.lineHeight,
+            FeedCommentInputView.minTextHeight,
+            accuracy: 1,
+            "一行字加上下内边距正好是最小高度",
+        )
+
+        type("好", into: input)
+        harness.window.layoutIfNeeded()
+        XCTAssertEqual(input.currentTextHeight, before, accuracy: 0.5, "第一个字不跳高")
+        type("看的一句话，", into: input)
+        XCTAssertEqual(input.currentTextHeight, before, accuracy: 0.5, "一行还没满")
+
+        type(String(repeating: "很长的一句话。", count: 60), into: input)
+        harness.window.layoutIfNeeded()
+        XCTAssertGreaterThan(input.currentTextHeight, before)
+        XCTAssertLessThanOrEqual(input.currentTextHeight, FeedCommentInputView.maxTextHeight)
+        XCTAssertTrue(input.textView.isScrollEnabled || input.currentTextHeight < FeedCommentInputView.maxTextHeight)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 提示条不能盖住输入框：输入框在、键盘没出来 → 抬高一个输入框；键盘出来了 → 放到上面；输入框收起 → 和别的页面一样。
+    @MainActor
+    func testToastsStayOffTheCommentBox() async throws {
+        typealias VC = FeedPostDetailViewController
+        XCTAssertEqual(VC.toastPlacement(inputVisible: false, keyboardUp: false), .bottom)
+        XCTAssertEqual(VC.toastPlacement(inputVisible: false, keyboardUp: true), .bottom)
+        XCTAssertEqual(VC.toastPlacement(inputVisible: true, keyboardUp: false), .aboveInput)
+        XCTAssertEqual(VC.toastPlacement(inputVisible: true, keyboardUp: true), .top)
+
+        let source = quickSource()
+        source.simulation.failsComments = true
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        type("会失败", into: open.commentInput)
+        open.commentInput.sendButton.sendActions(for: .touchUpInside)
+        await open.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertNotNil(open.lastToastText)
+        XCTAssertEqual(open.lastToastPlacement, .aboveInput, "输入框在、键盘没出来（进程内没有键盘）")
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
     /// 发送按钮的几种状态都来自逻辑层：空 / 只有空白 → 灰；有字 → 可点；发送中 → 按钮换成转圈、输入框不能改。
     @MainActor
     func testTheSendButtonFollowsTheSendStates() async throws {

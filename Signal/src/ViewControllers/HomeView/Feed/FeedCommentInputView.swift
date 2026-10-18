@@ -78,9 +78,15 @@ final class FeedCommentInputView: UIView {
         textView.font = .dynamicTypeBody
         textView.textColor = UIColor.Signal.label
         textView.backgroundColor = .clear
-        textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        // 一行字正好在最小高度里上下居中：上下内边距 = (最小高度 - 一行字高) / 2（字体放大后一行超过最小高度就按内容长高）
+        let verticalInset = max(4, (Self.minTextHeight - UIFont.dynamicTypeBody.lineHeight) / 2)
+        textView.textContainerInset = UIEdgeInsets(top: verticalInset, left: 8, bottom: verticalInset, right: 8)
         textView.isScrollEnabled = false
         textView.delegate = self
+        // 不让输入框按「文字一行排下来的宽度」撑（空的时候很窄、长文字很宽）：宽度全听外面给的，文字在里面换行。
+        // （2026-10-18 Mac 截图：灰色输入区只有屏幕约 40% 宽，一行只能放 7 个字）
+        textView.setContentHuggingPriority(UILayoutPriority(1), for: .horizontal)
+        textView.setContentCompressionResistancePriority(UILayoutPriority(1), for: .horizontal)
 
         placeholderLabel.font = .dynamicTypeBody
         placeholderLabel.textColor = UIColor.Signal.secondaryLabel
@@ -90,6 +96,9 @@ final class FeedCommentInputView: UIView {
         textBackground.backgroundColor = UIColor.Signal.secondaryBackground
         textBackground.layer.cornerRadius = 18
         textBackground.clipsToBounds = true
+        // 一行里它是唯一该被拉伸的：发送键和计数是 required，其余都比它「抱得紧」
+        textBackground.setContentHuggingPriority(UILayoutPriority(1), for: .horizontal)
+        textBackground.setContentCompressionResistancePriority(UILayoutPriority(1), for: .horizontal)
         textBackground.addSubview(textView)
         textBackground.addSubview(placeholderLabel)
         textView.autoPinEdgesToSuperviewEdges()
@@ -97,7 +106,7 @@ final class FeedCommentInputView: UIView {
         // 和输入框里文字的起点对齐（容器内边距 8 + 行首留白 5）
         placeholderLabel.autoPinEdge(toSuperviewEdge: .leading, withInset: 13)
         placeholderLabel.autoPinEdge(toSuperviewEdge: .trailing, withInset: 8)
-        placeholderLabel.autoPinEdge(toSuperviewEdge: .top, withInset: 8)
+        placeholderLabel.autoPinEdge(toSuperviewEdge: .top, withInset: verticalInset)
 
         sendButton.setTitle(OWSLocalizedString("TELLOMI_FEED_COMMENT_SEND", comment: "Feed: button that sends the comment typed at the bottom of a post page."), for: .normal)
         sendButton.titleLabel?.font = .dynamicTypeBody.semibold()
@@ -126,10 +135,16 @@ final class FeedCommentInputView: UIView {
 
         let inputRow = UIStackView(arrangedSubviews: [textBackground, trailing])
         inputRow.axis = .horizontal
+        inputRow.distribution = .fill
         inputRow.alignment = .bottom
         inputRow.spacing = 10
         inputRow.isLayoutMarginsRelativeArrangement = true
         inputRow.layoutMargins = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+
+        // 双保险：想和一整行一样宽（优先级低，发送键 / 计数的宽度是 required，所以只会占满剩下的）
+        let fillRow = textBackground.widthAnchor.constraint(equalTo: inputRow.widthAnchor)
+        fillRow.priority = .defaultLow
+        fillRow.isActive = true
 
         let column = UIStackView(arrangedSubviews: [divider, replyBanner, inputRow])
         column.axis = .vertical
@@ -220,11 +235,21 @@ final class FeedCommentInputView: UIView {
         let width = textView.bounds.width > 0 ? textView.bounds.width : max(bounds.width - 120, 100)
         let fitting = textView.sizeThatFits(CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)).height
         let height = min(max(fitting, Self.minTextHeight), Self.maxTextHeight)
-        if textHeightConstraint?.constant != height {
-            textHeightConstraint?.constant = height
-        }
         textView.isScrollEnabled = fitting > Self.maxTextHeight
+        guard textHeightConstraint?.constant != height else { return }
+        textHeightConstraint?.constant = height
+        // 高度变化顺滑一点：第一次布局（还没上屏）不动画；上屏后往上找到最外层的 view 一起布局，输入框上面的表格也跟着缩
+        if window != nil, lastLayoutWidth > 0, !UIAccessibility.isReduceMotionEnabled {
+            var top: UIView = self
+            while let parent = top.superview { top = parent }
+            UIView.animate(withDuration: 0.15, delay: 0, options: [.beginFromCurrentState, .curveEaseOut]) {
+                top.layoutIfNeeded()
+            }
+        }
     }
+
+    /// 单测用：输入框现在的高度（不含回复横幅）和它的上下限。
+    var currentTextHeight: CGFloat { textHeightConstraint?.constant ?? 0 }
 }
 
 extension FeedCommentInputView: UITextViewDelegate {

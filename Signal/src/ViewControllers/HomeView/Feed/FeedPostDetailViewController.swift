@@ -187,11 +187,43 @@ final class FeedPostDetailViewController: OWSViewController {
         guard let notice = store.state.notice else { return }
         if let text = Self.toastText(for: notice) {
             lastToastText = text
+            let placement = Self.toastPlacement(inputVisible: !commentInput.isHidden, keyboardUp: commentInput.textView.isFirstResponder)
+            lastToastPlacement = placement
             if viewIfLoaded?.window != nil {
-                presentToast(text: text)
+                presentDetailToast(text: text, placement: placement)
             }
         }
         store.onNoticeShown()
+    }
+
+    /// 提示条放哪儿：不能盖住评论输入框（占位文字、发送键）。
+    enum ToastPlacement: Equatable {
+        /// 输入框收起了：和别的页面一样贴着底部。
+        case bottom
+        /// 贴着底部、再往上抬一个输入框的高度（键盘没出来时）。
+        case aboveInput
+        /// 键盘出来了：`ToastController` 会把提示条贴到键盘上沿，正好是输入框的位置，所以改放到导航栏下面。
+        case top
+    }
+
+    static func toastPlacement(inputVisible: Bool, keyboardUp: Bool) -> ToastPlacement {
+        guard inputVisible else { return .bottom }
+        return keyboardUp ? .top : .aboveInput
+    }
+
+    /// 最近一次提示条的位置（单测 / 截图用）。
+    private(set) var lastToastPlacement: ToastPlacement?
+
+    private func presentDetailToast(text: String, placement: ToastPlacement) {
+        switch placement {
+        case .bottom:
+            presentToast(text: text)
+        case .aboveInput:
+            presentToast(text: text, extraVInset: commentInput.bounds.size.height)
+        case .top:
+            let controller = ToastController(text: text, image: nil)
+            controller.presentToastView(from: .top, of: view, inset: view.safeAreaInsets.top + 8)
+        }
     }
 
     static func toastText(for notice: FeedPostDetailState.Notice) -> String? {
