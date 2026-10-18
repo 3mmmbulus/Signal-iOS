@@ -11335,7 +11335,25 @@
 "TELLOMI_FEED_MENU_DELETE_POST" = "刪除動態";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_HIDE_LIKES" = "隱藏按讚數";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_INSIGHTS" = "查看數據";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_PIN" = "置頂";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_REPLY_SETTINGS" = "回覆設定";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MENU_REPORT" = "檢舉";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_SHOW_LIKES" = "顯示按讚數";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_UNPIN" = "取消置頂";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "更多";

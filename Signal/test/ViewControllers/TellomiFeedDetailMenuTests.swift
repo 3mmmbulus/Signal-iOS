@@ -684,6 +684,26 @@ final class TellomiFeedReportPresentationTests: XCTestCase {
         XCTAssertFalse(FeedReportPresentation(state: state("fraud") { $0.evidence = full }).canAddEvidence)
     }
 
+    func testTheDetailBoxHeightIsClampedAndOnlyScrollsPastTheMaximum() {
+        XCTAssertEqual(FeedReportPresentation.detailBoxHeight(fitting: 40).height, 120)
+        XCTAssertEqual(FeedReportPresentation.detailBoxHeight(fitting: 120).height, 120)
+        XCTAssertEqual(FeedReportPresentation.detailBoxHeight(fitting: 140).height, 140)
+        XCTAssertEqual(FeedReportPresentation.detailBoxHeight(fitting: 160).height, 160)
+        XCTAssertFalse(FeedReportPresentation.detailBoxHeight(fitting: 160).scrolls, "刚好 160：还不用滚")
+        XCTAssertEqual(FeedReportPresentation.detailBoxHeight(fitting: 161).height, 160)
+        XCTAssertTrue(FeedReportPresentation.detailBoxHeight(fitting: 161).scrolls)
+        XCTAssertEqual(FeedReportPresentation.detailBoxHeight(fitting: 900).height, 160)
+        XCTAssertFalse(FeedReportPresentation.detailBoxHeight(fitting: 40).scrolls)
+    }
+
+    func testTheCounterIsRedFromZeroDown() {
+        func red(_ text: String) -> Bool { FeedReportPresentation(state: state("harassment") { $0.detail = text }).counterIsRed }
+        XCTAssertFalse(red(""))
+        XCTAssertFalse(red(String(repeating: "a", count: 499)), "还剩 1 个：灰")
+        XCTAssertTrue(red(String(repeating: "a", count: 500)), "剩 0 个：红")
+        XCTAssertTrue(red(String(repeating: "a", count: 503)), "组字中超出：红")
+    }
+
     func testTheDetailCounterCountsCodePointsLikeTheEngine() {
         XCTAssertEqual(FeedReportPresentation(state: state("harassment")).detailRemaining, 500)
         XCTAssertEqual(FeedReportPresentation(state: state("harassment") { $0.detail = "你好" }).detailRemaining, 498)

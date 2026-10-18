@@ -230,8 +230,8 @@ final class TellomiFeedDetailUITests: XCTestCase {
         let textView = input.textView
         let current = textView.text ?? ""
         let range = NSRange(location: (current as NSString).length, length: 0)
+        // 和真的 UITextView 一样：delegate 拦下 / 改写时（返回 false）不会再收到 textViewDidChange
         guard input.textView(textView, shouldChangeTextIn: range, replacementText: text) else {
-            input.textViewDidChange(textView)
             return false
         }
         textView.text = current + text
@@ -312,7 +312,7 @@ final class TellomiFeedDetailUITests: XCTestCase {
         XCTAssertEqual(before, FeedCommentInputView.minTextHeight, accuracy: 1)
         XCTAssertEqual(input.textView.textContainerInset.top, input.textView.textContainerInset.bottom, "上下内边距一样 = 一行居中")
         XCTAssertEqual(
-            input.textView.textContainerInset.top * 2 + UIFont.dynamicTypeBody.lineHeight,
+            input.textView.textContainerInset.top * 2 + FeedCommentInputView.oneLineHeight(of: .dynamicTypeBody),
             FeedCommentInputView.minTextHeight,
             accuracy: 1,
             "一行字加上下内边距正好是最小高度",
@@ -424,6 +424,7 @@ final class TellomiFeedDetailUITests: XCTestCase {
         XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
         XCTAssertEqual(input.counterLabel.text, "0")
         XCTAssertFalse(input.counterLabel.isHidden)
+        XCTAssertEqual(input.counterLabel.textColor, UIColor.Signal.red, "刚好 0 个：计数变红")
         XCTAssertFalse(type("c", into: input), "满了：再敲被拦下")
         XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
         XCTAssertEqual(detail.detailStore.state.draft, input.textView.text, "store 里的草稿和输入框一致")
@@ -521,8 +522,12 @@ final class TellomiFeedDetailUITests: XCTestCase {
         )
         harness.pop()
 
-        let gone = try await openComments(of: "sample-7", source: source, harness: harness)
-        try await Task.sleep(nanoseconds: 300_000_000)
+        // sample-7 已经「不可见」：`card(contentId:)` 直接回 nil（`openComments` 取不到卡），所以像
+        // `testSample7ShowsThePostFirst…` 那样从列表第 7 行点进去，等 Card API 回来再看
+        source.simulation.cardLatencyNanos = 300_000_000
+        let gone = try XCTUnwrap(harness.openPost(row: 7))
+        await gone.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
         XCTAssertEqual(gone.shownPostMenu, [], "帖子已不可见：没有菜单")
         XCTAssertNil(gone.navigationItem.rightBarButtonItem)
         harness.pop()
@@ -573,10 +578,26 @@ final class TellomiFeedDetailUITests: XCTestCase {
         harness.window.isHidden = true
     }
 
+    /// 自己的帖子：详情页换成最新卡片（Card API）之后菜单仍是自己帖子的（`simulation.ownPostIds` 让样例源两处都回「我发的」，截图也靠它）。
+    @MainActor
+    func testMyOwnPostKeepsItsMenuAfterTheLatestCardArrives() async throws {
+        let source = quickSource()
+        source.simulation.ownPostIds = ["sample-1"]
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        XCTAssertTrue(open.detailStore.state.post.viewer.isAuthor)
+        XCTAssertEqual(open.shownPostMenu, [.deletePost], "自己的帖子：只有「删除」（置顶等还没有页面）")
+        XCTAssertNotNil(open.navigationItem.rightBarButtonItem)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
     /// 菜单文字和确认问题都是本地化过的，不是键名。
     @MainActor
     func testMenuTextsAreLocalizedNotKeys() {
-        for item in [FeedDetailMenuItem.notInterested, .report, .deleteComment, .deletePost] {
+        let ownItems = [FeedOwnPostAction.pin, .unpin, .hideLikes, .showLikes, .replySettings, .insights].map { FeedDetailMenuItem.own($0) }
+        for item in [FeedDetailMenuItem.notInterested, .report, .deleteComment, .deletePost] + ownItems {
             let title = FeedPostDetailViewController.menuTitle(for: item)
             XCTAssertFalse(title.isEmpty)
             XCTAssertFalse(title.hasPrefix("TELLOMI_"), "\(item) 的菜单文字没有翻译")
