@@ -230,8 +230,8 @@ final class TellomiFeedDetailUITests: XCTestCase {
         let textView = input.textView
         let current = textView.text ?? ""
         let range = NSRange(location: (current as NSString).length, length: 0)
+        // 和真的 UITextView 一样：delegate 拦下 / 改写时（返回 false）不会再收到 textViewDidChange
         guard input.textView(textView, shouldChangeTextIn: range, replacementText: text) else {
-            input.textViewDidChange(textView)
             return false
         }
         textView.text = current + text
@@ -312,7 +312,7 @@ final class TellomiFeedDetailUITests: XCTestCase {
         XCTAssertEqual(before, FeedCommentInputView.minTextHeight, accuracy: 1)
         XCTAssertEqual(input.textView.textContainerInset.top, input.textView.textContainerInset.bottom, "上下内边距一样 = 一行居中")
         XCTAssertEqual(
-            input.textView.textContainerInset.top * 2 + UIFont.dynamicTypeBody.lineHeight,
+            input.textView.textContainerInset.top * 2 + FeedCommentInputView.oneLineHeight(of: .dynamicTypeBody),
             FeedCommentInputView.minTextHeight,
             accuracy: 1,
             "一行字加上下内边距正好是最小高度",
@@ -424,6 +424,7 @@ final class TellomiFeedDetailUITests: XCTestCase {
         XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
         XCTAssertEqual(input.counterLabel.text, "0")
         XCTAssertFalse(input.counterLabel.isHidden)
+        XCTAssertEqual(input.counterLabel.textColor, UIColor.Signal.red, "刚好 0 个：计数变红")
         XCTAssertFalse(type("c", into: input), "满了：再敲被拦下")
         XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
         XCTAssertEqual(detail.detailStore.state.draft, input.textView.text, "store 里的草稿和输入框一致")

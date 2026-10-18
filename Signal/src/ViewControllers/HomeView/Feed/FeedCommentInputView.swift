@@ -79,7 +79,7 @@ final class FeedCommentInputView: UIView {
         textView.textColor = UIColor.Signal.label
         textView.backgroundColor = .clear
         // 一行字正好在最小高度里上下居中：上下内边距 = (最小高度 - 一行字高) / 2（字体放大后一行超过最小高度就按内容长高）
-        let verticalInset = max(4, (Self.minTextHeight - UIFont.dynamicTypeBody.lineHeight) / 2)
+        let verticalInset = max(4, (Self.minTextHeight - Self.oneLineHeight(of: .dynamicTypeBody)) / 2)
         textView.textContainerInset = UIEdgeInsets(top: verticalInset, left: 8, bottom: verticalInset, right: 8)
         textView.isScrollEnabled = false
         textView.delegate = self
@@ -246,6 +246,12 @@ final class FeedCommentInputView: UIView {
                 top.layoutIfNeeded()
             }
         }
+    }
+
+    /// UITextView 里一行字真正占的高度：TextKit 把字体的 ascender 和 descender 各自向上取整再相加
+    /// （17pt 正文 = 17 + 5 = 22，而 `UIFont.lineHeight` 只有 20.29），按后者算居中会让空输入框是 38 而不是 36。
+    static func oneLineHeight(of font: UIFont) -> CGFloat {
+        return ceil(font.ascender) + ceil(-font.descender) + ceil(font.leading)
     }
 
     /// 单测用：输入框现在的高度（不含回复横幅）和它的上下限。
