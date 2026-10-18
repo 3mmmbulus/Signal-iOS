@@ -337,4 +337,159 @@ final class TellomiFeedProfileUITests: XCTestCase {
         state.profile = page
         XCTAssertTrue(FeedProfileViewController.identityLine(FeedProfilePresentation(state: state)).contains("3820145967"))
     }
+
+    // MARK: - 「···」菜单
+
+    @MainActor
+    func testMenuShowsMuteHideFromBlockReportForSomeoneElseAndNothingForSelf() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        var profile = await harness.openProfile("s-1")
+        XCTAssertEqual(profile.shownMenu, [.mute(on: true), .hideFrom(on: true), .block, .report])
+        XCTAssertNotNil(profile.navigationItem.rightBarButtonItem)
+        XCTAssertEqual(profile.navigationItem.rightBarButtonItem?.accessibilityLabel, OWSLocalizedString("TELLOMI_FEED_MORE", comment: ""))
+        harness.navigation.popViewController(animated: false)
+
+        profile = await harness.openProfile("s-me")
+        XCTAssertEqual(profile.shownMenu, [])
+        XCTAssertNil(profile.navigationItem.rightBarButtonItem)
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testMuteAndHideFromToggleAndToastAndTheMenuFlipsBack() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let profile = await harness.openProfile("s-1")
+
+        profile.handleMenuItem(.mute(on: true))
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_PROFILE_MUTED", comment: ""))
+        XCTAssertEqual(profile.shownMenu.first, .mute(on: false), "已经不看了：菜单变成「恢复看他的动态」")
+
+        profile.handleMenuItem(.hideFrom(on: true))
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_PROFILE_HIDDEN_FROM", comment: ""))
+        XCTAssertTrue(profile.shownMenu.contains(.hideFrom(on: false)))
+
+        profile.handleMenuItem(.mute(on: false))
+        try await settle(profile)
+        XCTAssertEqual(profile.shownMenu.first, .mute(on: true))
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testHideListFailureToastsAndLeavesTheMenuAlone() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let profile = await harness.openProfile("s-1")
+        harness.source.simulation.failsHideLists = true
+        profile.handleMenuItem(.mute(on: true))
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
+        XCTAssertEqual(profile.shownMenu.first, .mute(on: true), "没成功：菜单还是原样")
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testBlockAsksFirstThenBlocksRemovesTheirCardsFromTheFeedAndOffersUnblock() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let profile = await harness.openProfile("s-1")
+        XCTAssertTrue(harness.feed.store.tab(.recommend).cards.contains { $0.author?.profileId == "s-1" }, "前提：信息流里有他的帖子")
+
+        var asked = [FeedProfileViewController.Confirmation]()
+        profile.confirmDestructive = { confirmation, _ in asked.append(confirmation) }
+        profile.handleMenuItem(.block)
+        XCTAssertEqual(asked, [.block])
+        try await settle(profile)
+        XCTAssertFalse(profile.presentation.followButton == .unblock, "没确认就没屏蔽")
+
+        profile.confirmDestructive = { _, go in go() }
+        profile.handleMenuItem(.block)
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_PROFILE_BLOCKED", comment: ""))
+        XCTAssertEqual(profile.rows, [.header, .status(.blocked)])
+        XCTAssertEqual(profile.shownMenu, [.unblock, .report])
+        XCTAssertFalse(harness.feed.store.tab(.recommend).cards.contains { $0.author?.profileId == "s-1" }, "信息流里他的帖子跟着没了")
+
+        profile.handleMenuItem(.unblock)
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_PROFILE_UNBLOCKED", comment: ""))
+        XCTAssertEqual(profile.shownMenu.last, .report)
+        XCTAssertTrue(profile.shownMenu.contains(.block))
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testBlockFailureToastsAndKeepsTheProfile() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let profile = await harness.openProfile("s-1")
+        profile.confirmDestructive = { _, go in go() }
+        harness.source.simulation.failsBlock = true
+        profile.handleMenuItem(.block)
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
+        XCTAssertEqual(profile.presentation.page, .content)
+        XCTAssertNotEqual(profile.presentation.followButton, .unblock)
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testReportTargetsTheAuthorAndSentToastsAndCancelDoesNothing() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let profile = await harness.openProfile("s-1")
+
+        profile.handleMenuItem(.report)
+        let report = try XCTUnwrap(profile.presentedReport)
+        report.loadViewIfNeeded()
+        await report.store.waitForTasks()
+        profile.handleMenuItem(.report)
+        XCTAssertTrue(profile.presentedReport === report, "不会叠两个举报页")
+
+        report.pick(try XCTUnwrap(report.presentation.groups.flatMap(\.reasons).first { $0.code == "spam" }))
+        report.submit()
+        await report.store.waitForTasks()
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(report.finishedOutcome, .sent)
+        XCTAssertNil(profile.presentedReport)
+        XCTAssertEqual(harness.source.reports.first?.targetId, "s-1", "举报的是这个人")
+        try await settle(profile)
+        XCTAssertEqual(profile.lastToastText, OWSLocalizedString("TELLOMI_FEED_REPORT_SENT", comment: ""))
+
+        profile.handleMenuItem(.report)
+        XCTAssertNotNil(profile.presentedReport)
+        profile.presentedReportFinished(.cancelled)
+        XCTAssertNil(profile.presentedReport)
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testReportFinishingWithFeedHiddenClosesTheProfile() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let profile = await harness.openProfile("s-1")
+        profile.handleMenuItem(.report)
+        XCTAssertNotNil(profile.presentedReport)
+        let before = harness.navigation.viewControllers.count
+        profile.presentedReportFinished(.feedHidden)
+        try await settle(profile)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertTrue(profile.didClose)
+        XCTAssertEqual(harness.navigation.viewControllers.count, before - 1)
+        harness.window.isHidden = true
+    }
+
+    @MainActor
+    func testMenuTitlesAreLocalizedNotKeys() {
+        let items: [FeedProfileMenuItem] = [.mute(on: true), .mute(on: false), .hideFrom(on: true), .hideFrom(on: false), .block, .unblock, .report]
+        for item in items {
+            let title = FeedProfileViewController.menuTitle(for: item)
+            XCTAssertFalse(title.isEmpty)
+            XCTAssertFalse(title.hasPrefix("TELLOMI_"), "\(item) 的文案没有翻译")
+        }
+        XCTAssertEqual(Set(items.map { FeedProfileViewController.menuTitle(for: $0) }).count, 7, "七项文案各不相同")
+    }
 }
