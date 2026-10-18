@@ -31,6 +31,8 @@ final class FeedPostCell: UITableViewCell {
     var onNotInterested: ((FeedCard) -> Void)?
     /// 帖子详情页最上面那条（这一刀只读）：点赞和「···」不响应，免得点了没反应。
     var isReadOnly = false
+    /// 只读时点赞仍然可以点（帖子详情页：「···」收起来，赞可以点）。
+    var allowsLikeWhenReadOnly = false
 
     private(set) var card: FeedCard?
 
@@ -44,7 +46,8 @@ final class FeedPostCell: UITableViewCell {
     private let topicsLabel = UILabel()
     private let aiLabel = UILabel()
     private let mediaContainer = UIView()
-    private let likeButton = UIButton(type: .system)
+    /// 单测 / 截图用：点赞按钮。
+    let likeButton = UIButton(type: .system)
     private let commentView = UIStackView()
     private let commentCountLabel = UILabel()
 
@@ -217,7 +220,7 @@ final class FeedPostCell: UITableViewCell {
     private func configureActions(_ card: FeedCard) {
         let liked = card.viewer.liked
         let showCount = !card.stats.likeCountHidden && card.stats.likes > 0
-        likeButton.isUserInteractionEnabled = !isReadOnly
+        likeButton.isUserInteractionEnabled = !isReadOnly || allowsLikeWhenReadOnly
         likeButton.configuration?.image = UIImage(named: liked ? "heart-fill-compact" : "heart")
         likeButton.configuration?.baseForegroundColor = liked ? Self.likedColor : UIColor.Signal.secondaryLabel
         likeButton.configuration?.title = showCount ? OWSFormat.formatInt(card.stats.likes) : nil

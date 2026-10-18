@@ -136,6 +136,82 @@ final class TellomiFeedDetailUITests: XCTestCase {
         harness.window.isHidden = true
     }
 
+    // MARK: - (b) 详情页的点赞按钮
+
+    private var unlikeLabel: String { OWSLocalizedString("TELLOMI_FEED_UNLIKE", comment: "") }
+    private var likeLabel: String { OWSLocalizedString("TELLOMI_FEED_LIKE", comment: "") }
+
+    /// 详情页的赞可以点（「···」仍然收起来）：点一下马上点亮、列表那一行同步，再点一下取消。
+    @MainActor
+    func testTheDetailLikeButtonWorksAndTheListFollowsBothWays() async throws {
+        let harness = await makeHarness(source: quickSource())
+        defer { harness.window.isHidden = true }
+        let detail = try XCTUnwrap(harness.openPost(row: 3))
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let button = try XCTUnwrap(detail.postCell?.likeButton)
+        XCTAssertTrue(button.isUserInteractionEnabled)
+        XCTAssertEqual(button.accessibilityLabel, likeLabel)
+        let likes = harness.feed.pages[0].rows[3].card.stats.likes
+
+        button.sendActions(for: .touchUpInside)
+        XCTAssertEqual(detail.postCell?.likeButton.accessibilityLabel, unlikeLabel, "按钮马上点亮")
+        XCTAssertTrue(harness.feed.pages[0].rows[3].card.viewer.liked)
+        XCTAssertEqual(harness.feed.pages[0].rows[3].card.stats.likes, likes + 1)
+        await detail.detailStore.waitForTasks()
+
+        detail.postCell?.likeButton.sendActions(for: .touchUpInside)
+        XCTAssertEqual(detail.postCell?.likeButton.accessibilityLabel, likeLabel)
+        XCTAssertFalse(harness.feed.pages[0].rows[3].card.viewer.liked)
+        XCTAssertEqual(harness.feed.pages[0].rows[3].card.stats.likes, likes)
+        await detail.detailStore.waitForTasks()
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 请求还在路上时按钮已经点亮（`likeLatencyNanos` 拖慢样例，方便截图）。
+    @MainActor
+    func testTheLikeIsLitWhileTheRequestIsStillOnItsWay() async throws {
+        let source = quickSource()
+        source.simulation.likeLatencyNanos = 600_000_000
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try XCTUnwrap(harness.openPost(row: 3))
+        try await Task.sleep(nanoseconds: 100_000_000)
+        detail.postCell?.likeButton.sendActions(for: .touchUpInside)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(detail.postCell?.likeButton.accessibilityLabel, unlikeLabel)
+        XCTAssertTrue(harness.feed.pages[0].rows[3].card.viewer.liked)
+        await detail.detailStore.waitForTasks()
+        XCTAssertEqual(detail.postCell?.likeButton.accessibilityLabel, unlikeLabel, "成功后还是点亮")
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 点赞失败：详情和列表都改回、详情弹「操作失败」（和列表同一句），提示弹过就清掉。
+    @MainActor
+    func testAFailedLikeRollsBackDetailAndListAndToastsTheActionFailedText() async throws {
+        let source = quickSource()
+        source.simulation.failsLikes = true
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try XCTUnwrap(harness.openPost(row: 3))
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let likes = harness.feed.pages[0].rows[3].card.stats.likes
+
+        detail.postCell?.likeButton.sendActions(for: .touchUpInside)
+        XCTAssertEqual(detail.postCell?.likeButton.accessibilityLabel, unlikeLabel, "先点亮")
+        await detail.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        XCTAssertEqual(detail.postCell?.likeButton.accessibilityLabel, likeLabel, "失败：改回")
+        XCTAssertFalse(harness.feed.pages[0].rows[3].card.viewer.liked)
+        XCTAssertEqual(harness.feed.pages[0].rows[3].card.stats.likes, likes)
+        XCTAssertEqual(detail.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
+        XCTAssertNil(detail.detailStore.state.notice, "提示弹过就清掉")
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
     // MARK: - 给截图用的中间状态
 
     /// 样例的「已不可见」可以拖慢：先显示帖子，Card API 回来才变成「已不可见」。

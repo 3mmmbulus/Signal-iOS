@@ -10,7 +10,7 @@ import UIKit
 /// 帖子详情（`dynamic-feed.md` 第三节第 2、4 条）：整条帖子在最上面，下面是评论（按楼排，楼里的回复缩进）。
 /// 在信息流里点一条帖子打开（`FeedViewController.openPost`）。数据在 `FeedPostDetailStore`，画什么由 `FeedPostDetailPresentation` 决定。
 ///
-/// 这一刀只读：帖子上的点赞和「···」不能点（`FeedPostCell.isReadOnly`），没有评论输入框；评论区有「加载中 / 加载失败（重试）/ 还没有评论」，
+/// 帖子上的点赞可以点（乐观更新、失败改回，数据在列表共用的 `FeedStore` 里），「···」不显示（`FeedPostCell.isReadOnly`）；评论区有「加载中 / 加载失败（重试）/ 还没有评论」，
 /// 帖子已经看不到了显示「已不可见」。点赞、评论、转发、收藏等随后面的步骤接。
 final class FeedPostDetailViewController: OWSViewController {
 
@@ -147,6 +147,37 @@ final class FeedPostDetailViewController: OWSViewController {
             footerSpinner.stopAnimating()
             tableView.tableFooterView = nil
         }
+
+        if state.notice != nil {
+            // `apply` 是 store 改 `state` 的 didSet 里调进来的：提示在下一轮主线程里显示并清掉，不在 didSet 里再改 store
+            DispatchQueue.main.async { [weak self] in
+                self?.consumeNotice()
+            }
+        }
+    }
+
+    /// 最近一次弹出的提示文字（单测 / 截图用）。
+    private(set) var lastToastText: String?
+
+    /// store 里的一次性提示（`notice`）：有对应文案就弹一句，然后清掉。点赞失败（已经改回）用列表同一句「操作失败」。
+    private func consumeNotice() {
+        guard let notice = store.state.notice else { return }
+        if let text = Self.toastText(for: notice) {
+            lastToastText = text
+            if viewIfLoaded?.window != nil {
+                presentToast(text: text)
+            }
+        }
+        store.onNoticeShown()
+    }
+
+    static func toastText(for notice: FeedPostDetailState.Notice) -> String? {
+        switch notice {
+        case .failed:
+            return OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: "Feed: toast when liking or another action on a post failed.")
+        default:
+            return nil
+        }
     }
 }
 
@@ -160,6 +191,8 @@ extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelega
         case .post:
             let cell = tableView.dequeueReusableCell(withIdentifier: FeedPostCell.reuseIdentifier, for: indexPath) as! FeedPostCell
             cell.isReadOnly = true
+            cell.allowsLikeWhenReadOnly = true
+            cell.onLike = { [weak self] _ in self?.store.toggleLike() }
             cell.configure(card: post, showIpRegion: showIpRegion)
             return cell
         case .comment(let row):
