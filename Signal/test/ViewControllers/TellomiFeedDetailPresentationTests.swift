@@ -278,6 +278,124 @@ final class TellomiFeedSampleDetailStoreTests: XCTestCase {
         XCTAssertEqual(feed.card(id: "sample-3")?.stats.likes, before.stats.likes + 1)
     }
 
+    // MARK: 发评论（样例）
+
+    private func sampleSource() -> SampleFeedSource {
+        return SampleFeedSource(now: { Date(timeIntervalSince1970: 1_791_889_200) }, commentsLatencyNanos: 0)
+    }
+
+    private func sampleCard(_ source: SampleFeedSource, _ id: String) async throws -> FeedCard {
+        let card = try await source.card(contentId: id)
+        return try XCTUnwrap(card)
+    }
+
+    func testAPublishedSampleCommentShowsAtTheEndAndBumpsTheCounts() async throws {
+        let source = sampleSource()
+        let feed = FeedStore(source: source)
+        feed.onTabShown(.recommend)
+        await feed.waitForLoad(.recommend)
+        let card = try XCTUnwrap(feed.card(id: "sample-4"))
+        XCTAssertEqual(card.stats.comments, 0)
+        let store = FeedPostDetailStore(initial: card, source: source, feed: feed)
+        store.start()
+        await store.waitForTasks()
+        XCTAssertEqual(FeedPostDetailPresentation.commentsPhase(for: store.state), .empty)
+
+        store.onDraftChanged("  第一条  ")
+        store.send()
+        XCTAssertTrue(store.state.sending)
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .published)
+        XCTAssertEqual(store.state.draft, "")
+        XCTAssertEqual(store.state.comments.map(\.text), ["第一条"], "去掉首尾空白")
+        XCTAssertEqual(store.state.comments.first?.author?.displayName, SampleFeedSource.me.displayName)
+        XCTAssertEqual(store.state.post.stats.comments, 1)
+        XCTAssertEqual(feed.card(id: "sample-4")?.stats.comments, 1)
+        let fresh = try await source.card(contentId: "sample-4")
+        XCTAssertEqual(fresh?.stats.comments, 1, "样例重新取卡片也是 1")
+    }
+
+    func testAReplyIsKeptUnderItsParentAndAPendingCommentIsNotShown() async throws {
+        let source = sampleSource()
+        let card = try await sampleCard(source, "sample-1")
+        let store = FeedPostDetailStore(initial: card, source: source)
+        store.start()
+        await store.waitForTasks()
+        let target = try XCTUnwrap(store.state.comments.first)
+        store.replyTo(target)
+        store.onDraftChanged("回你")
+        store.send()
+        await store.waitForTasks()
+        XCTAssertNil(store.state.replyTarget)
+        XCTAssertEqual(store.state.comments.last?.parentId, target.id)
+
+        let before = store.state.comments.count
+        source.simulation.commentPublishState = FeedCreatePostResponse.statePending
+        store.onDraftChanged("待审的")
+        store.send()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .pending)
+        XCTAssertEqual(store.state.comments.count, before, "待审的别人看不到")
+        XCTAssertEqual(store.state.draft, "")
+    }
+
+    func testTheClosedSamplePostCannotBeCommentedOn() async throws {
+        let source = sampleSource()
+        let card = try await sampleCard(source, "sample-9")
+        XCTAssertFalse(card.viewer.canComment)
+        let store = FeedPostDetailStore(initial: card, source: source)
+        XCTAssertFalse(store.state.canComment)
+        store.onDraftChanged("hi")
+        XCTAssertFalse(store.state.canSend)
+        store.send()
+        await store.waitForTasks()
+        XCTAssertFalse(store.state.sending)
+        XCTAssertNil(store.state.notice)
+        XCTAssertEqual(FeedCommentInputPresentation(state: store.state).submit, .cannotComment)
+        let other = try await sampleCard(source, "sample-3")
+        XCTAssertTrue(other.viewer.canComment)
+    }
+
+    func testTheCommentKnobsFailDelayAndReturnEngineErrorCodes() async throws {
+        let source = sampleSource()
+        let card = try await sampleCard(source, "sample-3")
+        let store = FeedPostDetailStore(initial: card, source: source)
+
+        source.simulation.failsComments = true
+        store.onDraftChanged("会失败")
+        store.send()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .failed)
+        XCTAssertEqual(store.state.draft, "会失败", "失败：文字还在")
+        XCTAssertFalse(store.state.sending)
+        store.onNoticeShown()
+
+        source.simulation.failsComments = false
+        source.simulation.commentErrorCode = "reply_not_allowed"
+        store.send()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .replyNotAllowed)
+        store.onNoticeShown()
+
+        source.simulation.commentErrorCode = "comments_closed"
+        store.send()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .closed)
+        XCTAssertFalse(store.state.canComment)
+        store.onNoticeShown()
+
+        let slow = sampleSource()
+        slow.simulation.postCommentLatencyNanos = 200_000_000
+        let other = FeedPostDetailStore(initial: card, source: slow)
+        other.onDraftChanged("慢")
+        other.send()
+        try await Task.sleep(nanoseconds: 40_000_000)
+        XCTAssertTrue(other.state.sending, "请求在路上")
+        XCTAssertEqual(FeedCommentInputPresentation(state: other.state).submit, .sending)
+        await other.waitForTasks()
+        XCTAssertFalse(other.state.sending)
+    }
+
     func testAPostWithoutCommentsEndsInEmpty() async throws {
         let store = try await store("sample-4")
         store.start()

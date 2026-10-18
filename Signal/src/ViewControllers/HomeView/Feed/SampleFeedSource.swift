@@ -26,6 +26,8 @@ final class SampleFeedSource: FeedSource {
     private let commentsLatencyNanos: UInt64
     /// 已经让它失败过一次的帖子（见 `failsFirstCommentLoad`）：重试就成功。
     private var failedCommentLoads = Set<String>()
+    /// 在样例里发出去、已经直接显示的评论（按帖子），接在样例评论后面。
+    private var postedComments = [String: [FeedCard]]()
 
     /// 给人看界面 / 截图用的开关（只在样例里有，默认全是 0 / false：行为和以前一样）。可以随时改。
     struct Simulation {
@@ -35,6 +37,14 @@ final class SampleFeedSource: FeedSource {
         var likeLatencyNanos: UInt64 = 0
         /// 点赞请求失败（界面会先点亮、再改回来、提示一句）。
         var failsLikes = false
+        /// 发评论的请求先等一会儿：能截到「发送中」那一帧。
+        var postCommentLatencyNanos: UInt64 = 0
+        /// 发评论失败（输入框保留文字，提示一句）。
+        var failsComments = false
+        /// 发评论时引擎回的错误码（`comments_closed`、`reply_not_allowed`、`profile_required`、`invalid_parent`…）；nil = 不报错。
+        var commentErrorCode: String?
+        /// 发评论成功后引擎回的状态：直接显示（`published`）或先审后显（`pending`，大陆区一律这样）。
+        var commentPublishState = FeedCreatePostResponse.statePublished
     }
 
     private var storedSimulation = Simulation()
@@ -102,6 +112,8 @@ final class SampleFeedSource: FeedSource {
     /// - `sample-7`：打开后 Card API 说这条看不到了（「已不可见」）
     /// - 评论多于一页的（如 `sample-3`、`sample-5`）：滑到底取下一页
     static let goneIds: Set<String> = ["sample-7"]
+    /// 作者关了评论的帖子（`sample-9`）：详情页不显示评论输入框。
+    static let closedCommentIds: Set<String> = ["sample-9"]
 
     static func failsFirstCommentLoad(postId: String) -> Bool {
         guard let index = sampleIndex(of: postId) else { return false }
@@ -138,6 +150,8 @@ final class SampleFeedSource: FeedSource {
                 let isLiked = liked.contains(card.id)
                 card.viewer.liked = isLiked
                 card.stats.likes += isLiked ? 1 : 0
+                card.stats.comments += postedComments[card.id]?.count ?? 0
+                card.viewer.canComment = !Self.closedCommentIds.contains(card.id)
                 return card
             }
             return FeedTimelinePage(cards: cards, nextCursor: end < all.count ? String(end) : nil)
@@ -155,6 +169,8 @@ final class SampleFeedSource: FeedSource {
             let isLiked = liked.contains(card.id)
             card.viewer.liked = isLiked
             card.stats.likes += isLiked ? 1 : 0
+            card.stats.comments += postedComments[card.id]?.count ?? 0
+            card.viewer.canComment = !Self.closedCommentIds.contains(card.id)
             return card
         }
     }
@@ -171,7 +187,7 @@ final class SampleFeedSource: FeedSource {
         if failNow {
             throw SampleFeedError.simulatedCommentFailure
         }
-        let all = sampleComments(postId: postId)
+        let all = sampleComments(postId: postId) + locked { postedComments[postId] ?? [] }
         let start = min(max(cursor.flatMap { Int($0) } ?? 0, 0), all.count)
         let end = min(start + Self.commentPageSize, all.count)
         return FeedCommentsPage(comments: Array(all[start..<end]), cursor: end < all.count ? String(end) : nil)
@@ -191,6 +207,44 @@ final class SampleFeedSource: FeedSource {
             } else {
                 liked.remove(contentId)
             }
+        }
+    }
+
+    /// 发评论：直接显示的接在这个帖子的评论后面（卡片上的评论数也 +1）；`pending` 的别人看不到，不加。
+    /// `simulation` 里的开关可以让它慢、失败、或回引擎的错误码。
+    func postComment(postId: String, text: String, parentId: String?) async throws -> String {
+        let simulation = self.simulation
+        if simulation.postCommentLatencyNanos > 0 {
+            try? await Task.sleep(nanoseconds: simulation.postCommentLatencyNanos)
+        }
+        if let code = simulation.commentErrorCode {
+            throw FeedAPIError(status: 403, code: code)
+        }
+        if simulation.failsComments {
+            throw SampleFeedError.simulatedActionFailure
+        }
+        if Self.closedCommentIds.contains(postId) {
+            throw FeedAPIError(status: 403, code: "comments_closed")
+        }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return locked {
+            guard simulation.commentPublishState != FeedCreatePostResponse.statePending else {
+                return FeedCreatePostResponse.statePending
+            }
+            var list = postedComments[postId] ?? []
+            var comment = FeedCard(
+                id: "\(postId)-m\(list.count)",
+                kind: FeedCard.kindComment,
+                publishedAt: FeedDates.format(now()),
+                author: Self.me,
+                text: trimmed,
+            )
+            comment.rootId = postId
+            comment.parentId = parentId
+            comment.viewer.isAuthor = true
+            list.append(comment)
+            postedComments[postId] = list
+            return FeedCreatePostResponse.statePublished
         }
     }
 
