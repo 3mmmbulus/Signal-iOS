@@ -11356,6 +11356,93 @@
 "TELLOMI_FEED_MENU_UNPIN" = "取消置頂";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL" = "申訴";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_ALREADY" = "這則已經申訴過了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_BODY" = "每則只能申訴一次。會有人工重新審核，審核前這則仍然不公開。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_HINT" = "說說為什麼這則應該通過";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_NOT_REJECTED" = "這則已經不能申訴了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_RECEIVED" = "已收到申訴，人工複核中。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_SEND" = "提交申訴";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_SENT" = "已提交申訴";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_TITLE" = "申訴這個決定？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_UPHELD" = "申訴已複核：維持原決定。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE" = "刪除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE_BODY" = "留言、讚和投票會一起刪除，刪除後無法復原。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE_FAILED" = "刪除失敗，請再試";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE_TITLE" = "刪除這則動態？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EMPTY" = "你還沒有發過動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_LOAD_FAILED" = "動態載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_LOAD_MORE_FAILED" = "沒能載入更多";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_PENDING_HINT" = "審核通過前只有你看得到。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_POST_GONE" = "這則動態已經看不到了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_ACCOUNT" = "帳號受限";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_GUIDELINES" = "不符合社區規範";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_REVIEW_UNAVAILABLE" = "這次沒能完成審核";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_WORDING" = "含有不適合公開發佈的字詞";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REJECTED_BECAUSE" = "未通過：%@。只有你看得到。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_PENDING" = "審核中";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_PUBLISHED" = "已發佈";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_REJECTED" = "未通過";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_WITHDRAWN" = "已撤回";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_TITLE" = "我的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "更多";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

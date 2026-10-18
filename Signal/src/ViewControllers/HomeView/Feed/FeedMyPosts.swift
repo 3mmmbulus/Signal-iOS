@@ -392,7 +392,7 @@ final class FeedMyPostsStore {
 
     /// 先从列表里拿掉；成功（或者早就没了 404）：信息流里也去掉。失败放回原位，提示一次。
     func delete(_ post: FeedMyPost) {
-        guard let index = state.posts.firstIndex(where: { $0.id == post.id }), !deleting.contains(post.id) else { return }
+        guard let index = state.posts.firstIndex(where: { $0.id == post.id }) else { return }
         deleting.insert(post.id)
         state.posts.removeAll { $0.id == post.id }
         tasks.append(Task { [weak self, source] in

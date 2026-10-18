@@ -11470,6 +11470,93 @@
 "TELLOMI_FEED_MENU_UNPIN" = "Unpin from profile";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL" = "Appeal";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_ALREADY" = "You've already appealed this post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_BODY" = "You can appeal once. A person will review the post again; until then it stays hidden.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_HINT" = "Why should this post be allowed?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_NOT_REJECTED" = "This post can't be appealed anymore";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_RECEIVED" = "Appeal received. A person is reviewing it.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_SEND" = "Send appeal";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_SENT" = "Appeal sent";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_TITLE" = "Appeal this decision?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_APPEAL_UPHELD" = "Appeal reviewed: the decision stays.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE" = "Delete";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE_BODY" = "Its comments, likes and votes are deleted too. This can't be undone.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE_FAILED" = "Couldn't delete. Try again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DELETE_TITLE" = "Delete this post?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EMPTY" = "You haven't posted anything yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_LOAD_FAILED" = "Couldn't load your posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_LOAD_MORE_FAILED" = "Couldn't load more";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_PENDING_HINT" = "Only you can see this until it's reviewed.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_POST_GONE" = "This post isn't available anymore";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_ACCOUNT" = "your account is restricted";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_GUIDELINES" = "doesn't meet the community guidelines";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_REVIEW_UNAVAILABLE" = "it couldn't be reviewed this time";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REASON_WORDING" = "contains words that can't be posted publicly";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_REJECTED_BECAUSE" = "Not approved: %@. Only you can see this.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_PENDING" = "In review";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_PUBLISHED" = "Posted";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_REJECTED" = "Not approved";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_STATE_WITHDRAWN" = "Removed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_TITLE" = "My posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "More";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
