@@ -11155,6 +11155,18 @@
 "TELLOMI_FEED_COMMENTS" = "留言";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENTS_EMPTY_BODY" = "這則動態的留言會顯示在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENTS_EMPTY_TITLE" = "還沒有留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENTS_LOAD_FAILED" = "留言載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_TO_FORMAT" = "回覆 %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "加入圖片";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11240,6 +11252,15 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "誰可以看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_GONE_BODY" = "可能已被刪除，或你已無法查看。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_GONE_TITLE" = "這則動態已無法查看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_TITLE" = "動態詳情";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_EDITED" = "已編輯";

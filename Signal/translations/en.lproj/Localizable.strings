@@ -11269,6 +11269,18 @@
 "TELLOMI_FEED_COMMENTS" = "Comments";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENTS_EMPTY_BODY" = "Comments on this post will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENTS_EMPTY_TITLE" = "No comments yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENTS_LOAD_FAILED" = "Couldn't load comments";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_TO_FORMAT" = "Reply to %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "Add photos";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11354,6 +11366,15 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "Who can see this";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_GONE_BODY" = "It may have been deleted, or you can no longer see it.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_GONE_TITLE" = "This post is no longer available";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_TITLE" = "Post";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_EDITED" = "Edited";

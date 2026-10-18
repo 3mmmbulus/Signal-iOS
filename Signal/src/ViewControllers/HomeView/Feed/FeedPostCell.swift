@@ -29,6 +29,8 @@ final class FeedPostCell: UITableViewCell {
 
     var onLike: ((FeedCard) -> Void)?
     var onNotInterested: ((FeedCard) -> Void)?
+    /// 帖子详情页最上面那条（这一刀只读）：点赞和「···」不响应，免得点了没反应。
+    var isReadOnly = false
 
     private(set) var card: FeedCard?
 
@@ -181,7 +183,7 @@ final class FeedPostCell: UITableViewCell {
         subtitleLabel.isHidden = subtitle.isEmpty
 
         // 自己的帖子「···」里是编辑 / 删除等（第三节第 26 条），随后面的 PR 做；现在只有别人的帖子有「不感兴趣」
-        moreButton.isHidden = card.viewer.isAuthor
+        moreButton.isHidden = card.viewer.isAuthor || isReadOnly
         moreButton.menu = UIMenu(children: [
             UIAction(
                 title: OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: "Feed: ··· menu item that hides a post and tells the recommender to show fewer like it."),
@@ -215,6 +217,7 @@ final class FeedPostCell: UITableViewCell {
     private func configureActions(_ card: FeedCard) {
         let liked = card.viewer.liked
         let showCount = !card.stats.likeCountHidden && card.stats.likes > 0
+        likeButton.isUserInteractionEnabled = !isReadOnly
         likeButton.configuration?.image = UIImage(named: liked ? "heart-fill-compact" : "heart")
         likeButton.configuration?.baseForegroundColor = liked ? Self.likedColor : UIColor.Signal.secondaryLabel
         likeButton.configuration?.title = showCount ? OWSFormat.formatInt(card.stats.likes) : nil
