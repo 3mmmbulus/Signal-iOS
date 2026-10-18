@@ -33,6 +33,10 @@ struct FeedProfilePageState: Equatable {
         /// 已转发到自己的动态。
         case reposted
         case hiddenFrom
+        /// 被限速：`state.retryAfterSeconds` 是还要等几秒（可能没有）。
+        case throttled
+        /// 举报作者提交成功。
+        case reported
         case failed
     }
 
@@ -55,6 +59,10 @@ struct FeedProfilePageState: Equatable {
     var insights: FeedInsightsState?
     /// 别人的主页：我对 TA 的「不看 / 不让看」；还没查到是 nil。
     var hideState: FeedHideState?
+    /// 被限速时还要等几秒（`notice == .throttled`，或整页加载被限速时 `failed` 页上说）；没有 `Retry-After` 是 nil。
+    var retryAfterSeconds: Int?
+    /// 引擎说这个区域的动态被关了（404 `feed_hidden`）：页面该收起，不是「加载失败」。
+    var feedHidden = false
 }
 
 /// 关注是乐观的：先改按钮和粉丝数，引擎说不行再改回来。私密账号对非好友先是「已请求」。
@@ -63,6 +71,11 @@ final class FeedProfilePageStore {
     private let profileId: String
     private let source: FeedSource
     private let savedMessages: FeedSavedMessages?
+    /// 和信息流共用的 store（nil = 独立运行，单测和还没接上的页面用）。有它的时候，主页上每条帖子的唯一数据在它里面：
+    /// `state.posts` 只是每次它变了之后从它重新读的投影；赞、收藏、转发、置顶都改到它里面，信息流和详情页同时看到。
+    private let feed: FeedStore?
+    private var leases = [FeedCardLease]()
+    private var subscription: FeedSubscription?
 
     private(set) var state = FeedProfilePageState() {
         didSet { onChange?(state) }
@@ -76,10 +89,101 @@ final class FeedProfilePageStore {
     private var saving = FeedInFlight()
     private var reposting = FeedInFlight()
 
-    init(profileId: String, source: FeedSource, savedMessages: FeedSavedMessages? = nil) {
+    init(profileId: String, source: FeedSource, savedMessages: FeedSavedMessages? = nil, feed: FeedStore? = nil) {
         self.profileId = profileId
         self.source = source
         self.savedMessages = savedMessages
+        self.feed = feed
+        if let feed {
+            subscription = feed.subscribe { [weak self] change in
+                self?.onFeedChange(change)
+            }
+        }
+    }
+
+    // MARK: - 和信息流 store 同步
+
+    /// 还在订阅信息流 store 吗（单测 / 页面检查用）。
+    var isObservingFeed: Bool {
+        return subscription?.isActive == true
+    }
+
+    /// 借着的帖子数（单测用）。
+    var leaseCount: Int { leases.count }
+
+    /// 页面离开了：不再订阅、放掉借着的卡片。可以重复调用。
+    func detach() {
+        subscription?.cancel()
+        subscription = nil
+        leases = []
+    }
+
+    private func onFeedChange(_ change: FeedChange) {
+        switch change {
+        case .cards(let ids):
+            if state.posts.contains(where: { ids.contains($0.id) }) { adoptPostsFromFeed() }
+        case .list:
+            adoptPostsFromFeed()
+        case .actionFailed(let cardId):
+            if state.posts.contains(where: { $0.id == cardId }) {
+                state.retryAfterSeconds = nil
+                state.notice = .failed
+            }
+        }
+    }
+
+    private func adoptPostsFromFeed() {
+        guard let feed else { return }
+        let next = state.posts.map { feed.card(id: $0.id) ?? $0 }
+        if next != state.posts { state.posts = next }
+    }
+
+    /// 一页新取回来的帖子：先让信息流里同一张卡片换成最新的，再借着，主页上显示信息流里现在的样子。
+    private func adopt(_ cards: [FeedCard]) -> [FeedCard] {
+        guard let feed else { return cards }
+        var adopted = [FeedCard]()
+        for card in cards {
+            feed.ingest(card)
+            leases.append(feed.retain(card))
+            adopted.append(feed.card(id: card.id) ?? card)
+        }
+        return adopted
+    }
+
+    /// 改一条帖子：有信息流 store 就改在 store 里（`state.posts` 随通知更新），没有就改自己的。
+    private func updatePost(_ id: String, _ change: (FeedCard) -> FeedCard) {
+        if let feed, feed.card(id: id) != nil {
+            feed.updateCard(id) { $0 = change($0) }
+        } else {
+            state.posts = state.posts.map { $0.id == id ? change($0) : $0 }
+        }
+    }
+
+    /// 同 `told`，但 404 也算「操作失败」（列表上的动作、关注之外的设置）。
+    private func toldFailed(_ error: Error) {
+        if told(error) == .gone { state.notice = .failed }
+    }
+
+    /// 动作失败：按引擎的错误给提示（限速带秒数、`feed_hidden` 收页、要先建主页），调用方自己改回界面。
+    /// `.gone`（404）什么都不提示，由调用方决定（整页「看不到」还是只算失败）。
+    @discardableResult
+    private func told(_ error: Error) -> FeedActionFailure {
+        let failure = FeedActionFailure.classify(error)
+        switch failure {
+        case .feedHidden:
+            state.feedHidden = true
+        case .throttled(let seconds):
+            state.retryAfterSeconds = seconds
+            state.notice = .throttled
+        case .profileRequired:
+            state.notice = .profileRequired
+        case .gone:
+            break
+        case .failed:
+            state.retryAfterSeconds = nil
+            state.notice = .failed
+        }
+        return failure
     }
 
     func waitForTasks() async {
@@ -87,6 +191,7 @@ final class FeedProfilePageStore {
             await task.value
             tasks.removeFirst()
         }
+        await feed?.waitForActions()
     }
 
     func start() {
@@ -108,15 +213,25 @@ final class FeedProfilePageStore {
         postsRunning = false
         state.loading = true
         state.failed = false
+        state.retryAfterSeconds = nil
         let task = Task { [weak self, source, profileId] in
             let profile: FeedProfilePage?
             do {
                 profile = try await source.profile(profileId: profileId)
             } catch {
                 Logger.warn("feed profile failed: \(error)")
-                guard !Task.isCancelled else { return }
-                self?.state.loading = false
-                self?.state.failed = true
+                guard !Task.isCancelled, let self else { return }
+                self.state.loading = false
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.retryAfterSeconds = seconds
+                    self.state.failed = true
+                default:
+                    self.state.retryAfterSeconds = nil
+                    self.state.failed = true
+                }
                 return
             }
             guard !Task.isCancelled, let self else { return }
@@ -159,7 +274,7 @@ final class FeedProfilePageStore {
             } catch {
                 Logger.warn("feed hide list failed: \(error)")
                 self?.state.hideState = before
-                self?.state.notice = (error as? FeedAPIError)?.code == "profile_required" ? .profileRequired : .failed
+                self?.toldFailed(error)
             }
         })
     }
@@ -182,7 +297,8 @@ final class FeedProfilePageStore {
                 guard !Task.isCancelled, let self else { return }
                 let known = cursor == nil ? Set<String>() : Set(self.state.posts.map(\.id))
                 let base = cursor == nil ? [] : self.state.posts
-                self.state.posts = base + page.posts.filter { !known.contains($0.id) }
+                if cursor == nil { self.leases = [] }
+                self.state.posts = base + self.adopt(page.posts.filter { !known.contains($0.id) })
                 self.state.cursor = page.cursor
                 self.state.postsLoading = false
                 self.state.postsLoadedOnce = true
@@ -190,19 +306,23 @@ final class FeedProfilePageStore {
             } catch {
                 guard !Task.isCancelled, let self else { return }
                 self.postsRunning = false
-                if let error = error as? FeedAPIError {
-                    Logger.warn("feed profile posts rejected: \(error.status) \(error.code ?? "")")
+                Logger.warn("feed profile posts failed: \(error)")
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .gone:
                     // 打开以后被对方屏蔽、删号了：整页换成「看不到」
-                    if error.status == 404 && error.code == FeedAPI.notFound {
-                        self.state.gone = true
-                        self.state.profile = nil
-                        self.state.posts = []
-                        self.state.cursor = nil
-                        self.state.postsLoading = false
-                        return
-                    }
-                } else {
-                    Logger.warn("feed profile posts failed: \(error)")
+                    self.state.gone = true
+                    self.state.profile = nil
+                    self.state.posts = []
+                    self.state.cursor = nil
+                    self.leases = []
+                    self.state.postsLoading = false
+                    return
+                case .throttled(let seconds):
+                    self.state.retryAfterSeconds = seconds
+                default:
+                    break
                 }
                 self.state.postsLoading = false
                 self.state.postsFailed = true
@@ -234,21 +354,15 @@ final class FeedProfilePageStore {
             } catch {
                 Logger.warn("feed follow failed: \(error)")
                 guard let self else { return }
-                let apiError = error as? FeedAPIError
-                if apiError?.code == "profile_required" {
-                    self.state.profile = before
-                    self.state.followBusy = false
-                    self.state.notice = .profileRequired
-                } else if apiError?.status == 404 {
+                self.state.followBusy = false
+                if self.told(error) == .gone {
                     self.state.gone = true
                     self.state.profile = nil
                     self.state.posts = []
                     self.state.cursor = nil
-                    self.state.followBusy = false
+                    self.leases = []
                 } else {
                     self.state.profile = before
-                    self.state.followBusy = false
-                    self.state.notice = .failed
                 }
             }
         })
@@ -274,7 +388,7 @@ final class FeedProfilePageStore {
                 guard let self else { return }
                 self.state.profile = before
                 self.state.followBusy = false
-                self.state.notice = .failed
+                self.toldFailed(error)
                 if !after.showsPosts && before.showsPosts { self.loadPosts(cursor: nil) }
             }
         })
@@ -299,8 +413,11 @@ final class FeedProfilePageStore {
                     self.state.profile = after
                     self.state.posts = []
                     self.state.cursor = nil
+                    self.leases = []
                     self.state.followBusy = false
                     self.state.notice = .blocked
+                    // 屏蔽了：这个人的帖子也从信息流里拿掉
+                    self.feed?.removeCards(byAuthor: self.profileId)
                 } else {
                     self.state.followBusy = false
                     self.state.notice = .unblocked
@@ -309,7 +426,7 @@ final class FeedProfilePageStore {
             } catch {
                 Logger.warn("feed block failed: \(error)")
                 self?.state.followBusy = false
-                self?.state.notice = .failed
+                self?.toldFailed(error)
             }
         })
     }
@@ -317,6 +434,11 @@ final class FeedProfilePageStore {
     // MARK: - 列表上的卡片操作
 
     func toggleLike(_ card: FeedCard) {
+        if let feed {
+            // 赞的乐观更新、失败回滚、连点都在 FeedStore 里；失败时它发 `.actionFailed`，这里变成 `.failed` 提示
+            feed.toggleLike(id: card.id)
+            return
+        }
         let nowLiked = !card.viewer.liked
         updatePost(card.id) { FeedStore.withLiked($0, nowLiked) }
         tasks.append(Task { [weak self, source] in
@@ -366,7 +488,7 @@ final class FeedProfilePageStore {
                 Logger.warn("feed profile repost failed: \(error)")
                 self?.reposting.end(card.id)
                 self?.updatePost(card.id) { $0.withReposted(!nowReposted) }
-                self?.state.notice = .failed
+                self?.toldFailed(error)
             }
         })
     }
@@ -390,7 +512,11 @@ final class FeedProfilePageStore {
                     reverted.stats.likeCountHidden = card.stats.likeCountHidden
                     return reverted
                 }
-                self?.state.notice = FeedOwnPostAction.isPinLimit(error) ? .pinLimit : .failed
+                if FeedOwnPostAction.isPinLimit(error) {
+                    self?.state.notice = .pinLimit
+                } else {
+                    self?.toldFailed(error)
+                }
             }
         })
     }
@@ -416,9 +542,29 @@ final class FeedProfilePageStore {
 
     func onNoticeShown() {
         state.notice = nil
+        state.retryAfterSeconds = nil
     }
 
-    private func updatePost(_ id: String, _ change: (FeedCard) -> FeedCard) {
-        state.posts = state.posts.map { $0.id == id ? change($0) : $0 }
+    // MARK: - 回到页面、举报作者
+
+    /// 从帖子详情回到主页：悄悄重新取第一页（那边可能删了帖子、改了置顶）。旧列表先留着，回来了再换。
+    func onReappeared() {
+        guard !postsRunning, state.postsLoadedOnce, state.profile?.showsPosts == true else { return }
+        loadPosts(cursor: nil)
+    }
+
+    /// 举报这个作者：给举报页用的 store，提交成功后界面调 `onReported()`。
+    func reportStore() -> FeedReportStore {
+        return FeedReportStore(target: .author(profileId), source: source)
+    }
+
+    func onReported() {
+        state.retryAfterSeconds = nil
+        state.notice = .reported
+    }
+
+    /// 举报页碰到 `feed_hidden`：主页也收起。
+    func onFeedHidden() {
+        state.feedHidden = true
     }
 }

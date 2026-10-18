@@ -55,9 +55,24 @@ final class SampleFeedSource: FeedSource {
         var failsNotInterested = false
         /// 这三个动作被限速（429）：非 nil 时回 429 并带这么多秒的 `Retry-After`（界面说「请 N 秒后再试」）。
         var throttledRetryAfterSeconds: Int?
-        /// 这三个动作回 404 `feed_hidden`（这个区域的动态被关了，页面该收起）。
+        /// 这三个动作回 404 `feed_hidden`（这个区域的动态被关了，页面该收起）。主页的各个请求也认它。
         var feedHidden = false
+        /// 作者主页：取主页 / 取帖子 / 关注 / 屏蔽 / 不看·不让看 的请求先等一会儿：能截到「加载中」「在路上」那一帧。
+        var profileLatencyNanos: UInt64 = 0
+        var profilePostsLatencyNanos: UInt64 = 0
+        var followLatencyNanos: UInt64 = 0
+        /// 取主页 / 取帖子 / 关注 / 屏蔽 / 不看·不让看 失败（整页「加载失败」、列表「重试」、按钮改回来并提示「操作失败」）。
+        var failsProfile = false
+        var failsProfilePosts = false
+        var failsFollow = false
+        var failsBlock = false
+        var failsHideLists = false
+        /// 取主页被限速：非 nil 时回 429 并带这么多秒的 `Retry-After`（加载失败页说「请 N 秒后再试」）。
+        var profileThrottledRetryAfterSeconds: Int?
     }
+
+    /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
+    let profiles = SampleProfileState()
 
     private var storedSimulation = Simulation()
 

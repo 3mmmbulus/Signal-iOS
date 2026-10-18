@@ -636,6 +636,21 @@ final class FeedStore {
         if changed { notify(.list(nil)) }
     }
 
+    /// 屏蔽了一个作者（引擎说成了）：两栏里这个人的帖子都去掉。被页面借着的那份不动。
+    func removeCards(byAuthor profileId: String) {
+        var changed = false
+        for tab in tabs {
+            var state = self.tab(tab)
+            let before = state.cards.count
+            state.cards.removeAll { $0.author?.profileId == profileId }
+            if state.cards.count != before {
+                tabStates[tab] = state
+                changed = true
+            }
+        }
+        if changed { notify(.list(nil)) }
+    }
+
     /// 详情页已经把「不感兴趣」报给引擎并且成功了：列表里这条换成可撤销的反馈卡，和在列表里点「不感兴趣」同样的显示。
     /// 不再发请求（撤销时 `undoNotInterested` 才发）。已经是反馈卡就不动。
     func markNotInterested(id: String) {
