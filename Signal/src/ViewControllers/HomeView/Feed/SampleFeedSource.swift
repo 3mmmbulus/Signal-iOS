@@ -31,6 +31,8 @@ final class SampleFeedSource: FeedSource {
 
     /// 给人看界面 / 截图用的开关（只在样例里有，默认全是 0 / false：行为和以前一样）。可以随时改。
     struct Simulation {
+        /// 这些帖子当成「我发的」（`viewer.isAuthor`）：列表和 Card API 都这样回，详情页换成最新卡片之后「···」里仍是自己帖子的菜单（截图用）。
+        var ownPostIds = Set<String>()
         /// 取最新卡片（Card API）前先等一会儿：帖子详情页打开后这么久才知道「已不可见」，能截到中间那一帧。
         var cardLatencyNanos: UInt64 = 0
         /// 点赞 / 取消赞的请求先等一会儿：能截到「已经点亮、请求还在路上」那一帧。
@@ -179,6 +181,7 @@ final class SampleFeedSource: FeedSource {
                 card.stats.likes += isLiked ? 1 : 0
                 card.stats.comments += postedComments[card.id]?.count ?? 0
                 card.viewer.canComment = !Self.closedCommentIds.contains(card.id)
+                if storedSimulation.ownPostIds.contains(card.id) { card.viewer.isAuthor = true }
                 return card
             }
             return FeedTimelinePage(cards: cards, nextCursor: end < all.count ? String(end) : nil)
@@ -198,6 +201,7 @@ final class SampleFeedSource: FeedSource {
             card.stats.likes += isLiked ? 1 : 0
             card.stats.comments += postedComments[card.id]?.count ?? 0
             card.viewer.canComment = !Self.closedCommentIds.contains(card.id)
+            if storedSimulation.ownPostIds.contains(card.id) { card.viewer.isAuthor = true }
             return card
         }
     }

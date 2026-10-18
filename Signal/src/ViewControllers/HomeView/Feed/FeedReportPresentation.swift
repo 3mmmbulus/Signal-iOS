@@ -28,6 +28,9 @@ struct FeedReportPresentation: Equatable {
     var canAddEvidence: Bool
     /// 说明还能再写多少个码点（引擎按码点数限制 500）；组字中可以是负的。
     var detailRemaining: Int
+    /// 说明框的高度：最矮 / 最高（再长框里滚动，计数和 12377 提示不会被挤出屏幕）。
+    static let detailMinHeight: CGFloat = 120
+    static let detailMaxHeight: CGFloat = 160
     /// 大陆区附 12377 举报入口。
     var showsMainlandHotline: Bool
     var canSubmit: Bool
@@ -55,4 +58,12 @@ struct FeedReportPresentation: Equatable {
         isSent = state.sent
         error = state.error
     }
+
+    /// 说明框该多高、要不要在里面滚：内容高度夹在最矮和最高之间，超过最高才滚。
+    static func detailBoxHeight(fitting: CGFloat) -> (height: CGFloat, scrolls: Bool) {
+        return (min(max(fitting, detailMinHeight), detailMaxHeight), fitting > detailMaxHeight)
+    }
+
+    /// 计数变红：剩 0 个以下（和评论输入框一致：写满了就红；组字中可以是负的）。
+    var counterIsRed: Bool { detailRemaining <= 0 }
 }

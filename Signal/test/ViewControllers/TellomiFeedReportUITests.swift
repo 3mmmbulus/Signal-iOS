@@ -177,6 +177,28 @@ final class TellomiFeedReportUITests: XCTestCase {
         report.view.layoutIfNeeded()
         XCTAssertEqual(report.detailTextView.text.count, 500, "超出的截掉")
         XCTAssertEqual(report.detailCounterLabel.text, OWSFormat.formatInt(0))
+        XCTAssertEqual(report.detailCounterLabel.textColor, UIColor.Signal.red, "写满 500：计数变红")
+        harness.window.isHidden = true
+    }
+
+    /// 说明框长到 160pt 就不再长（在框里滚），计数和 12377 提示还在屏幕上。
+    @MainActor
+    func testTheDetailBoxStopsGrowingAt160AndTheCounterStaysOnScreen() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let detail = try await harness.openDetail(of: "sample-1")
+        let report = try await openReport(on: detail)
+        report.pick(try reason("harassment", in: report))
+        report.view.layoutIfNeeded()
+        XCTAssertEqual(report.detailTextView.frame.height, FeedReportPresentation.detailMinHeight, accuracy: 1, "空的：最矮")
+        XCTAssertFalse(report.detailTextView.isScrollEnabled)
+
+        report.store.onDetailChanged(String(repeating: "很长的一句话。\n", count: 70))
+        report.view.layoutIfNeeded()
+        XCTAssertEqual(report.detailTextView.frame.height, FeedReportPresentation.detailMaxHeight, accuracy: 1, "再长也只有 160")
+        XCTAssertTrue(report.detailTextView.isScrollEnabled, "超过的在框里滚")
+        let counterFrame = report.detailCounterLabel.convert(report.detailCounterLabel.bounds, to: report.view)
+        XCTAssertLessThan(counterFrame.maxY, report.view.bounds.height, "计数没被推出屏幕")
         harness.window.isHidden = true
     }
 

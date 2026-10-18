@@ -36,6 +36,8 @@ final class FeedReportViewController: OWSViewController {
     private let reasonTitleLabel = UILabel()
     private let emergencyLabel = UILabel()
     let detailTextView = UITextView()
+    private var detailHeightConstraint: NSLayoutConstraint?
+    private var lastDetailWidth: CGFloat = 0
     private let detailPlaceholder = UILabel()
     let detailCounterLabel = UILabel()
     let relationshipField = UITextField()
@@ -82,7 +84,7 @@ final class FeedReportViewController: OWSViewController {
         reasonTitleLabel.textColor = UIColor.Signal.label
         reasonTitleLabel.numberOfLines = 0
 
-        emergencyLabel.font = .dynamicTypeSubheadlineClamped
+        emergencyLabel.font = .dynamicTypeSubheadline
         emergencyLabel.textColor = UIColor.Signal.red
         emergencyLabel.numberOfLines = 0
         emergencyLabel.text = OWSLocalizedString("TELLOMI_FEED_REPORT_EMERGENCY", comment: "Feed report page: shown first for reasons about someone's safety; tells the user to call the emergency number if someone is in danger.")
@@ -94,7 +96,7 @@ final class FeedReportViewController: OWSViewController {
         detailTextView.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         detailTextView.isScrollEnabled = false
         detailTextView.delegate = self
-        detailTextView.autoSetDimension(.height, toSize: 120, relation: .greaterThanOrEqual)
+        detailHeightConstraint = detailTextView.autoSetDimension(.height, toSize: FeedReportPresentation.detailMinHeight)
 
         detailPlaceholder.font = .dynamicTypeBody
         detailPlaceholder.textColor = UIColor.Signal.tertiaryLabel
@@ -212,8 +214,29 @@ final class FeedReportViewController: OWSViewController {
         }
         detailPlaceholder.isHidden = !store.state.detail.isEmpty
         detailCounterLabel.text = OWSFormat.formatInt(presentation.detailRemaining)
-        detailCounterLabel.textColor = presentation.detailRemaining < 0 ? UIColor.Signal.red : UIColor.Signal.secondaryLabel
+        detailCounterLabel.textColor = presentation.counterIsRed ? UIColor.Signal.red : UIColor.Signal.secondaryLabel
+        updateDetailHeight()
         renderEvidence()
+    }
+
+    /// 说明框随文字长高，到 `detailMaxHeight` 为止，再多在框里滚动（不然 500 字时计数和 12377 提示被推到屏幕外）。
+    func updateDetailHeight() {
+        let width = detailTextView.bounds.width > 0 ? detailTextView.bounds.width : max(view.bounds.width - 32, 100)
+        let fitting = detailTextView.sizeThatFits(CGSize(width: width, height: CGFloat.greatestFiniteMagnitude)).height
+        let box = FeedReportPresentation.detailBoxHeight(fitting: fitting)
+        detailTextView.isScrollEnabled = box.scrolls
+        if detailHeightConstraint?.constant != box.height {
+            detailHeightConstraint?.constant = box.height
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // 宽度变了（转屏、分屏）说明框一行能放的字数变了，重新算高度
+        if detailTextView.bounds.width != lastDetailWidth {
+            lastDetailWidth = detailTextView.bounds.width
+            updateDetailHeight()
+        }
     }
 
     private func renderEvidence() {

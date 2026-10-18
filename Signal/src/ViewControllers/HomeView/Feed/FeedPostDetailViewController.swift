@@ -288,8 +288,21 @@ final class FeedPostDetailViewController: OWSViewController {
             return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_COMMENT", comment: "Feed: ··· menu item that deletes the user's own comment.")
         case .deletePost:
             return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_POST", comment: "Feed: ··· menu item that deletes the user's own post.")
-        case .own:
-            return ""
+        case .own(let action):
+            switch action {
+            case .pin:
+                return OWSLocalizedString("TELLOMI_FEED_MENU_PIN", comment: "Feed: ··· menu item that pins the user's own post to the top of their profile.")
+            case .unpin:
+                return OWSLocalizedString("TELLOMI_FEED_MENU_UNPIN", comment: "Feed: ··· menu item that unpins the user's own post.")
+            case .hideLikes:
+                return OWSLocalizedString("TELLOMI_FEED_MENU_HIDE_LIKES", comment: "Feed: ··· menu item that hides the like count on the user's own post.")
+            case .showLikes:
+                return OWSLocalizedString("TELLOMI_FEED_MENU_SHOW_LIKES", comment: "Feed: ··· menu item that shows the like count on the user's own post again.")
+            case .replySettings:
+                return OWSLocalizedString("TELLOMI_FEED_MENU_REPLY_SETTINGS", comment: "Feed: ··· menu item that opens who-can-reply options for the user's own post.")
+            case .insights:
+                return OWSLocalizedString("TELLOMI_FEED_MENU_INSIGHTS", comment: "Feed: ··· menu item that shows view and like statistics of the user's own post.")
+            }
         }
     }
 
