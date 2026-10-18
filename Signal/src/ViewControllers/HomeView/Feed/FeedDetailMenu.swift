@@ -68,6 +68,18 @@ enum FeedDetailMenu {
         return [.notInterested, .report]
     }
 
+    /// 界面上已经做了的项：自己帖子的置顶 / 回复选项 / 点赞数 / 数据（`.own`）还没有页面，先不显示；
+    /// 举报要等举报页接上（`reportAvailable`）才显示，免得点了没反应。
+    static func shown(_ items: [FeedDetailMenuItem], reportAvailable: Bool) -> [FeedDetailMenuItem] {
+        return items.filter { item in
+            switch item {
+            case .own: return false
+            case .report: return reportAvailable
+            case .notInterested, .deleteComment, .deletePost: return true
+            }
+        }
+    }
+
     /// 一条评论的「···」（长按 / 菜单键）。自己的评论只能删；别人的只能举报。
     /// 还在等帖子作者批准的评论（`held`）别人看不到、也还不是「公开内容」：作者那边走批准 / 拒绝，不在这里给举报。
     static func items(forComment comment: FeedCard) -> [FeedDetailMenuItem] {

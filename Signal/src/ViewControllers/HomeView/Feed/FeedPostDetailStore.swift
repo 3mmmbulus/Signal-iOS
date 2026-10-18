@@ -642,6 +642,7 @@ final class FeedPostDetailStore {
         run { [weak self, source] in
             do {
                 try await source.deletePost(contentId: post.id)
+                self?.feed?.removeCard(id: post.id)   // 信息流里也去掉
                 self?.state.deleted = true
             } catch {
                 Logger.warn("feed detail delete failed: \(error)")

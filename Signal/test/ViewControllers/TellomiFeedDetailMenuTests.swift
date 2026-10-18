@@ -107,6 +107,15 @@ final class TellomiFeedDetailMenuTests: XCTestCase {
         XCTAssertTrue(all.allSatisfy { $0.titleKey.hasPrefix("TELLOMI_FEED_") })
     }
 
+    func testShownItemsHideWhatTheScreenCannotDoYet() {
+        XCTAssertEqual(FeedDetailMenu.shown(FeedDetailMenu.items(forPost: post()), reportAvailable: false), [.notInterested])
+        XCTAssertEqual(FeedDetailMenu.shown(FeedDetailMenu.items(forPost: post()), reportAvailable: true), [.notInterested, .report])
+        XCTAssertEqual(FeedDetailMenu.shown(FeedDetailMenu.items(forPost: post(mine: true)), reportAvailable: true), [.deletePost], "自己帖子的置顶 / 回复选项 / 点赞数 / 数据还没有页面")
+        XCTAssertEqual(FeedDetailMenu.shown(FeedDetailMenu.items(forComment: remark("c", mine: true)), reportAvailable: false), [.deleteComment])
+        XCTAssertEqual(FeedDetailMenu.shown(FeedDetailMenu.items(forComment: remark("c")), reportAvailable: false), [], "别人的评论只有举报：举报页没接上时没有菜单")
+        XCTAssertEqual(FeedDetailMenu.shown(FeedDetailMenu.items(forComment: remark("c")), reportAvailable: true), [.report])
+    }
+
     @MainActor
     func testTheStateExposesThePostMenuFollowingWhoWroteIt() {
         var state = FeedPostDetailState(post: post())
@@ -405,6 +414,59 @@ final class TellomiFeedDetailMenuStoreTests: XCTestCase {
         detail.notInterested()
         await detail.waitForTasks()
         XCTAssertEqual(detail.state.leaving, .notInterested)
+    }
+
+    // MARK: 删自己的帖子
+
+    func testDeletingMyPostRemovesItFromTheListAndClosesThePage() async {
+        let source = MenuSource()
+        source.timeline = [post(mine: true), post("q")]
+        let feed = FeedStore(source: source)
+        feed.onTabShown(.recommend)
+        await feed.waitForLoad(.recommend)
+        let detail = FeedPostDetailStore(initial: feed.card(id: "p") ?? post(mine: true), source: source, feed: feed)
+        var changes = [FeedChange]()
+        let subscription = feed.subscribe { changes.append($0) }
+        detail.deletePost()
+        XCTAssertEqual(feed.tab(.recommend).cards.count, 2, "引擎说删了之前还在")
+        await detail.waitForTasks()
+        XCTAssertEqual(source.deleteCalls, ["p"])
+        XCTAssertEqual(feed.tab(.recommend).cards.map(\.id), ["q"])
+        XCTAssertTrue(detail.state.deleted)
+        XCTAssertTrue(changes.contains(.list(nil)))
+        subscription.cancel()
+    }
+
+    func testAFailedPostDeleteKeepsTheListAndThePage() async {
+        let source = MenuSource()
+        source.timeline = [post(mine: true)]
+        let feed = FeedStore(source: source)
+        feed.onTabShown(.recommend)
+        await feed.waitForLoad(.recommend)
+        let detail = FeedPostDetailStore(initial: post(mine: true), source: source, feed: feed)
+        source.failure = MenuBoom()
+        detail.deletePost()
+        await detail.waitForTasks()
+        XCTAssertEqual(feed.tab(.recommend).cards.count, 1)
+        XCTAssertFalse(detail.state.deleted)
+        XCTAssertEqual(detail.state.notice, .failed)
+    }
+
+    func testRemoveCardIsQuietWhenTheCardIsNotInTheList() async {
+        let source = MenuSource()
+        source.timeline = [post("q")]
+        let feed = FeedStore(source: source)
+        feed.onTabShown(.recommend)
+        await feed.waitForLoad(.recommend)
+        var changes = 0
+        let subscription = feed.subscribe { _ in changes += 1 }
+        feed.removeCard(id: "nope")
+        XCTAssertEqual(changes, 0)
+        feed.markNotInterested(id: "q")
+        feed.removeCard(id: "q")
+        XCTAssertFalse(feed.hiddenIds.contains("q"))
+        XCTAssertTrue(feed.tab(.recommend).cards.isEmpty)
+        subscription.cancel()
     }
 
     // MARK: 举报
