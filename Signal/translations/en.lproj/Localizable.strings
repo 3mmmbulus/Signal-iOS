@@ -11278,7 +11278,40 @@
 "TELLOMI_FEED_COMMENTS_LOAD_FAILED" = "Couldn't load comments";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_CANCEL_REPLY" = "Cancel reply";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_CLOSED" = "Comments are turned off for this post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PARENT_GONE" = "The comment you replied to is no longer there";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PLACEHOLDER" = "Add a comment…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PROFILE_REQUIRED" = "Set up your public profile to comment";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLYING" = "Replying to a comment";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLYING_TO_FORMAT" = "Replying to %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_NOT_ALLOWED" = "You can't reply to this comment";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_PLACEHOLDER" = "Reply…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_PLACEHOLDER_FORMAT" = "Reply to %@…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENT_REPLY_TO_FORMAT" = "Reply to %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_SEND" = "Send";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "Add photos";

@@ -11164,7 +11164,40 @@
 "TELLOMI_FEED_COMMENTS_LOAD_FAILED" = "留言載入失敗";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_CANCEL_REPLY" = "取消回覆";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_CLOSED" = "這則動態已關閉留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PARENT_GONE" = "你回覆的留言已不存在";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PLACEHOLDER" = "新增留言…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PROFILE_REQUIRED" = "需要先建立公開主頁才能留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLYING" = "正在回覆一則留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLYING_TO_FORMAT" = "正在回覆 %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_NOT_ALLOWED" = "無法回覆這則留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_PLACEHOLDER" = "回覆…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_PLACEHOLDER_FORMAT" = "回覆 %@…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENT_REPLY_TO_FORMAT" = "回覆 %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_SEND" = "發送";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "加入圖片";

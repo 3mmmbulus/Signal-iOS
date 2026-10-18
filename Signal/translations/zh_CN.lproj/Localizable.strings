@@ -11047,7 +11047,40 @@
 "TELLOMI_FEED_COMMENTS_LOAD_FAILED" = "评论加载失败";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_CANCEL_REPLY" = "取消回复";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_CLOSED" = "这条动态已关闭评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PARENT_GONE" = "你回复的评论已不存在";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PLACEHOLDER" = "添加评论…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_PROFILE_REQUIRED" = "需要先建立公开主页才能评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLYING" = "正在回复一条评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLYING_TO_FORMAT" = "正在回复 %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_NOT_ALLOWED" = "无法回复这条评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_PLACEHOLDER" = "回复…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_REPLY_PLACEHOLDER_FORMAT" = "回复 %@…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENT_REPLY_TO_FORMAT" = "回复 %@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMMENT_SEND" = "发送";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_ADD_IMAGES" = "添加图片";

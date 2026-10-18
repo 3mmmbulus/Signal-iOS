@@ -11,7 +11,8 @@ import UIKit
 /// 在信息流里点一条帖子打开（`FeedViewController.openPost`）。数据在 `FeedPostDetailStore`，画什么由 `FeedPostDetailPresentation` 决定。
 ///
 /// 帖子上的点赞可以点（乐观更新、失败改回，数据在列表共用的 `FeedStore` 里），「···」不显示（`FeedPostCell.isReadOnly`）；评论区有「加载中 / 加载失败（重试）/ 还没有评论」，
-/// 帖子已经看不到了显示「已不可见」。点赞、评论、转发、收藏等随后面的步骤接。
+/// 帖子已经看不到了显示「已不可见」。底部是评论输入框（`FeedCommentInputView`，评论关了就收起），点一条评论回复它。
+/// 转发、收藏、语音评论等随后面的步骤接。
 final class FeedPostDetailViewController: OWSViewController {
 
     /// 离评论列表底部还剩几行时取下一页。
@@ -27,6 +28,8 @@ final class FeedPostDetailViewController: OWSViewController {
     private let fallbackShowIpRegion: Bool
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let footerSpinner = UIActivityIndicatorView(style: .medium)
+    /// 底部的评论输入框（评论关了就收起）。
+    let commentInput = FeedCommentInputView()
     private lazy var goneView = FeedEmptyStateView(
         title: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_TITLE", comment: "Feed: title of the post page when the post was deleted or can no longer be seen."),
         body: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_BODY", comment: "Feed: explanation under the title when the post can no longer be seen."),
@@ -67,8 +70,26 @@ final class FeedPostDetailViewController: OWSViewController {
         tableView.register(FeedPostCell.self, forCellReuseIdentifier: FeedPostCell.reuseIdentifier)
         tableView.register(FeedCommentCell.self, forCellReuseIdentifier: FeedCommentCell.reuseIdentifier)
         tableView.register(FeedDetailStatusCell.self, forCellReuseIdentifier: FeedDetailStatusCell.reuseIdentifier)
-        view.addSubview(tableView)
-        tableView.autoPinEdgesToSuperviewEdges()
+        tableView.keyboardDismissMode = .interactive
+        tableView.setContentHuggingPriority(.defaultLow, for: .vertical)
+
+        // 表格在上、评论输入框在下，整体贴着键盘（评论输入框收起时不占位）
+        let contentStack = UIStackView(arrangedSubviews: [tableView, commentInput])
+        contentStack.axis = .vertical
+        view.addSubview(contentStack)
+        contentStack.autoPinEdge(toSuperviewEdge: .top)
+        contentStack.autoPinEdge(toSuperviewEdge: .leading)
+        contentStack.autoPinEdge(toSuperviewEdge: .trailing)
+        contentStack.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor).isActive = true
+
+        commentInput.onEdit = { [weak self] range, text, composing in
+            self?.store.onDraftEdit(range: range, replacement: text, composing: composing)
+        }
+        commentInput.onChanged = { [weak self] text, composing in
+            self?.store.onDraftChanged(text, composing: composing)
+        }
+        commentInput.onSend = { [weak self] in self?.store.send() }
+        commentInput.onCancelReply = { [weak self] in self?.store.replyTo(nil) }
 
         goneView.isHidden = true
         view.addSubview(goneView)
@@ -113,12 +134,14 @@ final class FeedPostDetailViewController: OWSViewController {
         switch FeedPostDetailPresentation.page(for: state) {
         case .postGone:
             tableView.isHidden = true
+            commentInput.isHidden = true
             goneView.isHidden = false
             return
         case .post:
             tableView.isHidden = false
             goneView.isHidden = true
         }
+        commentInput.apply(FeedCommentInputPresentation(state: state), draft: state.draft)
 
         post = state.post
         showIpRegion = state.showIpRegion || fallbackShowIpRegion
@@ -174,7 +197,20 @@ final class FeedPostDetailViewController: OWSViewController {
     static func toastText(for notice: FeedPostDetailState.Notice) -> String? {
         switch notice {
         case .failed:
+            // 点赞失败（已改回）、发评论失败（文字还留在输入框里）都用列表那句「操作失败」
             return OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: "Feed: toast when liking or another action on a post failed.")
+        case .published:
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISHED", comment: "Feed: toast after the post was published.")
+        case .pending:
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_PENDING", comment: "Feed: toast after publishing when the post waits for review before others can see it.")
+        case .closed:
+            return OWSLocalizedString("TELLOMI_FEED_COMMENT_CLOSED", comment: "Feed: toast when sending a comment failed because the author turned comments off for this post.")
+        case .replyNotAllowed:
+            return OWSLocalizedString("TELLOMI_FEED_COMMENT_REPLY_NOT_ALLOWED", comment: "Feed: toast when replying to a comment is not allowed.")
+        case .profileRequired:
+            return OWSLocalizedString("TELLOMI_FEED_COMMENT_PROFILE_REQUIRED", comment: "Feed: toast when commenting needs the user to set up their public profile first.")
+        case .parentGone:
+            return OWSLocalizedString("TELLOMI_FEED_COMMENT_PARENT_GONE", comment: "Feed: toast when the comment being replied to no longer exists.")
         default:
             return nil
         }
@@ -206,6 +242,14 @@ extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelega
             }
             return cell
         }
+    }
+
+    /// 点一条评论：回复它（输入框上面出现「正在回复 xxx」，光标进输入框）。评论关了不响应。
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard store.state.canComment, case .comment(let row) = rows[indexPath.row] else { return }
+        store.replyTo(row.comment)
+        commentInput.focus()
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

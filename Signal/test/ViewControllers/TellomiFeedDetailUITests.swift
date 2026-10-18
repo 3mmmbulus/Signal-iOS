@@ -33,6 +33,15 @@ final class TellomiFeedDetailUITests: XCTestCase {
             return detail
         }
 
+        /// 直接推一个详情页（卡片不一定在列表第一页，比如 `sample-9`）；接线和 `openPost` 一样用列表的 store。
+        func openDetail(of card: FeedCard, source: FeedSource) -> FeedPostDetailViewController {
+            let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: false, feed: store)
+            navigation.pushViewController(detail, animated: false)
+            detail.loadViewIfNeeded()
+            window.layoutIfNeeded()
+            return detail
+        }
+
         func pop() {
             navigation.popViewController(animated: false)
             window.layoutIfNeeded()
@@ -208,6 +217,185 @@ final class TellomiFeedDetailUITests: XCTestCase {
         XCTAssertEqual(harness.feed.pages[0].rows[3].card.stats.likes, likes)
         XCTAssertEqual(detail.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
         XCTAssertNil(detail.detailStore.state.notice, "提示弹过就清掉")
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    // MARK: - (c) 评论输入框
+
+    /// 和用户在键盘上敲一样走 `shouldChangeTextIn` → 写入 → `textViewDidChange`。回 false 表示被拦下 / 截了（文字已被设成该显示的）。
+    @discardableResult
+    @MainActor
+    private func type(_ text: String, into input: FeedCommentInputView) -> Bool {
+        let textView = input.textView
+        let current = textView.text ?? ""
+        let range = NSRange(location: (current as NSString).length, length: 0)
+        guard input.textView(textView, shouldChangeTextIn: range, replacementText: text) else {
+            input.textViewDidChange(textView)
+            return false
+        }
+        textView.text = current + text
+        input.textViewDidChange(textView)
+        return true
+    }
+
+    private func openComments(of id: String, source: SampleFeedSource, harness: Harness) async throws -> FeedPostDetailViewController {
+        let fetched = try await source.card(contentId: id)
+        let card = try XCTUnwrap(fetched)
+        let detail = harness.openDetail(of: card, source: source)
+        await detail.detailStore.waitForTasks()
+        harness.window.layoutIfNeeded()
+        return detail
+    }
+
+    /// 评论允许时输入框在最下面（贴着安全区 / 键盘），评论关了（`sample-9`）收起来、不占位。
+    @MainActor
+    func testTheCommentBoxIsAtTheBottomAndHiddenWhenCommentsAreClosed() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let open = try await openComments(of: "sample-1", source: source, harness: harness)
+        XCTAssertFalse(open.commentInput.isHidden)
+        let frame = open.commentInput.convert(open.commentInput.bounds, to: open.view)
+        XCTAssertGreaterThan(frame.height, 40)
+        XCTAssertGreaterThan(frame.minY, open.view.bounds.height / 2, "在下半屏")
+        XCTAssertLessThanOrEqual(frame.maxY, open.view.bounds.height + 0.5)
+        let table = open.detailTableView.convert(open.detailTableView.bounds, to: open.view)
+        XCTAssertLessThanOrEqual(table.maxY, frame.minY + 0.5, "表格在输入框上面，不重叠")
+        harness.pop()
+
+        let closed = try await openComments(of: "sample-9", source: source, harness: harness)
+        XCTAssertTrue(closed.commentInput.isHidden, "评论关了：不显示输入框")
+        XCTAssertFalse(closed.detailStore.state.canComment)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 发送按钮的几种状态都来自逻辑层：空 / 只有空白 → 灰；有字 → 可点；发送中 → 按钮换成转圈、输入框不能改。
+    @MainActor
+    func testTheSendButtonFollowsTheSendStates() async throws {
+        let source = quickSource()
+        source.simulation.postCommentLatencyNanos = 400_000_000
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try await openComments(of: "sample-1", source: source, harness: harness)
+        let input = detail.commentInput
+        XCTAssertFalse(input.sendButton.isEnabled, "空")
+        type("   ", into: input)
+        XCTAssertFalse(input.sendButton.isEnabled, "只有空白")
+        type("你好", into: input)
+        XCTAssertTrue(input.sendButton.isEnabled)
+
+        input.sendButton.sendActions(for: .touchUpInside)
+        XCTAssertTrue(input.sendButton.isHidden, "发送中：按钮换成转圈")
+        XCTAssertFalse(input.textView.isEditable, "发送中：不能改")
+        XCTAssertEqual(input.presentation?.submit, .sending)
+        await detail.detailStore.waitForTasks()
+        XCTAssertFalse(input.sendButton.isHidden)
+        XCTAssertTrue(input.textView.isEditable)
+        XCTAssertEqual(input.textView.text, "", "发送成功：清空")
+        XCTAssertFalse(input.sendButton.isEnabled)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 发出去的评论出现在评论区最后；详情上的评论数和列表那一行的评论数一起 +1；弹「已发布」。
+    @MainActor
+    func testAPostedCommentShowsUpAndTheListCountFollows() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try XCTUnwrap(harness.openPost(row: 1))
+        await detail.detailStore.waitForTasks()
+        let before = harness.feed.pages[0].rows[1].card.stats.comments
+        type("来了", into: detail.commentInput)
+        detail.commentInput.sendButton.sendActions(for: .touchUpInside)
+        await detail.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        XCTAssertEqual(detail.detailStore.state.comments.last?.text, "来了")
+        XCTAssertEqual(harness.feed.pages[0].rows[1].card.stats.comments, before + 1)
+        XCTAssertEqual(detail.lastToastText, OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISHED", comment: ""))
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 评论 500 个码点：敲满后再敲被拦下（文字不变、计数 0）；粘贴超出的部分被截掉，计数变红。
+    @MainActor
+    func testTheBoxStopsAt500CodePointsAndShowsTheCounter() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try await openComments(of: "sample-1", source: source, harness: harness)
+        let input = detail.commentInput
+        XCTAssertTrue(input.counterLabel.isHidden, "离上限还远：不显示计数")
+
+        XCTAssertTrue(type(String(repeating: "a", count: 460), into: input))
+        XCTAssertFalse(input.counterLabel.isHidden, "剩余 ≤ 50 才显示计数：460 → 40")
+        XCTAssertEqual(input.counterLabel.text, "40")
+
+        XCTAssertFalse(type(String(repeating: "b", count: 100), into: input), "粘贴超出：被截")
+        XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
+        XCTAssertEqual(input.counterLabel.text, "0")
+        XCTAssertFalse(input.counterLabel.isHidden)
+        XCTAssertFalse(type("c", into: input), "满了：再敲被拦下")
+        XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
+        XCTAssertEqual(detail.detailStore.state.draft, input.textView.text, "store 里的草稿和输入框一致")
+        XCTAssertTrue(input.sendButton.isEnabled, "刚好 500 可以发")
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 点一条评论回复它：输入框上面出现「正在回复 xxx」，取消后回到直接评论。
+    @MainActor
+    func testTappingACommentRepliesToItAndCancelGoesBack() async throws {
+        let source = quickSource()
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try await openComments(of: "sample-1", source: source, harness: harness)
+        let input = detail.commentInput
+        XCTAssertTrue(input.replyBanner.isHidden)
+
+        let table = detail.detailTableView
+        table.delegate?.tableView?(table, didSelectRowAt: IndexPath(row: 1, section: 0))
+        let target = try XCTUnwrap(detail.detailStore.state.replyTarget)
+        XCTAssertFalse(input.replyBanner.isHidden)
+        let name = try XCTUnwrap(target.author?.displayName)
+        XCTAssertTrue(input.replyLabel.text?.contains(name) ?? false)
+        XCTAssertTrue(input.textView.isEditable)
+
+        type("回复", into: input)
+        input.sendButton.sendActions(for: .touchUpInside)
+        await detail.detailStore.waitForTasks()
+        XCTAssertNil(detail.detailStore.state.replyTarget, "发出去后回复对象清掉")
+        XCTAssertTrue(input.replyBanner.isHidden)
+        XCTAssertEqual(detail.detailStore.state.comments.last?.parentId, target.id)
+
+        table.delegate?.tableView?(table, didSelectRowAt: IndexPath(row: 1, section: 0))
+        XCTAssertFalse(input.replyBanner.isHidden)
+        input.cancelReplyButton.sendActions(for: .touchUpInside)
+        XCTAssertNil(detail.detailStore.state.replyTarget)
+        XCTAssertTrue(input.replyBanner.isHidden)
+        harness.pop()
+        harness.window.isHidden = true
+    }
+
+    /// 发失败（样例开关）：文字还在、可以再发，弹「操作失败」；发完又回到能发的状态。
+    @MainActor
+    func testAFailedSendKeepsTheTextAndToasts() async throws {
+        let source = quickSource()
+        source.simulation.failsComments = true
+        let harness = await makeHarness(source: source)
+        defer { harness.window.isHidden = true }
+        let detail = try await openComments(of: "sample-1", source: source, harness: harness)
+        let input = detail.commentInput
+        type("会失败", into: input)
+        input.sendButton.sendActions(for: .touchUpInside)
+        await detail.detailStore.waitForTasks()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertEqual(input.textView.text, "会失败")
+        XCTAssertTrue(input.sendButton.isEnabled)
+        XCTAssertEqual(detail.lastToastText, OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: ""))
         harness.pop()
         harness.window.isHidden = true
     }
