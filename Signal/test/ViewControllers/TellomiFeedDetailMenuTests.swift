@@ -613,3 +613,131 @@ final class TellomiFeedSampleMenuTests: XCTestCase {
         XCTAssertEqual(source.reports.count, 1, "失败 / 限速的举报没有记")
     }
 }
+
+// MARK: - 举报页画什么
+
+final class TellomiFeedReportPresentationTests: XCTestCase {
+    private func state(_ code: String? = nil, region: String? = nil, _ change: (inout FeedReportState) -> Void = { _ in }) -> FeedReportState {
+        var state = FeedReportState(groups: FeedReportReasons.groups(fromConfig: [:]))
+        state.region = region
+        if let code {
+            state.reason = state.groups.flatMap(\.reasons).first { $0.code == code }
+        }
+        change(&state)
+        return state
+    }
+
+    private func image() -> FeedDraftImage { FeedDraftImage(image: UIImage()) }
+
+    func testItStartsOnTheReasonListWithTheFourGroups() {
+        let presentation = FeedReportPresentation(state: state())
+        XCTAssertEqual(presentation.phase, .reasons)
+        XCTAssertEqual(presentation.groups.map(\.code), ["harm_others", "illegal", "false_or_impersonation", "my_rights"])
+        XCTAssertFalse(presentation.canSubmit)
+        XCTAssertNil(presentation.reason)
+        XCTAssertFalse(presentation.showsEvidence)
+    }
+
+    func testPickingAReasonOpensTheFormAndHarassmentNeedsNothingElse() {
+        let presentation = FeedReportPresentation(state: state("harassment"))
+        XCTAssertEqual(presentation.phase, .form)
+        XCTAssertEqual(presentation.reason?.code, "harassment")
+        XCTAssertFalse(presentation.showsEmergencyNotice)
+        XCTAssertFalse(presentation.showsRelationship)
+        XCTAssertFalse(presentation.showsEvidence)
+        XCTAssertTrue(presentation.canSubmit, "说明是可选的")
+        XCTAssertTrue(presentation.isEditable)
+    }
+
+    func testEmergencyReasonsShowThePoliceNoticeFirst() {
+        for code in ["violence_threat", "self_harm", "minor_safety"] {
+            XCTAssertTrue(FeedReportPresentation(state: state(code)).showsEmergencyNotice, code)
+        }
+        XCTAssertFalse(FeedReportPresentation(state: state("spam")).showsEmergencyNotice)
+    }
+
+    func testFraudNeedsAScreenshotBeforeItCanBeSent() {
+        let empty = FeedReportPresentation(state: state("fraud"))
+        XCTAssertTrue(empty.showsEvidence)
+        XCTAssertFalse(empty.canSubmit, "诈骗要截图")
+        let withImage = FeedReportPresentation(state: state("fraud") { $0.evidence = [image()] })
+        XCTAssertEqual(withImage.evidenceCount, 1)
+        XCTAssertTrue(withImage.canSubmit)
+    }
+
+    func testMyRightsNeedTheRelationshipAndAScreenshot() {
+        var presentation = FeedReportPresentation(state: state("copyright"))
+        XCTAssertTrue(presentation.showsRelationship)
+        XCTAssertTrue(presentation.showsEvidence)
+        XCTAssertFalse(presentation.canSubmit)
+        presentation = FeedReportPresentation(state: state("copyright") { $0.evidence = [image()] })
+        XCTAssertFalse(presentation.canSubmit, "还差关系")
+        presentation = FeedReportPresentation(state: state("copyright") { $0.evidence = [image()]; $0.relationship = "  " })
+        XCTAssertFalse(presentation.canSubmit, "只有空白不算")
+        presentation = FeedReportPresentation(state: state("copyright") { $0.evidence = [image()]; $0.relationship = "本人" })
+        XCTAssertTrue(presentation.canSubmit)
+    }
+
+    func testAtMostNineScreenshots() {
+        let full = (0..<FeedReportReason.maxEvidence).map { _ in image() }
+        XCTAssertTrue(FeedReportPresentation(state: state("fraud") { $0.evidence = Array(full.dropLast()) }).canAddEvidence)
+        XCTAssertFalse(FeedReportPresentation(state: state("fraud") { $0.evidence = full }).canAddEvidence)
+    }
+
+    func testTheDetailCounterCountsCodePointsLikeTheEngine() {
+        XCTAssertEqual(FeedReportPresentation(state: state("harassment")).detailRemaining, 500)
+        XCTAssertEqual(FeedReportPresentation(state: state("harassment") { $0.detail = "你好" }).detailRemaining, 498)
+        XCTAssertEqual(FeedReportPresentation(state: state("harassment") { $0.detail = "🇨🇳" }).detailRemaining, 498, "国旗是 2 个码点")
+        XCTAssertEqual(FeedReportPresentation(state: state("harassment") { $0.detail = String(repeating: "a", count: 500) }).detailRemaining, 0)
+    }
+
+    func testTheHotlineIsOnlyForTheMainlandRegion() {
+        XCTAssertTrue(FeedReportPresentation(state: state("spam", region: "cn")).showsMainlandHotline)
+        XCTAssertFalse(FeedReportPresentation(state: state("spam", region: "us")).showsMainlandHotline)
+        XCTAssertFalse(FeedReportPresentation(state: state("spam")).showsMainlandHotline)
+    }
+
+    func testSendingAndSentLockTheForm() {
+        let sending = FeedReportPresentation(state: state("spam") { $0.sending = true })
+        XCTAssertTrue(sending.isSending)
+        XCTAssertFalse(sending.isEditable)
+        XCTAssertFalse(sending.canSubmit, "发送中不能再点")
+        XCTAssertFalse(sending.canAddEvidence)
+        let sent = FeedReportPresentation(state: state("spam") { $0.sent = true })
+        XCTAssertTrue(sent.isSent)
+        XCTAssertFalse(sent.isEditable)
+        XCTAssertFalse(sent.canSubmit, "交了就不能再交")
+    }
+
+    func testAnErrorIsCarriedThroughAndTheFormStaysEditable() {
+        let presentation = FeedReportPresentation(state: state("spam") { $0.error = .throttled(retryAfterSeconds: 20) })
+        XCTAssertEqual(presentation.error, .throttled(retryAfterSeconds: 20))
+        XCTAssertTrue(presentation.canSubmit)
+        XCTAssertTrue(presentation.isEditable)
+    }
+
+    func testBackToTheReasonsKeepsWhatWasTyped() async {
+        let store = await MainActor.run { () -> FeedReportStore in
+            let store = FeedReportStore(target: .content("p"), source: MenuSource())
+            store.pick(store.state.groups[0].reasons[0])
+            store.onDetailChanged("写了一半")
+            store.backToReasons()
+            return store
+        }
+        let presentation = await MainActor.run { FeedReportPresentation(state: store.state) }
+        XCTAssertEqual(presentation.phase, .reasons)
+        let detail = await MainActor.run { store.state.detail }
+        XCTAssertEqual(detail, "写了一半")
+    }
+}
+
+@MainActor
+final class TellomiFeedDetailMenuFeedHiddenTests: XCTestCase {
+    func testAnotherPageReportingFeedHiddenClosesTheDetail() async {
+        let source = MenuSource()
+        let detail = FeedPostDetailStore(initial: post(), source: source)
+        XCTAssertFalse(detail.state.feedHidden)
+        detail.onFeedHidden()
+        XCTAssertTrue(detail.state.feedHidden)
+    }
+}

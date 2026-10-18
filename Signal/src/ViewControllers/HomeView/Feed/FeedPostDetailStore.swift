@@ -588,6 +588,11 @@ final class FeedPostDetailStore {
         return FeedReportStore(target: .content((comment ?? state.post).id), source: source)
     }
 
+    /// 别的页面（举报页）碰到了「这个区域的动态被关了」：详情页也该收起。
+    func onFeedHidden() {
+        state.feedHidden = true
+    }
+
     /// 举报页关掉时 `sent == true`：提示一句。
     func onReported() {
         state.notice = .reported
