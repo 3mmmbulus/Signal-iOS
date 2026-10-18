@@ -11412,6 +11412,24 @@
 /* Title of the one-time sheet shown on the chat list after registration, explaining why Tellomi asks for notification permission. */
 "TELLOMI_NOTIFICATION_PRIMER_TITLE" = "及时收到新消息";
 
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): the last row of the pin sheet; tapping it picks how long the pin lasts. Embeds {{ how long, e.g. Forever }}. */
+"TELLOMI_PIN_DURATION" = "时长：%@ ›";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message only on my own devices; the other side never sees it. */
+"TELLOMI_PIN_FOR_ME" = "仅为我置顶";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a 1:1 chat for both people. Embeds {{ the other person's short name }}. */
+"TELLOMI_PIN_FOR_ME_AND" = "为我和%@置顶";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a group for everyone and notify them. */
+"TELLOMI_PIN_NOTIFY_ALL" = "置顶并通知所有成员";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): title of the sheet asking who a pin is for. */
+"TELLOMI_PIN_TITLE" = "置顶消息";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a group for everyone without notifying anyone. */
+"TELLOMI_PIN_WITHOUT_NOTIFYING" = "置顶但不通知";
+
 /* Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}. */
 "TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT" = "已回应 %1$@";
 

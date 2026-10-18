@@ -21,6 +21,7 @@ public class OutgoingUnpinMessage: TransientOutgoingMessage {
             return nil
         }
         self.targetMessageTimestamp = targetMessageTimestamp.uint64Value
+        self.tellomiPinForSelfOnly = coder.decodeBool(forKey: "tellomiPinForSelfOnly")
         super.init(coder: coder)
     }
 
@@ -28,6 +29,7 @@ public class OutgoingUnpinMessage: TransientOutgoingMessage {
         super.encode(with: coder)
         coder.encode(targetMessageAuthorAci.serviceIdBinary, forKey: "targetMessageAuthorAciBinary")
         coder.encode(NSNumber(value: self.targetMessageTimestamp), forKey: "targetMessageTimestamp")
+        coder.encode(tellomiPinForSelfOnly, forKey: "tellomiPinForSelfOnly")
     }
 
     override public var hash: Int {
@@ -35,6 +37,7 @@ public class OutgoingUnpinMessage: TransientOutgoingMessage {
         hasher.combine(super.hash)
         hasher.combine(targetMessageAuthorAci)
         hasher.combine(targetMessageTimestamp)
+        hasher.combine(tellomiPinForSelfOnly)
         return hasher.finalize()
     }
 
@@ -43,11 +46,15 @@ public class OutgoingUnpinMessage: TransientOutgoingMessage {
         guard super.isEqual(object) else { return false }
         guard self.targetMessageAuthorAci == object.targetMessageAuthorAci else { return false }
         guard self.targetMessageTimestamp == object.targetMessageTimestamp else { return false }
+        guard self.tellomiPinForSelfOnly == object.tellomiPinForSelfOnly else { return false }
         return true
     }
 
     public let targetMessageTimestamp: UInt64
     public let targetMessageAuthorAci: Aci
+
+    /// Tellomi (ADR-0081 §4.3): taking back a pin for me only — to my own devices only, like the pin itself.
+    public var tellomiPinForSelfOnly = false
 
     public init(
         thread: TSThread,
@@ -81,7 +88,7 @@ public class OutgoingUnpinMessage: TransientOutgoingMessage {
     ) -> SSKProtoDataMessageBuilder? {
         guard
             let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: transaction)?.aci,
-            thread.canUserEditPinnedMessages(aci: localAci, tx: transaction)
+            tellomiPinForSelfOnly || thread.canUserEditPinnedMessages(aci: localAci, tx: transaction)
         else {
             Logger.error("Local user no longer has permission to change pin status")
             return nil
@@ -105,6 +112,10 @@ public class OutgoingUnpinMessage: TransientOutgoingMessage {
         dataMessageBuilder.setUnpinMessage(
             unpinMessageBuilder.buildInfallibly(),
         )
+
+        if let tellomi = TellomiPinsForMe.tellomiProto(isPin: false, forSelfOnly: tellomiPinForSelfOnly, silent: false, isGroup: thread.isGroupThread) {
+            dataMessageBuilder.setTellomi(tellomi)
+        }
 
         return dataMessageBuilder
     }

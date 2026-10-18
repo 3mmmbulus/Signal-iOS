@@ -360,6 +360,8 @@ public class PreparedOutgoingMessage {
             return false
         case .transient(let message):
             return message is OutgoingPinMessage || message is OutgoingUnpinMessage
+                // Tellomi (ADR-0081 §4.3): a pin / unpin for me only goes out as a transcript of one.
+                || message is TellomiPinForMeTranscript
         }
     }
 }

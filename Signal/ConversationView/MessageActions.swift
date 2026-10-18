@@ -248,6 +248,20 @@ enum MessageActionBuilder {
 class MessageActions {
 
     private class func canLocalUserEditGroupAttributes(itemViewModel: CVItemViewModelImpl) -> Bool {
+        // Tellomi (ADR-0081 §4.6, spec 3.1): this only gates pin / unpin. Anyone may pin — without permission the sheet offers only
+        // "pin for me" — and a pin for me only can always be taken back; other pins still need the permission to unpin.
+        if itemViewModel.renderItem.itemViewState.footerState?.isPinnedMessage == false {
+            return true
+        }
+        if let rowId = itemViewModel.renderItem.interaction.sqliteRowId {
+            let isPinnedForMe = SSKEnvironment.shared.databaseStorageRef.read { tx in
+                TellomiPinsForMe.isPinnedForMe(interactionId: rowId, tx: tx)
+            }
+            if isPinnedForMe {
+                return true
+            }
+        }
+
         guard let groupModel = itemViewModel.thread.groupModelIfGroupThread as? TSGroupModelV2 else {
             return true
         }

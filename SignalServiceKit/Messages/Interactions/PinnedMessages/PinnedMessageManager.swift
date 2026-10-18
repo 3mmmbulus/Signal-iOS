@@ -83,6 +83,7 @@ public class PinnedMessageManager {
         pinSentAtTimestamp: UInt64,
         expireTimer: UInt32,
         expireTimerVersion: UInt32,
+        tellomiForMeOnly: Bool = false,
         transaction: DBWriteTransaction,
     ) throws {
         try validateInputsForPinMessage(pinMessageProto: pinMessageProto)
@@ -169,6 +170,15 @@ public class PinnedMessageManager {
             )
         }
 
+        // Tellomi (ADR-0081 §4.3): my pin for me only, from another of my devices — marked, and no "pinned a message".
+        if tellomiForMeOnly {
+            TellomiPinsForMe.remember(interactionId: targetMessageInteractionId, tx: transaction)
+            transaction.addSyncCompletion { [expirationJob] in
+                expirationJob.restart()
+            }
+            return
+        }
+
         insertInfoMessageForPinnedMessage(
             timestamp: MessageTimestampGenerator.sharedInstance.generateTimestamp(),
             thread: thread,
@@ -188,6 +198,7 @@ public class PinnedMessageManager {
     public func unpinMessage(
         unpinMessageProto: SSKProtoDataMessageUnpinMessage,
         threadUniqueId: String,
+        tellomiRule: TellomiPinsForMe.UnpinRule = .any,
         transaction: DBWriteTransaction,
     ) throws -> TSInteraction {
         guard SDS.fitsInInt64(unpinMessageProto.targetSentTimestamp) else {
@@ -230,6 +241,20 @@ public class PinnedMessageManager {
                 targetMessageInteractionId = latestEdit.sqliteRowId!
             } else {
                 throw OWSAssertionError("Can't find latest edit for pinned message")
+            }
+        }
+
+        // Tellomi (ADR-0081 §4.3): someone else's unpin leaves my pin for me alone; my own "for me only" unpin touches nothing else.
+        switch tellomiRule {
+        case .any:
+            break
+        case .keepPinForMe:
+            if TellomiPinsForMe.isPinnedForMe(interactionId: targetMessageInteractionId, tx: transaction) {
+                return targetMessage
+            }
+        case .onlyPinForMe:
+            if !TellomiPinsForMe.isPinnedForMe(interactionId: targetMessageInteractionId, tx: transaction) {
+                return targetMessage
             }
         }
 
@@ -309,6 +334,7 @@ public class PinnedMessageManager {
         isPin: Bool,
         sentTimestamp: UInt64,
         threadUniqueId: String,
+        tellomiForMeOnly: Bool = false,
         tx: DBWriteTransaction,
     ) {
         let pinnedAtTimestamp = NSDate.ows_millisecondTimeStamp()
@@ -371,6 +397,15 @@ public class PinnedMessageManager {
             shouldReindex: false,
             tx: tx,
         )
+
+        // Tellomi (ADR-0081 §4.3): my pin for me only — marked, and no "pinned a message".
+        if tellomiForMeOnly {
+            TellomiPinsForMe.remember(interactionId: interactionId, tx: tx)
+            tx.addSyncCompletion { [expirationJob] in
+                expirationJob.restart()
+            }
+            return
+        }
 
         let dmConfig = disappearingMessagesConfigurationStore.fetchOrBuildDefault(for: .thread(thread), tx: tx)
 

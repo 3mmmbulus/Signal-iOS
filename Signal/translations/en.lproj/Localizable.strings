@@ -11655,6 +11655,24 @@
 /* Button on the chat list banner that opens the system notification settings for Tellomi. */
 "TELLOMI_NOTIFICATIONS_DISABLED_REMINDER_ACTION" = "Go to Settings";
 
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): the last row of the pin sheet; tapping it picks how long the pin lasts. Embeds {{ how long, e.g. Forever }}. */
+"TELLOMI_PIN_DURATION" = "Duration: %@ ›";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message only on my own devices; the other side never sees it. */
+"TELLOMI_PIN_FOR_ME" = "Pin for me";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a 1:1 chat for both people. Embeds {{ the other person's short name }}. */
+"TELLOMI_PIN_FOR_ME_AND" = "Pin for me and %@";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a group for everyone and notify them. */
+"TELLOMI_PIN_NOTIFY_ALL" = "Pin and notify all members";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): title of the sheet asking who a pin is for. */
+"TELLOMI_PIN_TITLE" = "Pin message";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a group for everyone without notifying anyone. */
+"TELLOMI_PIN_WITHOUT_NOTIFYING" = "Pin without notifying";
+
 /* Tellomi (interaction audit A-07): read out by VoiceOver after choosing a reaction. Embeds {{the emoji}}. */
 "TELLOMI_REACTED_WITH_ANNOUNCEMENT_FORMAT" = "Reacted with %1$@";
 

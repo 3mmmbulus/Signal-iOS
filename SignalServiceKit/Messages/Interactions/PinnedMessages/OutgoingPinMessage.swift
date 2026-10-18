@@ -29,6 +29,8 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
             return nil
         }
         self.targetMessageTimestamp = targetMessageTimestamp.uint64Value
+        self.tellomiPinForSelfOnly = coder.decodeBool(forKey: "tellomiPinForSelfOnly")
+        self.tellomiPinSilent = coder.decodeBool(forKey: "tellomiPinSilent")
         super.init(coder: coder)
     }
 
@@ -38,6 +40,8 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
         coder.encode(NSNumber(value: self.pinDurationSeconds), forKey: "pinDurationSeconds")
         coder.encode(targetMessageAuthorAci.serviceIdBinary, forKey: "targetMessageAuthorAciBinary")
         coder.encode(NSNumber(value: self.targetMessageTimestamp), forKey: "targetMessageTimestamp")
+        coder.encode(tellomiPinForSelfOnly, forKey: "tellomiPinForSelfOnly")
+        coder.encode(tellomiPinSilent, forKey: "tellomiPinSilent")
     }
 
     override public var hash: Int {
@@ -47,6 +51,8 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
         hasher.combine(pinDurationSeconds)
         hasher.combine(targetMessageAuthorAci)
         hasher.combine(targetMessageTimestamp)
+        hasher.combine(tellomiPinForSelfOnly)
+        hasher.combine(tellomiPinSilent)
         return hasher.finalize()
     }
 
@@ -57,6 +63,8 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
         guard self.pinDurationSeconds == object.pinDurationSeconds else { return false }
         guard self.targetMessageAuthorAci == object.targetMessageAuthorAci else { return false }
         guard self.targetMessageTimestamp == object.targetMessageTimestamp else { return false }
+        guard self.tellomiPinForSelfOnly == object.tellomiPinForSelfOnly else { return false }
+        guard self.tellomiPinSilent == object.tellomiPinSilent else { return false }
         return true
     }
 
@@ -64,6 +72,13 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
     public let targetMessageAuthorAci: Aci
     public let pinDurationSeconds: Int32
     private let pinDurationForever: Bool
+
+    /// Tellomi (ADR-0081 §4.3): pin for me only — goes to my own devices in a transcript (`TellomiPinsForMe.send`), never to the chat,
+    /// so it needs no permission to pin.
+    public var tellomiPinForSelfOnly = false
+
+    /// Tellomi (ADR-0081 §4.6): a group pin for everyone without notifying.
+    public var tellomiPinSilent = false
 
     public init(
         thread: TSThread,
@@ -101,7 +116,7 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
     ) -> SSKProtoDataMessageBuilder? {
         guard
             let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: transaction)?.aci,
-            thread.canUserEditPinnedMessages(aci: localAci, tx: transaction)
+            tellomiPinForSelfOnly || thread.canUserEditPinnedMessages(aci: localAci, tx: transaction)
         else {
             Logger.error("Local user no longer has permission to change pin status")
             return nil
@@ -132,6 +147,10 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
             pinMessageBuilder.buildInfallibly(),
         )
 
+        if let tellomi = TellomiPinsForMe.tellomiProto(isPin: true, forSelfOnly: tellomiPinForSelfOnly, silent: tellomiPinSilent, isGroup: thread.isGroupThread) {
+            dataMessageBuilder.setTellomi(tellomi)
+        }
+
         return dataMessageBuilder
     }
 
@@ -151,6 +170,7 @@ public class OutgoingPinMessage: TransientOutgoingMessage {
             isPin: true,
             sentTimestamp: timestamp,
             threadUniqueId: threadUniqueId,
+            tellomiForMeOnly: tellomiPinForSelfOnly,
             tx: tx,
         )
     }

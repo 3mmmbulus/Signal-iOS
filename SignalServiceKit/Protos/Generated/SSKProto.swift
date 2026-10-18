@@ -10342,6 +10342,24 @@ public class SSKProtoTellomiDataMessage: NSObject, Codable, NSSecureCoding {
         return proto.hasViewOnceSeconds
     }
 
+    @objc
+    public var pinForSelfOnly: Bool {
+        return proto.pinForSelfOnly
+    }
+    @objc
+    public var hasPinForSelfOnly: Bool {
+        return proto.hasPinForSelfOnly
+    }
+
+    @objc
+    public var pinSilent: Bool {
+        return proto.pinSilent
+    }
+    @objc
+    public var hasPinSilent: Bool {
+        return proto.hasPinSilent
+    }
+
     public var hasUnknownFields: Bool {
         return !proto.unknownFields.data.isEmpty
     }
@@ -10424,6 +10442,12 @@ extension SSKProtoTellomiDataMessage {
         if hasViewOnceSeconds {
             builder.setViewOnceSeconds(viewOnceSeconds)
         }
+        if hasPinForSelfOnly {
+            builder.setPinForSelfOnly(pinForSelfOnly)
+        }
+        if hasPinSilent {
+            builder.setPinSilent(pinSilent)
+        }
         if let _value = unknownFields {
             builder.setUnknownFields(_value)
         }
@@ -10458,6 +10482,16 @@ public class SSKProtoTellomiDataMessageBuilder: NSObject {
     @objc
     public func setViewOnceSeconds(_ valueParam: UInt32) {
         proto.viewOnceSeconds = valueParam
+    }
+
+    @objc
+    public func setPinForSelfOnly(_ valueParam: Bool) {
+        proto.pinForSelfOnly = valueParam
+    }
+
+    @objc
+    public func setPinSilent(_ valueParam: Bool) {
+        proto.pinSilent = valueParam
     }
 
     public func setUnknownFields(_ unknownFields: SwiftProtobuf.UnknownStorage) {

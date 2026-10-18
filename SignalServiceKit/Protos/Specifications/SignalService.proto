@@ -504,6 +504,11 @@ message TellomiDataMessage {
   // ADR-0079: how many seconds the media stays open after the first view (3, 10 or 30). Only meaningful
   // together with DataMessage.isViewOnce = true; any other value is ignored (a plain view-once message).
   optional uint32 viewOnceSeconds = 3;
+  // ADR-0081: with pinMessage / unpinMessage, in a SyncMessage.Sent transcript from my own account only: the pin is
+  // for my devices and never went to the other side. Anywhere else the whole pin / unpin is dropped.
+  optional bool pinForSelfOnly = 4;
+  // ADR-0081: with a group pinMessage: pinned for everyone without notifying them (receivers don't push).
+  optional bool pinSilent = 5;
 }
 
 message NullMessage {

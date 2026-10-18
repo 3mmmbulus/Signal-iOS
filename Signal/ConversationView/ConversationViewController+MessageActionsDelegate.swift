@@ -337,6 +337,11 @@ extension ConversationViewController: MessageActionsDelegate {
         let pinnedMessageManager = DependenciesBridge.shared.pinnedMessageManager
 
         let sendPromise = await db.awaitableWrite { tx in
+            // Tellomi (ADR-0081 §4.3): a pin / unpin for me only goes to my own other devices (nowhere if I have none).
+            if TellomiPinsForMe.isForMe(pinMessage) {
+                return TellomiPinsForMe.send(pinMessage, thread: self.thread, tx: tx)
+            }
+
             let preparedMessage = PreparedOutgoingMessage.preprepared(
                 transientMessageWithoutAttachments: pinMessage,
             )
@@ -473,7 +478,8 @@ extension ConversationViewController: MessageActionsDelegate {
         let db = DependenciesBridge.shared.db
 
         let choosePinExpiryAndSendWithOptionalDMWarning: () -> Void = {
-            self.showPinExpiryActionSheet(completion: { expiryInSeconds in
+            // Tellomi (ADR-0081 §4.6, spec 3.1): who the pin is for first, with how long on its last row (forever by default).
+            self.tellomiShowPinChoiceSheet(completion: { choice, expiryInSeconds in
                 db.write { tx in
                     let pinMessage = pinnedMessageManager.getOutgoingPinMessage(
                         interaction: message,
@@ -485,6 +491,8 @@ extension ConversationViewController: MessageActionsDelegate {
                     guard let pinMessage else {
                         return
                     }
+                    pinMessage.tellomiPinForSelfOnly = choice == .forMe
+                    pinMessage.tellomiPinSilent = choice == .forEveryoneSilent
 
                     if pinnedMessageManager.shouldShowDisappearingMessageWarning(message: message, tx: tx) {
                         pinnedMessageManager.incrementDisappearingMessageWarningCount(tx: tx)
@@ -542,16 +550,11 @@ extension ConversationViewController: MessageActionsDelegate {
     }
 
     public func handleActionUnpin(message: TSMessage, modalDelegate: UIViewController) {
-        let pinnedMessageManager = DependenciesBridge.shared.pinnedMessageManager
         let db = DependenciesBridge.shared.db
 
         let unpinMessage = db.write { tx in
-            pinnedMessageManager.getOutgoingUnpinMessage(
-                interaction: message,
-                thread: thread,
-                expiresAt: nil,
-                tx: tx,
-            )
+            // Tellomi (ADR-0081 §4.3): a pin for me only is taken back on my own devices only.
+            tellomiOutgoingUnpinMessage(for: message, tx: tx)
         }
         guard let unpinMessage else {
             return
@@ -573,16 +576,11 @@ extension ConversationViewController: MessageActionsDelegate {
     }
 
     public func handleActionUnpinAsync(message: TSMessage) async {
-        let pinnedMessageManager = DependenciesBridge.shared.pinnedMessageManager
         let db = DependenciesBridge.shared.db
 
         let unpinMessage = db.write { tx in
-            pinnedMessageManager.getOutgoingUnpinMessage(
-                interaction: message,
-                thread: thread,
-                expiresAt: nil,
-                tx: tx,
-            )
+            // Tellomi (ADR-0081 §4.3): a pin for me only is taken back on my own devices only.
+            tellomiOutgoingUnpinMessage(for: message, tx: tx)
         }
         guard let unpinMessage else {
             return

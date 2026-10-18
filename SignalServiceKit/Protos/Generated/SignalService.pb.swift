@@ -2500,6 +2500,27 @@ nonisolated struct SignalServiceProtos_TellomiDataMessage: Sendable {
   /// Clears the value of `viewOnceSeconds`. Subsequent reads from it will return its default value.
   mutating func clearViewOnceSeconds() {self._viewOnceSeconds = nil}
 
+  /// ADR-0081: with pinMessage / unpinMessage, in a SyncMessage.Sent transcript from my own account only: the pin is
+  /// for my devices and never went to the other side. Anywhere else the whole pin / unpin is dropped.
+  var pinForSelfOnly: Bool {
+    get {_pinForSelfOnly ?? false}
+    set {_pinForSelfOnly = newValue}
+  }
+  /// Returns true if `pinForSelfOnly` has been explicitly set.
+  var hasPinForSelfOnly: Bool {self._pinForSelfOnly != nil}
+  /// Clears the value of `pinForSelfOnly`. Subsequent reads from it will return its default value.
+  mutating func clearPinForSelfOnly() {self._pinForSelfOnly = nil}
+
+  /// ADR-0081: with a group pinMessage: pinned for everyone without notifying them (receivers don't push).
+  var pinSilent: Bool {
+    get {_pinSilent ?? false}
+    set {_pinSilent = newValue}
+  }
+  /// Returns true if `pinSilent` has been explicitly set.
+  var hasPinSilent: Bool {self._pinSilent != nil}
+  /// Clears the value of `pinSilent`. Subsequent reads from it will return its default value.
+  mutating func clearPinSilent() {self._pinSilent = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -2507,6 +2528,8 @@ nonisolated struct SignalServiceProtos_TellomiDataMessage: Sendable {
   fileprivate var _captionAboveMedia: Bool? = nil
   fileprivate var _messageCaption: String? = nil
   fileprivate var _viewOnceSeconds: UInt32? = nil
+  fileprivate var _pinForSelfOnly: Bool? = nil
+  fileprivate var _pinSilent: Bool? = nil
 }
 
 nonisolated struct SignalServiceProtos_NullMessage: Sendable {
@@ -7549,7 +7572,7 @@ nonisolated extension SignalServiceProtos_DataMessage.AdminDelete: SwiftProtobuf
 
 nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".TellomiDataMessage"
-  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0\u{1}messageCaption\0\u{1}viewOnceSeconds\0")
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}captionAboveMedia\0\u{1}messageCaption\0\u{1}viewOnceSeconds\0\u{1}pinForSelfOnly\0\u{1}pinSilent\0")
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7560,6 +7583,8 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
       case 1: try { try decoder.decodeSingularBoolField(value: &self._captionAboveMedia) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._messageCaption) }()
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self._viewOnceSeconds) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self._pinForSelfOnly) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._pinSilent) }()
       default: break
       }
     }
@@ -7579,6 +7604,12 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
     try { if let v = self._viewOnceSeconds {
       try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._pinForSelfOnly {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._pinSilent {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -7586,6 +7617,8 @@ nonisolated extension SignalServiceProtos_TellomiDataMessage: SwiftProtobuf.Mess
     if lhs._captionAboveMedia != rhs._captionAboveMedia {return false}
     if lhs._messageCaption != rhs._messageCaption {return false}
     if lhs._viewOnceSeconds != rhs._viewOnceSeconds {return false}
+    if lhs._pinForSelfOnly != rhs._pinForSelfOnly {return false}
+    if lhs._pinSilent != rhs._pinSilent {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

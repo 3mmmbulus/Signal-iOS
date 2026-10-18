@@ -616,6 +616,8 @@ public final class MessageReceiver {
                             pinSentAtTimestamp: envelope.timestamp,
                             expireTimer: dataMessage.expireTimer,
                             expireTimerVersion: dataMessage.expireTimerVersion,
+                            // Tellomi (ADR-0081 §4.3): my pin for me only from another of my devices — marked, no "pinned a message".
+                            tellomiForMeOnly: TellomiPinsForMe.isSelfOnly(dataMessage),
                             transaction: tx,
                         )
                         SSKEnvironment.shared.databaseStorageRef.touch(thread: thread, shouldReindex: false, shouldUpdateChatListUi: true, tx: tx)
@@ -632,6 +634,8 @@ public final class MessageReceiver {
                         let targetMessage = try DependenciesBridge.shared.pinnedMessageManager.unpinMessage(
                             unpinMessageProto: unpinMessage,
                             threadUniqueId: uniqueId,
+                            // Tellomi (ADR-0081 §4.3): taking back a pin for me only touches only a pin for me.
+                            tellomiRule: TellomiPinsForMe.isSelfOnly(dataMessage) ? .onlyPinForMe : .any,
                             transaction: tx,
                         )
 
@@ -1135,6 +1139,13 @@ public final class MessageReceiver {
             messageDescription = "Incoming message from \(deviceAddress) w/ts \(envelope.timestamp), serverTimestamp: \(envelope.serverTimestamp)"
         }
 
+        // Tellomi (ADR-0081 §4.3): a pin / unpin "for me only" only ever goes to its sender's own devices; one that reaches anyone
+        // else is dropped whole — no pin, no "pinned a message", no change to the chat's timer.
+        if TellomiPinsForMe.isSelfOnly(dataMessage) {
+            Logger.warn("Dropping a pin for the sender only that reached someone else. \(messageDescription)")
+            return nil
+        }
+
         if let reaction = dataMessage.reaction {
             let result = ReactionManager.processIncomingReaction(
                 reaction,
@@ -1536,6 +1547,8 @@ public final class MessageReceiver {
                     let targetMessage = try DependenciesBridge.shared.pinnedMessageManager.unpinMessage(
                         unpinMessageProto: unpinMessage,
                         threadUniqueId: thread.uniqueId,
+                        // Tellomi (ADR-0081 §4.3): someone else's unpin leaves my pin for me alone.
+                        tellomiRule: .keepPinForMe,
                         transaction: tx,
                     )
 

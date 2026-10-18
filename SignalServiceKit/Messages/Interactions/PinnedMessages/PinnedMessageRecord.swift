@@ -24,6 +24,8 @@ public struct PinnedMessageRecord: Codable, FetchableRecord, MutablePersistableR
         receivedTimestamp: UInt64,
         tx: DBWriteTransaction,
     ) throws(GRDB.DatabaseError) -> Self {
+        // Tellomi (ADR-0081 §4.3): a new pin row is for both sides until the "for me only" path marks it.
+        TellomiPinsForMe.forget(interactionId: interactionId, tx: tx)
         do {
             return try PinnedMessageRecord.fetchOne(
                 tx.database,
