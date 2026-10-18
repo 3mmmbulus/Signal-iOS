@@ -11974,6 +11974,177 @@
 "TELLOMI_FEED_SEARCH_USERS_HEADER" = "People";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_AUTHORS" = "People";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORIES" = "Adjust by category";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORIES_ADJUSTED" = "Categories adjusted: %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORIES_HINT" = "See more or less of a category";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORY_DEFAULT" = "Default";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORY_INCREASE" = "More";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORY_REDUCE" = "Less";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CONTINUE" = "Continue";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_DELETE" = "Delete";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_EDITORIAL_NOTE" = "Recommendations right now are editors’ picks in time order, not based on your interests.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_INTERESTS" = "Interest tags";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_INTERESTS_DESCRIPTION" = "Worked out from what you view and like. Only you can see them. Deleted tags aren’t used again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_INTERESTS_EMPTY" = "No interest tags yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_ADD" = "Add a word";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_BLOCK" = "Hide completely";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_BLOCK_DESCRIPTION" = "Matching posts never appear in your feed (this phone only)";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_CONFIRM" = "Add";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DAYS_30" = "30 days";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DAYS_7" = "7 days";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DESCRIPTION" = "“Show less” lowers matching posts in your recommendations and is saved to your account. “Hide completely” stays on this phone and removes matching posts from your feed. Search and profiles are not affected.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DOWNRANK" = "Show less";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DOWNRANK_DESCRIPTION" = "Matching posts are recommended less";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_FOREVER" = "Forever";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_HINT" = "Word or phrase";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_INVALID" = "Use 1 to 20 characters";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_TITLE" = "Muted words";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_TOO_MANY" = "You can add up to 100 words";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_UNTIL" = "Until %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_LOADING" = "Loading…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_LOAD_FAILED" = "Couldn’t load settings";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE" = "Pause recommendations for 30 days";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSED" = "Paused until %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_BODY" = "For the next 30 days, recommendations won’t use your interests. You can resume anytime.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_CONFIRM" = "Pause";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_DESCRIPTION" = "Recommendations won’t use your interests while paused";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_TITLE" = "Pause recommendations?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PERSONALIZED" = "Personalized recommendations";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PERSONALIZED_DESCRIPTION" = "Recommend posts based on your interests. When off, recommendations don’t use your interest tags.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RECENT" = "What you’ve viewed lately";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET" = "Reset recommendations";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_BODY" = "Your interest tags will be cleared and recommendations will start learning again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_CONFIRM_BODY" = "This can’t be undone.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_CONFIRM_TITLE" = "Are you sure?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_DESCRIPTION" = "Clear your interest tags and start over";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_DONE" = "Recommendations reset";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_TITLE" = "Reset recommendations?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESUME" = "Resume";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE" = "Sensitive content";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE_MORE" = "More";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE_REDUCE" = "Less";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE_STANDARD" = "Standard";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SOURCES" = "Sources";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_STYLE" = "Recommendation style";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_STYLE_EXPLORE" = "Explore more";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_STYLE_KEEP" = "Keep it as it is";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_TITLE" = "Feed settings";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_TOPICS" = "Topics";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TAB_FOLLOWING" = "Following";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -12011,6 +12182,114 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TOPIC_LOAD_FAILED" = "Couldn't load this topic";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_AI" = "AI";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_ANIME" = "Anime & comics";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BAKING" = "Baking & desserts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BALLSPORTS" = "Ball sports";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BEAUTY" = "Beauty & skincare";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BOOKS" = "Books";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CAMPING" = "Outdoors & camping";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CAMPUS" = "School & exams";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CARS" = "Cars";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CITY" = "City & local life";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_DESIGN" = "Design";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_DEV" = "Programming";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_DIY" = "Crafts & DIY";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_EXPLORE" = "Places to try";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FASHION" = "Fashion";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FILM" = "Film & TV";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FITNESS" = "Fitness";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FOOD" = "Food";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FRUGAL" = "Saving money";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FUNNY" = "Funny";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_GAMES" = "Games";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_HEALTH" = "Healthy living";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_HOME" = "Home";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_MOOD" = "Feelings";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_MUSIC" = "Music";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_NEWS" = "News";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PARENTING" = "Parenting";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PETS" = "Pets";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PHOTO" = "Photography";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PLANTS" = "Plants & gardening";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PORTRAIT" = "Portraits";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_RUNNING" = "Running & cycling";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_SCIENCE" = "Science (space, nature, history)";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_TECH" = "Tech & gadgets";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_TRAVEL" = "Travel";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_WORK" = "Work & career";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TOPIC_POSTS_FAILED" = "Couldn't load more posts";

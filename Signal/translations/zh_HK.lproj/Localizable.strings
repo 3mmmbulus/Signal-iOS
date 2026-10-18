@@ -11860,6 +11860,177 @@
 "TELLOMI_FEED_SEARCH_USERS_HEADER" = "用戶";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_AUTHORS" = "作者";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORIES" = "按類別調整";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORIES_ADJUSTED" = "已調整 %1$@ 類";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORIES_HINT" = "多睇或者少睇某一類";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORY_DEFAULT" = "預設";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORY_INCREASE" = "增加";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CATEGORY_REDUCE" = "減少";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_CONTINUE" = "繼續";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_DELETE" = "刪除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_EDITORIAL_NOTE" = "而家嘅推介係編輯精選加時間順序，唔按你嘅興趣。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_INTERESTS" = "興趣標籤";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_INTERESTS_DESCRIPTION" = "根據你睇過、讚過嘅內容計出嚟，只有你自己睇到。刪除咗嘅標籤唔會再用嚟推介。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_INTERESTS_EMPTY" = "仲未有興趣標籤";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_ADD" = "新增關鍵字";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_BLOCK" = "完全封鎖";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_BLOCK_DESCRIPTION" = "資訊流裡不再出現（只在這部手機上）";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_CONFIRM" = "新增";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DAYS_30" = "30 天";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DAYS_7" = "7 天";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DESCRIPTION" = "「少推薦」會降低含這個詞的內容在推薦裡的出現，跟著帳戶走；「完全封鎖」只存在這部手機上，資訊流裡不再出現含這個詞的內容。搜尋和個人主頁不受影響。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DOWNRANK" = "少推薦";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_DOWNRANK_DESCRIPTION" = "含這個詞的內容會少推薦";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_FOREVER" = "永久";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_HINT" = "詞或短語";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_INVALID" = "請輸入 1 至 20 個字";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_TITLE" = "封鎖關鍵字";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_TOO_MANY" = "最多新增 100 個詞";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_KEYWORDS_UNTIL" = "到 %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_LOADING" = "正在讀取…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_LOAD_FAILED" = "無法讀取動態設定";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE" = "暫停推介 30 日";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSED" = "已暫停，%1$@ 恢復";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_BODY" = "接落嚟 30 日，推介唔按你嘅興趣。隨時可以恢復。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_CONFIRM" = "暫停";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_DESCRIPTION" = "暫停期間推介唔按你嘅興趣";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PAUSE_TITLE" = "暫停推介？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PERSONALIZED" = "個人化推介";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_PERSONALIZED_DESCRIPTION" = "按你嘅興趣推介。關閉後，推介唔再用你嘅興趣標籤。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RECENT" = "最近睇過嘅內容";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET" = "重設推介";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_BODY" = "你嘅興趣標籤會被清除，推介會重新開始學習。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_CONFIRM_BODY" = "重設後無法復原。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_CONFIRM_TITLE" = "確定要重設？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_DESCRIPTION" = "清除興趣標籤，重新開始";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_DONE" = "已重設推介";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESET_TITLE" = "重設推介？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_RESUME" = "恢復";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE" = "敏感內容";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE_MORE" = "更多";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE_REDUCE" = "減少";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SENSITIVE_STANDARD" = "標準";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_SOURCES" = "來源";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_STYLE" = "推介風格";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_STYLE_EXPLORE" = "探索更多";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_STYLE_KEEP" = "保持現狀";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_TITLE" = "動態設定";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SETTINGS_TOPICS" = "話題";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TAB_FOLLOWING" = "關注";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11897,6 +12068,114 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TOPIC_LOAD_FAILED" = "話題載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_AI" = "AI";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_ANIME" = "動漫";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BAKING" = "烘焙甜品";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BALLSPORTS" = "球類運動";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BEAUTY" = "美妝護膚";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_BOOKS" = "讀書";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CAMPING" = "戶外露營";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CAMPUS" = "校園 / 考試";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CARS" = "汽車";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_CITY" = "城市 / 本地生活";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_DESIGN" = "設計";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_DEV" = "編程開發";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_DIY" = "手作 DIY";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_EXPLORE" = "探店";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FASHION" = "穿搭";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FILM" = "影視";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FITNESS" = "運動健身";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FOOD" = "美食";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FRUGAL" = "慳錢生活";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_FUNNY" = "搞笑段子";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_GAMES" = "遊戲";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_HEALTH" = "健康生活";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_HOME" = "家居";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_MOOD" = "心情 / 情感";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_MUSIC" = "音樂";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_NEWS" = "資訊";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PARENTING" = "母嬰育兒";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PETS" = "萌寵";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PHOTO" = "攝影";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PLANTS" = "園藝植物";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_PORTRAIT" = "顏值 / 人像";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_RUNNING" = "跑步踩單車";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_SCIENCE" = "科普（天文 / 生物 / 歷史）";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_TECH" = "科技數碼";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_TRAVEL" = "旅行";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_NAME_WORK" = "職場";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TOPIC_POSTS_FAILED" = "無法載入更多動態";

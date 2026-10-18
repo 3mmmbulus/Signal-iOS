@@ -194,6 +194,8 @@
 		3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */; };
 		C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */; };
 		D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */; };
+		053A5865ADDA0F40D00DDE5F /* FeedKeywordFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */; };
+		A15ED05C5515210515C3150A /* FeedRecommendationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */; };
 		A3334F5690AB056EA03C9B3B /* FeedSettingsPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */; };
 		A226E978F551CE747BCB747B /* SampleFeedSource+Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1652D13E3BF0C01283E6AFA6 /* SampleFeedSource+Settings.swift */; };
 		147A3898AF1E5B5493EF0C70 /* FeedMyPostsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C4460A5AAE6700DAED3922 /* FeedMyPostsViewController.swift */; };
@@ -4841,6 +4843,8 @@
 		FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopBarView.swift; sourceTree = "<group>"; };
 		FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTab.swift; sourceTree = "<group>"; };
 		81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeed.swift; sourceTree = "<group>"; };
+		F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedKeywordFormViewController.swift; sourceTree = "<group>"; };
+		D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedRecommendationSettingsViewController.swift; sourceTree = "<group>"; };
 		28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSettingsPresentation.swift; sourceTree = "<group>"; };
 		1652D13E3BF0C01283E6AFA6 /* SampleFeedSource+Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+Settings.swift"; sourceTree = "<group>"; };
 		A5C4460A5AAE6700DAED3922 /* FeedMyPostsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMyPostsViewController.swift; sourceTree = "<group>"; };
@@ -9473,6 +9477,8 @@
 				FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */,
 				FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */,
 				81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */,
+				F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */,
+				D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */,
 				28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */,
 				1652D13E3BF0C01283E6AFA6 /* SampleFeedSource+Settings.swift */,
 				A5C4460A5AAE6700DAED3922 /* FeedMyPostsViewController.swift */,
@@ -19685,6 +19691,8 @@
 				3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */,
 				C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */,
 				D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */,
+				053A5865ADDA0F40D00DDE5F /* FeedKeywordFormViewController.swift in Sources */,
+				A15ED05C5515210515C3150A /* FeedRecommendationSettingsViewController.swift in Sources */,
 				A3334F5690AB056EA03C9B3B /* FeedSettingsPresentation.swift in Sources */,
 				A226E978F551CE747BCB747B /* SampleFeedSource+Settings.swift in Sources */,
 				147A3898AF1E5B5493EF0C70 /* FeedMyPostsViewController.swift in Sources */,
