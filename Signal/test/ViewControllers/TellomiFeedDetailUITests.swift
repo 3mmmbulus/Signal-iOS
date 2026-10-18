@@ -424,7 +424,7 @@ final class TellomiFeedDetailUITests: XCTestCase {
         XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
         XCTAssertEqual(input.counterLabel.text, "0")
         XCTAssertFalse(input.counterLabel.isHidden)
-        XCTAssertEqual(input.counterLabel.textColor, UIColor.Signal.red, "刚好 0 个：计数变红")
+        XCTAssertEqual(resolvedRGBA(input.counterLabel.textColor), resolvedRGBA(UIColor.Signal.red), "刚好 0 个：计数变红")
         XCTAssertFalse(type("c", into: input), "满了：再敲被拦下")
         XCTAssertEqual(FeedTextCap.count(input.textView.text), 500)
         XCTAssertEqual(detail.detailStore.state.draft, input.textView.text, "store 里的草稿和输入框一致")
@@ -505,4 +505,11 @@ final class TellomiFeedDetailUITests: XCTestCase {
         harness.pop()
         harness.window.isHidden = true
     }
+}
+
+/// 动态颜色（`UIColor.Signal.red` 每次取都是新对象）不能直接 `==`：比解出来的 RGBA。
+private func resolvedRGBA(_ color: UIColor?) -> [CGFloat] {
+    var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+    color?.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)).getRed(&r, green: &g, blue: &b, alpha: &a)
+    return [r, g, b, a]
 }
