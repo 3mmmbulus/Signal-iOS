@@ -248,9 +248,9 @@ final class FeedMyPostsStore {
         self.source = source
         self.feed = feed
         self.mirror = feed.map { FeedCardMirror(feed: $0) }
+        // 只有点开着的那一张卡片会跟着信息流变（别处点了赞…）；列表里的行不画卡片，删除 / 屏蔽走 `.list` 通知。
         mirror?.shownIds = { [weak self] in
-            guard let self else { return [] }
-            return Set(self.state.posts.map(\.id) + (self.state.openCard.map { [$0.id] } ?? []))
+            Set(self?.state.openCard.map { [$0.id] } ?? [])
         }
         mirror?.onChange = { [weak self] in
             self?.syncWithFeed()
