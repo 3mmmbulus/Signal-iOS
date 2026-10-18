@@ -67,6 +67,10 @@ final class FeedPostDetailViewController: OWSViewController {
 
         view.backgroundColor = UIColor.Signal.background
         navigationItem.largeTitleDisplayMode = .never
+        // 举报：详情页自己接上，菜单里才有「举报」（外面没接 `onReport` 就不显示）
+        if onReport == nil {
+            onReport = { [weak self] comment in self?.presentReport(forComment: comment) }
+        }
 
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
@@ -229,6 +233,32 @@ final class FeedPostDetailViewController: OWSViewController {
             confirm(item) { [weak self] in self?.store.deletePost() }
         case .own:
             break
+        }
+    }
+
+    /// 打开举报页（`comment` 是 nil = 举报帖子本身）。提交成功详情页提示「已提交」；`feed_hidden` 跟着收起。
+    private(set) var presentedReport: FeedReportViewController?
+
+    func presentReport(forComment comment: FeedCard?) {
+        guard presentedReport == nil else { return }
+        let reportStore = store.reportStore(forComment: comment)
+        reportStore.start()
+        let report = FeedReportViewController(store: reportStore) { [weak self] outcome in
+            self?.presentedReportFinished(outcome)
+        }
+        presentedReport = report
+        let navigationController = OWSNavigationController(rootViewController: report)
+        present(navigationController, animated: true)
+    }
+
+    /// 举报页关了：收起举报页；提交成功提示「已提交」，`feed_hidden` 让详情页跟着收起。
+    func presentedReportFinished(_ outcome: FeedReportViewController.Outcome) {
+        presentedReport = nil
+        dismiss(animated: true)
+        switch outcome {
+        case .sent: store.onReported()
+        case .feedHidden: store.onFeedHidden()
+        case .cancelled: break
         }
     }
 

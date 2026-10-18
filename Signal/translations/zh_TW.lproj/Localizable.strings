@@ -11335,6 +11335,9 @@
 "TELLOMI_FEED_MENU_DELETE_POST" = "刪除動態";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_REPORT" = "檢舉";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "更多";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11353,7 +11356,97 @@
 "TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "還沒有內容";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_COPYRIGHT" = "侵害著作權";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_DEFAMATION" = "誹謗或名譽侵害";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_DETAIL_PLACEHOLDER" = "補充說明（選填）";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_DRUGS" = "毒品";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_EMERGENCY" = "如果有人正處在危險中，請先聯絡當地的報警電話。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_EVIDENCE_TITLE" = "截圖（必填）";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_FRAUD" = "詐騙";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GAMBLING" = "賭博";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GONE" = "這則內容已經看不到了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_FALSE" = "不實或冒充";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_HARM_OTHERS" = "傷害他人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_ILLEGAL" = "違法違規";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_MY_RIGHTS" = "我的權益受到侵害";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_HARASSMENT" = "騷擾或霸凌";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_HATE" = "仇恨言論";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_HOTLINE" = "你也可以到 12377.cn（中央網信辦違法和不良信息舉報中心）檢舉。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_IMPERSONATION" = "冒充他人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_MINOR_SAFETY" = "危害未成年人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_MISINFORMATION" = "不實資訊";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_OTHER_ILLEGAL" = "其他違法內容";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_PORNOGRAPHY" = "色情";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_PORTRAIT" = "侵害肖像權";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_PRIVACY" = "侵害隱私";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_REASONS_HEADER" = "你為什麼要檢舉？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_RELATIONSHIP_PLACEHOLDER" = "你與被侵權人的關係";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SELF_HARM" = "自殘或自殺";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPORT_SENT" = "已收到你的檢舉，我們會盡快處理。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SPAM" = "垃圾訊息或廣告";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SUBMIT" = "送出";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_TITLE" = "檢舉";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_VIOLENCE_THREAT" = "暴力或威脅";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RETRY" = "重試";

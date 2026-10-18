@@ -11449,6 +11449,9 @@
 "TELLOMI_FEED_MENU_DELETE_POST" = "Delete post";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MENU_REPORT" = "Report";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "More";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11467,7 +11470,97 @@
 "TELLOMI_FEED_RECOMMEND_EMPTY_TITLE" = "Nothing here yet";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_COPYRIGHT" = "Copyright infringement";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_DEFAMATION" = "Defamation";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_DETAIL_PLACEHOLDER" = "Add details (optional)";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_DRUGS" = "Drugs";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_EMERGENCY" = "If someone is in immediate danger, contact your local emergency services first.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_EVIDENCE_TITLE" = "Screenshots (required)";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_FRAUD" = "Scam or fraud";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GAMBLING" = "Gambling";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GONE" = "This content is no longer available";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_FALSE" = "False or impersonation";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_HARM_OTHERS" = "Harms others";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_ILLEGAL" = "Illegal or against the rules";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_GROUP_MY_RIGHTS" = "My rights were violated";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_HARASSMENT" = "Harassment or bullying";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_HATE" = "Hate speech";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_HOTLINE" = "You can also report at 12377.cn (China Internet Illegal and Harmful Information Reporting Center).";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_IMPERSONATION" = "Impersonation";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_MINOR_SAFETY" = "Endangers minors";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_MISINFORMATION" = "False information";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_OTHER_ILLEGAL" = "Other illegal content";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_PORNOGRAPHY" = "Pornography";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_PORTRAIT" = "Portrait rights";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_PRIVACY" = "Privacy violation";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_REASONS_HEADER" = "Why are you reporting this?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_RELATIONSHIP_PLACEHOLDER" = "Your relationship to the person affected";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SELF_HARM" = "Self-harm or suicide";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPORT_SENT" = "Thanks. We'll review your report.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SPAM" = "Spam or ads";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_SUBMIT" = "Submit";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_TITLE" = "Report";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPORT_VIOLENCE_THREAT" = "Violence or threats";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RETRY" = "Retry";

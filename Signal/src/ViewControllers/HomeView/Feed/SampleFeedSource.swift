@@ -268,6 +268,15 @@ final class SampleFeedSource: FeedSource {
 
     /// 样例里收到的举报（按收到的顺序），单测和内部用户在日志里看。
     private(set) var reports = [FeedReportRequest]()
+    private(set) var uploadedImages = 0
+
+    /// 举报要截图的原因（诈骗、「我的权益」）提交时先上传截图：样例直接给个键，让这条路能在本机跑通。
+    func uploadImage(_ image: UIImage) async throws -> String {
+        return locked {
+            uploadedImages += 1
+            return "sample-upload-\(uploadedImages)"
+        }
+    }
 
     func report(_ request: FeedReportRequest) async throws {
         let simulation = self.simulation
