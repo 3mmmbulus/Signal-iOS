@@ -17,7 +17,7 @@ final class FeedPostDetailViewController: OWSViewController {
     /// 离评论列表底部还剩几行时取下一页。
     static let loadMoreThreshold = 3
 
-    private enum Row {
+    private enum Row: Equatable {
         case post
         case comment(FeedPostDetailPresentation.CommentRow)
         case status(FeedPostDetailPresentation.CommentsPhase)
@@ -39,11 +39,13 @@ final class FeedPostDetailViewController: OWSViewController {
     /// - Parameters:
     ///   - post: 信息流里带过来的那张卡片，先用它画出来，再向 Card API 取最新的。
     ///   - showIpRegion: 信息流里是不是显示 IP 属地；详情拿到自己的配置后以配置为准。
-    init(post: FeedCard, source: FeedSource, showIpRegion: Bool) {
+    ///   - feed: 信息流的 `FeedStore`。传了就和列表共用它（卡片只在它里面，详情自己不留副本，赞和评论数改在它里面，列表同步）；
+    ///     不传就自己独立运行（单测、还没接上的入口）。
+    init(post: FeedCard, source: FeedSource, showIpRegion: Bool, feed: FeedStore? = nil) {
         self.post = post
         self.showIpRegion = showIpRegion
         fallbackShowIpRegion = showIpRegion
-        store = FeedPostDetailStore(initial: post, source: source)
+        store = FeedPostDetailStore(initial: post, source: source, feed: feed)
         super.init()
         // 和 Telegram 一样：推进去以后底栏收起来
         hidesBottomBarWhenPushed = true
@@ -81,6 +83,29 @@ final class FeedPostDetailViewController: OWSViewController {
         store.start()
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        // 弹出 / 关闭：不再订阅列表的 store、放掉借着的卡片（盖上别的页面再回来不算离开）
+        if isMovingFromParent || isBeingDismissed {
+            store.detach()
+        }
+    }
+
+    /// 单测 / 截图用：页面背后的 store。
+    var detailStore: FeedPostDetailStore {
+        return store
+    }
+
+    /// 单测 / 截图用：帖子那一行的格子（不在屏幕上时是 nil）。
+    var postCell: FeedPostCell? {
+        return tableView.visibleCells.compactMap { $0 as? FeedPostCell }.first
+    }
+
+    /// 单测 / 截图用：现在的表格。
+    var detailTableView: UITableView {
+        return tableView
+    }
+
     /// 把 `store` 的状态画出来。
     private func apply(_ state: FeedPostDetailState) {
         guard isViewLoaded else { return }
@@ -105,8 +130,15 @@ final class FeedPostDetailViewController: OWSViewController {
         } else {
             newRows.append(.status(phase))
         }
-        rows = newRows
-        tableView.reloadData()
+        if newRows == rows {
+            // 行没变（只是帖子上的赞、评论数变了）：就地更新帖子那一格，不整表重载（不闪、不丢滚动位置）
+            for case let cell as FeedPostCell in tableView.visibleCells {
+                cell.configure(card: post, showIpRegion: showIpRegion)
+            }
+        } else {
+            rows = newRows
+            tableView.reloadData()
+        }
 
         if FeedPostDetailPresentation.hasMoreComments(for: state) {
             footerSpinner.startAnimating()

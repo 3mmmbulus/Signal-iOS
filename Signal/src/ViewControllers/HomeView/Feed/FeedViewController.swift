@@ -22,6 +22,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     let composeButton = UIButton(type: .custom)
     static let composeButtonSize: CGFloat = 56
 
+    private var feedSubscription: FeedSubscription?
+
     private lazy var topBar = FeedTopBarView(tabs: tabs)
     private let pagingScrollView = UIScrollView()
 
@@ -34,11 +36,9 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             page.onOpenPost = { [weak self] card in self?.openPost(card) }
         }
 
-        store.onChange = { [weak self] tab in
-            guard let self else { return }
-            for page in self.pages where tab == nil || page.feedTab == tab {
-                page.apply()
-            }
+        // 和帖子详情页订阅同一个 store：详情里点了赞，这里的那一行也跟着变（拿着回执就订着，页面销毁时一起放掉）
+        feedSubscription = store.subscribe { [weak self] change in
+            self?.onStoreChange(change)
         }
         store.onTransientError = { [weak self] error in
             guard let self, self.viewIfLoaded?.window != nil else { return }
@@ -48,6 +48,23 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             case .actionFailed:
                 self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: "Feed: toast when liking or another action on a post failed."))
             }
+        }
+    }
+
+    /// `FeedStore` 里有什么变了：列表（某一栏）、卡片内容（详情页点赞 / 评论数变了…）都重画；
+    /// 动作失败（点赞失败已改回）的提示走 `onTransientError`，这里不重复提示。
+    private func onStoreChange(_ change: FeedChange) {
+        switch change {
+        case .list(let tab):
+            for page in pages where tab == nil || page.feedTab == tab {
+                page.apply()
+            }
+        case .cards:
+            for page in pages {
+                page.apply()
+            }
+        case .actionFailed:
+            break
         }
     }
 
@@ -165,7 +182,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     /// 点一条帖子：推帖子详情页（`FeedPostDetailViewController`），底栏收起。
     private func openPost(_ card: FeedCard) {
-        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: store.showsIpRegion)
+        // 详情页用列表的 store（单一数据源）：赞、评论数改在 store 里，列表这边通过订阅同步
+        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: store.showsIpRegion, feed: store)
         navigationController?.pushViewController(detail, animated: true)
     }
 
