@@ -620,6 +620,13 @@ final class FeedStore {
         }
     }
 
+    /// 详情页已经把「不感兴趣」报给引擎并且成功了：列表里这条换成可撤销的反馈卡，和在列表里点「不感兴趣」同样的显示。
+    /// 不再发请求（撤销时 `undoNotInterested` 才发）。已经是反馈卡就不动。
+    func markNotInterested(id: String) {
+        guard hiddenIds.insert(id).inserted else { return }
+        notify(.list(nil))
+    }
+
     func undoNotInterested(_ cardId: String) {
         guard hiddenIds.remove(cardId) != nil else { return }
         notify(.list(nil))

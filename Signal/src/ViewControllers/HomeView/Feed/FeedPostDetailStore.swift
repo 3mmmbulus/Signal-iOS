@@ -37,6 +37,12 @@ struct FeedPostDetailState {
         case editedPending
         /// 「不看 TA」要先有自己的公开主页。
         case hideProfileRequired
+        /// 自己的评论删掉了。
+        case commentDeleted
+        /// 举报交出去了。
+        case reported
+        /// 被限速：`state.retryAfterSeconds` 是还要等几秒（可能没有）。
+        case throttled
         case failed
     }
 
@@ -75,6 +81,10 @@ struct FeedPostDetailState {
     var voiceMaxSeconds = FeedLimits().voiceCommentMaxSeconds
     /// 不感兴趣 / 不看 TA / 屏蔽成了：提示一句，页面关掉。
     var leaving: Leave?
+    /// 最近一次被限速时引擎要我们等几秒（1…3600）；没有这个头是 nil。只在 `notice == .throttled` 时有意义。
+    var retryAfterSeconds: Int?
+    /// 引擎说这个区域的动态关了（404 `feed_hidden`）：页面该收起，不是「操作失败」。
+    var feedHidden = false
 
     init(post: FeedCard) {
         self.post = post
@@ -82,6 +92,8 @@ struct FeedPostDetailState {
     }
 
     var threads: [FeedCommentThread] { FeedCommentThreads.build(comments) }
+    /// 帖子「···」菜单里该有的几项（评论的见 `FeedDetailMenu.items(forComment:)`）。
+    var postMenu: [FeedDetailMenuItem] { FeedDetailMenu.items(forPost: post) }
     /// 评论框还能再输入多少个码点（引擎 `MaxCommentChars` = 500；决定：到上限不让再输入，显示剩余数，I-20）。组字中可以是负数。
     var draftRemaining: Int { FeedInputLimit.remaining(draft, limit: FeedInputLimit.commentText) }
     var canSend: Bool {
@@ -519,6 +531,68 @@ final class FeedPostDetailStore {
         state.notice = nil
     }
 
+    /// 动作失败统一这样提示（见 `FeedActionFailure`）：限速带等待秒数、动态被关了让页面收起、其余「操作失败」。不自动重试。
+    /// `profileRequired` 是这个动作碰到「要先建公开主页」时的提示（不传就当普通失败）。
+    private func applyActionFailure(_ error: Error, profileRequired: FeedPostDetailState.Notice? = nil) {
+        switch FeedActionFailure.classify(error) {
+        case .throttled(let seconds):
+            state.retryAfterSeconds = seconds
+            state.notice = .throttled
+        case .feedHidden:
+            state.feedHidden = true
+        case .profileRequired:
+            state.notice = profileRequired ?? .failed
+        case .gone, .failed:
+            state.notice = .failed
+        }
+    }
+
+    // MARK: - 评论的「···」：删自己的、举报
+
+    /// 删自己的评论（先问过用户再调）：引擎说删了才从列表去掉（评论数 -1，待审的不算）；失败留着、提示。
+    /// 一条评论同时只能有一个删除在途；引擎说「已经没了」（404）当作删成功。别人的评论、帖子本身不走这里。
+    /// 它下面的回复不动（找不到楼主的回复自己成一楼，`FeedCommentThreads`）；引擎要是连带删了，下次取评论就看不到。
+    func deleteComment(_ comment: FeedCard) {
+        guard comment.viewer.isAuthor, comment.kind == FeedCard.kindComment,
+              state.comments.contains(where: { $0.id == comment.id }),
+              moderating.begin(comment.id) else { return }
+        run { [weak self, source] in
+            guard let self else { return }
+            do {
+                try await source.deletePost(contentId: comment.id)
+                self.removeDeletedComment(comment)
+            } catch {
+                Logger.warn("feed detail delete comment failed: \(error)")
+                if FeedActionFailure.classify(error) == .gone {
+                    self.removeDeletedComment(comment)
+                } else {
+                    self.applyActionFailure(error)
+                }
+            }
+            self.moderating.end(comment.id)
+        }
+    }
+
+    private func removeDeletedComment(_ comment: FeedCard) {
+        guard state.comments.contains(where: { $0.id == comment.id }) else { return }
+        if state.replyTarget?.id == comment.id { state.replyTarget = nil }
+        state.comments.removeAll { $0.id == comment.id }
+        if !comment.held {
+            updatePost { $0.stats.comments = max(0, $0.stats.comments - 1) }
+        }
+        state.notice = .commentDeleted
+    }
+
+    /// 举报这条帖子（`comment` 是 nil）或这条评论：给举报页用的 store，提交成功后界面调 `onReported()`。
+    func reportStore(forComment comment: FeedCard? = nil) -> FeedReportStore {
+        return FeedReportStore(target: .content((comment ?? state.post).id), source: source)
+    }
+
+    /// 举报页关掉时 `sent == true`：提示一句。
+    func onReported() {
+        state.notice = .reported
+    }
+
     // MARK: - 自己的帖子
 
     func onOwnPostAction(_ action: FeedOwnPostAction) {
@@ -581,7 +655,12 @@ final class FeedPostDetailStore {
     /// 不感兴趣（第三节第 11 条）：报给引擎，成了就关页。
     func notInterested() {
         let post = state.post
-        leaveAfter(.notInterested) { [source] in try await source.notInterested(contentId: post.id) }
+        let feed = self.feed
+        leaveAfter(.notInterested) { [source] in
+            try await source.notInterested(contentId: post.id)
+            // 信息流里这条也换成可撤销的反馈卡（和在列表里点「不感兴趣」同样的显示）
+            feed?.markNotInterested(id: post.id)
+        }
     }
 
     /// 报给引擎，成了就让页面关掉并提示；一次只能有一个在途。`profile_required`（还没有自己的公开主页）单独提示。
@@ -594,8 +673,7 @@ final class FeedPostDetailStore {
                 self?.state.leaving = leave
             } catch {
                 Logger.warn("feed detail \(leave) failed: \(error)")
-                let profileRequired = (error as? FeedAPIError)?.code == "profile_required"
-                self?.state.notice = profileRequired ? .hideProfileRequired : .failed
+                self?.applyActionFailure(error, profileRequired: .hideProfileRequired)
             }
             self?.leaving = false
         }

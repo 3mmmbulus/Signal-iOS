@@ -140,6 +140,10 @@ struct FeedReportState {
         /// 内容已经看不到了。
         case gone
         case failed
+        /// 被限速（429 / 带 `Retry-After` 的 503 / 本机退避）：还要等几秒；没有头是 nil。
+        case throttled(retryAfterSeconds: Int?)
+        /// 引擎说这个区域的动态关了（404 `feed_hidden`）：页面该收起。
+        case feedHidden
     }
 
     var groups: [FeedReportGroup]
@@ -264,7 +268,12 @@ final class FeedReportStore {
             } catch {
                 Logger.warn("feed report failed: \(error)")
                 self?.state.sending = false
-                self?.state.error = (error as? FeedAPIError)?.status == 404 ? .gone : .failed
+                switch FeedActionFailure.classify(error) {
+                case .gone: self?.state.error = .gone
+                case .throttled(let seconds): self?.state.error = .throttled(retryAfterSeconds: seconds)
+                case .feedHidden: self?.state.error = .feedHidden
+                case .profileRequired, .failed: self?.state.error = .failed
+                }
             }
         })
     }

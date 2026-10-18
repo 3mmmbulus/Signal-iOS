@@ -45,6 +45,18 @@ final class SampleFeedSource: FeedSource {
         var commentErrorCode: String?
         /// 发评论成功后引擎回的状态：直接显示（`published`）或先审后显（`pending`，大陆区一律这样）。
         var commentPublishState = FeedCreatePostResponse.statePublished
+        /// 删评论（自己的）/ 举报 / 不感兴趣的请求先等一会儿：能截到「在路上」那一帧。
+        var deleteLatencyNanos: UInt64 = 0
+        var reportLatencyNanos: UInt64 = 0
+        var notInterestedLatencyNanos: UInt64 = 0
+        /// 这三个动作失败（界面提示「操作失败」，评论 / 帖子留着）。
+        var failsDeletes = false
+        var failsReports = false
+        var failsNotInterested = false
+        /// 这三个动作被限速（429）：非 nil 时回 429 并带这么多秒的 `Retry-After`（界面说「请 N 秒后再试」）。
+        var throttledRetryAfterSeconds: Int?
+        /// 这三个动作回 404 `feed_hidden`（这个区域的动态被关了，页面该收起）。
+        var feedHidden = false
     }
 
     private var storedSimulation = Simulation()
@@ -249,7 +261,59 @@ final class SampleFeedSource: FeedSource {
     }
 
     func notInterested(contentId: String) async throws {
+        let simulation = self.simulation
+        try await simulatedAction(latency: simulation.notInterestedLatencyNanos, fails: simulation.failsNotInterested)
         _ = locked { hidden.insert(contentId) }
+    }
+
+    /// 样例里收到的举报（按收到的顺序），单测和内部用户在日志里看。
+    private(set) var reports = [FeedReportRequest]()
+
+    func report(_ request: FeedReportRequest) async throws {
+        let simulation = self.simulation
+        try await simulatedAction(latency: simulation.reportLatencyNanos, fails: simulation.failsReports)
+        locked { reports.append(request) }
+    }
+
+    /// 删自己的帖子 / 评论。样例里只有自己发的（`mine-…`、`…-m…`）能删，别人的 403 `not_author`；已经删了的 404。
+    func deletePost(contentId: String) async throws {
+        let simulation = self.simulation
+        try await simulatedAction(latency: simulation.deleteLatencyNanos, fails: simulation.failsDeletes)
+        try locked {
+            if let index = mine.firstIndex(where: { $0.id == contentId }) {
+                mine.remove(at: index)
+                return
+            }
+            for (postId, list) in postedComments {
+                if let index = list.firstIndex(where: { $0.id == contentId }) {
+                    var next = list
+                    next.remove(at: index)
+                    postedComments[postId] = next
+                    return
+                }
+            }
+            if contentId.hasPrefix("mine-") || contentId.contains("-m") {
+                throw FeedAPIError(status: 404, code: "not_found")
+            }
+            throw FeedAPIError(status: 403, code: "not_author")
+        }
+    }
+
+    /// 这三个动作共用的模拟：先等、再按开关失败 / 限速 / 动态被关。
+    private func simulatedAction(latency: UInt64, fails: Bool) async throws {
+        let simulation = self.simulation
+        if latency > 0 {
+            try? await Task.sleep(nanoseconds: latency)
+        }
+        if simulation.feedHidden {
+            throw FeedAPIError(status: 404, code: "feed_hidden")
+        }
+        if let seconds = simulation.throttledRetryAfterSeconds {
+            throw FeedAPIError(status: 429, code: "rate_limited", retryAfterSeconds: seconds)
+        }
+        if fails {
+            throw SampleFeedError.simulatedActionFailure
+        }
     }
 
     func undoNotInterested(contentId: String) async throws {
@@ -296,10 +360,10 @@ final class SampleFeedSource: FeedSource {
         Logger.debug("feed sample events: \(events.count)")
     }
 
-    private func locked<T>(_ body: () -> T) -> T {
+    private func locked<T>(_ body: () throws -> T) rethrows -> T {
         lock.lock()
         defer { lock.unlock() }
-        return body()
+        return try body()
     }
 
     /// 一个样例帖子的评论，按时间正序（和引擎一样）。每三条一组：第 0 条直接评论帖子，第 1 条回复它，第 2 条回复第 1 条（楼中楼里「回复 @某人」）。
