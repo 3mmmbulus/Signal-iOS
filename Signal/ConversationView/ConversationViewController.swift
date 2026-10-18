@@ -249,6 +249,9 @@ public final class ConversationViewController: OWSViewController {
         self.collectionView.showsVerticalScrollIndicator = true
         self.collectionView.showsHorizontalScrollIndicator = false
         self.collectionView.keyboardDismissMode = .interactive
+        // Tellomi (interaction audit A-36): a conversation too short to fill the screen still bounces when pulled, and can be
+        // pulled down to dismiss the keyboard, like the chat list of both Telegram apps.
+        self.collectionView.alwaysBounceVertical = true
         self.collectionView.allowsMultipleSelection = true
         self.collectionView.backgroundColor = .clear
 
