@@ -365,6 +365,15 @@ extension ConversationViewController: ConversationSearchControllerDelegate {
             isAnimated: true,
         )
     }
+
+    /// Tellomi (chat-telegram-parity F03): the search bar's calendar; the search closes once a day is picked, as on Android.
+    public func conversationSearchControllerDidTapJumpToDate(_ conversationSearchController: ConversationSearchController) {
+        AssertIsOnMainThread()
+
+        tellomiShowJumpToDatePicker(initialDay: Date()) { [weak self] in
+            self?.uiMode = .normal
+        }
+    }
 }
 
 // MARK: -

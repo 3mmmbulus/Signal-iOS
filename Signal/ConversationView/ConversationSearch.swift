@@ -20,6 +20,9 @@ public protocol ConversationSearchControllerDelegate: UISearchControllerDelegate
         _ conversationSearchController: ConversationSearchController,
         didSelectMessageId: String,
     )
+
+    /// Tellomi (chat-telegram-parity F03): the calendar button in the search bar.
+    func conversationSearchControllerDidTapJumpToDate(_ conversationSearchController: ConversationSearchController)
 }
 
 // MARK: -
@@ -142,6 +145,10 @@ extension ConversationSearchController: SearchResultsBarDelegate {
 
         self.delegate?.conversationSearchController(self, didSelectMessageId: searchResult.messageId)
     }
+
+    func searchResultsBarDidTapJumpToDate(_ searchResultsBar: SearchResultsBar) {
+        self.delegate?.conversationSearchControllerDidTapJumpToDate(self)
+    }
 }
 
 protocol SearchResultsBarDelegate: AnyObject {
@@ -150,6 +157,9 @@ protocol SearchResultsBarDelegate: AnyObject {
         setCurrentIndex currentIndex: Int,
         resultSet: ConversationScreenSearchResultSet,
     )
+
+    /// Tellomi (chat-telegram-parity F03).
+    func searchResultsBarDidTapJumpToDate(_ searchResultsBar: SearchResultsBar)
 }
 
 public class SearchResultsBar: UIView {
@@ -158,6 +168,8 @@ public class SearchResultsBar: UIView {
 
     var showLessRecentButton: UIBarButtonItem!
     var showMoreRecentButton: UIBarButtonItem!
+    /// Tellomi（chat-telegram-parity F03）：日历，选一天跳过去（Telegram 两端搜索栏都有；安卓 Tellomi 在搜索栏左边）。
+    var jumpToDateButton: UIBarButtonItem!
 
     let labelItem = UIBarButtonItem(title: nil, style: .plain, target: nil, action: nil)
     let toolbar = UIToolbar.clear()
@@ -226,7 +238,22 @@ public class SearchResultsBar: UIView {
             showMoreRecentButton.tintColor = .Signal.accent
         }
 
-        toolbar.items = [showLessRecentButton, showMoreRecentButton, .flexibleSpace(), labelItem, .flexibleSpace()]
+        jumpToDateButton = UIBarButtonItem(
+            image: UIImage(systemName: "calendar"),
+            primaryAction: UIAction { [weak self] _ in
+                guard let self else { return }
+                self.resultsBarDelegate?.searchResultsBarDidTapJumpToDate(self)
+            },
+        )
+        jumpToDateButton.accessibilityLabel = OWSLocalizedString(
+            "TELLOMI_JUMP_TO_DATE",
+            comment: "Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it.",
+        )
+        if isLegacyLayout {
+            jumpToDateButton.tintColor = .Signal.accent
+        }
+
+        toolbar.items = [showLessRecentButton, showMoreRecentButton, .flexibleSpace(), labelItem, .flexibleSpace(), jumpToDateButton]
 
         updateBarItems()
     }
@@ -306,9 +333,9 @@ public class SearchResultsBar: UIView {
         defer {
             if #available(iOS 26, *) {
                 if labelItem.title.isEmptyOrNil {
-                    toolbar.items = [showLessRecentButton, showMoreRecentButton, .flexibleSpace()]
+                    toolbar.items = [showLessRecentButton, showMoreRecentButton, .flexibleSpace(), jumpToDateButton]
                 } else {
-                    toolbar.items = [showLessRecentButton, showMoreRecentButton, .flexibleSpace(), labelItem, .flexibleSpace()]
+                    toolbar.items = [showLessRecentButton, showMoreRecentButton, .flexibleSpace(), labelItem, .flexibleSpace(), jumpToDateButton]
                 }
             }
         }

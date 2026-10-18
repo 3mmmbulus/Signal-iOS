@@ -11457,6 +11457,9 @@
 /* Title of the one-time card introducing the improved photo picker. */
 "TELLOMI_INTRO_PHOTO_PICKER_V2_TITLE" = "Sending photos just got easier";
 
+/* Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it. */
+"TELLOMI_JUMP_TO_DATE" = "Jump to Date";
+
 /* Tellomi (card-visual §3.6): what a screen reader says for the action button at the bottom of a Tellomi card; %@ is the button's text */
 "TELLOMI_LINK_CARD_A11Y_BUTTON_FORMAT" = "button: %@";
 

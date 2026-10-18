@@ -11214,6 +11214,9 @@
 /* Title of the one-time card introducing the improved photo picker. */
 "TELLOMI_INTRO_PHOTO_PICKER_V2_TITLE" = "发送图片更方便了";
 
+/* Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it. */
+"TELLOMI_JUMP_TO_DATE" = "跳到日期";
+
 /* Tellomi (ADR-0063 §5.5): toast after the link was copied because nothing could open it */
 "TELLOMI_LINKS_LINK_COPIED" = "已复制链接";
 

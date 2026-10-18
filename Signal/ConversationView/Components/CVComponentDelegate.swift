@@ -24,6 +24,10 @@ public protocol CVComponentDelegate: AnyObject, AudioMessageViewDelegate, CVPoll
 
     func enqueueReload()
 
+    /// Tellomi (chat-telegram-parity F03): the date between messages was tapped. [isStuck]: it was the header stuck to the top
+    /// while scrolling through that day (then jump to the day's first message), not the one in its place (then open the calendar).
+    func tellomiDidTapDateHeader(timestamp: UInt64, isStuck: Bool)
+
     // MARK: - Body Text Items
 
     func didTapBodyTextItem(_ item: CVTextLabel.Item)
@@ -436,4 +440,7 @@ public extension CVComponentDelegate {
     func tellomiCanQuickReact(_ itemViewModel: CVItemViewModelImpl) -> Bool { false }
 
     func tellomiDidDoubleTapToReact(_ itemViewModel: CVItemViewModelImpl) {}
+
+    /// 只有会话页按日期跳转；别的地方（编辑记录、消息详情等）点日期不动。
+    func tellomiDidTapDateHeader(timestamp: UInt64, isStuck: Bool) {}
 }

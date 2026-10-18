@@ -64,6 +64,7 @@ public class CVComponentDateHeader: CVComponentBase, CVRootComponent {
             owsFailDebug("Unexpected componentView.")
             return
         }
+        componentView.tellomiIsStickyHeader = layoutAttributes.isStickyHeader
         guard let doubleContentView = componentView.doubleContentView else {
             return
         }
@@ -194,6 +195,27 @@ public class CVComponentDateHeader: CVComponentBase, CVRootComponent {
         componentView.rootView.accessibilityTraits = .header
     }
 
+    /// Tellomi（chat-telegram-parity F03）：点日期（药丸，周围放宽 8 pt）。吸在顶上时跳到那天的第一条，在原位时打开日历——
+    /// 照 Telegram iOS `ChatMessageDateHeader.tapGesture`（`action(localTimestamp, stickDistanceFactor < 0.5)` →
+    /// `navigateToFirstDateMessage`：没在那天开头就跳过去，已经在了就 `openCalendarSearch`）；安卓 Telegram 也是点浮着的日期跳、点日期格开日历。
+    override public func handleTap(
+        sender: UIGestureRecognizer,
+        componentDelegate: CVComponentDelegate,
+        componentView: CVComponentView,
+        renderItem: CVRenderItem,
+    ) -> Bool {
+        guard
+            let componentView = componentView as? CVComponentViewDateHeader,
+            let pill = componentView.outerStack.subviews.first,
+            pill.containsGestureLocation(sender, hotAreaInsets: UIEdgeInsets(margin: -8))
+        else {
+            return false
+        }
+        let isStuck = componentView.tellomiIsStickyHeader
+        componentDelegate.tellomiDidTapDateHeader(timestamp: interaction.timestamp, isStuck: isStuck)
+        return true
+    }
+
     static func buildState(interaction: TSInteraction) -> State {
         let date = Date(millisecondsSince1970: interaction.timestamp)
         let text = DateUtil.formatDateHeaderForCVC(date)
@@ -312,6 +334,8 @@ public class CVComponentDateHeader: CVComponentBase, CVRootComponent {
 
         fileprivate var hasWallpaper = false
         fileprivate var isDarkThemeEnabled = false
+        /// Tellomi（chat-telegram-parity F03）：这一刻是吸在顶上的那颗（`apply(layoutAttributes:)` 记下）。
+        fileprivate var tellomiIsStickyHeader = false
 
         public var isDedicatedCellView = false
 

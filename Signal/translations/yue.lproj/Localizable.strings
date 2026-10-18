@@ -10492,6 +10492,9 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "撳一下替換另一個表情符號";
 
+/* Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it. */
+"TELLOMI_JUMP_TO_DATE" = "跳去日期";
+
 /* Tellomi (chat-telegram-parity F01): read out by VoiceOver on the button that jumps to my messages with reactions I haven't seen yet. */
 "TELLOMI_NEXT_UNSEEN_REACTION" = "下一個新回應";
 

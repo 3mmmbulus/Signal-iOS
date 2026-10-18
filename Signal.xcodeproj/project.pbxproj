@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9011C9C48D7E6C4D0058C032 /* TellomiJumpToDateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9B98753CEE95027FEF0C29 /* TellomiJumpToDateTests.swift */; };
+		51479377E5FF58605DE63AC9 /* TellomiConversationDaysTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0EF8EEDE6BC3CB2ADD050C /* TellomiConversationDaysTest.swift */; };
+		C6802D699C5F5335853117D5 /* TellomiJumpToDateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2B15053A751EB3DA9D4A46 /* TellomiJumpToDateViewController.swift */; };
+		08A8FDEF6223C63A2BC7C081 /* ConversationViewController+TellomiJumpToDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBBDE5E5F5D2F53CB2141BD /* ConversationViewController+TellomiJumpToDate.swift */; };
+		EC5E11FD1ADE36D13410B074 /* TellomiConversationDays.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36CAF7F049B68BA54CE9214 /* TellomiConversationDays.swift */; };
 		D5029BA438385715F5F3465E /* TellomiUnseenReactionsButtonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DFFEDEC0E45102921CADE0 /* TellomiUnseenReactionsButtonTests.swift */; };
 		50589452AD6A9B3B80E4A073 /* TellomiUnseenReactionsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F53BCD5AF6F8792898DBAC /* TellomiUnseenReactionsTest.swift */; };
 		25AE209D1345915E380B3842 /* ConversationViewController+TellomiUnseenReactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0103157B5942D42645DC19DA /* ConversationViewController+TellomiUnseenReactions.swift */; };
@@ -4551,6 +4556,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8E9B98753CEE95027FEF0C29 /* TellomiJumpToDateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiJumpToDateTests.swift; sourceTree = "<group>"; };
+		6A0EF8EEDE6BC3CB2ADD050C /* TellomiConversationDaysTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiConversationDaysTest.swift; sourceTree = "<group>"; };
+		FE2B15053A751EB3DA9D4A46 /* TellomiJumpToDateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiJumpToDateViewController.swift; sourceTree = "<group>"; };
+		0FBBDE5E5F5D2F53CB2141BD /* ConversationViewController+TellomiJumpToDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiJumpToDate.swift"; sourceTree = "<group>"; };
+		B36CAF7F049B68BA54CE9214 /* TellomiConversationDays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiConversationDays.swift; sourceTree = "<group>"; };
 		27DFFEDEC0E45102921CADE0 /* TellomiUnseenReactionsButtonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUnseenReactionsButtonTests.swift; sourceTree = "<group>"; };
 		38F53BCD5AF6F8792898DBAC /* TellomiUnseenReactionsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiUnseenReactionsTest.swift; sourceTree = "<group>"; };
 		0103157B5942D42645DC19DA /* ConversationViewController+TellomiUnseenReactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiUnseenReactions.swift"; sourceTree = "<group>"; };
@@ -9733,6 +9743,8 @@
 				88C980D327F3AD2C009750C0 /* TSInteraction+DeleteActionSheet.swift */,
 				7A44D4A7FD5A17E0F027CB9A /* ConversationViewController+ReactionFlyIn.swift */,
 				4CA8A1439DCC0FB53C897FB3 /* ConversationViewController+TellomiQuickReaction.swift */,
+				FE2B15053A751EB3DA9D4A46 /* TellomiJumpToDateViewController.swift */,
+				0FBBDE5E5F5D2F53CB2141BD /* ConversationViewController+TellomiJumpToDate.swift */,
 				0103157B5942D42645DC19DA /* ConversationViewController+TellomiUnseenReactions.swift */,
 				DB1D428A05F8531518F7D1B9 /* TellomiSendFlight.swift */,
 				7FFE2E35A5959B0DC03ABB32 /* ConversationViewController+TellomiSendFlight.swift */,
@@ -10338,6 +10350,7 @@
 				BA12110CE50BF64117FA5C86 /* TellomiLinkPressTests.swift */,
 				CDDE9A9A4C02B06EB9F0493B /* TellomiMultiselectTests.swift */,
 				C1C7DE7426C7E7D2AA1F5AFA /* TellomiConversationHeaderPressTests.swift */,
+				8E9B98753CEE95027FEF0C29 /* TellomiJumpToDateTests.swift */,
 				27DFFEDEC0E45102921CADE0 /* TellomiUnseenReactionsButtonTests.swift */,
 				F04AFEDBBCF8BF4637142913 /* TellomiJumpToMessageTests.swift */,
 				2A3175D1A64919BA376445E2 /* TellomiCameraSendLongPressTests.swift */,
@@ -15675,6 +15688,7 @@
 				F9426234289B1B5500460798 /* MessageProcessingIntegrationTest.swift */,
 				F942622B289B1B5500460798 /* MessageSendLogTests.swift */,
 				F9BC9C6428B7C00A0077D442 /* OutgoingGroupUpdateMessageTest.swift */,
+				6A0EF8EEDE6BC3CB2ADD050C /* TellomiConversationDaysTest.swift */,
 				38F53BCD5AF6F8792898DBAC /* TellomiUnseenReactionsTest.swift */,
 				F9426237289B1B5500460798 /* OWSUDManagerTest.swift */,
 				045B408D2EC68974002D3F9A /* PinnedMessageManagerTest.swift */,
@@ -16523,6 +16537,7 @@
 			children = (
 				05412B3B2C22219E007AC9C7 /* InboxFilter.swift */,
 				F9C5CA38289453B100548EEE /* InteractionFinder.swift */,
+				B36CAF7F049B68BA54CE9214 /* TellomiConversationDays.swift */,
 				F9C5CA37289453B100548EEE /* ThreadFinder.swift */,
 			);
 			path = Records;
@@ -20267,6 +20282,8 @@
 				AC119A6289A1333C0B1D18D8 /* TellomiReactionBurst.swift in Sources */,
 				36CEEA01C004890A1AEC05E6 /* ConversationViewController+ReactionFlyIn.swift in Sources */,
 				44D613C49BDBBA7BFF465B2D /* ConversationViewController+TellomiQuickReaction.swift in Sources */,
+				C6802D699C5F5335853117D5 /* TellomiJumpToDateViewController.swift in Sources */,
+				08A8FDEF6223C63A2BC7C081 /* ConversationViewController+TellomiJumpToDate.swift in Sources */,
 				25AE209D1345915E380B3842 /* ConversationViewController+TellomiUnseenReactions.swift in Sources */,
 				4C61A75530506FF504238252 /* TellomiSendFlight.swift in Sources */,
 				4A8E8774FE6281375A39A2B9 /* ConversationViewController+TellomiSendFlight.swift in Sources */,
@@ -20307,6 +20324,7 @@
 				9951DACC3B2DCFE5CF03EDD2 /* TellomiLinkPressTests.swift in Sources */,
 				A07CBCD0BF7D0868153194EF /* TellomiMultiselectTests.swift in Sources */,
 				8786864EF279448360DB6842 /* TellomiConversationHeaderPressTests.swift in Sources */,
+				9011C9C48D7E6C4D0058C032 /* TellomiJumpToDateTests.swift in Sources */,
 				D5029BA438385715F5F3465E /* TellomiUnseenReactionsButtonTests.swift in Sources */,
 				56AEDB9325D50D88EE328847 /* TellomiJumpToMessageTests.swift in Sources */,
 				45542A13DA4150B8CD4DCE01 /* TellomiCameraSendLongPressTests.swift in Sources */,
@@ -20959,6 +20977,7 @@
 				F9C5CE0F289453B400548EEE /* Int+SSK.swift in Sources */,
 				D9247EAA2BFD424800DFEF6F /* InteractionDeleteManager.swift in Sources */,
 				F9C5CD18289453B300548EEE /* InteractionFinder.swift in Sources */,
+				EC5E11FD1ADE36D13410B074 /* TellomiConversationDays.swift in Sources */,
 				D979CC2B2AD3933B006AAC49 /* InteractionStore+CallRecord.swift in Sources */,
 				50468F2929EE130A00948E02 /* InteractionStore.swift in Sources */,
 				D962346B2C0E937500DAF6CB /* InterleavingCompositeCursor.swift in Sources */,
@@ -21885,6 +21904,7 @@
 				D925C7BB2B7BEC0F00AC73B0 /* OutgoingCallLogEventSyncMessageTest.swift in Sources */,
 				D9D3216A2A8AC9B0004FC110 /* OutgoingGroupCallUpdateMessageTest.swift in Sources */,
 				041C24ED2DF782AF0065B685 /* OutgoingGroupUpdateMessageTest.swift in Sources */,
+				51479377E5FF58605DE63AC9 /* TellomiConversationDaysTest.swift in Sources */,
 				50589452AD6A9B3B80E4A073 /* TellomiUnseenReactionsTest.swift in Sources */,
 				F96BB60729A528BD001C18DF /* OWS2FAManagerTest.swift in Sources */,
 				667BBAD92BAA5F84006AB9DE /* OWSAttachmentInfoSerializationTest.swift in Sources */,
