@@ -11707,6 +11707,33 @@
 "TELLOMI_FEED_THROTTLED_FORMAT" = "Too many requests. Try again in %@ seconds.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_EMPTY" = "No posts with this topic yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOW" = "Follow topic";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOWED" = "You're following this topic";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOWING" = "Following";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_GONE_BODY" = "It may have been removed, or the link is wrong.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_GONE_TITLE" = "This topic isn't available";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_LOAD_FAILED" = "Couldn't load this topic";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_POSTS_FAILED" = "Couldn't load more posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_UNFOLLOWED" = "Unfollowed this topic";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNDO" = "Undo";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

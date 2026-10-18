@@ -11476,6 +11476,33 @@
 "TELLOMI_FEED_THROTTLED_FORMAT" = "操作太频繁，请 %@ 秒后再试。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_EMPTY" = "还没有带这个话题的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOW" = "关注话题";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOWED" = "已关注这个话题";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOWING" = "已关注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_GONE_BODY" = "可能已被移除，或者链接有误。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_GONE_TITLE" = "这个话题不存在";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_LOAD_FAILED" = "话题加载失败";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_POSTS_FAILED" = "没能加载更多动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_UNFOLLOWED" = "已取消关注话题";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNDO" = "撤销";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

@@ -11593,6 +11593,33 @@
 "TELLOMI_FEED_THROTTLED_FORMAT" = "操作太頻繁，請 %@ 秒後再試。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_EMPTY" = "仲未有帶呢個話題嘅動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOW" = "關注話題";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOWED" = "已關注這個話題";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_FOLLOWING" = "已關注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_GONE_BODY" = "可能已被移除，或者連結有誤。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_GONE_TITLE" = "這個話題不存在";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_LOAD_FAILED" = "話題載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_POSTS_FAILED" = "無法載入更多動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_TOPIC_UNFOLLOWED" = "已取消關注話題";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNDO" = "復原";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
