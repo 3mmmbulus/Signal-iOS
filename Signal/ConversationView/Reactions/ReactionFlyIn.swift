@@ -58,6 +58,8 @@ final class ReactionFlyIn {
     private var flightStartTime: CFTimeInterval = 0
     private var flightStartScale: CGFloat = 1
     private var burstPlayed = false
+    /// 落地那一刻要做的事（会话页：菜单还在收的话先露出回应区）。只在真落地时调，取消、等不到落点时不调。
+    private var onHit: (() -> Void)?
     private var displayLink: CADisplayLink?
     /// 飞行期间自己留住自己，直到叠在窗口上的那一层收走（[finish]）。
     /// 调用方什么时候放掉引用都行；不留住的话，飞行收尾时对象已经没了，那一层会永远留在窗口上
@@ -110,8 +112,9 @@ final class ReactionFlyIn {
         targetView.alpha = 0
     }
 
-    /// 飞到 `targetView`（胶囊里显示这个表情的那个字）上。飞行期间它一直藏着，落地时再露出。
-    func land(on targetView: UIView, targetFontSize: CGFloat) {
+    /// 飞到 `targetView`（胶囊里显示这个表情的那个字）上。飞行期间它一直藏着，落地时再露出、调 [onHit]
+    /// （Telegram `animateOutToReaction(onHit:)`）。
+    func land(on targetView: UIView, targetFontSize: CGFloat, onHit: (() -> Void)? = nil) {
         guard !hasFinished, overlayView.superview != nil, targetView.window != nil else {
             cancel()
             return
@@ -119,6 +122,7 @@ final class ReactionFlyIn {
         hasFinished = true
         self.targetView = targetView
         self.targetFontSize = targetFontSize
+        self.onHit = onHit
         targetView.alpha = 0
 
         stopLiftAnimation()
@@ -165,7 +169,9 @@ final class ReactionFlyIn {
             playBurst(on: targetView)
         }
         targetView?.alpha = 1
+        let onHit = self.onHit
         finish()
+        onHit?()
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.landingHapticDelay) {
             SelectionHapticFeedback().selectionChanged()
         }
@@ -216,6 +222,7 @@ final class ReactionFlyIn {
         stopLiftAnimation()
         stopClock()
         overlayView.removeFromSuperview()
+        onHit = nil
         keepAlive = nil
     }
 

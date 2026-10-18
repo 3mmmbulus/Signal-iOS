@@ -188,14 +188,17 @@ extension ConversationViewController: ContextMenuInteractionDelegate {
         // Add reaction bar if necessary
         if thread.canSendReactionToThread, shouldShowReactionPickerForInteraction(contextInteraction.itemViewModel.interaction) {
             let reactionBarAccessory = ContextMenuReactionBarAccessory(thread: self.thread, itemViewModel: contextInteraction.itemViewModel)
-            reactionBarAccessory.didSelectReactionHandler = { [weak self] (message: TSMessage, reaction: String, isRemoving: Bool, flyInSource: ReactionFlyIn.Source?) in
+            reactionBarAccessory.didSelectReactionHandler = { [weak self, weak contextInteraction] (message: TSMessage, reaction: String, isRemoving: Bool, flyInSource: ReactionFlyIn.Source?) in
 
                 guard let self else {
                     owsFailDebug("conversationViewController was unexpectedly nil")
                     return
                 }
 
-                // Tellomi（交互审计 A-07）：表情先在原处拿起来，等回应画出来再飞过去。
+                // Tellomi（交互审计 A-07 起飞时机）：菜单收起期间也让聊天列表落 load，这条回应一写进去就画出来，表情好起飞。
+                contextInteraction?.tellomiReactionChosen = true
+
+                // Tellomi（交互审计 A-07）：表情先在原处拿起来，等回应画出来就飞过去（菜单还在收也飞）。
                 if let flyInSource {
                     self.beginReactionFlyIn(messageUniqueId: message.uniqueId, emoji: reaction, source: flyInSource)
                 }
@@ -278,7 +281,13 @@ extension ConversationViewController: ContextMenuInteractionDelegate {
 
         collectionViewActiveContextMenuInteraction = nil
 
-        // Tellomi（交互审计 A-07）：菜单收完了；回应要是已经画出来，就在这里起飞。
+        // Tellomi（交互审计 A-07 起飞时机）：收起期间换到新格子、先藏着的那条消息，现在放出来。
+        for view in viewState.tellomiViewsHiddenWhileMenuCloses {
+            view.isHidden = false
+        }
+        viewState.tellomiViewsHiddenWhileMenuCloses.removeAll()
+
+        // Tellomi（交互审计 A-07）：菜单收完了；回应要是已经画出来、表情还没飞，就在这里起飞。
         landPendingReactionFlyInIfPossible()
     }
 

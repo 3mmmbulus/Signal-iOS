@@ -131,6 +131,41 @@ final class ReactionFlyInTest: XCTestCase {
         XCTAssertNil(weakFlyIn)
     }
 
+    // MARK: - 落地时（A-07 起飞时机：菜单还在收的话，会话页这时先露出回应区）
+
+    /// 落地那一刻调一次 onHit：起飞后 0.2 s 左右，落点的字已经露出来。
+    func testOnHitRunsOnceWhenTheEmojiLands() {
+        let (window, target) = makeWindowWithTarget()
+        let flyIn = makeFlyIn(window: window)
+        var hits: [(after: CFTimeInterval, targetAlpha: CGFloat)] = []
+        flyIn.claim(target)
+        let start = CACurrentMediaTime()
+        flyIn.land(on: target, targetFontSize: 14) {
+            hits.append((CACurrentMediaTime() - start, target.alpha))
+        }
+
+        waitUntil(timeout: 2) { !hits.isEmpty }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        XCTAssertEqual(hits.count, 1)
+        XCTAssertEqual(hits.first?.targetAlpha, 1)
+        XCTAssertGreaterThanOrEqual(hits.first?.after ?? 0, ReactionFlyIn.flightDuration - 0.01)
+        XCTAssertLessThan(hits.first?.after ?? 1, ReactionFlyIn.flightDuration + 0.15)
+    }
+
+    /// 飞到一半落点离开了窗口（格子被回收）：原地淡出，不算落地，不调 onHit。
+    func testOnHitIsNotCalledWhenTheTargetGoesAway() {
+        let (window, target) = makeWindowWithTarget()
+        let flyIn = makeFlyIn(window: window)
+        var hits = 0
+        flyIn.claim(target)
+        flyIn.land(on: target, targetFontSize: 14) { hits += 1 }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        target.removeFromSuperview()
+
+        RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+        XCTAssertEqual(hits, 0)
+    }
+
     // MARK: -
 
     private func makeWindowWithTarget() -> (UIWindow, UILabel) {

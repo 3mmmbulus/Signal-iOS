@@ -411,6 +411,9 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
 
     private var animationState: ContextMenuAnimationState = .none
     private var animateOutPreviewFrame = CGRect.zero
+    /// Tellomi（交互审计 A-07 起飞时机）：收起开始的时刻，和收起时预览该飞向的真气泡（见 [tellomiRetargetDismissal]）。
+    private var tellomiAnimateOutStart: CFTimeInterval?
+    private weak var tellomiPreviewTarget: UIView?
     private let animationDuration = 0.4
     private let springDamping: CGFloat = 0.8
     // Tellomi（tellomi/tellomi 交互审计 A-06）：收起从 0.4 s 缩到 0.25 s——菜单项要等收起播完才执行，
@@ -657,6 +660,7 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
 
         let dispatchGroup = DispatchGroup()
         animationState = .animateOut
+        tellomiAnimateOutStart = CACurrentMediaTime()
 
         dispatchGroup.enter()
         UIView.animate(withDuration: animateOutDuration) {
@@ -675,7 +679,8 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
             dispatchGroup.leave()
         }
 
-        let finalFrame = previewSourceFrame()
+        let tellomiFrames = tellomiDismissalFrames()
+        let finalFrame = tellomiFrames?.preview ?? previewSourceFrame()
         let initialFrame = previewView.frame
         animateOutPreviewFrame = initialFrame
         let shiftPreview = finalFrame != initialFrame
@@ -700,7 +705,7 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
                         }
                     }
                     self.previewView?.frame = finalFrame
-                    self.auxiliaryPreviewView?.frame = self.auxPreviewSourceFrame()
+                    self.auxiliaryPreviewView?.frame = tellomiFrames?.auxiliary ?? self.auxPreviewSourceFrame()
                 },
                 completion: { _ in
                     dispatchGroup.leave()
@@ -722,6 +727,41 @@ class ContextMenuController: OWSViewController, ContextMenuViewDelegate, UIGestu
             self.animationState = .none
             completion()
         }
+    }
+
+    /// Tellomi（交互审计 A-07 起飞时机，Telegram 两端一选回应就飞、和菜单收起同时）：选了回应以后，菜单收起期间聊天列表就落了
+    /// 这条回应，真消息可能被新胶囊挤到了别处，或者换了一个格子（`reloadItems` 会给它新的 cell，原来那格的位置就不算数了）。
+    /// 预览改飞向 [previewTarget]（这条消息此刻的气泡）：正在收的，再叠一段动画到新位置、和收起同时结束（UIKit 的动画是叠加的，
+    /// 原来那段照常跑完、照常收尾）；还没开始收的，开始时直接用它。回应区快照跟着气泡走（见 [tellomiDismissalFrames]）。
+    func tellomiRetargetDismissal(previewTo previewTarget: UIView) {
+        tellomiPreviewTarget = previewTarget
+        guard animationState == .animateOut, let start = tellomiAnimateOutStart, let frames = tellomiDismissalFrames() else {
+            return
+        }
+        let remaining = max(0.05, animateOutDuration - (CACurrentMediaTime() - start))
+        UIView.animate(withDuration: remaining, delay: 0, options: [.curveEaseOut]) {
+            if self.previewView?.frame != frames.preview {
+                self.previewView?.frame = frames.preview
+            }
+            if let auxiliary = frames.auxiliary, self.auxiliaryPreviewView?.frame != auxiliary {
+                self.auxiliaryPreviewView?.frame = auxiliary
+            }
+        }
+    }
+
+    /// 收起时预览和回应区快照该落到哪（菜单坐标）：预览落在 [tellomiPreviewTarget] 上、原大（菜单里缩小过的也放回原大）；
+    /// 回应区快照和气泡的相对位置照长按那一刻（回应区排在气泡下方，对方的消息靠气泡右边、自己的靠左边，跟着气泡走）。
+    /// 目标不在视图树里就没有，照原来的位置收。
+    private func tellomiDismissalFrames() -> (preview: CGRect, auxiliary: CGRect?)? {
+        guard let target = tellomiPreviewTarget, let superview = target.superview, target.window != nil else {
+            return nil
+        }
+        let preview = view.convert(target.frame, from: superview)
+        guard auxiliaryPreviewView != nil, let hostView = view as? ContextMenuHostView else {
+            return (preview, nil)
+        }
+        let offset = CGPoint.subtract(hostView.auxPreviewSourceFrame.origin, hostView.previewSourceFrame.origin)
+        return (preview, CGRect(origin: CGPoint.add(preview.origin, offset), size: hostView.auxPreviewSourceFrame.size))
     }
 
     // MARK: Gesture Recognizer Support

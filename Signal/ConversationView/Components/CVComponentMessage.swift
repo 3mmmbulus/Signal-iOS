@@ -2791,6 +2791,12 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         }
 
         public func reset() {
+            // Tellomi（交互审计 A-07 起飞时机）：菜单收起期间会话页会藏起菜单那条消息的气泡和回应区；这一格被拿去显示别的消息时
+            // 先放出来。还是那条消息的话，配置完马上又会藏上（`CVViewState.tellomiHideWhileMenuCloses`），一帧都不露。
+            let covered = tellomiContextMenuCoveredViews
+            covered.content.isHidden = false
+            covered.auxiliary.isHidden = false
+
             removeSwipeActionAnimations()
 
             if !isDedicatedCellView {
@@ -2868,6 +2874,12 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
         public func contextMenuAuxiliaryContentView() -> UIView? {
             reactionsSwipeToReplyWrapper
+        }
+
+        /// Tellomi（交互审计 A-07 起飞时机）：长按菜单盖住的那两个视图——气泡和回应区，和 [contextMenuContentView] /
+        /// [contextMenuAuxiliaryContentView] 是同一对，只是不顺手打开气泡颜色的隐式动画（菜单收起期间藏、放它们时用）。
+        public var tellomiContextMenuCoveredViews: (content: UIView, auxiliary: UIView) {
+            (contentViewSwipeToReplyWrapper.subview ?? contentViewSwipeToReplyWrapper, reactionsSwipeToReplyWrapper)
         }
 
         public func contextMenuPresentationWillBegin() {

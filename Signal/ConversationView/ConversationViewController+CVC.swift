@@ -686,6 +686,10 @@ extension ConversationViewController: CVLoadCoordinatorDelegate {
 
         if !shouldAnimateUpdate {
             self.loadDidLand()
+        } else {
+            // Tellomi（交互审计 A-07 起飞时机）：带动画的更新要等这段动画播完才 loadDidLand；新格子这时已经配好了，
+            // 回应的表情马上起飞（菜单还在收的话，新格子先藏起来），不等那段动画。
+            landPendingReactionFlyInIfPossible()
         }
     }
 

@@ -612,7 +612,9 @@ public class CVLoadCoordinator: NSObject {
             guard viewState.selectionAnimationState != .animating else {
                 return false
             }
-            if let interaction = viewState.collectionViewActiveContextMenuInteraction, interaction.contextMenuVisible {
+            // Tellomi（交互审计 A-07 起飞时机）：选了回应以后菜单还没收完也落（这条回应要马上画出来，菜单收起和表情起飞一起开始）；
+            // 真消息由会话页藏到菜单收完（`CVViewState.tellomiHideWhileMenuCloses`）。
+            if let interaction = viewState.collectionViewActiveContextMenuInteraction, interaction.contextMenuVisible, !interaction.tellomiReactionChosen {
                 return false
             }
             guard !delegate.areCellsAnimating else {
@@ -743,6 +745,8 @@ extension CVLoadCoordinator: UICollectionViewDataSource {
         cell.tellomiIsHeldForSendFlight = delegate.viewState.tellomiSendFlights.contains {
             $0.isHoldingRow(interactionUniqueId: renderItem.interactionUniqueId)
         }
+        // Tellomi（交互审计 A-07 起飞时机）：选了回应、菜单还在收时这一条换了新格子：新格子的气泡和回应区也先藏着。
+        delegate.viewState.tellomiHideWhileMenuCloses(cell, interactionUniqueId: renderItem.interactionUniqueId)
         return cell
 
         //        // This must happen after load for display, since the tap

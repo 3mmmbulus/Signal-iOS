@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E60B7D0CD2F13C0A4CBD8A30 /* TellomiContextMenuRetargetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88CDC0B3DF410DAAEBE4DF4 /* TellomiContextMenuRetargetTests.swift */; };
 		4F651FD8BA744971000921E5 /* TellomiQuickReactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967CB77C765E8ED90C273FE3 /* TellomiQuickReactionTests.swift */; };
 		44D613C49BDBBA7BFF465B2D /* ConversationViewController+TellomiQuickReaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA8A1439DCC0FB53C897FB3 /* ConversationViewController+TellomiQuickReaction.swift */; };
 		268662CFEE5FD8F61E2F2EF1 /* TellomiRecordingGestureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */; };
@@ -4546,6 +4547,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D88CDC0B3DF410DAAEBE4DF4 /* TellomiContextMenuRetargetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiContextMenuRetargetTests.swift; sourceTree = "<group>"; };
 		967CB77C765E8ED90C273FE3 /* TellomiQuickReactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiQuickReactionTests.swift; sourceTree = "<group>"; };
 		4CA8A1439DCC0FB53C897FB3 /* ConversationViewController+TellomiQuickReaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiQuickReaction.swift"; sourceTree = "<group>"; };
 		CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRecordingGestureTests.swift; sourceTree = "<group>"; };
@@ -10378,6 +10380,7 @@
 				B6A2F4D1C9E3A0875D2B9F01 /* TellomiOfficialBadgeContrastTests.swift */,
 				5042EAA2287F96FB00C9B19F /* VisibleBadgeResolverTest.swift */,
 				BFE84D06E4F426E60014D1ED /* ReactionFlyInTest.swift */,
+				D88CDC0B3DF410DAAEBE4DF4 /* TellomiContextMenuRetargetTests.swift */,
 				F1A4E1ED6860037E9895BBB6 /* TellomiReactionPillsTest.swift */,
 				6818A248C64A7149D4D923BE /* TellomiContextMenuActionTimingTest.swift */,
 				509F00653629A8EA63754812 /* TellomiReactionBarTest.swift */,
@@ -20421,6 +20424,7 @@
 				5042EAA3287F96FB00C9B19F /* VisibleBadgeResolverTest.swift in Sources */,
 				17E6049028A17BD300127680 /* ZkGroupIntegrationTest.swift in Sources */,
 				54F9459CBCF03774D85E776D /* ReactionFlyInTest.swift in Sources */,
+				E60B7D0CD2F13C0A4CBD8A30 /* TellomiContextMenuRetargetTests.swift in Sources */,
 				7584EEFDAE1CD7B812FD2D4E /* TellomiReactionPillsTest.swift in Sources */,
 				83805FB4360A13FAA64023D2 /* TellomiContextMenuActionTimingTest.swift in Sources */,
 				E8981A997A8652D2C38AED29 /* TellomiReactionBarTest.swift in Sources */,

@@ -109,6 +109,9 @@ public class CVViewState: NSObject {
     var pendingReactionFlyIn: ReactionFlyIn?
     /// Tellomi：双击回应以后、回应画出来之前（消息、表情、什么时候双击的）。
     var tellomiPendingQuickReactionBurst: (messageUniqueId: String, emoji: String, time: Date)?
+    /// Tellomi（交互审计 A-07 起飞时机）：菜单收起期间落了 load 时，会话页替菜单藏起来的那条消息的气泡和回应区（多半在新格子里），
+    /// 菜单收完放出来（见 [tellomiHideWhileMenuCloses]）。
+    var tellomiViewsHiddenWhileMenuCloses: [UIView] = []
     /// Tellomi（M9 发送动画）：还在等、还在飞的那几次发送（连着发时不止一个）。
     var tellomiSendFlights: [TellomiSendFlight] = []
     public var focusedMessageId: String?
@@ -356,6 +359,27 @@ extension CVViewState {
 
     var asCoreState: CVCoreState {
         CVCoreState(conversationStyle: conversationStyle, mediaCache: mediaCache)
+    }
+
+    /// Tellomi（交互审计 A-07 起飞时机）：选了回应、菜单还在收的时候，[cell] 显示的是菜单那条消息的话，把它的气泡（表情落地前
+    /// 连回应区）藏起来、记下来，菜单收完再放出来：预览快照还在飞回来，真消息不能先露。聊天列表给它换了新格子时，在配置格子时
+    /// 就藏（`CVLoadCoordinator`），一帧都不露。已经藏着的（菜单自己藏的那两个）不再记。
+    func tellomiHideWhileMenuCloses(_ cell: CVCell, interactionUniqueId: String) {
+        guard
+            let interaction = collectionViewActiveContextMenuInteraction,
+            interaction.contextMenuVisible,
+            interaction.tellomiReactionChosen,
+            interaction.itemViewModel.interaction.uniqueId == interactionUniqueId,
+            let messageView = cell.componentView as? CVComponentMessage.CVComponentViewMessage
+        else {
+            return
+        }
+        let covered = messageView.tellomiContextMenuCoveredViews
+        let views = interaction.tellomiReactionLanded ? [covered.content] : [covered.content, covered.auxiliary]
+        for view in views where !view.isHidden {
+            view.isHidden = true
+            tellomiViewsHiddenWhileMenuCloses.append(view)
+        }
     }
 }
 
