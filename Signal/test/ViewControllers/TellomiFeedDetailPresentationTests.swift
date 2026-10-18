@@ -356,6 +356,19 @@ final class TellomiFeedSampleDetailStoreTests: XCTestCase {
         XCTAssertTrue(other.viewer.canComment)
     }
 
+    func testTheSourceItselfRefusesACommentOnTheClosedSamplePost() async throws {
+        let source = sampleSource()
+        do {
+            _ = try await source.postComment(postId: "sample-9", text: "hi", parentId: nil)
+            XCTFail("sample-9 的评论是关的，source 应该拒绝")
+        } catch let error as FeedAPIError {
+            XCTAssertEqual(error.status, 403)
+            XCTAssertEqual(error.code, "comments_closed")
+        }
+        let ok = try await source.postComment(postId: "sample-3", text: " hi ", parentId: nil)
+        XCTAssertNotEqual(ok, FeedCreatePostResponse.statePending)
+    }
+
     func testTheCommentKnobsFailDelayAndReturnEngineErrorCodes() async throws {
         let source = sampleSource()
         let card = try await sampleCard(source, "sample-3")
