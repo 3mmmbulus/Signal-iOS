@@ -192,22 +192,22 @@ final class TellomiFeedSearchUITests: XCTestCase {
         let harness = await makeHarness()
         defer { harness.window.isHidden = true }
         let search = harness.openSearch()
+        // 样例每页只有 3 条，列表一画出来「最后 3 行里有一行显示」就自动预取下一页（willDisplay），
+        // 所以不能先断言「只有 3 条」：让翻页从一开始就失败，这样第一页之后的自动翻页稳定地停在「重试」行上。
+        harness.source.simulation.failsSearchMore = true
         await harness.type("的", into: search)
         search.scopeControl.selectedSegmentIndex = 2
         search.scopeControl.sendActions(for: .valueChanged)
         await search.store.waitForTasks()
         harness.window.layoutIfNeeded()
-        let before = search.presentation.posts.map(\.id)
-        XCTAssertEqual(before.count, SampleFeedSource.searchPostsPageSize)
-        XCTAssertTrue(search.presentation.canLoadMore)
-
-        harness.source.simulation.failsSearchMore = true
-        search.store.loadMore()
-        await search.store.waitForTasks()
+        await waitUntil { search.rows.last == .status(.loadMoreFailed(retryAfterSeconds: nil)) }
         harness.window.layoutIfNeeded()
-        XCTAssertEqual(search.presentation.posts.map(\.id), before, "翻页失败：已有的结果留着")
+        let before = search.presentation.posts.map(\.id)
+        XCTAssertGreaterThanOrEqual(before.count, SampleFeedSource.searchPostsPageSize, "第一页的结果留着（预取可能已经多翻了一页，不要求恰好一页）")
         XCTAssertEqual(search.rows.last, .status(.loadMoreFailed(retryAfterSeconds: nil)))
         XCTAssertFalse(search.presentation.canLoadMore)
+        // 重试行在列表最底下：先滚到底，cellForRow 才拿得到
+        search.searchTableView.scrollToRow(at: IndexPath(row: search.rows.count - 1, section: 0), at: .bottom, animated: false)
         let retryCell = try XCTUnwrap(statusCell(of: search, at: search.rows.count - 1))
         XCTAssertFalse(retryCell.retryButton.isHidden)
 
