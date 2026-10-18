@@ -274,6 +274,9 @@ final class TellomiFeedProfileUITests: XCTestCase {
         let leases = profile.store.leaseCount
         XCTAssertGreaterThan(leases, 0)
         harness.navigation.popViewController(animated: false)
+        harness.window.layoutIfNeeded()
+        // viewDidDisappear 不是 pop 那一刻同步来的（详情页同样的测试也等了 200ms）
+        try await Task.sleep(nanoseconds: 200_000_000)
         XCTAssertFalse(profile.store.isObservingFeed)
         XCTAssertEqual(profile.store.leaseCount, 0)
         harness.window.isHidden = true
@@ -476,7 +479,11 @@ final class TellomiFeedProfileUITests: XCTestCase {
         let before = harness.navigation.viewControllers.count
         profile.presentedReportFinished(.feedHidden)
         try await settle(profile)
-        try await Task.sleep(nanoseconds: 100_000_000)
+        var waited = 0
+        while harness.navigation.viewControllers.count != before - 1 && waited < 2000 {
+            try await Task.sleep(nanoseconds: 100_000_000)
+            waited += 100
+        }
         XCTAssertTrue(profile.didClose)
         XCTAssertEqual(harness.navigation.viewControllers.count, before - 1)
         harness.window.isHidden = true
@@ -527,10 +534,14 @@ final class TellomiFeedProfileUITests: XCTestCase {
         let profile = try XCTUnwrap(harness.navigation.topViewController as? FeedProfileViewController)
         XCTAssertEqual(profile.store.profileId, author.profileId)
         XCTAssertEqual(profile.navigationItem.title, author.displayName, "标题先用帖子上的名字")
+        // 入口是 animated: true 的 push：等动画走完再 pop，不然 UINavigationController 会忽略后面的 push（嵌套转场）
+        try await Task.sleep(nanoseconds: 800_000_000)
         harness.navigation.popViewController(animated: false)
+        try await Task.sleep(nanoseconds: 300_000_000)
 
         // 帖子详情：同样的入口
         page.onOpenPost?(try XCTUnwrap(cell.card))
+        try await Task.sleep(nanoseconds: 800_000_000)
         let detail = try XCTUnwrap(harness.navigation.topViewController as? FeedPostDetailViewController)
         detail.loadViewIfNeeded()
         harness.window.layoutIfNeeded()

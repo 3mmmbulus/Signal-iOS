@@ -181,7 +181,8 @@ final class FeedProfileViewController: OWSViewController {
     /// 举报页关了：提交成功提示「已提交」，`feed_hidden` 让主页跟着收起。
     func presentedReportFinished(_ outcome: FeedReportViewController.Outcome) {
         presentedReport = nil
-        dismiss(animated: true)
+        // feed_hidden：主页马上要收起，举报页不做收起动画——否则主页的 pop 要等举报页的转场结束（约 0.8 秒）才开始
+        dismiss(animated: outcome != .feedHidden)
         switch outcome {
         case .sent: store.onReported()
         case .feedHidden: store.onFeedHidden()
@@ -524,7 +525,8 @@ final class FeedProfileHeaderCell: UITableViewCell {
         countsLabel.numberOfLines = 0
 
         followButton.addAction(UIAction { [weak self] _ in self?.onFollow?() }, for: .touchUpInside)
-        followButton.autoSetDimension(.height, toSize: 40)
+        // 最大号动态字体时按钮里的字比 40 高：只定最矮，不定死
+        followButton.autoSetDimension(.height, toSize: 40, relation: .greaterThanOrEqual)
         followButton.autoSetDimension(.width, toSize: 140, relation: .greaterThanOrEqual)
 
         let stack = UIStackView(arrangedSubviews: [avatarView, nameLabel, identityLabel, badgeLabel, bioLabel, countsLabel, followButton])
