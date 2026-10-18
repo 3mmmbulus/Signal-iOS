@@ -33,14 +33,21 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     /// 搜索页 / 话题页入口开着没有（`TellomiFeed.isSearchEnabled`，默认关）。单测 / 截图可以直接传 true。
     let searchEnabled: Bool
 
+    /// 通知页入口（左上角的铃铛）开着没有（`TellomiFeed.isNotificationsEnabled`，默认关）。单测 / 截图可以直接传 true。
+    let notificationsEnabled: Bool
+    /// 铃铛按钮和它的红点（单测 / 截图用；入口没开时按钮不在导航栏上）。
+    let notificationsButton = FeedBellButton()
+
     init(
         source: FeedSource = FeedSources.current(),
         profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled,
-        searchEnabled: Bool = TellomiFeed.isSearchEnabled
+        searchEnabled: Bool = TellomiFeed.isSearchEnabled,
+        notificationsEnabled: Bool = TellomiFeed.isNotificationsEnabled
     ) {
         self.source = source
         self.profilePageEnabled = profilePageEnabled
         self.searchEnabled = searchEnabled
+        self.notificationsEnabled = notificationsEnabled
         store = FeedStore(source: source)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
@@ -81,7 +88,9 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             for page in pages {
                 page.apply()
             }
-        case .actionFailed, .unread:
+        case .unread:
+            updateNotificationsBadge()
+        case .actionFailed:
             break
         }
     }
@@ -98,6 +107,12 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             let search = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), primaryAction: UIAction { [weak self] _ in self?.openSearch() })
             search.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_SEARCH_BUTTON", comment: "Feed: accessibility label of the search button at the top of the feed.")
             navigationItem.rightBarButtonItem = search
+        }
+        if notificationsEnabled {
+            notificationsButton.addAction(UIAction { [weak self] _ in self?.openNotifications() }, for: .touchUpInside)
+            notificationsButton.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_NOTIF_TITLE", comment: "Feed notifications page: title.")
+            navigationItem.leftBarButtonItem = UIBarButtonItem(customView: notificationsButton)
+            updateNotificationsBadge()
         }
 
         pagingScrollView.isPagingEnabled = true
@@ -141,6 +156,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setFeedVisible(true)
+        if notificationsEnabled { store.refreshNotificationUnread() }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -157,6 +173,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     private func willEnterForeground() {
         if viewIfLoaded?.window != nil {
             setFeedVisible(true)
+            if notificationsEnabled { store.refreshNotificationUnread() }
         }
     }
 
@@ -238,6 +255,26 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         navigationController?.pushViewController(page, animated: true)
     }
 
+    /// 点左上角的铃铛：推通知页（和列表、详情共用同一个 `FeedStore`，红点是同一份）。
+    func openNotifications() {
+        guard notificationsEnabled else { return }
+        let page = FeedNotificationsViewController(source: source, feed: store)
+        if profilePageEnabled {
+            page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+        }
+        if searchEnabled {
+            page.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
+        }
+        navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// 铃铛上的红点：互动 / 新关注 / 系统任何一栏有没读的就亮。
+    private func updateNotificationsBadge() {
+        guard notificationsEnabled else { return }
+        let unread = store.notificationUnread
+        notificationsButton.setUnreadCount(unread.interactions + unread.follows + unread.system)
+    }
+
     /// 点作者的头像 / 名字：推作者主页（和列表、详情共用同一个 `FeedStore`）。外部作者没有主页，不响应。
     func openAuthor(_ author: FeedAuthor) {
         guard profilePageEnabled, tellomiFeedCanOpenProfile(of: author) else { return }
@@ -282,5 +319,38 @@ extension FeedViewController: UIScrollViewDelegate {
         if topBar.selectedIndex != previous {
             updateScrollsToTop()
         }
+    }
+}
+
+/// 动态页左上角的铃铛：右上角一个红点（有没读的通知时）。
+final class FeedBellButton: UIButton {
+    /// 红点（单测 / 截图用）。
+    let dot = UIView()
+    private(set) var unreadCount = 0
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setImage(UIImage(systemName: "bell"), for: .normal)
+        tintColor = UIColor.Signal.label
+        dot.backgroundColor = .systemRed
+        dot.layer.cornerRadius = 4.5
+        dot.isUserInteractionEnabled = false
+        dot.isHidden = true
+        addSubview(dot)
+        dot.autoSetDimensions(to: CGSize(square: 9))
+        dot.autoPinEdge(toSuperviewEdge: .top, withInset: 4)
+        dot.autoPinEdge(toSuperviewEdge: .trailing, withInset: 4)
+        autoSetDimensions(to: CGSize(square: 44))
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setUnreadCount(_ count: Int) {
+        unreadCount = count
+        dot.isHidden = count <= 0
+        accessibilityValue = count > 0 ? OWSFormat.formatInt(min(count, 99)) : nil
     }
 }
