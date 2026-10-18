@@ -45,6 +45,9 @@ public struct TellomiRegionProfile: Equatable, Sendable {
     public let uptimeHost: String
     /// 调试日志上传（#931，`DebugLogUploader`）。
     public let debugLog: String
+    /// 动态的内容引擎（ADR-0071 §5.3、契约 `client-api-2026-10.md`）。凭证从 ``chat`` 的 `/v1/tellomi/feed/auth` 取，
+    /// 列表、卡片、发帖都打这台主机。和 Android `TellomiRegionProfile.feed` 同值。
+    public let feed: String
 
     /// 这个区所有的端点（URL 或主机名），校验和测试用。
     public var endpoints: [String] {
@@ -62,6 +65,7 @@ public struct TellomiRegionProfile: Equatable, Sendable {
             sfu,
             uptimeHost,
             debugLog,
+            feed,
         ]
     }
 }
@@ -94,6 +98,7 @@ public enum TellomiRegions {
         sfu: "https://chat.tellomi.app/callingService",
         uptimeHost: "uptime.tellomi.app",
         debugLog: "https://chat.tellomi.app/debuglogs",
+        feed: "https://feed.tellomi.app",
     )
 
     /// CN 档：`enabled = false`，直到备案完成（契约第五节第 2 条）。
@@ -174,6 +179,7 @@ public enum TellomiRegions {
             sfu: rehost(global.sfu),
             uptimeHost: rehost(global.uptimeHost),
             debugLog: rehost(global.debugLog),
+            feed: rehost(global.feed),
         )
     }
 
@@ -298,6 +304,7 @@ public enum TellomiRegions {
             sfu: repoint(region.sfu),
             uptimeHost: region.uptimeHost,
             debugLog: repoint(region.debugLog),
+            feed: repoint(region.feed),
         )
     }
 

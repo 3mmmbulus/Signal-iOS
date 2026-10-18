@@ -29,7 +29,20 @@ final class FeedStore {
         case actionFailed
     }
 
+    /// 刚发生、界面要给一句提示的事（Android `FeedState` 的 `savedNotice` / `repostedNotice` / `PIN_LIMIT`）。
+    enum Notice: Equatable {
+        /// 已存进「我的收藏」
+        case saved
+        /// 已转发到动态
+        case reposted
+        /// 置顶已满 3 条
+        case pinLimit
+    }
+
     private let source: FeedSource
+    private let savedMessages: FeedSavedMessages?
+    /// 「完全屏蔽」的词（I-9）：每页现读，设置页刚改的下一页就生效。nil = 不过滤。
+    private let blockedKeywords: FeedBlockedKeywords?
 
     private(set) var config: FeedConfig?
     private(set) var tabs = FeedTab.allCases
@@ -40,6 +53,15 @@ final class FeedStore {
     /// 某一栏（nil = 全部）变了。
     var onChange: ((FeedTab?) -> Void)?
     var onTransientError: ((TransientError) -> Void)?
+    var onNotice: ((Notice) -> Void)?
+
+    /// 「查看数据」弹窗；nil = 没开。变了会走 `onChange(nil)`。
+    private(set) var insights: FeedInsightsState?
+
+    private var saving = FeedInFlight()
+    private var reposting = FeedInFlight()
+    private var voting = FeedInFlight()
+    private var actionTasks = [Task<Void, Never>]()
 
     private var loadTasks = [FeedTab: Task<Void, Never>]()
 
@@ -49,17 +71,40 @@ final class FeedStore {
     private var impressionRechecks = [FeedTab: Task<Void, Never>]()
     private var events = FeedEventBuffer()
     private var flushTimer: Task<Void, Never>?
+    /// 被限速（429 / 带 `Retry-After` 的 503）而没发出去的批次：不丢，等解封后先于新事件发出去（I-21）。
+    private var heldBatches = [[FeedEventPayload]]()
+    private var eventsGate = FeedRetryGate()
+    private var eventFlushes = [Task<Void, Never>]()
+    /// 0…1 的随机数，给没有 `Retry-After` 的 429 的指数退避加抖动；测试里换成定值。
+    private let jitter: () -> Double
 
-    init(source: FeedSource, now: @escaping () -> Date = Date.init) {
+    /// `savedMessages` 是「存进我的收藏」的实现（I-3，要用 SignalServiceKit，在 Mac 上接）；没有就不能收藏（回滚并提示）。
+    init(source: FeedSource, savedMessages: FeedSavedMessages? = nil, blockedKeywords: FeedBlockedKeywords? = nil, now: @escaping () -> Date = Date.init, jitter: @escaping () -> Double = { Double.random(in: 0...1) }) {
         self.source = source
+        self.savedMessages = savedMessages
+        self.blockedKeywords = blockedKeywords
         self.now = now
+        self.jitter = jitter
     }
 
     // MARK: - Impressions（契约 6.1）
 
     /// 还没发出去的事件数（单测用）。
     var pendingEventCount: Int {
-        return events.pending.count
+        return events.pending.count + heldBatches.reduce(0) { $0 + $1.count }
+    }
+
+    /// 被限速时还要等几秒才会再发事件（单测 / 界面都不需要，调试用）；没在限速是 0。
+    var eventsBackoffRemaining: TimeInterval {
+        return eventsGate.remaining(now: now())
+    }
+
+    /// 等正在发的事件发完（单测用）。
+    func waitForEventFlushes() async {
+        while let task = eventFlushes.first {
+            await task.value
+            eventFlushes.removeFirst()
+        }
     }
 
     /// 列表每次滚动 / 布局变化时调：`visibleIds` 是这一栏现在露出过半的卡片。满 1 秒的记一次曝光；
@@ -97,17 +142,56 @@ final class FeedStore {
         flushEvents()
     }
 
-    /// 发掉攒着的事件；失败的丢掉，不重试、不落盘。
+    /// 发掉攒着的事件。普通失败的批次丢掉，不重试、不落盘（契约 6.1）。
+    ///
+    /// **被限速时不丢（I-21）**：引擎回 429（或带 `Retry-After` 的 503）就停下，这一批和后面还没发的批次都留着（最多 `maxQueuedEvents` = 1000 条，超过丢最旧的）；
+    /// 在 `Retry-After`（夹到 1…3600 秒）里不再发，没有这个头的 429 按指数退避加抖动；时间到了由下一次 `flushEvents`
+    /// （30 秒一次的定时器、退到后台、攒满 50 条）接着发，旧的先发。
     func flushEvents() {
-        let batches = events.drain()
+        if eventsGate.isBlocked(now: now()) {
+            // 等待期里新攒的也并进排队的（不再发），超过上限丢最旧的
+            heldBatches += events.drain()
+            trimHeldEvents()
+            return
+        }
+        let batches = heldBatches + events.drain()
+        heldBatches = []
         guard !batches.isEmpty else { return }
-        Task { [source] in
-            for batch in batches {
+        let task = Task { [source, weak self] in
+            for (index, batch) in batches.enumerated() {
                 do {
                     try await source.reportEvents(batch)
+                    self?.eventsGate.reset()
+                } catch let error as FeedAPIError where error.isThrottle {
+                    guard let self else { return }
+                    self.eventsGate.record(error, now: self.now(), random: self.jitter())
+                    self.heldBatches = Array(batches[index...]) + self.heldBatches
+                    self.trimHeldEvents()
+                    Logger.warn("feed events held back for \(Int(self.eventsGate.remaining(now: self.now()))) s: \(self.pendingEventCount) queued")
+                    return
                 } catch {
                     Logger.warn("feed events dropped: \(batch.count)")
                 }
+            }
+        }
+        eventFlushes.append(task)
+    }
+
+    /// 被限速时最多留这么多条没发的事件（和 Android `FeedEventBuffer` 的 1000 一样），超过的从最旧的开始丢。
+    static let maxQueuedEvents = 1000
+
+    private func trimHeldEvents() {
+        var excess = heldBatches.reduce(0) { $0 + $1.count } - Self.maxQueuedEvents
+        guard excess > 0 else { return }
+        Logger.warn("feed events queue over \(Self.maxQueuedEvents): dropping the \(excess) oldest")
+        while excess > 0, var first = heldBatches.first {
+            if first.count <= excess {
+                excess -= first.count
+                heldBatches.removeFirst()
+            } else {
+                first.removeFirst(excess)
+                heldBatches[0] = first
+                excess = 0
             }
         }
     }
@@ -183,7 +267,9 @@ final class FeedStore {
             do {
                 let page = try await source.timeline(tab: tab, cursor: cursor)
                 guard !Task.isCancelled, let self else { return }
-                let incoming = page.cards.filter(\.isRenderable)
+                // 「完全屏蔽」的词在本机过滤（第三节第 12 条）；只作用于信息流这两栏
+                let blocked = self.blockedKeywords?.active(now: self.now()) ?? []
+                let incoming = page.cards.filter { $0.isRenderable && !$0.matchesAny(blocked) }
                 self.update(tab) { state in
                     state.cards = refresh ? Self.mergeRefresh(incoming: incoming, existing: state.cards) : Self.appendPage(existing: state.cards, incoming: incoming)
                     state.nextCursor = page.nextCursor
@@ -222,6 +308,134 @@ final class FeedStore {
                 self.onTransientError?(.actionFailed)
             }
         }
+    }
+
+    // MARK: - 卡片上的动作（I-3）
+
+    /// 单测用：等已经发出去的动作都做完。
+    func waitForActions() async {
+        // 等到队列空（等的时候新加的也等）
+        while let task = actionTasks.first {
+            await task.value
+            actionTasks.removeFirst()
+        }
+    }
+
+    /// 收藏 / 取消收藏（第三节第 27 条）：先改界面；先存进或删掉「我的收藏」里那条，成功了再以假名上报，
+    /// 上报失败不影响收藏本身。存不进「我的收藏」就改回来。
+    func toggleSave(_ card: FeedCard) {
+        guard saving.begin(card.id) else { return }
+        let nowSaved = !card.viewer.saved
+        updateCard(card.id) { $0 = $0.withSaved(nowSaved) }
+        actionTasks.append(Task { [weak self, source, savedMessages] in
+            do {
+                guard let savedMessages else { throw FeedPublishError.feedNotAvailable }
+                try await FeedSaveFlow.setSaved(card, saved: nowSaved, savedMessages: savedMessages, source: source) {
+                    Logger.warn("feed save report failed: \($0)")
+                }
+                self?.finishSave(card.id, notice: nowSaved ? .saved : nil)
+            } catch {
+                Logger.warn("feed saved messages failed: \(error)")
+                self?.finishSave(card.id, revertTo: !nowSaved)
+            }
+        })
+    }
+
+    private func finishSave(_ id: String, notice: Notice? = nil, revertTo: Bool? = nil) {
+        saving.end(id)
+        if let revertTo {
+            updateCard(id) { $0 = $0.withSaved(revertTo) }
+            onTransientError?(.actionFailed)
+        } else if let notice {
+            onNotice?(notice)
+        }
+    }
+
+    /// 转发到动态 / 取消（第 26 条）：先改界面，失败改回来。
+    func toggleRepost(_ card: FeedCard) {
+        guard reposting.begin(card.id) else { return }
+        let nowReposted = !card.viewer.reposted
+        updateCard(card.id) { $0 = $0.withReposted(nowReposted) }
+        actionTasks.append(Task { [weak self, source] in
+            do {
+                try await source.setReposted(contentId: card.id, reposted: nowReposted)
+                guard let self else { return }
+                self.reposting.end(card.id)
+                if nowReposted { self.onNotice?(.reposted) }
+            } catch {
+                Logger.warn("feed repost failed: \(error)")
+                guard let self else { return }
+                self.reposting.end(card.id)
+                self.updateCard(card.id) { $0 = $0.withReposted(!nowReposted) }
+                self.onTransientError?(.actionFailed)
+            }
+        })
+    }
+
+    /// 投票不能撤回，所以不先改界面：等服务端回了票数再换上。
+    func vote(_ card: FeedCard, options: [Int]) {
+        guard !options.isEmpty, voting.begin(card.id) else { return }
+        actionTasks.append(Task { [weak self, source] in
+            do {
+                let state = try await source.vote(contentId: card.id, options: options)
+                guard let self else { return }
+                self.voting.end(card.id)
+                self.updateCard(card.id) { $0 = $0.withPollState(state) }
+            } catch {
+                Logger.warn("feed vote failed: \(error)")
+                guard let self else { return }
+                self.voting.end(card.id)
+                self.onTransientError?(.actionFailed)
+            }
+        })
+    }
+
+    /// 自己帖子「···」里的置顶、隐藏点赞数（先改界面，失败改回来）和查看数据。置顶满 3 条时引擎回 409，单独提示。
+    func onOwnPostAction(_ card: FeedCard, _ action: FeedOwnPostAction) {
+        guard let update = action.settingsUpdate else {
+            if action == .insights { loadInsights(card.id) }   // 回复选项由卡片自己开面板（Android 同）
+            return
+        }
+        updateCard(card.id) { $0 = $0.withSettings(update) }
+        actionTasks.append(Task { [weak self, source] in
+            do {
+                try await source.updatePostSettings(contentId: card.id, update: update)
+            } catch {
+                Logger.warn("feed post settings failed: \(error)")
+                guard let self else { return }
+                self.updateCard(card.id) {
+                    $0.pinned = card.pinned
+                    $0.stats.likeCountHidden = card.stats.likeCountHidden
+                }
+                if FeedOwnPostAction.isPinLimit(error) {
+                    self.onNotice?(.pinLimit)
+                } else {
+                    self.onTransientError?(.actionFailed)
+                }
+            }
+        })
+    }
+
+    private func loadInsights(_ contentId: String) {
+        insights = .loading
+        onChange?(nil)
+        actionTasks.append(Task { [weak self, source] in
+            let result: FeedInsightsState
+            do {
+                result = .ready(try await source.postInsights(contentId: contentId))
+            } catch {
+                Logger.warn("feed insights failed: \(error)")
+                result = .failed
+            }
+            guard let self, self.insights != nil else { return }   // 等的时候关掉了弹窗就不再弹
+            self.insights = result
+            self.onChange?(nil)
+        })
+    }
+
+    func onInsightsDismissed() {
+        insights = nil
+        onChange?(nil)
     }
 
     func notInterested(_ card: FeedCard) {

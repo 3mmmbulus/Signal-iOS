@@ -8,7 +8,8 @@ import SignalServiceKit
 
 /// M11 动态（ADR-0071、`docs/product/specs/dynamic-feed.md`、tellomi/tellomi#1355）的总开关。
 ///
-/// 客户端不做任何区域判断（ADR-0071 §十五）：显不显示入口只看服务端下发的 `global.feed.enabled`。
+/// 客户端不做任何区域判断（ADR-0071 §十五）：显不显示入口看服务端下发的 `global.feed.enabled`，
+/// 再加上内容引擎说的能不能看（内测名单、紧急开关，`GET /v1/feed/status`，契约 3.1，见 `FeedEntryCheck`）。
 /// 内部用户可以在「Internal → Tellomi Feed → Force feed tab」里先打开，方便在服务端下发之前开发和内测。
 /// 和 Android 的 `TellomiFeed`（tellomi/Signal-Android#180）同口径。
 enum TellomiFeed {
@@ -16,13 +17,44 @@ enum TellomiFeed {
     static var isTabEnabled: Bool {
         return isTabEnabled(
             remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
+            engineVisible: engineVisible,
             forcedByInternalUser: isForcedByInternalUser,
         )
     }
 
-    /// 纯函数版本，单测用。
-    static func isTabEnabled(remoteEnabled: Bool, forcedByInternalUser: Bool) -> Bool {
-        return remoteEnabled || forcedByInternalUser
+    /// 纯函数版本，单测用。引擎说不能看（不在内测名单、紧急开关关了）时隐藏入口，不显示空列表（契约 1.1）。
+    /// 对应 Android `TellomiFeed.isTabEnabled(remoteEnabled, engineVisible, forcedByInternalUser)`。
+    static func isTabEnabled(remoteEnabled: Bool, engineVisible: Bool, forcedByInternalUser: Bool) -> Bool {
+        return forcedByInternalUser || (remoteEnabled && engineVisible)
+    }
+
+    // MARK: - 引擎上一次说的「能不能看」（Android `TellomiFeedValues.engineVisible` 等；注意 iOS 的 UserDefaults 会进设备备份，和 Android 的「不进备份」不同，靠 15 分钟的过期检查兜底）
+
+    private static let engineVisibleKey = "TellomiFeed.engineVisible"
+    private static let engineCheckedAtKey = "TellomiFeed.engineCheckedAt"
+    private static let useSampleDataKey = "TellomiFeed.useSampleData"
+
+    /// 引擎上一次回的 `visible`。没问过是 false：入口要等引擎说了能看才出现。
+    static var engineVisible: Bool {
+        get { UserDefaults.standard.bool(forKey: engineVisibleKey) }
+        set { UserDefaults.standard.set(newValue, forKey: engineVisibleKey) }
+    }
+
+    /// 上一次问到结果的时间（`timeIntervalSince1970` 毫秒）；0 = 没问过。
+    static var engineCheckedAtMillis: Int64 {
+        get { Int64(UserDefaults.standard.double(forKey: engineCheckedAtKey)) }
+        set { UserDefaults.standard.set(Double(newValue), forKey: engineCheckedAtKey) }
+    }
+
+    /// 内部设置「Feed sample data」：强制打开动态标签时，用本机样例（默认 true）还是连当前区的内容引擎（false）。
+    static var useSampleData: Bool {
+        get { UserDefaults.standard.object(forKey: useSampleDataKey) as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: useSampleDataKey) }
+    }
+
+    /// 要不要去问内容引擎能不能看：入口可能出现（远程开关开了），或者内部用户要连引擎联调。
+    static var shouldAskEngine: Bool {
+        return RemoteConfig.current.isTellomiFeedEnabled || (isForcedByInternalUser && !useSampleData)
     }
 
     private static let forceTabKey = "TellomiFeed.forceFeedTab"
@@ -41,9 +73,10 @@ enum TellomiFeed {
         }
     }
 
-    /// 内部用户强制打开动态标签时，信息流用本机样例，不连内容引擎。内容引擎接上之后改成单独的开关。
+    /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
+    /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
     static var isSampleDataEnabled: Bool {
-        return isForcedByInternalUser
+        return isForcedByInternalUser && useSampleData
     }
 }
 

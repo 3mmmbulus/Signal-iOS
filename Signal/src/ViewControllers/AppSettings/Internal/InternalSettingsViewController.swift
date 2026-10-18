@@ -171,12 +171,20 @@ class InternalSettingsViewController: OWSTableViewController2 {
 
         // Tellomi（M11 动态）：服务端还没下发 global.feed.enabled 时先打开「动态」标签，用本机样例数据
         let feedSection = OWSTableSection(title: "Tellomi Feed")
-        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. The feed then uses on-device sample data and sends no requests."
+        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. With \"Feed sample data\" on, the feed uses on-device sample data and sends no requests; off, it talks to the current region's content engine (needs the Signal-Server feed token endpoint)."
         feedSection.add(.switch(
             withText: "Force feed tab",
             isOn: { TellomiFeed.isForcedByInternalUser },
             actionBlock: { uiSwitch in
                 TellomiFeed.isForcedByInternalUser = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed sample data",
+            isOn: { TellomiFeed.useSampleData },
+            isEnabled: { TellomiFeed.isForcedByInternalUser },
+            actionBlock: { uiSwitch in
+                TellomiFeed.useSampleData = uiSwitch.isOn
             },
         ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
