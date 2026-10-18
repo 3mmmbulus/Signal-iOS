@@ -11311,6 +11311,51 @@
 "TELLOMI_FEED_NOTIF_REPLY_HELD" = "%1$@ 回复了你的评论，等你批准后公开";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_COMMENTS" = "评论和回复";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_EVERYONE" = "所有人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWING" = "我关注的人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWS" = "新关注者";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FRIENDS" = "好友";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FROM_WHOM" = "接收谁的通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LIKES" = "赞";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LOADING" = "正在读取…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LOAD_FAILED" = "读取动态通知设置失败";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_NONE" = "都不接收";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_PROFILE_REQUIRED" = "先建好公开主页，才能收到动态通知。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_RETRY" = "点按重试";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_SAVE_FAILED" = "没能保存，请重试。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_SYSTEM_NOTE" = "自己帖子的审核结果等系统通知不受这些设置影响。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_TITLE" = "动态通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_SOMEONE" = "有人";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

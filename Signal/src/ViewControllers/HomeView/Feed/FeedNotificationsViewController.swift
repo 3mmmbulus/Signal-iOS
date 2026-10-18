@@ -55,6 +55,10 @@ final class FeedNotificationsViewController: OWSViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor.Signal.background
 
+        let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gearshape"), primaryAction: UIAction { [weak self] _ in self?.openSettings() })
+        settingsButton.accessibilityLabel = FeedNotificationSettingsViewController.title
+        navigationItem.rightBarButtonItem = settingsButton
+
         for (index, tab) in FeedNotificationsStore.tabs.enumerated() {
             tabControl.insertSegment(withTitle: Self.tabTitle(tab, badge: 0), at: index, animated: false)
         }
@@ -164,6 +168,11 @@ final class FeedNotificationsViewController: OWSViewController {
         case nil:
             break
         }
+    }
+
+    /// 点右上角的齿轮：推通知设置页。
+    func openSettings() {
+        navigationController?.pushViewController(FeedNotificationSettingsViewController(source: source), animated: true)
     }
 
     private func openPerson(id: String) {

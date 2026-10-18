@@ -11542,6 +11542,51 @@
 "TELLOMI_FEED_NOTIF_REPLY_HELD" = "%1$@ replied to your comment. It's waiting for your approval.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_COMMENTS" = "Comments and replies";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_EVERYONE" = "Everyone";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWING" = "People I follow";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWS" = "New followers";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FRIENDS" = "Friends";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FROM_WHOM" = "Notify me about";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LIKES" = "Likes";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LOADING" = "Loading…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LOAD_FAILED" = "Couldn't load Feed notification settings";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_NONE" = "No one";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_PROFILE_REQUIRED" = "Set up your public profile first to get Feed notifications.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_RETRY" = "Tap to try again";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_SAVE_FAILED" = "Couldn't save. Try again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_SYSTEM_NOTE" = "Notices about your own posts, like review results, always come through.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_TITLE" = "Feed notifications";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_SOMEONE" = "Someone";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

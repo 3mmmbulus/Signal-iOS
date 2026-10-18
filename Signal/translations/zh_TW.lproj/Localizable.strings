@@ -11428,6 +11428,51 @@
 "TELLOMI_FEED_NOTIF_REPLY_HELD" = "%1$@ 回覆了你的留言，等你批准後公開";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_COMMENTS" = "留言和回覆";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_EVERYONE" = "所有人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWING" = "我關注的人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWS" = "新關注者";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FRIENDS" = "好友";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_FROM_WHOM" = "接收誰的通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LIKES" = "讚";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LOADING" = "正在讀取…";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_LOAD_FAILED" = "讀取動態通知設定失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_NONE" = "都不接收";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_PROFILE_REQUIRED" = "先建好公開主頁，才能收到動態通知。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_RETRY" = "點按重試";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_SAVE_FAILED" = "無法儲存，請重試。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_SYSTEM_NOTE" = "自己貼文的審核結果等系統通知不受這些設定影響。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_NOTIF_SETTINGS_TITLE" = "動態通知";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_SOMEONE" = "有人";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
