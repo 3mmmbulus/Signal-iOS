@@ -38,16 +38,23 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     /// 铃铛按钮和它的红点（单测 / 截图用；入口没开时按钮不在导航栏上）。
     let notificationsButton = FeedBellButton()
 
+    /// 「我的动态」入口（左上角的文档图标）开着没有（`TellomiFeed.isMyPostsEnabled`，默认关）。单测 / 截图可以直接传 true。
+    let myPostsEnabled: Bool
+    /// 「我的动态」按钮（单测 / 截图用；入口没开时是 nil）。
+    private(set) var myPostsItem: UIBarButtonItem?
+
     init(
         source: FeedSource = FeedSources.current(),
         profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled,
         searchEnabled: Bool = TellomiFeed.isSearchEnabled,
-        notificationsEnabled: Bool = TellomiFeed.isNotificationsEnabled
+        notificationsEnabled: Bool = TellomiFeed.isNotificationsEnabled,
+        myPostsEnabled: Bool = TellomiFeed.isMyPostsEnabled
     ) {
         self.source = source
         self.profilePageEnabled = profilePageEnabled
         self.searchEnabled = searchEnabled
         self.notificationsEnabled = notificationsEnabled
+        self.myPostsEnabled = myPostsEnabled
         store = FeedStore(source: source)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
@@ -108,12 +115,20 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             search.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_SEARCH_BUTTON", comment: "Feed: accessibility label of the search button at the top of the feed.")
             navigationItem.rightBarButtonItem = search
         }
+        var leftItems = [UIBarButtonItem]()
         if notificationsEnabled {
             notificationsButton.addAction(UIAction { [weak self] _ in self?.openNotifications() }, for: .touchUpInside)
             notificationsButton.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_NOTIF_TITLE", comment: "Feed notifications page: title.")
-            navigationItem.leftBarButtonItem = UIBarButtonItem(customView: notificationsButton)
+            leftItems.append(UIBarButtonItem(customView: notificationsButton))
             updateNotificationsBadge()
         }
+        if myPostsEnabled {
+            let myPosts = UIBarButtonItem(image: UIImage(systemName: "doc.text"), primaryAction: UIAction { [weak self] _ in self?.openMyPosts() })
+            myPosts.accessibilityLabel = FeedMyPostsViewController.title
+            myPostsItem = myPosts
+            leftItems.append(myPosts)
+        }
+        if !leftItems.isEmpty { navigationItem.leftBarButtonItems = leftItems }
 
         pagingScrollView.isPagingEnabled = true
         pagingScrollView.showsHorizontalScrollIndicator = false
@@ -259,6 +274,19 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     func openNotifications() {
         guard notificationsEnabled else { return }
         let page = FeedNotificationsViewController(source: source, feed: store)
+        if profilePageEnabled {
+            page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
+        }
+        if searchEnabled {
+            page.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
+        }
+        navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// 点左上角的「我的动态」：推我的动态页（和列表、详情共用同一个 `FeedStore`：删掉的帖子信息流里同时去掉）。
+    func openMyPosts() {
+        guard myPostsEnabled else { return }
+        let page = FeedMyPostsViewController(source: source, feed: store)
         if profilePageEnabled {
             page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
         }
