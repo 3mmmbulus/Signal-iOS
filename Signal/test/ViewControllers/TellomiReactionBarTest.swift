@@ -211,6 +211,47 @@ final class TellomiReactionBarTest: SignalBaseTest {
         interaction.dismissMenu(animated: false) {}
         window.isHidden = true
     }
+
+    // MARK: - 手指点按（owner 2026-10-18 真机：条上的表情点不动）
+
+    /// 条上挂着上游给触控板 / 鼠标用的「悬停后点击」手势；它要是也接手指，会把每一下点按都吃掉——表情是自定义 UIControl，
+    /// 没有 UIButton 那样优先于父视图单击手势的待遇——而手指点按没有悬停选中的表情，于是什么也不做。
+    func testAFingerTapIsNotTakenByTheBarsPointerClickGesture() throws {
+        let thread = TSContactThread(contactAddress: SignalServiceAddress(Aci.randomForTesting()))
+        let accessory = ContextMenuReactionBarAccessory(thread: thread, itemViewModel: nil)
+        let bar = try XCTUnwrap(accessory.accessoryView as? TellomiReactionBar)
+        let taps = (bar.gestureRecognizers ?? []).compactMap { $0 as? UITapGestureRecognizer }
+        XCTAssertEqual(taps.count, 1, "pointer clicks still pick the hovered emoji")
+        for tap in taps {
+            XCTAssertFalse(tap.allowedTouchTypes.contains(NSNumber(value: UITouch.TouchType.direct.rawValue)))
+            XCTAssertEqual(tap.allowedTouchTypes, [NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)])
+        }
+    }
+
+    /// 点按落到表情上就回应：第几个、哪个表情、是不是撤回自己的回应。
+    func testTappingAnEmojiReactsWithIt() throws {
+        final class Recorder: MessageReactionPickerDelegate {
+            var selections = [(String, Bool, Int)]()
+            var expansions = 0
+            func didSelectReaction(reaction: String, isRemoving: Bool, inPosition position: Int) {
+                selections.append((reaction, isRemoving, position))
+            }
+            func didSelectShowFullEmojiPicker() { expansions += 1 }
+        }
+        let recorder = Recorder()
+        let bar = TellomiReactionBar(emojis: ["❤️", "👍", "👎"], selectedEmoji: "👍", delegate: recorder)
+        let controls = bar.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIControl }
+        XCTAssertEqual(controls.count, 4, "3 emoji + the expand button")
+
+        controls[0].sendActions(for: .primaryActionTriggered)
+        controls[1].sendActions(for: .primaryActionTriggered)
+        controls[3].sendActions(for: .primaryActionTriggered)
+
+        XCTAssertEqual(recorder.selections.map(\.0), ["❤️", "👍"])
+        XCTAssertEqual(recorder.selections.map(\.1), [false, true], "tapping my own reaction takes it back")
+        XCTAssertEqual(recorder.selections.map(\.2), [0, 1])
+        XCTAssertEqual(recorder.expansions, 1)
+    }
 }
 
 // MARK: - 原地展开（交互审计 A-06）

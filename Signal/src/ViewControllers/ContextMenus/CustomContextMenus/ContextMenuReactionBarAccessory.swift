@@ -20,6 +20,9 @@ public class ContextMenuReactionBarAccessory: ContextMenuTargetedPreviewAccessor
     private var highlightHoverGestureRecognizer: UIGestureRecognizer?
     private var highlightClickGestureRecognizer: UIGestureRecognizer?
 
+    /// 悬停后点击（触控板 / 鼠标）才走 `hoverClickGestureRecognized`；手指点按由表情的 UIControl 自己接。
+    static let pointerClickTouchTypes: [NSNumber] = [NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)]
+
     public init(
         thread: TSThread,
         itemViewModel: CVItemViewModelImpl?,
@@ -60,6 +63,11 @@ public class ContextMenuReactionBarAccessory: ContextMenuTargetedPreviewAccessor
 
         let highlightClickGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(hoverClickGestureRecognized(sender:)))
         highlightClickGestureRecognizer.buttonMaskRequired = [.primary]
+        // Tellomi：这个手势只接触控板 / 鼠标的点击（点下悬停选中的那个表情）。手指点按交给条上的表情自己处理：上游的表情是
+        // UIButton，系统让按钮优先于父视图的单击手势；回应条照 Telegram 重做以后（Signal-iOS#276）表情是自定义 UIControl，
+        // 没有这个优先，于是这个手势把每一下手指点按都吃掉，而手指点按没有悬停选中的表情，什么也不做——表情和展开键都点不动
+        // （owner 2026-10-18 真机）。
+        highlightClickGestureRecognizer.allowedTouchTypes = Self.pointerClickTouchTypes
         reactionPicker.addGestureRecognizer(highlightClickGestureRecognizer)
         self.highlightClickGestureRecognizer = highlightClickGestureRecognizer
     }
