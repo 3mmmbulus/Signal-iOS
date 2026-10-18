@@ -133,6 +133,22 @@ enum TellomiFeed {
         }
     }
 
+    private static let settingsKey = "TellomiFeed.settings"
+
+    /// 动态设置入口（动态页右上角的齿轮，进推荐偏好 / 兴趣标签 / 屏蔽关键词）。默认关；只有内部构建认这个值（正式包里永远是 false），
+    /// 存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关（Internal Settings 里有开关行）。
+    /// 打开时，动态页的信息流才会按本机「完全屏蔽」的词过滤（关着时那份词表不读、不过滤）。
+    static var isSettingsEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: settingsKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: settingsKey)
+        }
+    }
+
     /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
     /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
     static var isSampleDataEnabled: Bool {

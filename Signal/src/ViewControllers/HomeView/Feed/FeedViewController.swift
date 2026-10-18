@@ -43,19 +43,32 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     /// 「我的动态」按钮（单测 / 截图用；入口没开时是 nil）。
     private(set) var myPostsItem: UIBarButtonItem?
 
+    /// 动态设置入口（右上角的齿轮）开着没有（`TellomiFeed.isSettingsEnabled`，默认关）。单测 / 截图可以直接传 true。
+    let settingsEnabled: Bool
+    /// 齿轮按钮（单测 / 截图用；入口没开时是 nil）。
+    private(set) var settingsItem: UIBarButtonItem?
+    /// 本机「完全屏蔽」的词：设置页和信息流（`FeedStore`）共用这一份；入口没开时是 nil（信息流不过滤）。
+    let blockedKeywords: FeedBlockedKeywords?
+
     init(
         source: FeedSource = FeedSources.current(),
         profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled,
         searchEnabled: Bool = TellomiFeed.isSearchEnabled,
         notificationsEnabled: Bool = TellomiFeed.isNotificationsEnabled,
-        myPostsEnabled: Bool = TellomiFeed.isMyPostsEnabled
+        myPostsEnabled: Bool = TellomiFeed.isMyPostsEnabled,
+        settingsEnabled: Bool = TellomiFeed.isSettingsEnabled,
+        blockedKeywords: FeedBlockedKeywords? = nil
     ) {
         self.source = source
         self.profilePageEnabled = profilePageEnabled
         self.searchEnabled = searchEnabled
         self.notificationsEnabled = notificationsEnabled
         self.myPostsEnabled = myPostsEnabled
-        store = FeedStore(source: source)
+        self.settingsEnabled = settingsEnabled
+        // 设置页打开时才读本机的词表（放在不进备份的目录里）；没开设置入口，信息流和以前一样不过滤
+        let keywords = blockedKeywords ?? (settingsEnabled ? StoredFeedBlockedKeywords(storage: FeedLocalStorages.backupExcluded) : nil)
+        self.blockedKeywords = keywords
+        store = FeedStore(source: source, blockedKeywords: keywords)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
         for page in pages {
@@ -114,6 +127,13 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             let search = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), primaryAction: UIAction { [weak self] _ in self?.openSearch() })
             search.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_SEARCH_BUTTON", comment: "Feed: accessibility label of the search button at the top of the feed.")
             navigationItem.rightBarButtonItem = search
+        }
+        if settingsEnabled {
+            let settings = UIBarButtonItem(image: UIImage(systemName: "gearshape"), primaryAction: UIAction { [weak self] _ in self?.openSettings() })
+            settings.accessibilityLabel = FeedRecommendationSettingsViewController.title
+            settingsItem = settings
+            // 搜索在最右，齿轮在它左边（`rightBarButtonItems` 第一个是最右的）
+            navigationItem.rightBarButtonItems = (navigationItem.rightBarButtonItems ?? []) + [settings]
         }
         var leftItems = [UIBarButtonItem]()
         if notificationsEnabled {
@@ -293,6 +313,13 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         if searchEnabled {
             page.onOpenTopic = { [weak self] topic in self?.openTopic(topic) }
         }
+        navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// 点右上角的齿轮：推动态设置页（本机屏蔽词和信息流共用同一份；改了词，信息流下一次刷新时才认）。
+    func openSettings() {
+        guard settingsEnabled, let blockedKeywords else { return }
+        let page = FeedRecommendationSettingsViewController(source: source, blockedKeywords: blockedKeywords)
         navigationController?.pushViewController(page, animated: true)
     }
 

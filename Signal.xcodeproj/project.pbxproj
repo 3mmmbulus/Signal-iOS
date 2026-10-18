@@ -144,6 +144,7 @@
 		812A8FDAD4713C93192AC437 /* FeedAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */; };
 		89AA64F1E08A9DE633DF904E /* FeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A93B0DFBCC7C033684326DD /* FeedModels.swift */; };
 		E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */; };
+		A0E976F53C8D1073C4C2D795 /* TellomiFeedSettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */; };
 		5E822B2ACA877D8AA548CA65 /* TellomiFeedSettingsPageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */; };
 		0918A2389D15BFFE2CB7F1BE /* TellomiFeedMyPostsEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */; };
 		4696A1A6B3C80E07912169CE /* TellomiFeedMyPostsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147A54EED775C31C21BBDBE7 /* TellomiFeedMyPostsUITests.swift */; };
@@ -4793,6 +4794,7 @@
 		7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAPI.swift; sourceTree = "<group>"; };
 		8A93B0DFBCC7C033684326DD /* FeedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedModels.swift; sourceTree = "<group>"; };
 		E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTabTests.swift; sourceTree = "<group>"; };
+		992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsUITests.swift; sourceTree = "<group>"; };
 		AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsPageTests.swift; sourceTree = "<group>"; };
 		8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsEntryUITests.swift; sourceTree = "<group>"; };
 		147A54EED775C31C21BBDBE7 /* TellomiFeedMyPostsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsUITests.swift; sourceTree = "<group>"; };
@@ -10600,6 +10602,7 @@
 				B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */,
 				3EA81FA0FB2FA755202E7A4D /* TellomiFeedClientTests.swift */,
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
+				992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */,
 				AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */,
 				8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */,
 				147A54EED775C31C21BBDBE7 /* TellomiFeedMyPostsUITests.swift */,
@@ -20660,6 +20663,7 @@
 				8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */,
 				66E8ABD7206DBA93C31FE724 /* TellomiFeedClientTests.swift in Sources */,
 				E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */,
+				A0E976F53C8D1073C4C2D795 /* TellomiFeedSettingsUITests.swift in Sources */,
 				5E822B2ACA877D8AA548CA65 /* TellomiFeedSettingsPageTests.swift in Sources */,
 				0918A2389D15BFFE2CB7F1BE /* TellomiFeedMyPostsEntryUITests.swift in Sources */,
 				4696A1A6B3C80E07912169CE /* TellomiFeedMyPostsUITests.swift in Sources */,
