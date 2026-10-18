@@ -14,6 +14,8 @@ enum FeedChange: Equatable {
     case cards(Set<String>)
     /// 卡片上的一个动作（现在是点赞）失败了，已经改回来；订阅者可以在自己的页面上提示。
     case actionFailed(cardId: String)
+    /// 通知的未读数变了（`FeedStore.notificationUnread`）：动态页的红点和通知页共用这一份。
+    case unread
 }
 
 /// `FeedStore.subscribe` 的回执：**拿着它就订着**。`cancel()`、或者把它放掉（页面销毁）就不再收到通知，

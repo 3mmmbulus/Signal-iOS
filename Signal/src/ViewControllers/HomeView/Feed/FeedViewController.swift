@@ -81,7 +81,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             for page in pages {
                 page.apply()
             }
-        case .actionFailed:
+        case .actionFailed, .unread:
             break
         }
     }

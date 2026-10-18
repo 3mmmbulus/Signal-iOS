@@ -86,6 +86,8 @@ final class FeedCardMirror {
             onChange?()
         case .actionFailed(let cardId):
             if shown.contains(cardId) { onActionFailed?() }
+        case .unread:
+            break
         }
     }
 }

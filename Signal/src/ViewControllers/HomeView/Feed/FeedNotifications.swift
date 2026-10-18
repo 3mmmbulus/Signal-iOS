@@ -287,7 +287,12 @@ struct FeedNotificationsTab: Equatable {
     var items = [FeedNotification]()
     var loading = false
     var loadingMore = false
+    /// 第一页加载失败（已有的 `items` 留着；界面只在没有内容时说「加载失败」+ 重试，有内容时弹提示）。
     var failed = false
+    /// 翻页失败：已有的留着，列表末尾给「重试」，不自动再试。
+    var loadMoreFailed = false
+    /// 被限速时还要等几秒（`failed` / `loadMoreFailed` 时说）；没有 `Retry-After` 是 nil。
+    var retryAfterSeconds: Int?
     var loadedOnce = false
     var hasMore = false
 }
@@ -299,6 +304,8 @@ struct FeedNotificationsState: Equatable {
         case mutedLikes
         case postGone
         case failed
+        /// 被限速；要等几秒在 `retryAfterSeconds`。
+        case throttled
     }
 
     var selectedTab = FeedAPI.notificationsInteractions
@@ -307,7 +314,11 @@ struct FeedNotificationsState: Equatable {
     /// actor id → 名字和头像（引擎带了或者查过主页的）。
     var people = [String: FeedPersonSummary]()
     var notice: Notice?
-    /// 要打开详情的帖子（`openPost` 换好的）。
+    /// `notice == .throttled` 时还要等几秒。
+    var retryAfterSeconds: Int?
+    /// 引擎说这个区域的动态被关了（404 `feed_hidden`）：页面该收起，不是「加载失败」。
+    var feedHidden = false
+    /// 要打开详情的帖子（`openPost` 换好的，已经是 `FeedStore` 里现在的样子）。
     var openCard: FeedCard?
 
     func tab(_ name: String) -> FeedNotificationsTab { tabs[name] ?? FeedNotificationsTab() }
@@ -315,11 +326,17 @@ struct FeedNotificationsState: Equatable {
 
 /// 动态通知（第三节第 43 条）：互动 / 新关注 / 系统三栏。
 /// 一栏第一次加载完就整栏标为已读（这一次仍按服务端的已读状态画小点）。引擎只给 `actor_id` 时，按人查一次主页拿名字，同一个人只查一次。
+///
+/// 和信息流共用 `FeedStore`（传了 `feed` 的时候）：未读数放在它里面（动态页的红点和这一页同一份）；点开帖子时先把取到的最新卡片换进它里面（`FeedCardMirror`），
+/// 详情页拿到的就是它里面现在的样子，赞、评论数和别的页面一致；被屏蔽作者的、删掉的帖子打不开（提示「帖子已不可见」）。不传就自己独立运行（单测）。
 @MainActor
 final class FeedNotificationsStore {
     static let tabs = [FeedAPI.notificationsInteractions, FeedAPI.notificationsFollows, FeedAPI.notificationsSystem]
 
     private let source: FeedSource
+    private let feed: FeedStore?
+    private let mirror: FeedCardMirror?
+    private var unreadSubscription: FeedSubscription?
     private var tasks = [Task<Void, Never>]()
     private var loadTasks = [String: Task<Void, Never>]()
     private var running = Set<String>()
@@ -330,9 +347,40 @@ final class FeedNotificationsStore {
     }
     var onChange: ((FeedNotificationsState) -> Void)?
 
-    init(initialTab: String = FeedAPI.notificationsInteractions, source: FeedSource) {
+    init(initialTab: String = FeedAPI.notificationsInteractions, source: FeedSource, feed: FeedStore? = nil) {
         self.source = source
-        self.state = FeedNotificationsState(selectedTab: initialTab)
+        self.feed = feed
+        self.mirror = feed.map { FeedCardMirror(feed: $0) }
+        var initial = FeedNotificationsState(selectedTab: initialTab)
+        if let feed { initial.unread = feed.notificationUnread }
+        self.state = initial
+        mirror?.shownIds = { [weak self] in Set(self?.state.openCard.map { [$0.id] } ?? []) }
+        mirror?.onChange = { [weak self] in
+            guard let self, let card = self.state.openCard, let next = self.mirror?.project([card]).first, next != card else { return }
+            self.state.openCard = next
+        }
+        unreadSubscription = feed?.subscribe { [weak self] change in
+            guard change == .unread, let self, let feed = self.feed, self.state.unread != feed.notificationUnread else { return }
+            self.state.unread = feed.notificationUnread
+        }
+    }
+
+    // MARK: - 和信息流 store 同步
+
+    var isObservingFeed: Bool { mirror?.isObserving == true && unreadSubscription?.isActive == true }
+    /// 借着的帖子数（单测用）。
+    var leaseCount: Int { mirror?.leaseCount ?? 0 }
+
+    /// 页面离开了：不再订阅、放掉借着的卡片。可以重复调用。
+    func detach() {
+        mirror?.detach()
+        unreadSubscription?.cancel()
+        unreadSubscription = nil
+    }
+
+    private func setUnread(_ counts: FeedUnreadCounts) {
+        state.unread = counts
+        feed?.setNotificationUnread(counts)
     }
 
     func waitForTasks() async {
@@ -340,6 +388,7 @@ final class FeedNotificationsStore {
             await task.value
             tasks.removeFirst()
         }
+        await mirror?.waitForActions()
     }
 
     func start() {
@@ -355,11 +404,17 @@ final class FeedNotificationsStore {
         load(state.selectedTab, before: nil)
     }
 
+    /// 往下翻（滚到底、或点末尾的「重试」）。
     func loadMore() {
         let tab = state.selectedTab
         let current = state.tab(tab)
         guard current.hasMore, !running.contains(tab), let last = current.items.last else { return }
         load(tab, before: last.createdAt)
+    }
+
+    /// 举报 / 别处让页面该收起（`feed_hidden`）。
+    func onFeedHidden() {
+        state.feedHidden = true
     }
 
     private func updateTab(_ tab: String, _ change: (inout FeedNotificationsTab) -> Void) {
@@ -375,6 +430,8 @@ final class FeedNotificationsStore {
             $0.loading = before == nil
             $0.loadingMore = before != nil
             $0.failed = false
+            $0.loadMoreFailed = false
+            $0.retryAfterSeconds = nil
         }
         let task = Task { [weak self, source] in
             let response: FeedNotificationsResponse
@@ -384,11 +441,18 @@ final class FeedNotificationsStore {
                 Logger.warn("feed notifications failed: \(error)")
                 guard !Task.isCancelled, let self else { return }
                 self.running.remove(tab)
+                let failure = FeedActionFailure.classify(error)
+                var seconds: Int?
+                if case .throttled(let retryAfter) = failure { seconds = retryAfter }
                 self.updateTab(tab) {
                     $0.loading = false
                     $0.loadingMore = false
-                    $0.failed = true
+                    if failure != .feedHidden {
+                        if before == nil { $0.failed = true } else { $0.loadMoreFailed = true }
+                        $0.retryAfterSeconds = seconds
+                    }
                 }
+                if failure == .feedHidden { self.state.feedHidden = true }
                 return
             }
             guard !Task.isCancelled, let self else { return }
@@ -403,7 +467,7 @@ final class FeedNotificationsStore {
             old.loadedOnce = true
             old.hasMore = response.notifications.count >= FeedAPI.notificationsPage
             self.state.tabs[tab] = old
-            self.state.unread = response.unread
+            self.setUnread(response.unread)
             for n in response.notifications {
                 if let actor = n.actor { self.state.people[actor.id] = actor }
             }
@@ -419,7 +483,7 @@ final class FeedNotificationsStore {
             do {
                 try await source.markNotificationsRead(tab: tab)
                 guard let self else { return }
-                self.state.unread = self.state.unread.without(tab: tab)
+                self.setUnread(self.state.unread.without(tab: tab))
             } catch {
                 Logger.warn("feed mark read failed: \(error)")
             }
@@ -448,7 +512,7 @@ final class FeedNotificationsStore {
         }
     }
 
-    /// 删一行（合并过的赞是几条一起删）。
+    /// 删一行（合并过的赞是几条一起删）。已经不存在（404）当删成了。
     func delete(_ row: FeedNotificationRow) {
         let tab = state.selectedTab
         let before = state.tab(tab).items
@@ -459,13 +523,17 @@ final class FeedNotificationsStore {
                 self?.state.notice = .deleted
             } catch {
                 Logger.warn("feed notification delete failed: \(error)")
+                if FeedActionFailure.classify(error) == .gone {
+                    self?.state.notice = .deleted
+                    return
+                }
                 self?.updateTab(tab) { $0.items = before }
-                self?.state.notice = .failed
+                self?.told(error, goneNotice: .failed)
             }
         })
     }
 
-    /// 这条帖子不再通知：全部，或者只关赞。已经在列表里的相应几行一起拿掉。
+    /// 这条帖子不再通知：全部，或者只关赞。已经在列表里的相应几行一起拿掉。帖子已经不存在（404）：拿掉的不放回来，提示「帖子已不可见」。
     func mute(_ row: FeedNotificationRow, likesOnly: Bool) {
         guard let contentId = row.contentId else { return }
         let tab = state.selectedTab
@@ -477,13 +545,17 @@ final class FeedNotificationsStore {
                 self?.state.notice = likesOnly ? .mutedLikes : .muted
             } catch {
                 Logger.warn("feed notification mute failed: \(error)")
+                if FeedActionFailure.classify(error) == .gone {
+                    self?.state.notice = .postGone
+                    return
+                }
                 self?.updateTab(tab) { $0.items = before }
-                self?.state.notice = .failed
+                self?.told(error, goneNotice: .postGone)
             }
         })
     }
 
-    /// 点赞 / 评论通知：先换成卡片再进详情；帖子删了就提示一下。
+    /// 点赞 / 评论通知：先换成卡片再进详情；帖子删了、作者被屏蔽了就提示一下。
     func openPost(_ contentId: String) {
         tasks.append(Task { [weak self, source] in
             let card: FeedCard?
@@ -491,19 +563,51 @@ final class FeedNotificationsStore {
                 card = try await source.card(contentId: contentId)
             } catch {
                 Logger.warn("feed notification card failed: \(error)")
-                self?.state.notice = .failed
+                self?.told(error, goneNotice: .postGone)
                 return
             }
-            if let card { self?.state.openCard = card } else { self?.state.notice = .postGone }
+            guard let self else { return }
+            guard let card else {
+                self.state.notice = .postGone
+                return
+            }
+            if let mirror = self.mirror {
+                guard let adopted = mirror.adopt([card]).first else {
+                    self.state.notice = .postGone
+                    return
+                }
+                self.state.openCard = adopted
+            } else {
+                self.state.openCard = card
+            }
         })
     }
 
+    /// 详情页已经打开（它自己借着这张卡片了）：这边放手。
     func onCardOpened() {
         state.openCard = nil
+        mirror?.releaseAll()
     }
 
     func onNoticeShown() {
         state.notice = nil
+        state.retryAfterSeconds = nil
+    }
+
+    /// 操作失败，按引擎的错误给提示：限速带秒数、`feed_hidden` 收页、404 用调用方给的提示、别的「操作失败」。
+    private func told(_ error: Error, goneNotice: FeedNotificationsState.Notice) {
+        switch FeedActionFailure.classify(error) {
+        case .feedHidden:
+            state.feedHidden = true
+        case .throttled(let seconds):
+            state.retryAfterSeconds = seconds
+            state.notice = .throttled
+        case .gone:
+            state.notice = goneNotice
+        case .profileRequired, .failed:
+            state.retryAfterSeconds = nil
+            state.notice = .failed
+        }
     }
 }
 
@@ -513,11 +617,17 @@ struct FeedNotificationSettingsState: Equatable {
     enum Notice: Equatable {
         case profileRequired
         case saveFailed
+        /// 被限速；要等几秒在 `retryAfterSeconds`。
+        case throttled
     }
 
     var settings: FeedNotificationSettings?
     var loading = false
     var loadFailed = false
+    /// 被限速时还要等几秒（`loadFailed` 页或 `notice == .throttled` 时说）；没有 `Retry-After` 是 nil。
+    var retryAfterSeconds: Int?
+    /// 引擎说这个区域的动态被关了（404 `feed_hidden`）：页面该收起，不是「加载失败」。
+    var feedHidden = false
     var notice: Notice?
 
     /// 来源选了「都不接收」时，下面三个开关没有意义，变灰。
@@ -557,6 +667,7 @@ final class FeedNotificationSettingsStore {
         if state.settings != nil || state.loading { return }
         state.loading = true
         state.loadFailed = false
+        state.retryAfterSeconds = nil
         tasks.append(Task { [weak self, source] in
             do {
                 let settings = try await source.notificationSettings()
@@ -564,8 +675,17 @@ final class FeedNotificationSettingsStore {
                 self?.state.settings = settings
             } catch {
                 Logger.warn("feed notification settings failed: \(error)")
-                self?.state.loading = false
-                self?.state.loadFailed = true
+                guard let self else { return }
+                self.state.loading = false
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.retryAfterSeconds = seconds
+                    self.state.loadFailed = true
+                default:
+                    self.state.loadFailed = true
+                }
             }
         })
     }
@@ -580,6 +700,12 @@ final class FeedNotificationSettingsStore {
 
     func onNoticeShown() {
         state.notice = nil
+        if !state.loadFailed { state.retryAfterSeconds = nil }
+    }
+
+    /// 页面离开前 / 别处让页面该收起（`feed_hidden`）。
+    func onFeedHidden() {
+        state.feedHidden = true
     }
 
     private func save(_ transform: (inout FeedNotificationSettings) -> Void) {
@@ -596,11 +722,19 @@ final class FeedNotificationSettingsStore {
             } catch {
                 Logger.warn("feed save notification settings failed: \(error)")
                 guard let self else { return }
-                let api = error as? FeedAPIError
-                let notice: FeedNotificationSettingsState.Notice = api?.status == 409 && api?.code == "profile_required" ? .profileRequired : .saveFailed
                 // 只在还是这一次改的值时改回去，别盖掉后面的改动
                 if self.state.settings == after { self.state.settings = before }
-                self.state.notice = notice
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.retryAfterSeconds = seconds
+                    self.state.notice = .throttled
+                case .profileRequired:
+                    self.state.notice = .profileRequired
+                case .gone, .failed:
+                    self.state.notice = .saveFailed
+                }
             }
         }
         lastSave = task

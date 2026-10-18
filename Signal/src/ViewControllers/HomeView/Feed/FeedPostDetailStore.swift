@@ -170,6 +170,8 @@ final class FeedPostDetailStore {
             adoptFromFeed()
         case .actionFailed(let cardId):
             if cardId == state.post.id { state.notice = .failed }
+        case .unread:
+            break
         }
     }
 

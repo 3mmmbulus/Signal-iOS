@@ -129,6 +129,8 @@ final class FeedProfilePageStore {
                 state.retryAfterSeconds = nil
                 state.notice = .failed
             }
+        case .unread:
+            break
         }
     }
 

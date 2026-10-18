@@ -82,6 +82,14 @@ final class FeedStore {
 
     private var loadTasks = [FeedTab: Task<Void, Never>]()
 
+    /// 通知的未读数（互动 / 新关注 / 系统）：动态页的红点和通知页读写同一份，改了走 `FeedChange.unread`。
+    private(set) var notificationUnread = FeedUnreadCounts()
+    private var unreadGate = FeedRetryGate()
+    private var unreadCheckedAt: Date?
+    private var unreadTask: Task<Void, Never>?
+    /// 红点最多这么久问一次引擎（回到动态页、回前台都会问，太密就不发）。
+    static let unreadRefreshInterval: TimeInterval = 30
+
     private let now: () -> Date
     private var impressionTrackers = [FeedTab: FeedImpressionTracker]()
     private var lastVisible = [FeedTab: Set<String>]()
@@ -130,7 +138,7 @@ final class FeedStore {
             onChange?(tab)
         case .cards:
             onChange?(nil)
-        case .actionFailed:
+        case .actionFailed, .unread:
             break
         }
         subscriptions.removeAll { $0.value?.isActive != true }
@@ -655,6 +663,40 @@ final class FeedStore {
             }
         }
         if changed { notify(.list(nil)) }
+    }
+
+    // MARK: - 通知未读数
+
+    func setNotificationUnread(_ counts: FeedUnreadCounts) {
+        guard counts != notificationUnread else { return }
+        notificationUnread = counts
+        notify(.unread)
+    }
+
+    /// 问一次引擎最新的未读数（红点）。30 秒内问过、上一次还在路上、被限速（429 / 带 `Retry-After` 的 503，按头里的秒数或指数退避）时不发；
+    /// 失败只记日志、红点保持原样（红点不是要紧事，不弹提示）。`force` 跳过 30 秒的间隔（比如下拉刷新），但不跳过限速等待。
+    func refreshNotificationUnread(force: Bool = false) {
+        let current = now()
+        if unreadTask != nil || unreadGate.isBlocked(now: current) { return }
+        if !force, let checked = unreadCheckedAt, current >= checked, current.timeIntervalSince(checked) < Self.unreadRefreshInterval { return }
+        unreadCheckedAt = current
+        unreadTask = Task { [weak self, source] in
+            do {
+                let response = try await source.notifications(tab: FeedAPI.notificationsInteractions, before: nil)
+                guard let self else { return }
+                self.unreadGate.reset()
+                self.setNotificationUnread(response.unread)
+            } catch {
+                guard let self else { return }
+                if let api = error as? FeedAPIError { self.unreadGate.record(api, now: self.now(), random: self.jitter()) }
+                Logger.warn("feed notification unread failed: \(error)")
+            }
+            self?.unreadTask = nil
+        }
+    }
+
+    func waitForNotificationUnread() async {
+        await unreadTask?.value
     }
 
     /// 取消屏蔽：这个作者的帖子可以再出现在借着它们的页面里（信息流里去掉的要等下次刷新才回来）。

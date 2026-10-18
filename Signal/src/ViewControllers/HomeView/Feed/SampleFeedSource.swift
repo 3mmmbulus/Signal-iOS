@@ -21,7 +21,7 @@ final class SampleFeedSource: FeedSource {
     private var mine = [FeedCard]()
     private var published = [String: FeedCreatePostResponse]()
 
-    private let now: () -> Date
+    let now: () -> Date
     /// 样例取评论前先等一会儿，界面上才看得到「加载中」。单测传 0。
     private let commentsLatencyNanos: UInt64
     /// 已经让它失败过一次的帖子（见 `failsFirstCommentLoad`）：重试就成功。
@@ -84,11 +84,27 @@ final class SampleFeedSource: FeedSource {
         var failsTopicMore = false
         var topicThrottledRetryAfterSeconds: Int?
         var failsTopicFollow = false
+        /// 通知页（见 `SampleFeedSource+Notifications.swift`）：请求先等一会儿（加载中那一帧）。
+        var notificationsLatencyNanos: UInt64 = 0
+        /// 取通知失败（第一页）；`failsNotificationsMore` 只让翻页失败（已有的留着，末尾给重试）。
+        var failsNotifications = false
+        var failsNotificationsMore = false
+        /// 取通知被限速：回 429 带这么多秒的 `Retry-After`；nil = 不限速。
+        var notificationsThrottledRetryAfterSeconds: Int?
+        /// 标已读 / 删一条 / 不再通知 失败（行放回来并提示「操作失败」）；`notificationActionsGone` 让它们回 404（当删成了 / 提示帖子已不可见）。
+        var failsNotificationActions = false
+        var notificationActionsGone = false
+        /// 通知设置：读 / 存失败；存时回 409 `profile_required`；存时被限速。
+        var failsNotificationSettingsLoad = false
+        var failsNotificationSettingsSave = false
+        var notificationSettingsNeedProfile = false
+        var notificationSettingsThrottledRetryAfterSeconds: Int?
     }
 
     /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
     let profiles = SampleProfileState()
     let topicFollows = SampleTopicState()
+    let notificationState = SampleNotificationState()
 
     private var storedSimulation = Simulation()
 
