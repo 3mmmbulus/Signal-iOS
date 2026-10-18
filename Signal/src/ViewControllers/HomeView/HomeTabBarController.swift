@@ -189,6 +189,12 @@ class HomeTabBarController: UITabBarController {
         }
         // 远程配置没有变更通知：回到前台时看一眼 global.feed.enabled 变了没有（R-2.11：随下一次拉取生效）
         updateFeedTabIfNeeded()
+        // 引擎说能不能看（`GET /v1/feed/status`，契约 3.1）：离上次问超过 15 分钟才问；变了就重画底栏
+        Task { @MainActor [weak self] in
+            if await FeedEntryCheck.forCurrentProcess().refreshIfStale() {
+                self?.updateFeedTabIfNeeded()
+            }
+        }
     }
 
     @objc
