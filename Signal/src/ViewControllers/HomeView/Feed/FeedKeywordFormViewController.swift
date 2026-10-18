@@ -43,15 +43,10 @@ final class FeedKeywordFormViewController: OWSTableViewController2 {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = OWSLocalizedString("TELLOMI_FEED_SETTINGS_KEYWORDS_ADD", comment: "Feed settings: row that opens the form to add a muted word.")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: CommonStrings.cancelButton,
-            style: .plain,
-            primaryAction: UIAction { [weak self] _ in self?.dismiss(animated: true) },
-        )
-        let add = UIBarButtonItem(
+        navigationItem.leftBarButtonItem = .cancelButton(dismissingFrom: self)
+        let add = UIBarButtonItem.prominentButton(
             title: OWSLocalizedString("TELLOMI_FEED_SETTINGS_KEYWORDS_CONFIRM", comment: "Feed settings: button that adds the muted word."),
-            style: .done,
-            primaryAction: UIAction { [weak self] _ in self?.submit() },
+            action: { [weak self] in self?.submit() },
         )
         add.isEnabled = form.valid
         navigationItem.rightBarButtonItem = add

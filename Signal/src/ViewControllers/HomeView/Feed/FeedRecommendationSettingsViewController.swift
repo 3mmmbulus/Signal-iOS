@@ -233,11 +233,12 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
             ))
         }
         let busy = state.resetting
+        let resetAction: (() -> Void)? = busy ? nil : { [weak self] in self?.presentResetConfirmation() }
         section.add(Self.textRow(
             title: OWSLocalizedString("TELLOMI_FEED_SETTINGS_RESET", comment: "Feed settings: row that resets recommendations."),
             subtitle: OWSLocalizedString("TELLOMI_FEED_SETTINGS_RESET_DESCRIPTION", comment: "Feed settings: says resetting clears your interest tags and starts over."),
             titleColor: busy ? UIColor.Signal.secondaryLabel : UIColor.Signal.red,
-            action: busy ? nil : { [weak self] in self?.presentResetConfirmation() },
+            action: resetAction,
         ))
         contents.add(section)
     }
