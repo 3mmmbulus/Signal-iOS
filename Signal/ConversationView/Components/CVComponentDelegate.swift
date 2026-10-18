@@ -42,6 +42,12 @@ public protocol CVComponentDelegate: AnyObject, AudioMessageViewDelegate, CVPoll
 
     func didDoubleTapTextViewItem(_ itemViewModel: CVItemViewModelImpl)
 
+    /// Tellomi（owner 2026-09-24 C-01）：双击这条能不能快速回应——只有别人的消息；不能时双击照旧走上游的编辑。默认不能（只有会话页能）。
+    func tellomiCanQuickReact(_ itemViewModel: CVItemViewModelImpl) -> Bool
+
+    /// Tellomi：双击了，用快速回应的表情回应（已经是它就撤回）。
+    func tellomiDidDoubleTapToReact(_ itemViewModel: CVItemViewModelImpl)
+
     // MARK: - Long Press
 
     func didLongPressTextViewItem(
@@ -425,4 +431,9 @@ public extension CVComponentDelegate {
 
     /// 只有会话页打开位置详情；别的地方（编辑记录、消息详情等）点了不动。
     func tellomiDidTapLocation(_ location: TellomiLocationMessage, itemViewModel: CVItemViewModelImpl) {}
+
+    /// 只有会话页双击回应；别的地方（编辑记录、消息详情等）双击不动。
+    func tellomiCanQuickReact(_ itemViewModel: CVItemViewModelImpl) -> Bool { false }
+
+    func tellomiDidDoubleTapToReact(_ itemViewModel: CVItemViewModelImpl) {}
 }

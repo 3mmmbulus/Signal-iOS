@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4F651FD8BA744971000921E5 /* TellomiQuickReactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967CB77C765E8ED90C273FE3 /* TellomiQuickReactionTests.swift */; };
+		44D613C49BDBBA7BFF465B2D /* ConversationViewController+TellomiQuickReaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA8A1439DCC0FB53C897FB3 /* ConversationViewController+TellomiQuickReaction.swift */; };
 		268662CFEE5FD8F61E2F2EF1 /* TellomiRecordingGestureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */; };
 		6AF504DEE7EECC0E2419C527 /* TellomiRecordingGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26880CAAD6CF4EDB3DE978EE /* TellomiRecordingGesture.swift */; };
 		B29BF826B80B6799F176675E /* TellomiTransferHandoffCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5945B497963E1B64677714 /* TellomiTransferHandoffCellTests.swift */; };
@@ -4544,6 +4546,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		967CB77C765E8ED90C273FE3 /* TellomiQuickReactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiQuickReactionTests.swift; sourceTree = "<group>"; };
+		4CA8A1439DCC0FB53C897FB3 /* ConversationViewController+TellomiQuickReaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiQuickReaction.swift"; sourceTree = "<group>"; };
 		CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRecordingGestureTests.swift; sourceTree = "<group>"; };
 		26880CAAD6CF4EDB3DE978EE /* TellomiRecordingGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiRecordingGesture.swift; sourceTree = "<group>"; };
 		2A5945B497963E1B64677714 /* TellomiTransferHandoffCellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTransferHandoffCellTests.swift; sourceTree = "<group>"; };
@@ -9718,6 +9722,7 @@
 				50BD86AE2A3CFF89005B6AC1 /* ResendMessagePromptBuilder.swift */,
 				88C980D327F3AD2C009750C0 /* TSInteraction+DeleteActionSheet.swift */,
 				7A44D4A7FD5A17E0F027CB9A /* ConversationViewController+ReactionFlyIn.swift */,
+				4CA8A1439DCC0FB53C897FB3 /* ConversationViewController+TellomiQuickReaction.swift */,
 				DB1D428A05F8531518F7D1B9 /* TellomiSendFlight.swift */,
 				7FFE2E35A5959B0DC03ABB32 /* ConversationViewController+TellomiSendFlight.swift */,
 			);
@@ -10376,6 +10381,7 @@
 				F1A4E1ED6860037E9895BBB6 /* TellomiReactionPillsTest.swift */,
 				6818A248C64A7149D4D923BE /* TellomiContextMenuActionTimingTest.swift */,
 				509F00653629A8EA63754812 /* TellomiReactionBarTest.swift */,
+				967CB77C765E8ED90C273FE3 /* TellomiQuickReactionTests.swift */,
 				8B0570935FC9CB5F688847FD /* TellomiReactionAnimationsTest.swift */,
 				40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */,
 				0D92436364DDFB0C8BBCB0E5 /* TellomiSendFlightTests.swift */,
@@ -20245,6 +20251,7 @@
 				D149B68A2D00C9D6F2249B44 /* ReactionFlyIn.swift in Sources */,
 				AC119A6289A1333C0B1D18D8 /* TellomiReactionBurst.swift in Sources */,
 				36CEEA01C004890A1AEC05E6 /* ConversationViewController+ReactionFlyIn.swift in Sources */,
+				44D613C49BDBBA7BFF465B2D /* ConversationViewController+TellomiQuickReaction.swift in Sources */,
 				4C61A75530506FF504238252 /* TellomiSendFlight.swift in Sources */,
 				4A8E8774FE6281375A39A2B9 /* ConversationViewController+TellomiSendFlight.swift in Sources */,
 			);
@@ -20417,6 +20424,7 @@
 				7584EEFDAE1CD7B812FD2D4E /* TellomiReactionPillsTest.swift in Sources */,
 				83805FB4360A13FAA64023D2 /* TellomiContextMenuActionTimingTest.swift in Sources */,
 				E8981A997A8652D2C38AED29 /* TellomiReactionBarTest.swift in Sources */,
+				4F651FD8BA744971000921E5 /* TellomiQuickReactionTests.swift in Sources */,
 				3A8881D28A31DD78A26C36D0 /* TellomiReactionAnimationsTest.swift in Sources */,
 				7DE3BB5B930D647AAE1D924A /* TellomiConversationItemAnimationTest.swift in Sources */,
 				087034E7417F96B59CA68F50 /* TellomiSendFlightTests.swift in Sources */,

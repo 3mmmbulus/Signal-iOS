@@ -35,6 +35,9 @@ extension ConversationViewController {
 
     /// 菜单收完、每次 load 落地时各调一次。回应还没画出来就什么都不做，等下一次或者超时。
     func landPendingReactionFlyInIfPossible() {
+        // Tellomi（owner 2026-10-18）：双击回应没有起飞，回应画出来时在胶囊上爆开一下。
+        tellomiPlayPendingQuickReactionBurstIfPossible()
+
         guard
             let flyIn = viewState.pendingReactionFlyIn,
             collectionViewActiveContextMenuInteraction == nil,
@@ -47,7 +50,7 @@ extension ConversationViewController {
         landWhenStill(flyIn: flyIn, target: target, previousCenter: nil, checksLeft: Self.reactionFlyInStillCheckLimit)
     }
 
-    private func reactionFlyInTarget(messageUniqueId: String, emoji: String) -> UILabel? {
+    func reactionFlyInTarget(messageUniqueId: String, emoji: String) -> UILabel? {
         guard
             let indexPath = indexPath(forInteractionUniqueId: messageUniqueId),
             let cell = collectionView.cellForItem(at: indexPath) as? CVCell,

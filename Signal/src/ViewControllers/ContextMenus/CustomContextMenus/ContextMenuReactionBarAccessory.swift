@@ -72,6 +72,12 @@ public class ContextMenuReactionBarAccessory: ContextMenuTargetedPreviewAccessor
         self.highlightClickGestureRecognizer = highlightClickGestureRecognizer
     }
 
+    /// Tellomi（owner 2026-10-18）：双击消息用的表情——条上第一个，即用户的第一个回应（默认 ❤️）。
+    /// Telegram 安卓的默认同样是第一个（`MediaDataController.getDoubleTapReaction`）。
+    static func quickReactionEmoji() -> String? {
+        reactionBarEmojis(selectedEmoji: nil).first
+    }
+
     /// 用户选的 6 个（缺的用 Signal 默认补，和上游一样）+ 显示时补的第 7 个（`TellomiReactionBarSlots`）。
     private static func reactionBarEmojis(selectedEmoji: String?) -> [String] {
         func normalized(_ emoji: String) -> String? {

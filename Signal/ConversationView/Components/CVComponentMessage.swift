@@ -2250,8 +2250,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             return false
         }
 
+        // Tellomi（owner 2026-09-24 C-01；10-18 真机「双击对方消息也无法回复表情」）：双击别人的消息 = 快速回应，
+        // 双击自己的消息照旧是上游的编辑。见 `ConversationViewController+TellomiQuickReaction.swift`。
         let viewModel = CVItemViewModelImpl(renderItem: renderItem)
-        return viewModel.canEditMessage
+        return componentDelegate.tellomiCanQuickReact(viewModel) || viewModel.canEditMessage
     }
 
     override public func handleDoubleTap(sender: UIGestureRecognizer, componentDelegate: any CVComponentDelegate, renderItem: CVRenderItem) -> Bool {
@@ -2260,7 +2262,11 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         }
 
         let viewModel = CVItemViewModelImpl(renderItem: renderItem)
-        componentDelegate.didDoubleTapTextViewItem(viewModel)
+        if componentDelegate.tellomiCanQuickReact(viewModel) {
+            componentDelegate.tellomiDidDoubleTapToReact(viewModel)
+        } else {
+            componentDelegate.didDoubleTapTextViewItem(viewModel)
+        }
         return true
     }
 
