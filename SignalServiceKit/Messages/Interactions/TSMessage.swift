@@ -468,6 +468,21 @@ public extension TSMessage {
             )
 
         } else if
+            let threadUniqueId,
+            let pinNotice = InteractionFinder(threadUniqueId: threadUniqueId).tellomiPinNotice(
+                pinner: authorAci,
+                pinSentTimestamp: sentAtTimestamp,
+                tx: transaction,
+            )
+        {
+            // Tellomi (ADR-0081 §4.2): "×× pinned «…»" deleted for everyone by whoever pinned it goes away; the pin stays.
+            try TellomiPinNotice.applyDeleteForEveryone(
+                pinNotice,
+                deleteAuthorAci: authorAci,
+                serverTimestamp: serverTimestamp,
+                tx: transaction,
+            )
+        } else if
             let storyMessage = StoryFinder.story(
                 timestamp: sentAtTimestamp,
                 author: authorAci,

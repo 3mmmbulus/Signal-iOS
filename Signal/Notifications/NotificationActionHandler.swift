@@ -130,7 +130,12 @@ public class NotificationActionHandler {
         let thread = notificationMessage.thread
         let interaction = notificationMessage.interaction
         var draftModelForSending: DraftQuotedReplyModel.ForSending?
-        guard (interaction is TSOutgoingMessage) || (interaction is TSIncomingMessage) else {
+        // Tellomi (ADR-0081 §4.2): or my "You pinned «…»", from a notification that someone reacted to it; the reply goes
+        // without a quote, as one to my own message does.
+        guard
+            (interaction is TSOutgoingMessage) || (interaction is TSIncomingMessage)
+                || (interaction as? TSInfoMessage)?.tellomiPinNoticeIdentity != nil
+        else {
             throw OWSAssertionError("Unexpected interaction type.")
         }
 

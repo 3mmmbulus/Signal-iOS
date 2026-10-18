@@ -117,6 +117,7 @@ extension ConversationViewController: CVLoadCoordinatorDelegate {
         if itemViewModel.messageCellType == .systemMessage {
             messageActions = MessageActions.infoMessageActions(
                 itemViewModel: itemViewModel,
+                shouldAllowMessageSendActions: shouldAllowMessageSendActions,
                 delegate: self,
             )
         } else if itemViewModel.messageCellType == .stickerMessage || itemViewModel.messageCellType == .genericAttachment {

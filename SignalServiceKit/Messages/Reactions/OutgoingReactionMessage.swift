@@ -126,7 +126,10 @@ final class OutgoingReactionMessage: TransientOutgoingMessage {
             return nil
         }
 
-        let reactionBuilder = SSKProtoDataMessageReaction.builder(emoji: emoji, timestamp: message.timestamp)
+        // Tellomi (ADR-0081 §4.2): "×× pinned «…»" is named by who pinned it and when the pin was sent.
+        let pinNotice = (message as? TSInfoMessage)?.tellomiPinNoticeIdentity
+
+        let reactionBuilder = SSKProtoDataMessageReaction.builder(emoji: emoji, timestamp: pinNotice?.pinSentTimestamp ?? message.timestamp)
         reactionBuilder.setRemove(isRemoving)
 
         let messageAuthor: Aci?
@@ -136,7 +139,7 @@ final class OutgoingReactionMessage: TransientOutgoingMessage {
         case let message as TSIncomingMessage:
             messageAuthor = message.authorAddress.aci
         default:
-            messageAuthor = nil
+            messageAuthor = pinNotice?.pinner
         }
         guard let messageAuthor else {
             owsFailDebug("Missing author for reaction.")

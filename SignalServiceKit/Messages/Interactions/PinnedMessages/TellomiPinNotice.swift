@@ -4,7 +4,8 @@
 //
 
 import Foundation
-import LibSignalClient
+import GRDB
+public import LibSignalClient
 
 /// Tellomi（ADR-0081 §4.4，pinned-messages.md 3.2）：置顶系统消息的那一句——「××置顶了«前 15 个字…»」、「你置顶了一张图片」，
 /// 被置顶的那条找不到（删了）就是「××置顶了一条消息」。会话里的系统消息、聊天列表的预览、通知都是这一句（都走
@@ -128,7 +129,8 @@ public enum TellomiPinNotice {
 extension TSInfoMessage {
 
     /// Tellomi (ADR-0081 §4.4): "×× pinned «…»" for a pinned-message info message, reading what was pinned (its latest edit).
-    func tellomiPinnedMessageDescription(item: PersistablePinnedMessageItem, localAci: Aci, tx: DBReadTransaction) -> String {
+    /// `thirdPerson`: my own pin is "<my name> pinned «…»", not "You pinned «…»" (the line a reply carries as its quote).
+    func tellomiPinnedMessageDescription(item: PersistablePinnedMessageItem, localAci: Aci, thirdPerson: Bool = false, tx: DBReadTransaction) -> String {
         var target = try? DependenciesBridge.shared.interactionStore.fetchMessage(
             timestamp: UInt64(item.timestamp),
             incomingMessageAuthor: localAci == item.originalMessageAuthorAci ? nil : item.originalMessageAuthorAci,
@@ -145,16 +147,132 @@ extension TSInfoMessage {
         ).resolvedValue()
 
         return TellomiPinNotice.describe(
-            pinnerIsLocalUser: localAci == item.pinnedMessageAuthorAci,
+            pinnerIsLocalUser: !thirdPerson && localAci == item.pinnedMessageAuthorAci,
             pinnerName: pinnerName,
             target: target,
             tx: tx,
         )
     }
 
+    /// Tellomi (ADR-0081 §4.2, §4.6): the line a reply carries as its quote of "×× pinned «…»" — in the third person even for
+    /// my own pin, since apps that can't find the notice show it as it is (Android `TellomiPinNotice.describeForQuote`).
+    func tellomiPinNoticeQuoteText(tx: DBReadTransaction) -> String? {
+        guard
+            let item: PersistablePinnedMessageItem = infoMessageValue(forKey: .pinnedMessage),
+            let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci
+        else {
+            return nil
+        }
+        return tellomiPinnedMessageDescription(item: item, localAci: localAci, thirdPerson: true, tx: tx)
+    }
+
     /// Tellomi (ADR-0081 §4.4): who pinned, for the notification's sender.
     var tellomiPinnerAci: Aci? {
         let item: PersistablePinnedMessageItem? = infoMessageValue(forKey: .pinnedMessage)
         return item?.pinnedMessageAuthorAci
+    }
+}
+
+// MARK: - Identity (ADR-0081 §4.2)
+
+extension TSInfoMessage {
+
+    /// Tellomi (ADR-0081 §4.2): who pinned, and when the pin was sent — how a quote, a reaction or a delete names "×× pinned
+    /// «…»" (on Android and Desktop, the notice's own sender and sent time). Nil for any other message, and for notices from
+    /// before iOS kept the time.
+    public var tellomiPinNoticeIdentity: (pinner: Aci, pinSentTimestamp: UInt64)? {
+        guard
+            messageType == .typePinnedMessage,
+            let item: PersistablePinnedMessageItem = infoMessageValue(forKey: .pinnedMessage),
+            let pinSentTimestamp = item.tellomiPinSentTimestamp
+        else {
+            return nil
+        }
+        return (item.pinnedMessageAuthorAci, pinSentTimestamp)
+    }
+}
+
+extension InteractionFinder {
+
+    /// Tellomi (ADR-0081 §4.2): the "×× pinned «…»" in this chat that `pinner` sent at `pinSentTimestamp`, newest first.
+    public func tellomiPinNotice(pinner: Aci, pinSentTimestamp: UInt64, tx: DBReadTransaction) -> TSInfoMessage? {
+        let sql = """
+        SELECT *
+        FROM \(InteractionRecord.databaseTableName)
+        \(DEBUG_INDEXED_BY("index_model_TSInteraction_on_uniqueThreadId_recordType_messageType"))
+        WHERE \(interactionColumn: .threadUniqueId) = ?
+        AND \(interactionColumn: .recordType) = \(SDSRecordType.infoMessage.rawValue)
+        AND \(interactionColumn: .messageType) = \(TSInfoMessageType.typePinnedMessage.rawValue)
+        ORDER BY \(interactionColumn: .id) DESC
+        """
+        let cursor = TSInfoMessage.grdbFetchCursor(sql: sql, arguments: [threadUniqueId], transaction: tx)
+        return failIfThrows {
+            while let interaction = try cursor.next() {
+                guard
+                    let notice = interaction as? TSInfoMessage,
+                    let identity = notice.tellomiPinNoticeIdentity,
+                    identity.pinner == pinner,
+                    identity.pinSentTimestamp == pinSentTimestamp
+                else {
+                    continue
+                }
+                return notice
+            }
+            return nil
+        }
+    }
+}
+
+// MARK: - Deleted for everyone (ADR-0081 §4.2)
+
+extension TellomiPinNotice {
+
+    /// Tellomi (ADR-0081 §4.2, pinned-messages.md 3.7): only whoever pinned can delete "×× pinned «…»" for everyone, within the
+    /// time a message can be (Signal's rule, owner 2026-09-24), counted from when the pin was sent.
+    public static func canDeleteForEveryone(_ notice: TSInfoMessage, localAci: Aci?, nowMs: UInt64) -> Bool {
+        guard let identity = notice.tellomiPinNoticeIdentity, let localAci, identity.pinner == localAci else {
+            return false
+        }
+        let (elapsed, isInFuture) = nowMs.subtractingReportingOverflow(identity.pinSentTimestamp)
+        return isInFuture || TimeInterval(elapsed) <= RemoteConfig.current.normalDeleteMaxAgeInSeconds * TimeInterval(MSEC_PER_SEC)
+    }
+
+    /// Deletes my "You pinned «…»" for everyone. It leaves this device at once (a message turns into "You deleted this message"
+    /// at once), and the delete names it by when the pin was sent. The pin itself stays.
+    public static func deleteForEveryone(_ notice: TSInfoMessage, thread: TSThread, tx: DBWriteTransaction) {
+        guard let identity = notice.tellomiPinNoticeIdentity else {
+            owsFailDebug("Not a pin notice that can be named.")
+            return
+        }
+        let deleteMessage = OutgoingDeleteMessage(thread: thread, tellomiPinSentTimestamp: identity.pinSentTimestamp, tx: tx)
+        remove(notice, tx: tx)
+        SSKEnvironment.shared.messageSenderJobQueueRef.add(
+            message: .preprepared(transientMessageWithoutAttachments: deleteMessage),
+            transaction: tx,
+        )
+    }
+
+    /// A delete for everyone from whoever pinned "×× pinned «…»" takes it away; the pin itself stays. From someone else it has
+    /// to come within the time a message's delete may (as `TSMessage.remotelyDeleteMessage`); mine were checked when sent.
+    static func applyDeleteForEveryone(
+        _ notice: TSInfoMessage,
+        deleteAuthorAci: Aci,
+        serverTimestamp: UInt64,
+        tx: DBWriteTransaction,
+    ) throws(TSMessage.RemoteDeleteError) {
+        let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci
+        if deleteAuthorAci != localAci, let identity = notice.tellomiPinNoticeIdentity {
+            let allowed = RemoteConfig.current.normalDeleteMaxAgeInSeconds + .day
+            let pinDate = Date(millisecondsSince1970: identity.pinSentTimestamp)
+            guard pinDate.addingTimeInterval(allowed) > Date(millisecondsSince1970: serverTimestamp) else {
+                Logger.warn("Ignoring a pin notice's delete sent too long after the pin.")
+                throw .invalidDelete
+            }
+        }
+        remove(notice, tx: tx)
+    }
+
+    private static func remove(_ notice: TSInfoMessage, tx: DBWriteTransaction) {
+        DependenciesBridge.shared.interactionDeleteManager.delete(notice, sideEffects: .default(), tx: tx)
     }
 }

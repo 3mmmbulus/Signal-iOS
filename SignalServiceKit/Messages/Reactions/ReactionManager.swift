@@ -160,6 +160,11 @@ public class ReactionManager: NSObject {
                 threadId: thread.uniqueId,
                 author: SignalServiceAddress(messageAuthor),
                 transaction: transaction,
+            ) ?? InteractionFinder(threadUniqueId: thread.uniqueId).tellomiPinNotice(
+                // Tellomi (ADR-0081 §4.2): or "×× pinned «…»", named by who pinned it and when the pin was sent.
+                pinner: messageAuthor,
+                pinSentTimestamp: reaction.timestamp,
+                tx: transaction,
             )
         {
             if message.editState == .pastRevision {
@@ -197,11 +202,13 @@ public class ReactionManager: NSObject {
                 )
 
                 // If this is a reaction to a message we sent, notify the user.
+                // Tellomi (ADR-0081 §4.2): "You pinned «…»" counts as a message I sent.
                 let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: transaction)?.aci
+                let isMyPinNotice = localAci != nil && (message as? TSInfoMessage)?.tellomiPinNoticeIdentity?.pinner == localAci
                 if
                     let reaction,
                     reaction.oldValue?.sentAtTimestamp != reaction.newValue.sentAtTimestamp,
-                    let message = message as? TSOutgoingMessage,
+                    message is TSOutgoingMessage || isMyPinNotice,
                     reactor != localAci
                 {
                     SSKEnvironment.shared.notificationPresenterRef.notifyUser(

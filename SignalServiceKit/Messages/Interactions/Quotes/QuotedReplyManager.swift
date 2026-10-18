@@ -109,6 +109,26 @@ class QuotedReplyManagerImpl: QuotedReplyManager {
             } catch {
                 Logger.warn("Failed to build quote message locally! \(error)")
             }
+        } else if
+            // Tellomi (ADR-0081 §4.2): a reply to "×× pinned «…»" quotes this app's own line for it, in this app's language,
+            // and tapping the quote goes to the notice.
+            let notice = InteractionFinder(threadUniqueId: threadUniqueId).tellomiPinNotice(pinner: quoteAuthor, pinSentTimestamp: timestamp, tx: tx),
+            let line = notice.pinnedMessageDescription(transaction: tx)
+        {
+            return ValidatedQuotedReply(
+                quotedReply: TSQuotedMessage(
+                    timestamp: timestamp,
+                    authorAddress: SignalServiceAddress(quoteAuthor),
+                    body: line,
+                    bodyRanges: nil,
+                    bodySource: .local,
+                    receivedQuotedAttachmentInfo: nil,
+                    isGiftBadge: false,
+                    isTargetMessageViewOnce: false,
+                    isPoll: false,
+                ),
+                thumbnailDataSource: nil,
+            )
         }
 
         // If we couldn't generate the quoted content from local data, we can
@@ -401,6 +421,22 @@ class QuotedReplyManagerImpl: QuotedReplyManager {
     ) -> DraftQuotedReplyModel? {
         if originalMessage is OWSPaymentMessage {
             owsFailDebug("Use dedicated DraftQuotedReplyModel initializer for payment messages")
+        }
+
+        // Tellomi (ADR-0081 §4.2): a reply to "×× pinned «…»" names it by who pinned it and when the pin was sent, and quotes
+        // its line in the third person.
+        if let notice = originalMessage as? TSInfoMessage {
+            guard let identity = notice.tellomiPinNoticeIdentity, let line = notice.tellomiPinNoticeQuoteText(tx: tx) else {
+                owsFailDebug("Can't reply to this info message.")
+                return nil
+            }
+            return DraftQuotedReplyModel(
+                originalMessageTimestamp: identity.pinSentTimestamp,
+                originalMessageAuthorAddress: SignalServiceAddress(identity.pinner),
+                isOriginalMessageAuthorLocalUser: identity.pinner == tsAccountManager.localIdentifiers(tx: tx)?.aci,
+                threadUniqueId: notice.uniqueThreadId,
+                content: .text(MessageBody(text: line, ranges: .empty)),
+            )
         }
 
         let timestamp = originalMessage.timestamp
@@ -781,7 +817,10 @@ class QuotedReplyManagerImpl: QuotedReplyManager {
                 threadId: draft.threadUniqueId,
                 author: draft.originalMessageAuthorAddress,
                 transaction: tx,
-            )
+            ) ?? draft.originalMessageAuthorAddress.aci.flatMap({ pinner in
+                // Tellomi (ADR-0081 §4.2): or "×× pinned «…»"; the quote then carries the draft's line for it.
+                InteractionFinder(threadUniqueId: draft.threadUniqueId).tellomiPinNotice(pinner: pinner, pinSentTimestamp: originalMessageTimestamp, tx: tx)
+            })
         else {
             return ValidatedQuotedReply(
                 quotedReply: TSQuotedMessage(

@@ -318,6 +318,10 @@ extension ConversationViewController: ContextMenuInteractionDelegate {
             if incomingMessage.wasRemotelyDeleted { return false }
 
             return true
+        case let infoMessage as TSInfoMessage:
+            // Tellomi (ADR-0081 §4.2, pinned-messages.md 3.7): "×× pinned «…»" takes reactions, as in both Telegram apps. It is
+            // named by who pinned it and when the pin was sent, so not a notice from before iOS kept that time.
+            return infoMessage.tellomiPinNoticeIdentity != nil
         default:
             return false
         }

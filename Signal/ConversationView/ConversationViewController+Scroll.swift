@@ -324,7 +324,10 @@ extension ConversationViewController {
                     threadId: self.thread.uniqueId,
                     author: quotedReply.originalMessageAuthorAddress,
                     transaction: transaction,
-                )
+                ) ?? quotedReply.originalMessageAuthorAddress.aci.flatMap { pinner in
+                    // Tellomi (ADR-0081 §4.2): a quote of "×× pinned «…»" goes to the notice.
+                    InteractionFinder(threadUniqueId: self.thread.uniqueId).tellomiPinNotice(pinner: pinner, pinSentTimestamp: timestamp, tx: transaction)
+                }
             }
         } else {
             quotedMessage = nil

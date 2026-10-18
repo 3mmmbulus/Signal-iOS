@@ -613,7 +613,9 @@ public final class MessageReceiver {
                             pinMessageProto: pinMessage,
                             pinAuthor: localIdentifiers.aci,
                             thread: thread,
-                            pinSentAtTimestamp: envelope.timestamp,
+                            // Tellomi (ADR-0081 §4.2): the pin's own sent time (`SyncMessage.Sent.timestamp`) — with me as the
+                            // pinner, it names "You pinned «…»" for quotes, reactions and deletes.
+                            pinSentAtTimestamp: transcript.timestamp,
                             expireTimer: dataMessage.expireTimer,
                             expireTimerVersion: dataMessage.expireTimerVersion,
                             // Tellomi (ADR-0081 §4.3): my pin for me only from another of my devices — marked, no "pinned a message".

@@ -106,6 +106,7 @@ extension ConversationViewController: CVComponentDelegate {
 
         let messageActions = MessageActions.infoMessageActions(
             itemViewModel: itemViewModel,
+            shouldAllowMessageSendActions: shouldAllowMessageSendActionsForItem(itemViewModel),
             delegate: self,
         )
         self.presentContextMenu(with: messageActions, focusedOn: cell, andModel: itemViewModel)

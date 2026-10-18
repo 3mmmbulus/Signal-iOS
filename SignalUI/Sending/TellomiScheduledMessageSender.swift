@@ -417,7 +417,7 @@ public final class TellomiScheduledMessageSender {
                 attachments: attachments,
                 isViewOnce: message.isViewOnce,
                 thread: thread,
-                quotedReplyDraft: message.replyInfo.flatMap(Self.quotedReplyDraft(for:)),
+                quotedReplyDraft: message.replyInfo.flatMap { Self.quotedReplyDraft(for: $0, threadUniqueId: thread.uniqueId) },
                 linkPreviewDraft: message.linkPreview?.draft(in: TellomiScheduledMessageStore.directory(for: message.id)),
                 captionAboveMedia: message.captionAboveMedia,
                 claim: ThreadUtil.TellomiEnqueueClaim(
@@ -441,16 +441,22 @@ public final class TellomiScheduledMessageSender {
     }
 
     /// 同会话页恢复草稿里的引用（`ConversationViewController.buildDraftQuotedReply`）：按时间戳和作者找原消息。
-    private static func quotedReplyDraft(for replyInfo: ThreadReplyInfo) -> DraftQuotedReplyModel? {
+    private static func quotedReplyDraft(for replyInfo: ThreadReplyInfo, threadUniqueId: String) -> DraftQuotedReplyModel? {
         SSKEnvironment.shared.databaseStorageRef.read { tx in
             let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci
-            let original = try? InteractionFinder.fetchInteractions(timestamp: replyInfo.timestamp, transaction: tx)
+            let original = (try? InteractionFinder.fetchInteractions(timestamp: replyInfo.timestamp, transaction: tx)
                 .first { candidate in
                     if let incoming = candidate as? TSIncomingMessage {
                         return incoming.authorAddress.aci == replyInfo.author
                     }
                     return candidate is TSOutgoingMessage && localAci == replyInfo.author
-                } as? TSMessage
+                } as? TSMessage)
+                // Tellomi (ADR-0081 §4.2): or "×× pinned «…»", named by who pinned it and when the pin was sent.
+                ?? InteractionFinder(threadUniqueId: threadUniqueId).tellomiPinNotice(
+                    pinner: replyInfo.author,
+                    pinSentTimestamp: replyInfo.timestamp,
+                    tx: tx,
+                )
             guard let original else {
                 Logger.info("The message a scheduled message replies to is gone; sending without the quote.")
                 return nil

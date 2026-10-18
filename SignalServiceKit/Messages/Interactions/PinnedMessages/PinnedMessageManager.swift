@@ -187,6 +187,7 @@ public class PinnedMessageManager {
             targetMessageTimestamp: targetMessageTimestamp,
             targetMessageAuthor: targetAuthorAci,
             pinAuthor: pinAuthor,
+            tellomiPinSentTimestamp: pinSentAtTimestamp,
             expireTimer: expireTimer,
             expireTimerVersion: expireTimerVersion,
             tx: transaction,
@@ -418,6 +419,7 @@ public class PinnedMessageManager {
             targetMessageTimestamp: targetTimestamp,
             targetMessageAuthor: targetAuthorAci,
             pinAuthor: localAci,
+            tellomiPinSentTimestamp: sentTimestamp,
             expireTimer: dmConfig.durationSeconds,
             expireTimerVersion: dmConfig.timerVersion,
             tx: tx,
@@ -502,6 +504,7 @@ public class PinnedMessageManager {
         targetMessageTimestamp: UInt64,
         targetMessageAuthor: Aci,
         pinAuthor: Aci,
+        tellomiPinSentTimestamp: UInt64?,
         expireTimer: UInt32,
         expireTimerVersion: UInt32,
         tx: DBWriteTransaction,
@@ -511,6 +514,7 @@ public class PinnedMessageManager {
             pinnedMessageAuthorAci: pinAuthor,
             originalMessageAuthorAci: targetMessageAuthor,
             timestamp: Int64(targetMessageTimestamp),
+            tellomiPinSentTimestamp: tellomiPinSentTimestamp,
         )
 
         let infoMessage = TSInfoMessage(

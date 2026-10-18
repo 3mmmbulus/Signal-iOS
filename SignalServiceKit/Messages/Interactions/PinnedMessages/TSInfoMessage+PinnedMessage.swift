@@ -10,11 +10,15 @@ public class PersistablePinnedMessageItem: NSObject, NSCopying, NSSecureCoding {
     let pinnedMessageAuthorAci: Aci
     let originalMessageAuthorAci: Aci
     let timestamp: Int64
+    /// Tellomi (ADR-0081 §4.2): when the pin itself was sent. With the pinner, it is how a quote, a reaction or a delete names
+    /// this notice. Nil on notices from before it was kept.
+    let tellomiPinSentTimestamp: UInt64?
 
-    public init(pinnedMessageAuthorAci: Aci, originalMessageAuthorAci: Aci, timestamp: Int64) {
+    public init(pinnedMessageAuthorAci: Aci, originalMessageAuthorAci: Aci, timestamp: Int64, tellomiPinSentTimestamp: UInt64? = nil) {
         self.pinnedMessageAuthorAci = pinnedMessageAuthorAci
         self.originalMessageAuthorAci = originalMessageAuthorAci
         self.timestamp = timestamp
+        self.tellomiPinSentTimestamp = tellomiPinSentTimestamp
     }
 
     // MARK: - NSCopying
@@ -31,7 +35,12 @@ public class PersistablePinnedMessageItem: NSObject, NSCopying, NSSecureCoding {
         coder.encode(pinnedMessageAuthorAci.serviceIdBinary, forKey: "pinnedMessageAuthor")
         coder.encode(originalMessageAuthorAci.serviceIdBinary, forKey: "originalMessageAuthor")
         coder.encode(timestamp, forKey: "timestamp")
+        if let tellomiPinSentTimestamp, SDS.fitsInInt64(tellomiPinSentTimestamp) {
+            coder.encode(Int64(tellomiPinSentTimestamp), forKey: Self.tellomiPinSentTimestampKey)
+        }
     }
+
+    private static let tellomiPinSentTimestampKey = "tellomiPinSentTimestamp"
 
     public required init?(coder: NSCoder) {
         guard
@@ -46,6 +55,8 @@ public class PersistablePinnedMessageItem: NSObject, NSCopying, NSSecureCoding {
         self.pinnedMessageAuthorAci = _pinnedMessageAuthorAci
         self.originalMessageAuthorAci = _originalMessageAuthorAci
         self.timestamp = coder.decodeInt64(forKey: "timestamp")
+        let pinSentTimestamp = coder.containsValue(forKey: Self.tellomiPinSentTimestampKey) ? coder.decodeInt64(forKey: Self.tellomiPinSentTimestampKey) : 0
+        self.tellomiPinSentTimestamp = pinSentTimestamp > 0 ? UInt64(pinSentTimestamp) : nil
     }
 }
 

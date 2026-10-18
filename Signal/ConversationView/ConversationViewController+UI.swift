@@ -393,8 +393,9 @@ extension ConversationViewController {
     }
 
     func buildDraftQuotedReply(_ draftReply: ThreadReplyInfo) -> DraftQuotedReplyModel? {
+        let threadUniqueId = thread.uniqueId
         return SSKEnvironment.shared.databaseStorageRef.read { transaction in
-            let interaction = try? InteractionFinder.fetchInteractions(
+            let interaction = (try? InteractionFinder.fetchInteractions(
                 timestamp: draftReply.timestamp,
                 transaction: transaction,
             ).filter { candidate in
@@ -406,7 +407,13 @@ extension ConversationViewController {
                         .localIdentifiers(tx: transaction)?.aci == draftReply.author
                 }
                 return false
-            }.first as? TSMessage
+            }.first as? TSMessage)
+                // Tellomi (ADR-0081 §4.2): or "×× pinned «…»", named by who pinned it and when the pin was sent.
+                ?? InteractionFinder(threadUniqueId: threadUniqueId).tellomiPinNotice(
+                    pinner: draftReply.author,
+                    pinSentTimestamp: draftReply.timestamp,
+                    tx: transaction,
+                )
             guard let interaction else {
                 return nil
             }

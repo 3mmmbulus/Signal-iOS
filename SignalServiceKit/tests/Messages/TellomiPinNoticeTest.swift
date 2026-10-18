@@ -134,6 +134,7 @@ class TellomiPinNoticeTest: SSKBaseTest {
             targetMessageTimestamp: 1000,
             targetMessageAuthor: bob,
             pinAuthor: pinner,
+            tellomiPinSentTimestamp: 1500,
             expireTimer: 0,
             expireTimerVersion: 0,
             tx: tx,

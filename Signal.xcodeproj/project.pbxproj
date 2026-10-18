@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D1F59EFE9D2230225B0E5362 /* TellomiPinNoticeCellTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F021B96569FD820E3984DCC /* TellomiPinNoticeCellTests.swift */; };
+		FBAD67ACD7AD2905A2C8E4E6 /* TellomiPinNoticeActionsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D8E7C12BC610144F64B4D6 /* TellomiPinNoticeActionsTest.swift */; };
 		D610ED68FED6C7F64B282AF1 /* TellomiPinnedMessagesListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27329E97FC74A651E15A69B /* TellomiPinnedMessagesListTests.swift */; };
 		14172CB41357A6C0581735C8 /* TellomiHeldUnpinsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A689E0D7F37BCB7F980AD6D6 /* TellomiHeldUnpinsTest.swift */; };
 		4442378F338313C79E80036F /* TellomiHeldUnpins.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5BD0340251AD755E1139A7 /* TellomiHeldUnpins.swift */; };
@@ -4571,6 +4573,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F021B96569FD820E3984DCC /* TellomiPinNoticeCellTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinNoticeCellTests.swift; sourceTree = "<group>"; };
+		C6D8E7C12BC610144F64B4D6 /* TellomiPinNoticeActionsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinNoticeActionsTest.swift; sourceTree = "<group>"; };
 		B27329E97FC74A651E15A69B /* TellomiPinnedMessagesListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinnedMessagesListTests.swift; sourceTree = "<group>"; };
 		A689E0D7F37BCB7F980AD6D6 /* TellomiHeldUnpinsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiHeldUnpinsTest.swift; sourceTree = "<group>"; };
 		AE5BD0340251AD755E1139A7 /* TellomiHeldUnpins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiHeldUnpins.swift; sourceTree = "<group>"; };
@@ -10413,6 +10417,7 @@
 				D9CB73D22F7F181500F7FD83 /* TellomiLinkCardScreenshotTests.swift */,
 				EDFD12E2CB5BBC4E5DE00FC8 /* TellomiAsFileCellTests.swift */,
 				A8A92D49274054A3103CCDC7 /* TellomiLocationBubbleTests.swift */,
+				0F021B96569FD820E3984DCC /* TellomiPinNoticeCellTests.swift */,
 				EF51ECFFE9EF11E903E05118 /* TellomiLocationMessageTests.swift */,
 				5DB3B510E4008B5839D18B7C /* TellomiLinkCardAcceptanceTests.swift */,
 				57FAA2A48068A96186BF4F12 /* TellomiLinkOpenLauncherTest.swift */,
@@ -15731,6 +15736,7 @@
 				40DC22CC0DBFDA88FA1930A3 /* TellomiPinForSelfOnlyReceiveTest.swift */,
 				8B8141016DE0C4D372D5CE4D /* TellomiPinsForMeTest.swift */,
 				41809CE0D12473BF11CB7D03 /* TellomiPinNoticeTest.swift */,
+				C6D8E7C12BC610144F64B4D6 /* TellomiPinNoticeActionsTest.swift */,
 				075CC9B43B1980246847034F /* TellomiPinnedBarTest.swift */,
 				A689E0D7F37BCB7F980AD6D6 /* TellomiHeldUnpinsTest.swift */,
 				6A0EF8EEDE6BC3CB2ADD050C /* TellomiConversationDaysTest.swift */,
@@ -20435,6 +20441,7 @@
 				D9CB73D32F7F181500F7FD83 /* TellomiLinkCardScreenshotTests.swift in Sources */,
 				4F6CCE7CB832604F4E759839 /* TellomiAsFileCellTests.swift in Sources */,
 				4D88EFDC95E82B74AD668840 /* TellomiLocationBubbleTests.swift in Sources */,
+				D1F59EFE9D2230225B0E5362 /* TellomiPinNoticeCellTests.swift in Sources */,
 				3A7387C3BE15061597B08240 /* TellomiLocationMessageTests.swift in Sources */,
 				35D325E771F5E4028ED56D1E /* TellomiLinkCardAcceptanceTests.swift in Sources */,
 				DA819E1E08EE3A282CE9BE67 /* TellomiLinkOpenLauncherTest.swift in Sources */,
@@ -21962,6 +21969,7 @@
 				CB23440454460E7699294DF9 /* TellomiPinForSelfOnlyReceiveTest.swift in Sources */,
 				9BDB4BEF80434339CA94D17D /* TellomiPinsForMeTest.swift in Sources */,
 				5E719B41A6E6C45647FF76EB /* TellomiPinNoticeTest.swift in Sources */,
+				FBAD67ACD7AD2905A2C8E4E6 /* TellomiPinNoticeActionsTest.swift in Sources */,
 				998CEF7CF1D527ED9986B0AC /* TellomiPinnedBarTest.swift in Sources */,
 				14172CB41357A6C0581735C8 /* TellomiHeldUnpinsTest.swift in Sources */,
 				51479377E5FF58605DE63AC9 /* TellomiConversationDaysTest.swift in Sources */,

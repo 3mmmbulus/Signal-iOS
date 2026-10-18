@@ -14,7 +14,8 @@ public protocol NotificationPresenter {
 
     func notifyUser(forReleaseNotesMessage: TSReleaseNotesMessage, thread: TSThread, transaction: DBWriteTransaction)
 
-    func notifyUser(forReaction: OWSReaction, onOutgoingMessage: TSOutgoingMessage, thread: TSThread, transaction: DBWriteTransaction)
+    /// Tellomi (ADR-0081 §4.2): `onOutgoingMessage` is a message I sent, or my "You pinned «…»".
+    func notifyUser(forReaction: OWSReaction, onOutgoingMessage: TSMessage, thread: TSThread, transaction: DBWriteTransaction)
 
     func notifyUser(forErrorMessage: TSErrorMessage, thread: TSThread, transaction: DBWriteTransaction)
 

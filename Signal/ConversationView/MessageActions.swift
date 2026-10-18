@@ -562,8 +562,21 @@ class MessageActions {
         return actions
     }
 
-    class func infoMessageActions(itemViewModel: CVItemViewModelImpl, delegate: MessageActionsDelegate) -> [MessageAction] {
+    class func infoMessageActions(itemViewModel: CVItemViewModelImpl, shouldAllowMessageSendActions: Bool, delegate: MessageActionsDelegate) -> [MessageAction] {
         let deleteAction = MessageActionBuilder.deleteMessage(itemViewModel: itemViewModel, delegate: delegate)
+
+        // Tellomi (ADR-0081 §4.2, pinned-messages.md 3.7): "×× pinned «…»" is replied to and deleted — no select, as in both
+        // Telegram apps (Android `ChatActivity` service messages: reply and delete; iOS `ChatInterfaceStateContextMenus`
+        // `isAction`: no select, copy or forward). Reacting is the bar above the menu.
+        if (itemViewModel.interaction as? TSInfoMessage)?.tellomiPinNoticeIdentity != nil {
+            var actions = [MessageAction]()
+            if shouldAllowMessageSendActions {
+                actions.append(MessageActionBuilder.reply(itemViewModel: itemViewModel, delegate: delegate))
+            }
+            actions.append(deleteAction)
+            return actions
+        }
+
         let selectAction = MessageActionBuilder.selectMessage(itemViewModel: itemViewModel, delegate: delegate)
         return [deleteAction, selectAction]
     }

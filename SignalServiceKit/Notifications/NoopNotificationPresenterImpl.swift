@@ -41,7 +41,7 @@ public class NoopNotificationPresenterImpl: NotificationPresenter {
 
     public func notifyUser(
         forReaction reaction: OWSReaction,
-        onOutgoingMessage message: TSOutgoingMessage,
+        onOutgoingMessage message: TSMessage,
         thread: TSThread,
         transaction: DBWriteTransaction,
     ) {

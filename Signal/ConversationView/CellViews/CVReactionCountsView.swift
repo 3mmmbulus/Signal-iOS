@@ -77,8 +77,9 @@ class CVReactionCountsView: ManualLayoutView {
     // MARK: - 换行（单测覆盖）
 
     /// 依次排进不超过 [maxWidth] 的行里，放不下就换行（Telegram 同样按顺序贪心换行）。
-    /// [alignRight] 时每行靠右。返回每格的位置和整体大小。
-    static func flowLayout(pillSizes: [CGSize], maxWidth: CGFloat, alignRight: Bool) -> (frames: [CGRect], size: CGSize) {
+    /// [alignRight] 时每行靠右；[centerRows] 时每行居中（置顶系统消息下面那一排，pinned-messages.md 3.7：两端 Telegram
+    /// 服务消息下的回应都居中）。返回每格的位置和整体大小。
+    static func flowLayout(pillSizes: [CGSize], maxWidth: CGFloat, alignRight: Bool, centerRows: Bool = false) -> (frames: [CGRect], size: CGSize) {
         var rows = [[Int]]()
         var rowWidths = [CGFloat]()
         for (index, size) in pillSizes.enumerated() {
@@ -95,7 +96,11 @@ class CVReactionCountsView: ManualLayoutView {
         var frames = [CGRect](repeating: .zero, count: pillSizes.count)
         var y: CGFloat = 0
         for (rowIndex, row) in rows.enumerated() {
-            var x = alignRight ? width - rowWidths[rowIndex] : 0
+            var x: CGFloat = if centerRows {
+                (width - rowWidths[rowIndex]) / 2
+            } else {
+                alignRight ? width - rowWidths[rowIndex] : 0
+            }
             for index in row {
                 frames[index] = CGRect(origin: CGPoint(x: x, y: y), size: pillSizes[index])
                 x += pillSizes[index].width
@@ -113,7 +118,7 @@ class CVReactionCountsView: ManualLayoutView {
 
     // MARK: - 配置
 
-    func configure(state: State, cellMeasurement: CVCellMeasurement, messageId: String?, alignRowsRight: Bool) {
+    func configure(state: State, cellMeasurement: CVCellMeasurement, messageId: String?, alignRowsRight: Bool, centerRows: Bool = false) {
         while pillViews.count < state.pills.count {
             pillViews.append(PillView(pillKey: Self.pillKey(pillViews.count)))
         }
@@ -139,7 +144,7 @@ class CVReactionCountsView: ManualLayoutView {
         let sizes = state.pills.map(PillView.size(pillState:))
         let pillViews = Array(self.pillViews.prefix(state.pills.count))
         addLayoutBlock { view in
-            let layout = Self.flowLayout(pillSizes: sizes, maxWidth: view.bounds.width, alignRight: alignRowsRight)
+            let layout = Self.flowLayout(pillSizes: sizes, maxWidth: view.bounds.width, alignRight: alignRowsRight, centerRows: centerRows)
             for (pillView, frame) in zip(pillViews, layout.frames) {
                 ManualLayoutView.setSubviewFrame(subview: pillView, frame: frame)
             }

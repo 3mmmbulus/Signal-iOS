@@ -30,12 +30,11 @@ public enum TellomiUnseenReactions {
 
     /// 有人回应了 [message]（`TSMessage.recordReaction` 写完库以后调）。
     static func didRecordReaction(on message: TSMessage, reactor: Aci, tx: DBWriteTransaction) {
-        guard message is TSOutgoingMessage, !message.isGroupStoryReply else {
-            return
-        }
         guard
             let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci,
-            reactor != localAci
+            reactor != localAci,
+            isMine(message, localAci: localAci),
+            !message.isGroupStoryReply
         else {
             return
         }
@@ -79,9 +78,11 @@ public enum TellomiUnseenReactions {
         guard let recorded = store.getStringArray(threadUniqueId, transaction: tx), !recorded.isEmpty else {
             return []
         }
-        let messages: [TSOutgoingMessage] = recorded.compactMap { uniqueId in
+        let localAci = DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci
+        let messages: [TSMessage] = recorded.compactMap { uniqueId in
             guard
-                let message = TSInteraction.anyFetch(uniqueId: uniqueId, transaction: tx) as? TSOutgoingMessage,
+                let message = TSInteraction.anyFetch(uniqueId: uniqueId, transaction: tx) as? TSMessage,
+                isMine(message, localAci: localAci),
                 message.uniqueThreadId == threadUniqueId,
                 !message.wasRemotelyDeleted,
                 hasReactionFromOthers(messageUniqueId: uniqueId, tx: tx)
@@ -101,6 +102,17 @@ public enum TellomiUnseenReactions {
             .filter { $0.reactorAci != localAci }
             .max { $0.sortOrder < $1.sortOrder }?
             .emoji
+    }
+
+    /// 我发的消息，或者我的「你置顶了«…»」（ADR-0081 §4.2：回应它和回应我的消息一样算；安卓那一行本来就是我发出的类型）。
+    private static func isMine(_ message: TSMessage, localAci: Aci?) -> Bool {
+        if message is TSOutgoingMessage {
+            return true
+        }
+        guard let localAci, let pinNotice = (message as? TSInfoMessage)?.tellomiPinNoticeIdentity else {
+            return false
+        }
+        return pinNotice.pinner == localAci
     }
 
     private static func hasReactionFromOthers(messageUniqueId: String, tx: DBReadTransaction) -> Bool {

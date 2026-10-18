@@ -29,6 +29,16 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
         super.init(itemModel: itemModel)
     }
 
+    /// Tellomi (ADR-0081 §4.2, pinned-messages.md 3.7): the reactions on "×× pinned «…»", centred under it as under a service
+    /// message in both Telegram apps (iOS `ChatMessageBubbleItemNode` `centerAligned`, Android `ChatActionCell`). No other
+    /// system message takes reactions.
+    private var tellomiReactions: CVComponentState.Reactions? {
+        guard (interaction as? TSInfoMessage)?.messageType == .typePinnedMessage else {
+            return nil
+        }
+        return componentState.reactions
+    }
+
     public func configureCellRootComponent(
         cellView: UIView,
         cellMeasurement: CVCellMeasurement,
@@ -94,7 +104,8 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
         return CVStackViewConfig(
             axis: .vertical,
             alignment: .center,
-            spacing: 0,
+            // Tellomi (pinned-messages.md 3.7): the reactions sit 4 pt under the notice (Telegram iOS).
+            spacing: tellomiReactions != nil ? 4 : 0,
             layoutMargins: .zero,
         )
     }
@@ -143,7 +154,9 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
                 !wallpaperModeHasChanged &&
                 !hasSelectionChanges &&
                 !hasActionButton &&
-                !componentView.hasActionButton,
+                !componentView.hasActionButton &&
+                tellomiReactions == nil &&
+                !componentView.tellomiHasReactions,
         )
         if !isReusing {
             componentView.reset(resetReusableState: true)
@@ -154,6 +167,7 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
         componentView.isShowingSelectionUI = isShowingSelectionUI
         componentView.wasShowingSelectionUI = wasShowingSelectionUI
         componentView.hasActionButton = hasActionButton
+        componentView.tellomiHasReactions = tellomiReactions != nil
 
         let innerHStack = componentView.innerHStack
         let outerHStack = componentView.outerHStack
@@ -230,9 +244,32 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
             var innerVStackViews: [UIView] = [
                 innerHStack,
             ]
-            let outerVStackViews = [
+            var outerVStackViews: [UIView] = [
                 innerVStack,
             ]
+            if let reactions = tellomiReactions {
+                let reactionCountsView = componentView.reactionCountsView
+                reactionCountsView.configure(
+                    state: reactions.viewState,
+                    cellMeasurement: cellMeasurement,
+                    messageId: interaction.uniqueId,
+                    alignRowsRight: false,
+                    centerRows: true,
+                )
+                reactionCountsView.isAccessibilityElement = true
+                reactionCountsView.accessibilityLabel = reactions.viewState.pills.map { pill in
+                    String.localizedStringWithFormat(
+                        OWSLocalizedString(
+                            "MESSAGE_REACTIONS_ACCESSIBILITY_LABEL_%d",
+                            tableName: "PluralAware",
+                            comment: "Accessibility label reading out a reaction to a message and its count. Embeds {{ count }} and {{ emoji name }}.",
+                        ),
+                        pill.count,
+                        pill.emoji,
+                    )
+                }.joined(separator: " ")
+                outerVStackViews.append(reactionCountsView)
+            }
             var outerHStackViews = [UIView]()
             if isShowingSelectionUI || wasShowingSelectionUI {
                 // System messages cannot be partially selected.
@@ -482,6 +519,7 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
 
         // Padding around the outerVStack (leading and trailing side)
         maxContentWidth -= (outerHStackConfig.spacing + minBubbleHMargin) * 2
+        let maxReactionsWidth = max(0, maxContentWidth + innerVStackConfig.layoutMargins.totalWidth)
 
         // innerhStack margins
         maxContentWidth -= innerHStackConfig.layoutMargins.totalWidth
@@ -529,9 +567,18 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
             subviewInfos: innerVStackSubviewInfos,
         )
 
-        let outerVStackSubviewInfos: [ManualStackSubviewInfo] = [
+        var outerVStackSubviewInfos: [ManualStackSubviewInfo] = [
             innerVStackMeasurement.measuredSize.asManualSubviewInfo,
         ]
+        if let reactions = tellomiReactions {
+            // The rows wrap at the cell's width, not the notice's (Telegram Android: the cell's width less its margins).
+            let reactionsSize = CVReactionCountsView.measure(
+                state: reactions.viewState,
+                maxWidth: maxReactionsWidth,
+                measurementBuilder: measurementBuilder,
+            )
+            outerVStackSubviewInfos.append(reactionsSize.asManualSubviewInfo(hasFixedSize: true))
+        }
         let outerVStackMeasurement = ManualStackView.measure(
             config: outerVStackConfig,
             measurementBuilder: measurementBuilder,
@@ -600,6 +647,17 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
             return true
         }
 
+        // Tellomi (pinned-messages.md 3.7): tapping the reactions under "×× pinned «…»" shows who reacted, as under a message.
+        if
+            let reactions = tellomiReactions,
+            let message = interaction as? TSMessage,
+            componentView.reactionCountsView.superview != nil,
+            componentView.reactionCountsView.containsGestureLocation(sender)
+        {
+            componentDelegate.didTapReactions(reactionState: reactions.reactionState, message: message)
+            return true
+        }
+
         if let item = componentView.textLabel.itemForGesture(sender: sender) {
             componentView.textLabel.animate(selectedItem: item)
             componentDelegate.didTapSystemMessageItem(item)
@@ -649,6 +707,13 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
 
         public let textLabel = CVTextLabel()
         public fileprivate(set) var button: UIButton?
+        /// Tellomi (pinned-messages.md 3.7): the reactions under "×× pinned «…»".
+        fileprivate let reactionCountsView = CVReactionCountsView()
+
+        /// Tellomi (A-07): where a reaction chosen on "×× pinned «…»" flies to.
+        func tellomiReactionEmojiLabel(for emoji: String) -> UILabel? {
+            reactionCountsView.superview != nil ? reactionCountsView.emojiLabel(for: emoji) : nil
+        }
 
         fileprivate var hasWallpaper = false
         fileprivate var isDarkThemeEnabled = false
@@ -658,6 +723,7 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
         public var isShowingSelectionUI = false
         public var wasShowingSelectionUI = false
         public var hasActionButton = false
+        public var tellomiHasReactions = false
 
         public var rootView: UIView {
             outerHStack
@@ -694,6 +760,9 @@ public class CVComponentSystemMessage: CVComponentBase, CVRootComponent {
                 isShowingSelectionUI = false
                 wasShowingSelectionUI = false
                 hasActionButton = false
+
+                reactionCountsView.reset()
+                tellomiHasReactions = false
             }
 
             button?.removeFromSuperview()

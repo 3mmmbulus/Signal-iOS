@@ -102,11 +102,14 @@ extension ConversationViewController {
     func reactionFlyInTarget(messageUniqueId: String, emoji: String) -> UILabel? {
         guard
             let indexPath = indexPath(forInteractionUniqueId: messageUniqueId),
-            let cell = collectionView.cellForItem(at: indexPath) as? CVCell,
-            let messageView = cell.componentView as? CVComponentMessage.CVComponentViewMessage
+            let cell = collectionView.cellForItem(at: indexPath) as? CVCell
         else {
             return nil
         }
-        return messageView.reactionEmojiLabel(for: emoji)
+        if let messageView = cell.componentView as? CVComponentMessage.CVComponentViewMessage {
+            return messageView.reactionEmojiLabel(for: emoji)
+        }
+        // Tellomi（pinned-messages.md 3.7）：或者「××置顶了«…»」下面那一排。
+        return (cell.componentView as? CVComponentSystemMessage.CVComponentViewSystemMessage)?.tellomiReactionEmojiLabel(for: emoji)
     }
 }

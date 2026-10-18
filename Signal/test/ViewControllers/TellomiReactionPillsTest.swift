@@ -37,6 +37,15 @@ final class TellomiReactionPillsTest: SignalBaseTest {
         XCTAssertEqual(layout.frames[2], CGRect(x: 50, y: 26, width: 30, height: 24))
     }
 
+    /// 居中排（置顶系统消息下面，pinned-messages.md 3.7）：每一行在整排里居中，短的那一行两边留一样多。
+    func testRowsCenterUnderAPinNotice() {
+        let sizes = [CGSize(width: 40, height: 24), CGSize(width: 40, height: 24), CGSize(width: 30, height: 24)]
+        let layout = CVReactionCountsView.flowLayout(pillSizes: sizes, maxWidth: 100, alignRight: false, centerRows: true)
+        XCTAssertEqual(layout.frames[0], CGRect(x: 0, y: 0, width: 40, height: 24))
+        XCTAssertEqual(layout.frames[2], CGRect(x: 25, y: 26, width: 30, height: 24))
+        XCTAssertEqual(layout.size, CGSize(width: 80, height: 50))
+    }
+
     /// 一格比整行还宽：自己占一行，不丢。
     func testAnOversizedPillTakesItsOwnRow() {
         let sizes = [CGSize(width: 30, height: 24), CGSize(width: 120, height: 24)]

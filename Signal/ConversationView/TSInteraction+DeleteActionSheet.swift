@@ -126,6 +126,37 @@ public extension TSInteraction {
             return nil
         }
 
+        // Tellomi (ADR-0081 §4.2, pinned-messages.md 3.7): my own "You pinned «…»", within the time a message can be deleted
+        // for everyone. It leaves the chat at once and the pin stays.
+        if let notice = message as? TSInfoMessage {
+            let canDelete = db.read { tx in
+                TellomiPinNotice.canDeleteForEveryone(
+                    notice,
+                    localAci: DependenciesBridge.shared.tsAccountManager.localIdentifiers(tx: tx)?.aci,
+                    nowMs: Date.ows_millisecondTimestamp(),
+                )
+            }
+            guard canDelete, !thread.isTerminatedGroup else {
+                return nil
+            }
+            return ActionSheetAction(
+                title: CommonStrings.deleteForEveryoneButton,
+                style: .destructive,
+            ) { _ in
+                Self.showDeleteForEveryoneConfirmationIfNecessary(deleteType: .regular) {
+                    SSKEnvironment.shared.databaseStorageRef.write { tx in
+                        guard
+                            let latestNotice = TSInteraction.anyFetch(uniqueId: notice.uniqueId, transaction: tx) as? TSInfoMessage,
+                            let latestThread = latestNotice.thread(tx: tx)
+                        else {
+                            return
+                        }
+                        TellomiPinNotice.deleteForEveryone(latestNotice, thread: latestThread, tx: tx)
+                    }
+                }
+            }
+        }
+
         let canAdminDelete = db.read { tx in adminDeleteManager.canAdminDeleteMessage(message: message, thread: thread, tx: tx) }
         if !thread.isTerminatedGroup, message.canBeRemotelyDeletedByNonAdmin || canAdminDelete {
             return ActionSheetAction(

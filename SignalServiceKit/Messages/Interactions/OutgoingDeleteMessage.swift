@@ -32,6 +32,26 @@ public final class OutgoingDeleteMessage: TransientOutgoingMessage {
         )
     }
 
+    /// Tellomi (ADR-0081 §4.2): deletes my "You pinned «…»" for everyone, named by when the pin was sent. The notice leaves this
+    /// device at once, so there is no message here to mirror the sending state onto.
+    public init(
+        thread: TSThread,
+        tellomiPinSentTimestamp: UInt64,
+        tx: DBReadTransaction,
+    ) {
+        self.messageTimestamp = tellomiPinSentTimestamp
+        self.messageUniqueId = nil
+        self.isDeletingStoryMessage = false
+
+        super.init(
+            outgoingMessageWith: TSOutgoingMessageBuilder.outgoingMessageBuilder(thread: thread),
+            additionalRecipients: [],
+            explicitRecipients: [],
+            skippedRecipients: [],
+            transaction: tx,
+        )
+    }
+
     override public class var supportsSecureCoding: Bool { true }
 
     override public func encode(with coder: NSCoder) {
