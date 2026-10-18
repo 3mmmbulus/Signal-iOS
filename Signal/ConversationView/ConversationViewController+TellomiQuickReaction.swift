@@ -18,8 +18,11 @@ import UIKit
 ///   `MessageObject.selectReaction` 已选就撤回；发出去以后在回应按钮上播 `ReactionsEffectOverlay.SHORT_ANIMATION`（不飞）。
 ///
 /// 用的表情是回应条上第一个（用户的第一个回应，默认 ❤️）；已经是它就撤回。没有起飞，回应画出来时在胶囊上爆开一下
-/// （和从条上选时落地那一下一样，`TellomiReactionBurst`）。不给触感：Telegram iOS 加回应时 `selectionChanged` 一下，
-/// Telegram 安卓没有——按 owner 2026-10-14「只有一端有就不做」，两端都不震。
+/// （和从条上选时落地那一下一样，`TellomiReactionBurst`）。
+///
+/// 触感：Telegram 两端加回应时都轻触一下，撤回不震——iOS 双击时 `selectPollOptionFeedback?.tap()`（`HapticFeedback.tap()`
+/// 就是 `selectionChanged()`）；安卓在回应按钮上的效果开始时 `KEYBOARD_TAP`（`ReactionsEffectOverlay.startShortAnimation`）。
+/// Tellomi 两端都在双击时给一下 selection（和从条上选、落地那一下同一种）。
 extension ConversationViewController {
 
     /// 等回应画出来最多这么久；过了就不爆了（写失败、消息被滚走）。
@@ -56,8 +59,11 @@ extension ConversationViewController {
             myEmoji: viewModel.reactionState?.localUserEmoji,
         )
 
-        if !isRemoving, TellomiReactionBurst.shouldPlay {
-            viewState.tellomiPendingQuickReactionBurst = (message.uniqueId, emoji, Date())
+        if !isRemoving {
+            SelectionHapticFeedback().selectionChanged()
+            if TellomiReactionBurst.shouldPlay {
+                viewState.tellomiPendingQuickReactionBurst = (message.uniqueId, emoji, Date())
+            }
         }
 
         SSKEnvironment.shared.databaseStorageRef.asyncWrite { transaction in
