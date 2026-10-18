@@ -30,6 +30,9 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         store = FeedStore(source: source)
         super.init()
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
+        for page in pages {
+            page.onOpenPost = { [weak self] card in self?.openPost(card) }
+        }
 
         store.onChange = { [weak self] tab in
             guard let self else { return }
@@ -158,6 +161,12 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         let navigationController = OWSNavigationController(rootViewController: compose)
         navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true)
+    }
+
+    /// 点一条帖子：推帖子详情页（`FeedPostDetailViewController`），底栏收起。
+    private func openPost(_ card: FeedCard) {
+        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: store.showsIpRegion)
+        navigationController?.pushViewController(detail, animated: true)
     }
 
     /// 底栏再点一次「动态」：当前这一栏回到顶部（和聊天列表一样）。

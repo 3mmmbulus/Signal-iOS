@@ -31,6 +31,9 @@ final class FeedTimelineViewController: OWSViewController {
         didSet { reportVisibleCards() }
     }
 
+    /// 点了一条帖子：由 `FeedViewController` 推帖子详情页（这里拿不到 `FeedSource`，也不管导航）。
+    var onOpenPost: ((FeedCard) -> Void)?
+
     private lazy var emptyStateView = FeedEmptyStateView(title: feedTab.emptyTitle, body: feedTab.emptyBody)
     private lazy var errorStateView = FeedErrorStateView { [weak self] in
         guard let self else { return }
@@ -186,6 +189,13 @@ extension FeedTimelineViewController: UITableViewDataSource, UITableViewDelegate
         cell.onLike = { [weak self] card in self?.store.toggleLike(card) }
         cell.onNotInterested = { [weak self] card in self?.store.notInterested(card) }
         return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        // 「不感兴趣」后的反馈卡不是帖子，不打开
+        guard let row = renderedRows[safe: indexPath.row], !row.isHidden else { return }
+        onOpenPost?(row.card)
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
