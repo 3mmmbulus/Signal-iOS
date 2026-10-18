@@ -99,12 +99,26 @@ final class SampleFeedSource: FeedSource {
         var failsNotificationSettingsSave = false
         var notificationSettingsNeedProfile = false
         var notificationSettingsThrottledRetryAfterSeconds: Int?
+        /// 「我的动态」页（见 `SampleFeedSource+MyPosts.swift`）：请求先等一会儿（加载中那一帧）。
+        var myPostsLatencyNanos: UInt64 = 0
+        /// 取列表失败（第一页）；`failsMyPostsMore` 只让翻页失败（已有的留着，末尾给重试）。
+        var failsMyPosts = false
+        var failsMyPostsMore = false
+        /// 取列表 / 申诉被限速：回 429 带这么多秒的 `Retry-After`；nil = 不限速。
+        var myPostsThrottledRetryAfterSeconds: Int?
+        /// 申诉请求先等一会儿（发送中那一帧）；失败（提示「操作失败」）。
+        var appealLatencyNanos: UInt64 = 0
+        var failsAppeals = false
+        /// 申诉时引擎回 409 `already_appealed` / `not_rejected`（行标成复核中 / 重新拉列表）。
+        var appealsAlreadyAppealed = false
+        var appealsNotRejected = false
     }
 
     /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
     let profiles = SampleProfileState()
     let topicFollows = SampleTopicState()
     let notificationState = SampleNotificationState()
+    let myPostsState = SampleMyPostsState()
 
     private var storedSimulation = Simulation()
 
@@ -225,7 +239,7 @@ final class SampleFeedSource: FeedSource {
         }
         return locked {
             guard !Self.goneIds.contains(contentId) else { return nil }
-            guard var card = (mine + recommend).first(where: { $0.id == contentId }) else { return nil }
+            guard var card = (mine + recommend).first(where: { $0.id == contentId }) ?? sampleMyPostsCard(contentId) else { return nil }
             let isLiked = liked.contains(card.id)
             card.viewer.liked = isLiked
             card.stats.likes += isLiked ? 1 : 0
@@ -350,6 +364,7 @@ final class SampleFeedSource: FeedSource {
                     return
                 }
             }
+            if myPostsState.delete(contentId) { return }
             if contentId.hasPrefix("mine-") || contentId.contains("-m") {
                 throw FeedAPIError(status: 404, code: "not_found")
             }
@@ -416,6 +431,11 @@ final class SampleFeedSource: FeedSource {
     func reportEvents(_ events: [FeedEventPayload]) async throws {
         locked { reportedEvents += events }
         Logger.debug("feed sample events: \(events.count)")
+    }
+
+    /// 自己在样例里发的帖子（新的在前），「我的动态」要用。
+    func ownLivePosts() -> [FeedCard] {
+        return locked { mine }
     }
 
     private func locked<T>(_ body: () throws -> T) rethrows -> T {

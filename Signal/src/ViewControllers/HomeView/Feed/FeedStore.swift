@@ -704,6 +704,11 @@ final class FeedStore {
         removedAuthorIds.remove(profileId)
     }
 
+    /// 这条帖子（只知道 id，比如「我的动态」里的一行）已经在别处删掉了（详情页删、自己列表里删）。
+    func isRemoved(id: String) -> Bool {
+        return removedCardIds.contains(id)
+    }
+
     /// 这张卡片因为屏蔽了作者、删了帖子，已经不该再显示（借着它的页面据此去掉）。
     func isRemoved(_ card: FeedCard) -> Bool {
         if removedCardIds.contains(card.id) { return true }

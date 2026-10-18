@@ -174,6 +174,19 @@ struct FeedEditTarget: Equatable {
 enum FeedAppealResult: Equatable {
     case sent
     case already
+    /// 这条已经不是「未通过」（别处申诉过、复核完了、被撤回）：状态过时了，列表会重新拉。
+    case notRejected
+    /// 引擎限速（429 / 带 `Retry-After` 的 503）；带还要等几秒。
+    case throttled(retryAfterSeconds: Int?)
+    case failed
+}
+
+/// 「我的动态」页上要提示一次的事（提示过就清掉）。
+enum FeedMyPostsNotice: Equatable {
+    case deleteFailed
+    case throttled(retryAfterSeconds: Int?)
+    /// 点开的帖子已经没了（撤回 / 删除 / 作者被屏蔽）。
+    case postGone
     case failed
 }
 
@@ -184,8 +197,16 @@ struct FeedMyPostsState: Equatable {
     var loadedOnce = false
     /// 下拉刷新中（已经有内容时）；翻页不算。
     var refreshing = false
+    /// 翻页中（和 `loading` 分开：列表还在，只在末尾转圈）。
+    var loadingMore = false
+    /// 第一页（或下拉刷新）失败；限速时 `retryAfterSeconds` 是还要等几秒。已经有的内容还在。
     var failed = false
-    var deleteFailed = false
+    /// 翻页失败：列表还在，末尾有「重试」，不再自动翻。
+    var loadMoreFailed = false
+    var retryAfterSeconds: Int?
+    /// 动态被收起了（`feed_hidden`）：页面该收起。
+    var feedHidden = false
+    var notice: FeedMyPostsNotice?
     /// 发布后多久内能改（config `limits.edit_window_seconds`）。
     var editWindowSeconds = 900
     /// 刚保存的编辑，服务端给的 `state`；提示过就清掉。
@@ -193,23 +214,68 @@ struct FeedMyPostsState: Equatable {
     var appealing = false
     /// 刚发的申诉结果；提示过就清掉。
     var appealNotice: FeedAppealResult?
+    /// 点开的已发布帖子（信息流 store 里借着的那份）；详情页关了就清掉。
+    var openCard: FeedCard?
+    /// 正在取详情的那一条（防止连点）。
+    var opening: String?
+
+    var deleteFailed: Bool { notice == .deleteFailed }
 }
 
 /// 「我的动态」：自己发过的帖子和审核状态（第三节第 24 条、R-2.2；契约 7.3）。
+///
+/// 和信息流 store 的关系（`feed` 为 nil 时只是单独一页，单测用）：
+/// - 删掉自己的帖子（引擎说成了，或者早就没了 404）：`FeedStore.removeCard`，信息流 / 个人页 / 搜索里同一条一起没；
+///   别处（详情页）删了，这里也据此去掉那一行。
+/// - 点开已发布的帖子：取到的卡片走 `FeedCardMirror.adopt`（换进信息流、借着），详情页画的是信息流里现在的样子。
 @MainActor
 final class FeedMyPostsStore {
     private let source: FeedSource
+    private let feed: FeedStore?
+    private let mirror: FeedCardMirror?
     private var tasks = [Task<Void, Never>]()
     private var loadTask: Task<Void, Never>?
     private var loadRunning = false
+    /// 删除请求还在路上的帖子：这时候回来的列表（刷新 / 翻页）里还有它，不能又画出来。
+    private var deleting = Set<String>()
 
     private(set) var state = FeedMyPostsState() {
         didSet { onChange?(state) }
     }
     var onChange: ((FeedMyPostsState) -> Void)?
 
-    init(source: FeedSource) {
+    init(source: FeedSource, feed: FeedStore? = nil) {
         self.source = source
+        self.feed = feed
+        self.mirror = feed.map { FeedCardMirror(feed: $0) }
+        mirror?.shownIds = { [weak self] in
+            guard let self else { return [] }
+            return Set(self.state.posts.map(\.id) + (self.state.openCard.map { [$0.id] } ?? []))
+        }
+        mirror?.onChange = { [weak self] in
+            self?.syncWithFeed()
+        }
+    }
+
+    // MARK: - 和信息流 store 同步
+
+    var isObservingFeed: Bool { mirror?.isObserving == true }
+    /// 借着的帖子数（单测用）。
+    var leaseCount: Int { mirror?.leaseCount ?? 0 }
+
+    /// 页面离开了：不再订阅、放掉借着的卡片。可以重复调用。
+    func detach() {
+        mirror?.detach()
+    }
+
+    /// 别处删了帖子：这里去掉那一行；点开着的那张换成信息流里现在的样子。页面每次出现也调一次（订阅不一定有通知）。
+    func syncWithFeed() {
+        guard let feed else { return }
+        let kept = state.posts.filter { !feed.isRemoved(id: $0.id) }
+        if kept.count != state.posts.count { state.posts = kept }
+        if let card = state.openCard, let next = mirror?.project([card]).first, next != card {
+            state.openCard = next
+        }
     }
 
     func waitForTasks() async {
@@ -217,6 +283,7 @@ final class FeedMyPostsStore {
             await task.value
             tasks.removeFirst()
         }
+        await mirror?.waitForActions()
     }
 
     func start() {
@@ -241,17 +308,47 @@ final class FeedMyPostsStore {
         state.editNotice = nil
     }
 
+    /// 别处让页面该收起（`feed_hidden`）。
+    func onFeedHidden() {
+        state.feedHidden = true
+    }
+
+    private func visible(_ posts: [FeedMyPost]) -> [FeedMyPost] {
+        return posts.filter { !deleting.contains($0.id) && feed?.isRemoved(id: $0.id) != true }
+    }
+
+    /// 列表请求失败：`feed_hidden` 收起页面；限速带等待秒数；其余记成失败。
+    private func listFailed(_ error: Error, firstPage: Bool) {
+        let failure = FeedActionFailure.classify(error)
+        state.loading = false
+        state.refreshing = false
+        state.loadingMore = false
+        state.loadedOnce = true
+        loadRunning = false
+        if failure == .feedHidden {
+            state.feedHidden = true
+            return
+        }
+        var seconds: Int?
+        if case .throttled(let retryAfter) = failure { seconds = retryAfter }
+        if firstPage { state.failed = true } else { state.loadMoreFailed = true }
+        state.retryAfterSeconds = seconds
+    }
+
     func refresh() {
         loadTask?.cancel()
         state.loading = true
         state.refreshing = state.loadedOnce
+        state.loadingMore = false
         state.failed = false
+        state.loadMoreFailed = false
+        state.retryAfterSeconds = nil
         loadRunning = true
         let task = Task { [weak self, source] in
             do {
                 let page = try await source.myPosts(before: nil)
                 guard !Task.isCancelled, let self else { return }
-                self.state.posts = page.posts
+                self.state.posts = self.visible(page.posts)
                 self.state.nextBefore = page.nextBefore
                 self.state.loading = false
                 self.state.refreshing = false
@@ -260,44 +357,43 @@ final class FeedMyPostsStore {
             } catch {
                 guard !Task.isCancelled, let self else { return }
                 Logger.warn("feed my posts failed: \(error)")
-                self.state.loading = false
-                self.state.refreshing = false
-                self.state.failed = true
-                self.state.loadedOnce = true
-                self.loadRunning = false
+                self.listFailed(error, firstPage: true)
             }
         }
         loadTask = task
         tasks.append(task)
     }
 
+    /// 往下翻（滚到底、或点末尾的「重试」）。
     func loadMore() {
-        guard let before = state.nextBefore, !loadRunning else { return }
-        state.loading = true
+        guard let before = state.nextBefore, !loadRunning, !state.feedHidden else { return }
+        state.loadingMore = true
+        state.loadMoreFailed = false
+        state.retryAfterSeconds = nil
         loadRunning = true
         let task = Task { [weak self, source] in
             do {
                 let page = try await source.myPosts(before: before)
                 guard !Task.isCancelled, let self else { return }
                 let known = Set(self.state.posts.map(\.id))
-                self.state.posts += page.posts.filter { !known.contains($0.id) }
+                self.state.posts += self.visible(page.posts).filter { !known.contains($0.id) }
                 self.state.nextBefore = page.nextBefore
-                self.state.loading = false
+                self.state.loadingMore = false
                 self.loadRunning = false
             } catch {
                 guard !Task.isCancelled, let self else { return }
                 Logger.warn("feed my posts page failed: \(error)")
-                self.state.loading = false
-                self.loadRunning = false
+                self.listFailed(error, firstPage: false)
             }
         }
         loadTask = task
         tasks.append(task)
     }
 
-    /// 先从列表里拿掉；删失败放回原位，提示一次。
+    /// 先从列表里拿掉；成功（或者早就没了 404）：信息流里也去掉。失败放回原位，提示一次。
     func delete(_ post: FeedMyPost) {
-        guard let index = state.posts.firstIndex(where: { $0.id == post.id }) else { return }
+        guard let index = state.posts.firstIndex(where: { $0.id == post.id }), !deleting.contains(post.id) else { return }
+        deleting.insert(post.id)
         state.posts.removeAll { $0.id == post.id }
         tasks.append(Task { [weak self, source] in
             do {
@@ -305,32 +401,128 @@ final class FeedMyPostsStore {
             } catch {
                 Logger.warn("feed my post delete failed: \(error)")
                 guard let self else { return }
+                let failure = FeedActionFailure.classify(error)
+                if failure == .gone {
+                    // 早就删了：和成功一样。
+                    self.deleting.remove(post.id)
+                    self.feed?.removeCard(id: post.id)
+                    return
+                }
+                self.deleting.remove(post.id)
                 var restored = self.state.posts
                 restored.insert(post, at: min(index, restored.count))
                 self.state.posts = restored
-                self.state.deleteFailed = true
+                switch failure {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.notice = .throttled(retryAfterSeconds: seconds)
+                default:
+                    self.state.notice = .deleteFailed
+                }
+                return
             }
+            guard let self else { return }
+            self.deleting.remove(post.id)
+            self.feed?.removeCard(id: post.id)
         })
+    }
+
+    /// 点开一条已发布的帖子（审核中 / 未通过 / 已撤回的别人看不到，不开）。
+    func openPost(_ post: FeedMyPost) {
+        guard FeedMyPostRow(post: post).canOpen, state.opening == nil else { return }
+        state.opening = post.id
+        tasks.append(Task { [weak self, source] in
+            let card: FeedCard?
+            do {
+                card = try await source.card(contentId: post.id)
+            } catch {
+                Logger.warn("feed my post open failed: \(error)")
+                guard let self else { return }
+                self.state.opening = nil
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.notice = .throttled(retryAfterSeconds: seconds)
+                case .gone:
+                    self.state.notice = .postGone
+                    self.refresh()
+                default:
+                    self.state.notice = .failed
+                }
+                return
+            }
+            guard let self else { return }
+            self.state.opening = nil
+            guard let card else {
+                self.state.notice = .postGone
+                self.refresh()
+                return
+            }
+            let shown: FeedCard
+            if let mirror = self.mirror {
+                guard let adopted = mirror.adopt([card]).first else {
+                    self.state.notice = .postGone
+                    self.syncWithFeed()
+                    return
+                }
+                shown = adopted
+            } else {
+                shown = card
+            }
+            self.state.openCard = shown
+        })
+    }
+
+    /// 详情页接手了（自己借着那份卡片）：放掉这里借着的。
+    func onCardOpened() {
+        state.openCard = nil
+        mirror?.releaseAll()
+    }
+
+    func onNoticeShown() {
+        state.notice = nil
     }
 
     /// 申诉一次（第三节第 24 条）。成功或引擎说已经申诉过，都把这条标成「复核中」。
     /// 理由去掉首尾空白后最多 500 个 Unicode 码点（引擎 `MaxAppealChars`，按码点数；`FeedTextCap`，不劈开一个字；Android `take` 按 UTF-16 单元，会劈开 emoji）。
+    /// 只有未通过且 `appealable` 的才能申诉；已撤回的引擎当前不收（`not_rejected`，引擎侧 A-6），所以界面不给按钮，这里也不发请求。
     func appeal(_ post: FeedMyPost, text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty || state.appealing { return }
+        guard post.state == FeedMyPost.stateRejected, post.appealable, post.appealState == nil else { return }
         state.appealing = true
         let reason = FeedTextCap.cap(trimmed, codePoints: FeedMyPost.maxAppealChars)
         tasks.append(Task { [weak self, source] in
             let result: FeedAppealResult
+            var stale = false
             do {
                 try await source.appeal(contentId: post.id, text: reason)
                 result = .sent
             } catch {
                 Logger.warn("feed appeal failed: \(error)")
-                result = (error as? FeedAPIError)?.code == "already_appealed" ? .already : .failed
+                let code = (error as? FeedAPIError)?.code
+                let failure = FeedActionFailure.classify(error)
+                if code == "already_appealed" {
+                    result = .already
+                } else if code == "not_rejected" {
+                    result = .notRejected
+                    stale = true
+                } else if case .throttled(let seconds) = failure {
+                    result = .throttled(retryAfterSeconds: seconds)
+                } else if failure == .feedHidden {
+                    guard let self else { return }
+                    self.state.appealing = false
+                    self.state.feedHidden = true
+                    return
+                } else {
+                    result = .failed
+                    stale = failure == .gone
+                }
             }
             guard let self else { return }
-            if result != .failed {
+            if result == .sent || result == .already {
                 self.state.posts = self.state.posts.map { item in
                     guard item.id == post.id else { return item }
                     var marked = item
@@ -341,6 +533,7 @@ final class FeedMyPostsStore {
             }
             self.state.appealing = false
             self.state.appealNotice = result
+            if stale { self.refresh() }
         })
     }
 
@@ -349,6 +542,6 @@ final class FeedMyPostsStore {
     }
 
     func onDeleteFailureShown() {
-        state.deleteFailed = false
+        if state.notice == .deleteFailed { state.notice = nil }
     }
 }
