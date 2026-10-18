@@ -1556,6 +1556,11 @@ public class NotificationPresenterImpl: NotificationPresenter {
                     if let thread = thread as? TSContactThread {
                         intent = thread.generateSendMessageIntent(context: .senderAddress(thread.contactAddress), transaction: transaction)
                     }
+                case .typePinnedMessage:
+                    // Tellomi (ADR-0081 §4.4): the one who pinned is the sender.
+                    if let pinner = infoMessage.tellomiPinnerAci {
+                        intent = thread.generateSendMessageIntent(context: .senderAddress(SignalServiceAddress(pinner)), transaction: transaction)
+                    }
                 default:
                     break
                 }

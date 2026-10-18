@@ -1523,7 +1523,7 @@ public final class MessageReceiver {
         if thread.canUserEditPinnedMessages(aci: envelope.sourceAci, tx: tx) {
             if let pinMessage = dataMessage.pinMessage {
                 do {
-                    try DependenciesBridge.shared.pinnedMessageManager.pinMessage(
+                    let infoMessage = try DependenciesBridge.shared.pinnedMessageManager.pinMessage(
                         pinMessageProto: pinMessage,
                         pinAuthor: envelope.sourceAci,
                         thread: thread,
@@ -1534,6 +1534,11 @@ public final class MessageReceiver {
                     )
 
                     SSKEnvironment.shared.databaseStorageRef.touch(thread: thread, shouldReindex: false, shouldUpdateChatListUi: true, tx: tx)
+
+                    // Tellomi (ADR-0081 §4.4): "×× pinned «…»" is pushed in a group unless pinned without notifying; never in a 1:1 chat.
+                    if let infoMessage, TellomiPinNotice.notifies(silent: dataMessage.tellomi?.pinSilent == true, isGroup: thread.isGroupThread) {
+                        SSKEnvironment.shared.notificationPresenterRef.notifyUser(forTSMessage: infoMessage, thread: thread, wantsSound: true, transaction: tx)
+                    }
 
                     return nil
                 } catch {

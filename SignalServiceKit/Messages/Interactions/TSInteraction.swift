@@ -140,9 +140,9 @@ extension TSInteraction {
     public func shouldBumpThreadToTopOfChatList(transaction: DBReadTransaction) -> Bool {
         switch self {
         case let infoMessage as TSInfoMessage:
+            // Tellomi (ADR-0081 §4.4): a pin brings the chat to the top, as in Telegram.
             switch infoMessage.messageType {
             case
-                .typePinnedMessage,
                 .blockedOtherUser,
                 .blockedGroup,
                 .unblockedOtherUser,

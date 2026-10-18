@@ -11550,6 +11550,48 @@
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a 1:1 chat for both people. Embeds {{ the other person's short name }}. */
 "TELLOMI_PIN_FOR_ME_AND" = "為我和%@釘選";
 
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: an audio file (not a voice message). */
+"TELLOMI_PIN_NOTICE_AN_AUDIO_FILE" = "一段音訊";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a contact. */
+"TELLOMI_PIN_NOTICE_A_CONTACT" = "一個聯絡人";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a file. */
+"TELLOMI_PIN_NOTICE_A_FILE" = "一個檔案";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a GIF. */
+"TELLOMI_PIN_NOTICE_A_GIF" = "一個 GIF";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a location. */
+"TELLOMI_PIN_NOTICE_A_LOCATION" = "一個位置";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned when the message is gone. Used in TELLOMI_PIN_NOTICE_YOU / TELLOMI_PIN_NOTICE_OTHER. */
+"TELLOMI_PIN_NOTICE_A_MESSAGE" = "一則訊息";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a photo. */
+"TELLOMI_PIN_NOTICE_A_PHOTO" = "一張照片";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a poll. */
+"TELLOMI_PIN_NOTICE_A_POLL" = "一個投票";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a sticker. */
+"TELLOMI_PIN_NOTICE_A_STICKER" = "一張貼圖";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a video. */
+"TELLOMI_PIN_NOTICE_A_VIDEO" = "一段影片";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a voice message. */
+"TELLOMI_PIN_NOTICE_A_VOICE_MESSAGE" = "一則語音訊息";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): someone pinned a message. Embeds {{ %1$@ who pinned, %2$@ what was pinned: a quote, or e.g. 'a photo' }}. */
+"TELLOMI_PIN_NOTICE_OTHER" = "%1$@釘選了%2$@";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): the first characters of a pinned text message, quoted. Embeds {{ the text }}. */
+"TELLOMI_PIN_NOTICE_QUOTE" = "«%@»";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): the local user pinned a message. Embeds {{ what was pinned: a quote, or e.g. 'a photo' }}. */
+"TELLOMI_PIN_NOTICE_YOU" = "你釘選了%@";
+
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a group for everyone and notify them. */
 "TELLOMI_PIN_NOTIFY_ALL" = "釘選並通知所有成員";
 

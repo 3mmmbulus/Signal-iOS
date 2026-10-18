@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E719B41A6E6C45647FF76EB /* TellomiPinNoticeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41809CE0D12473BF11CB7D03 /* TellomiPinNoticeTest.swift */; };
+		742D0AD1AF3C6BD7D5363925 /* TellomiPinNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4B17E49895654F816EAF29 /* TellomiPinNotice.swift */; };
 		CB23440454460E7699294DF9 /* TellomiPinForSelfOnlyReceiveTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DC22CC0DBFDA88FA1930A3 /* TellomiPinForSelfOnlyReceiveTest.swift */; };
 		9BDB4BEF80434339CA94D17D /* TellomiPinsForMeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B8141016DE0C4D372D5CE4D /* TellomiPinsForMeTest.swift */; };
 		70BBD9F560210511F2FCF812 /* ConversationViewController+TellomiPinChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F74CCF2C24023484C04939D3 /* ConversationViewController+TellomiPinChoice.swift */; };
@@ -4562,6 +4564,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		41809CE0D12473BF11CB7D03 /* TellomiPinNoticeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinNoticeTest.swift; sourceTree = "<group>"; };
+		BC4B17E49895654F816EAF29 /* TellomiPinNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinNotice.swift; sourceTree = "<group>"; };
 		40DC22CC0DBFDA88FA1930A3 /* TellomiPinForSelfOnlyReceiveTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinForSelfOnlyReceiveTest.swift; sourceTree = "<group>"; };
 		8B8141016DE0C4D372D5CE4D /* TellomiPinsForMeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPinsForMeTest.swift; sourceTree = "<group>"; };
 		F74CCF2C24023484C04939D3 /* ConversationViewController+TellomiPinChoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiPinChoice.swift"; sourceTree = "<group>"; };
@@ -9342,6 +9346,7 @@
 				04A19B422EEC814900CCB105 /* PinnedMessageExpirationJob.swift */,
 				045B40882EC6750A002D3F9A /* PinnedMessageManager.swift */,
 				6D4DFCD65038BA3FCB7433BE /* TellomiPinsForMe.swift */,
+				BC4B17E49895654F816EAF29 /* TellomiPinNotice.swift */,
 				0185EB0BCA38F7DC4C73CDC7 /* TellomiPinChoice.swift */,
 				045B408B2EC67BFF002D3F9A /* PinnedMessageRecord.swift */,
 				0426758F2EC529F500124C5F /* TSInfoMessage+PinnedMessage.swift */,
@@ -15706,6 +15711,7 @@
 				F73C4FD6B7F7963F6702A059 /* TellomiPinFlagsTest.swift */,
 				40DC22CC0DBFDA88FA1930A3 /* TellomiPinForSelfOnlyReceiveTest.swift */,
 				8B8141016DE0C4D372D5CE4D /* TellomiPinsForMeTest.swift */,
+				41809CE0D12473BF11CB7D03 /* TellomiPinNoticeTest.swift */,
 				6A0EF8EEDE6BC3CB2ADD050C /* TellomiConversationDaysTest.swift */,
 				38F53BCD5AF6F8792898DBAC /* TellomiUnseenReactionsTest.swift */,
 				F9426237289B1B5500460798 /* OWSUDManagerTest.swift */,
@@ -21321,6 +21327,7 @@
 				04A19B432EEC815200CCB105 /* PinnedMessageExpirationJob.swift in Sources */,
 				045B40892EC67510002D3F9A /* PinnedMessageManager.swift in Sources */,
 				96F700283B7CABD1A4C96DD6 /* TellomiPinsForMe.swift in Sources */,
+				742D0AD1AF3C6BD7D5363925 /* TellomiPinNotice.swift in Sources */,
 				3ADC7C64945F4684AD389A0A /* TellomiPinChoice.swift in Sources */,
 				045B408C2EC67C03002D3F9A /* PinnedMessageRecord.swift in Sources */,
 				6694BF682B36484900B18764 /* PinnedThreadManager.swift in Sources */,
@@ -21928,6 +21935,7 @@
 				7D5B081CC284E7F0B3B294AC /* TellomiPinFlagsTest.swift in Sources */,
 				CB23440454460E7699294DF9 /* TellomiPinForSelfOnlyReceiveTest.swift in Sources */,
 				9BDB4BEF80434339CA94D17D /* TellomiPinsForMeTest.swift in Sources */,
+				5E719B41A6E6C45647FF76EB /* TellomiPinNoticeTest.swift in Sources */,
 				51479377E5FF58605DE63AC9 /* TellomiConversationDaysTest.swift in Sources */,
 				50589452AD6A9B3B80E4A073 /* TellomiUnseenReactionsTest.swift in Sources */,
 				F96BB60729A528BD001C18DF /* OWS2FAManagerTest.swift in Sources */,

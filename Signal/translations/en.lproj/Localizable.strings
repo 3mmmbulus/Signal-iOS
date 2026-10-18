@@ -11664,6 +11664,48 @@
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a 1:1 chat for both people. Embeds {{ the other person's short name }}. */
 "TELLOMI_PIN_FOR_ME_AND" = "Pin for me and %@";
 
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: an audio file (not a voice message). */
+"TELLOMI_PIN_NOTICE_AN_AUDIO_FILE" = "an audio file";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a contact. */
+"TELLOMI_PIN_NOTICE_A_CONTACT" = "a contact";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a file. */
+"TELLOMI_PIN_NOTICE_A_FILE" = "a file";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a GIF. */
+"TELLOMI_PIN_NOTICE_A_GIF" = "a GIF";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a location. */
+"TELLOMI_PIN_NOTICE_A_LOCATION" = "a location";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned when the message is gone. Used in TELLOMI_PIN_NOTICE_YOU / TELLOMI_PIN_NOTICE_OTHER. */
+"TELLOMI_PIN_NOTICE_A_MESSAGE" = "a message";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a photo. */
+"TELLOMI_PIN_NOTICE_A_PHOTO" = "a photo";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a poll. */
+"TELLOMI_PIN_NOTICE_A_POLL" = "a poll";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a sticker. */
+"TELLOMI_PIN_NOTICE_A_STICKER" = "a sticker";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a video. */
+"TELLOMI_PIN_NOTICE_A_VIDEO" = "a video";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): what was pinned: a voice message. */
+"TELLOMI_PIN_NOTICE_A_VOICE_MESSAGE" = "a voice message";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): someone pinned a message. Embeds {{ %1$@ who pinned, %2$@ what was pinned: a quote, or e.g. 'a photo' }}. */
+"TELLOMI_PIN_NOTICE_OTHER" = "%1$@ pinned %2$@";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): the first characters of a pinned text message, quoted. Embeds {{ the text }}. */
+"TELLOMI_PIN_NOTICE_QUOTE" = "“%@”";
+
+/* Tellomi (ADR-0081, pinned-messages.md 3.2): the local user pinned a message. Embeds {{ what was pinned: a quote, or e.g. 'a photo' }}. */
+"TELLOMI_PIN_NOTICE_YOU" = "You pinned %@";
+
 /* Tellomi (ADR-0081, pinned-messages.md 3.1): pin a message in a group for everyone and notify them. */
 "TELLOMI_PIN_NOTIFY_ALL" = "Pin and notify all members";
 

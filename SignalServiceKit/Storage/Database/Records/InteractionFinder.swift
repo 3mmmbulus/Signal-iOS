@@ -1467,6 +1467,7 @@ extension InteractionFinder {
     }
 
     static func sqlClauseForUnreadInteractionCounts() -> String {
+        // Tellomi (ADR-0081 §4.4): "×× pinned «…»" counts as unread, as in Telegram (my own pins are inserted read).
         return """
         \(interactionColumn: .read) IS 0
         \(Self.filterGroupStoryRepliesClause())
@@ -1475,7 +1476,7 @@ extension InteractionFinder {
             \(interactionColumn: .recordType) IS \(SDSRecordType.incomingMessage.rawValue)
             OR (
                 \(interactionColumn: .recordType) IS \(SDSRecordType.infoMessage.rawValue)
-                AND \(interactionColumn: .messageType) IS \(TSInfoMessageType.userJoinedSignal.rawValue)
+                AND \(interactionColumn: .messageType) IN (\(TSInfoMessageType.userJoinedSignal.rawValue), \(TSInfoMessageType.typePinnedMessage.rawValue))
             )
             OR
             \(interactionColumn: .recordType) IS \(SDSRecordType.releaseNotesMessage.rawValue)

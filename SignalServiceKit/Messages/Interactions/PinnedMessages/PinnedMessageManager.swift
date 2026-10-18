@@ -76,6 +76,8 @@ public class PinnedMessageManager {
         }
     }
 
+    /// Tellomi (ADR-0081 §4.4): returns the "pinned a message" info message (nil for a pin for me only), so it can be notified.
+    @discardableResult
     public func pinMessage(
         pinMessageProto: SSKProtoDataMessagePinMessage,
         pinAuthor: Aci,
@@ -85,7 +87,7 @@ public class PinnedMessageManager {
         expireTimerVersion: UInt32,
         tellomiForMeOnly: Bool = false,
         transaction: DBWriteTransaction,
-    ) throws {
+    ) throws -> TSInfoMessage? {
         try validateInputsForPinMessage(pinMessageProto: pinMessageProto)
 
         let pinReceivedAtTimestamp = dateProvider().ows_millisecondsSince1970
@@ -176,10 +178,10 @@ public class PinnedMessageManager {
             transaction.addSyncCompletion { [expirationJob] in
                 expirationJob.restart()
             }
-            return
+            return nil
         }
 
-        insertInfoMessageForPinnedMessage(
+        let infoMessage = insertInfoMessageForPinnedMessage(
             timestamp: MessageTimestampGenerator.sharedInstance.generateTimestamp(),
             thread: thread,
             targetMessageTimestamp: targetMessageTimestamp,
@@ -193,6 +195,7 @@ public class PinnedMessageManager {
         transaction.addSyncCompletion { [expirationJob] in
             expirationJob.restart()
         }
+        return infoMessage
     }
 
     public func unpinMessage(
@@ -492,6 +495,7 @@ public class PinnedMessageManager {
         )
     }
 
+    @discardableResult
     public func insertInfoMessageForPinnedMessage(
         timestamp: UInt64,
         thread: TSThread,
@@ -501,7 +505,7 @@ public class PinnedMessageManager {
         expireTimer: UInt32,
         expireTimerVersion: UInt32,
         tx: DBWriteTransaction,
-    ) {
+    ) -> TSInfoMessage {
         var userInfoForNewMessage: [InfoMessageUserInfoKey: Any] = [:]
         userInfoForNewMessage[.pinnedMessage] = PersistablePinnedMessageItem(
             pinnedMessageAuthorAci: pinAuthor,
@@ -520,6 +524,18 @@ public class PinnedMessageManager {
         )
 
         infoMessage.anyInsert(transaction: tx)
+
+        // Tellomi (ADR-0081 §4.4): pins count as unread now; my own pin is read already.
+        if pinAuthor == accountManager.localIdentifiers(tx: tx)?.aci {
+            infoMessage.markAsRead(
+                atTimestamp: Date.ows_millisecondTimestamp(),
+                thread: thread,
+                circumstance: .onThisDevice,
+                shouldClearNotifications: false,
+                transaction: tx,
+            )
+        }
+        return infoMessage
     }
 
     public class func nextExpiringPinnedMessage(tx: DBReadTransaction) -> PinnedMessageRecord? {

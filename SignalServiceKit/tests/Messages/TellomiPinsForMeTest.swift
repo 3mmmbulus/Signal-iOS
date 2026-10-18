@@ -108,7 +108,7 @@ class TellomiPinsForMeTest: SSKBaseTest {
         pin.setTargetSentTimestamp(1000)
         pin.setPinDurationForever(true)
 
-        try write { tx in
+        _ = try write { tx in
             try self.pinnedMessageManager.pinMessage(
                 pinMessageProto: pin.buildInfallibly(),
                 pinAuthor: LocalIdentifiers.forUnitTests.aci,

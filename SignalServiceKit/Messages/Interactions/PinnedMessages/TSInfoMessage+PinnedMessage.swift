@@ -99,23 +99,7 @@ extension TSInfoMessage {
             return nil
         }
 
-        if localAci == pinnedMessageItem.pinnedMessageAuthorAci {
-            return OWSLocalizedString(
-                "PINNED_MESSAGE_CHAT_EVENT_SELF",
-                comment: "Shown when the local user pins a message.",
-            )
-        }
-
-        let displayName = SSKEnvironment.shared.contactManagerRef.displayName(
-            for: SignalServiceAddress(pinnedMessageItem.pinnedMessageAuthorAci),
-            tx: transaction,
-        )
-
-        let formatString = OWSLocalizedString(
-            "PINNED_MESSAGE_CHAT_EVENT_OTHER",
-            comment: "Shown when another user pins a message. Embeds {{ another user }}.",
-        )
-
-        return String.nonPluralLocalizedStringWithFormat(formatString, displayName.resolvedValue())
+        // Tellomi (ADR-0081 §4.4): "×× pinned «…»" with what was pinned — in the chat, the chat list and notifications.
+        return tellomiPinnedMessageDescription(item: pinnedMessageItem, localAci: localAci, tx: transaction)
     }
 }
