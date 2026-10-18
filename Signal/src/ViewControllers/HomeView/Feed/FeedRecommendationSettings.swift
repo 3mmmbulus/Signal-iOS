@@ -30,6 +30,8 @@ struct FeedRecommendationSettingsState: Equatable {
         case reset
         case invalidKeyword
         case tooManyKeywords
+        /// 被限速；要等几秒在 `retryAfterSeconds`（没有 `Retry-After` 是 nil）。
+        case throttled
     }
 
     var preferences: FeedPreferences?
@@ -38,6 +40,10 @@ struct FeedRecommendationSettingsState: Equatable {
     var loadFailed = false
     var resetting = false
     var notice: Notice?
+    /// 被限速时还要等几秒（`loadFailed` 页或 `notice == .throttled` 时说）。
+    var retryAfterSeconds: Int?
+    /// 引擎说这个区域的动态被关了（404 `feed_hidden`）：页面该收起，不是「加载失败」。
+    var feedHidden = false
     var keywords = [FeedKeyword]()
     var region: String?
     /// 引擎在按兴趣排序（`recommend_mode == scored`）时才有个性化开关；编辑精选阶段推荐本来就不按个人兴趣。
@@ -57,6 +63,8 @@ final class FeedRecommendationSettingsStore {
     private let blockedKeywords: FeedBlockedKeywords
     private let now: () -> Date
     private var tasks = [Task<Void, Never>]()
+    /// 偏好的几次保存按点的顺序一个接一个发（服务端回的是整份，后点的先到会被先点的盖掉）。
+    private var lastSave: Task<Void, Never>?
 
     private(set) var state = FeedRecommendationSettingsState() {
         didSet { onChange?(state) }
@@ -78,9 +86,12 @@ final class FeedRecommendationSettingsStore {
 
     // MARK: - Load
 
+    /// 读不到时页面上点「重试」再调；在途或已经读到了就不再读。
     func load() {
+        if state.loading || (state.preferences != nil && state.interests != nil) { return }
         state.loading = true
         state.loadFailed = false
+        state.retryAfterSeconds = nil
         tasks.append(Task { [weak self, source] in
             do {
                 let config = try await source.config()
@@ -104,8 +115,17 @@ final class FeedRecommendationSettingsStore {
                 self.state.personalizationToggleVisible = config.personalizationToggleVisible
             } catch {
                 Logger.warn("feed recommendation settings failed: \(error)")
-                self?.state.loading = false
-                self?.state.loadFailed = true
+                guard let self else { return }
+                self.state.loading = false
+                switch FeedActionFailure.classify(error) {
+                case .feedHidden:
+                    self.state.feedHidden = true
+                case .throttled(let seconds):
+                    self.state.retryAfterSeconds = seconds
+                    self.state.loadFailed = true
+                case .profileRequired, .gone, .failed:
+                    self.state.loadFailed = true
+                }
             }
         })
     }
@@ -155,7 +175,9 @@ final class FeedRecommendationSettingsStore {
         let after = optimistic?(before)
         if after == before { return }
         if let after { state.preferences = after }
-        tasks.append(Task { [weak self, source] in
+        let previous = lastSave
+        let task = Task { [weak self, source] in
+            await previous?.value
             do {
                 let saved = try await source.savePreferences(update)
                 guard let self else { return }
@@ -167,9 +189,11 @@ final class FeedRecommendationSettingsStore {
                 Logger.warn("feed save preferences failed: \(error)")
                 guard let self else { return }
                 if after == nil || self.state.preferences == after { self.state.preferences = before }
-                self.state.notice = .failed
+                self.report(error)
             }
-        })
+        }
+        lastSave = task
+        tasks.append(task)
     }
 
     // MARK: - Interests
@@ -182,8 +206,10 @@ final class FeedRecommendationSettingsStore {
                 try await source.deleteInterest(dimension: dimension, key: interest.key)
             } catch {
                 Logger.warn("feed delete interest failed: \(error)")
-                self?.state.interests = before
-                self?.state.notice = .failed
+                guard let self else { return }
+                // 只放回这一个（原来的位置），别把同时在删、还没回来的别的标签也放回来
+                if let current = self.state.interests { self.state.interests = current.restoring(dimension: dimension, interest: interest, from: before) }
+                self.report(error)
             }
         })
     }
@@ -195,15 +221,17 @@ final class FeedRecommendationSettingsStore {
         tasks.append(Task { [weak self, source] in
             do {
                 try await source.resetInterests()
-                let interests = try await source.interests()
-                self?.state.resetting = false
-                self?.state.interests = interests
-                self?.state.notice = .reset
             } catch {
                 Logger.warn("feed reset failed: \(error)")
                 self?.state.resetting = false
-                self?.state.notice = .failed
+                self?.report(error)
+                return
             }
+            // 重置已经成功了：再读一次拿「用户删过的仍然是删掉的」之后的样子；读不到就先当全清了（引擎清掉的是学到的全部），不报失败
+            let interests = (try? await source.interests()) ?? FeedInterests()
+            self?.state.resetting = false
+            self?.state.interests = interests
+            self?.state.notice = .reset
         })
     }
 
@@ -237,8 +265,12 @@ final class FeedRecommendationSettingsStore {
                     self.state.keywords = self.mergeKeywords([FeedKeyword(keyword: k, mode: .downrank, expiresAt: expiresMillis)] + server)
                 } catch {
                     Logger.warn("feed add keyword failed: \(error)")
-                    let code = (error as? FeedAPIError)?.code
-                    self?.state.notice = code == "too_many_keywords" ? .tooManyKeywords : (code == "invalid_keyword" ? .invalidKeyword : .failed)
+                    guard let self else { return }
+                    switch (error as? FeedAPIError)?.code {
+                    case "too_many_keywords": self.state.notice = .tooManyKeywords
+                    case "invalid_keyword": self.state.notice = .invalidKeyword
+                    default: self.report(error)
+                    }
                 }
             })
         }
@@ -257,8 +289,11 @@ final class FeedRecommendationSettingsStore {
                     try await source.deleteKeyword(keyword.keyword)
                 } catch {
                     Logger.warn("feed delete keyword failed: \(error)")
-                    self?.state.keywords = before
-                    self?.state.notice = .failed
+                    guard let self else { return }
+                    // 只放回这一个（原来的位置），别把同时在删的别的词也放回来
+                    let current = self.state.keywords
+                    self.state.keywords = before.filter { $0 == keyword || current.contains($0) }
+                    self.report(error)
                 }
             })
         }
@@ -275,5 +310,42 @@ final class FeedRecommendationSettingsStore {
 
     func onNoticeShown() {
         state.notice = nil
+        if !state.loadFailed { state.retryAfterSeconds = nil }
+    }
+
+    /// 别处让页面该收起（`feed_hidden`）。
+    func onFeedHidden() {
+        state.feedHidden = true
+    }
+
+    /// 动作失败的提示：限速带秒数，`feed_hidden` 收页，其余（含 404、`profile_required`）是「操作失败」。动作不自动重试，用户再点一次。
+    private func report(_ error: Error) {
+        switch FeedActionFailure.classify(error) {
+        case .feedHidden:
+            state.feedHidden = true
+        case .throttled(let seconds):
+            state.retryAfterSeconds = seconds
+            state.notice = .throttled
+        case .profileRequired, .gone, .failed:
+            state.retryAfterSeconds = nil
+            state.notice = .failed
+        }
+    }
+}
+
+extension FeedInterests {
+    /// 删失败时把 `interest` 放回 `original` 里它原来的位置；现在列表里已经没有的别的标签（还在删）不放回来。
+    func restoring(dimension: String, interest: FeedInterest, from original: FeedInterests) -> FeedInterests {
+        func rebuild(_ now: [FeedInterest], _ before: [FeedInterest]) -> [FeedInterest] {
+            before.filter { old in old.key == interest.key || now.contains(where: { $0.key == old.key }) }
+        }
+        var copy = self
+        switch dimension {
+        case Self.dimTopic: copy.topics = rebuild(topics, original.topics)
+        case Self.dimAuthor: copy.authors = rebuild(authors, original.authors)
+        case Self.dimSource: copy.sources = rebuild(sources, original.sources)
+        default: break
+        }
+        return copy
     }
 }

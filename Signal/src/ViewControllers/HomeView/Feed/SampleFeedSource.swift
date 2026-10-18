@@ -112,6 +112,19 @@ final class SampleFeedSource: FeedSource {
         /// 申诉时引擎回 409 `already_appealed` / `not_rejected`（行标成复核中 / 重新拉列表）。
         var appealsAlreadyAppealed = false
         var appealsNotRejected = false
+        /// 「动态设置」页（见 `SampleFeedSource+Settings.swift`）：请求先等一会儿（加载中那一帧）。
+        var settingsLatencyNanos: UInt64 = 0
+        /// 读偏好 / 兴趣标签失败（整页「加载失败」）；`failsSettingsKeywordsLoad` 只让读关键词失败（页面照出，只有本机的词）。
+        var failsSettingsLoad = false
+        var failsSettingsKeywordsLoad = false
+        /// 存偏好 / 删兴趣标签 / 重置 / 加删关键词 失败（界面改回来并提示「操作失败」）。
+        var failsSettingsWrites = false
+        /// 设置页的请求被限速：回 429 带这么多秒的 `Retry-After`；nil = 不限速。
+        var settingsThrottledRetryAfterSeconds: Int?
+        /// 设置页的区域：`cn`（默认；敏感内容没有「更多」，选了回 400 `not_available_in_region`）或海外（比如 `us`）。
+        var settingsRegion = "cn"
+        /// 引擎在按兴趣打分（出个性化开关）还是编辑精选阶段（只有一句说明，默认）。
+        var settingsPersonalizationToggleVisible = false
     }
 
     /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
@@ -119,6 +132,7 @@ final class SampleFeedSource: FeedSource {
     let topicFollows = SampleTopicState()
     let notificationState = SampleNotificationState()
     let myPostsState = SampleMyPostsState()
+    let settingsState = SampleSettingsState()
 
     private var storedSimulation = Simulation()
 
@@ -205,9 +219,11 @@ final class SampleFeedSource: FeedSource {
     func config() async throws -> FeedConfig {
         var config = FeedConfig()
         config.enabled = true
-        config.region = "cn"
+        let simulation = self.simulation
+        config.region = simulation.settingsRegion
+        config.personalizationToggleVisible = simulation.settingsPersonalizationToggleVisible
         config.tabs = FeedTab.allCases.map(\.apiName)
-        config.recommendMode = FeedConfig.recommendModeEditorial
+        config.recommendMode = simulation.settingsPersonalizationToggleVisible ? FeedConfig.recommendModeScored : FeedConfig.recommendModeEditorial
         config.ipRegionVisible = true
         return config
     }
