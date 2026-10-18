@@ -177,7 +177,7 @@ final class TellomiFeedReportUITests: XCTestCase {
         report.view.layoutIfNeeded()
         XCTAssertEqual(report.detailTextView.text.count, 500, "超出的截掉")
         XCTAssertEqual(report.detailCounterLabel.text, OWSFormat.formatInt(0))
-        XCTAssertEqual(report.detailCounterLabel.textColor, UIColor.Signal.red, "写满 500：计数变红")
+        XCTAssertEqual(resolvedRGBA(report.detailCounterLabel.textColor), resolvedRGBA(UIColor.Signal.red), "写满 500：计数变红")
         harness.window.isHidden = true
     }
 
@@ -190,15 +190,15 @@ final class TellomiFeedReportUITests: XCTestCase {
         let report = try await openReport(on: detail)
         report.pick(try reason("harassment", in: report))
         report.view.layoutIfNeeded()
-        XCTAssertEqual(report.detailTextView.frame.height, FeedReportPresentation.detailMinHeight, accuracy: 1, "空的：最矮")
+        XCTAssertEqual(report.detailTextView.frame.size.height, FeedReportPresentation.detailMinHeight, accuracy: 1, "空的：最矮")
         XCTAssertFalse(report.detailTextView.isScrollEnabled)
 
         report.store.onDetailChanged(String(repeating: "很长的一句话。\n", count: 70))
         report.view.layoutIfNeeded()
-        XCTAssertEqual(report.detailTextView.frame.height, FeedReportPresentation.detailMaxHeight, accuracy: 1, "再长也只有 160")
+        XCTAssertEqual(report.detailTextView.frame.size.height, FeedReportPresentation.detailMaxHeight, accuracy: 1, "再长也只有 160")
         XCTAssertTrue(report.detailTextView.isScrollEnabled, "超过的在框里滚")
         let counterFrame = report.detailCounterLabel.convert(report.detailCounterLabel.bounds, to: report.view)
-        XCTAssertLessThan(counterFrame.maxY, report.view.bounds.height, "计数没被推出屏幕")
+        XCTAssertLessThan(counterFrame.maxY, report.view.bounds.size.height, "计数没被推出屏幕")
         harness.window.isHidden = true
     }
 
@@ -316,4 +316,11 @@ final class TellomiFeedReportUITests: XCTestCase {
         _ = report
         harness.window.isHidden = true
     }
+}
+
+/// 动态颜色（`UIColor.Signal.red` 每次取都是新对象）不能直接 `==`：比解出来的 RGBA。
+private func resolvedRGBA(_ color: UIColor?) -> [CGFloat] {
+    var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+    color?.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)).getRed(&r, green: &g, blue: &b, alpha: &a)
+    return [r, g, b, a]
 }
