@@ -30,10 +30,35 @@ private final class ProfSource: FeedSource, @unchecked Sendable {
     var reports = [FeedReportRequest]()
     var reportError: Error?
 
+    private var held = false
+    private var waiters = [CheckedContinuation<Void, Never>]()
+
+    /// 点赞请求先挂着，直到 `releaseLikes()`（看请求是不是一个一个发的）。
+    func holdLikes() { lock.withLock { held = true } }
+
+    func releaseLikes() {
+        let toResume = lock.withLock { () -> [CheckedContinuation<Void, Never>] in
+            held = false
+            defer { waiters = [] }
+            return waiters
+        }
+        toResume.forEach { $0.resume() }
+    }
+
     func config() async throws -> FeedConfig { FeedConfig() }
     func timeline(tab: FeedTab, cursor: String?) async throws -> FeedTimelinePage { FeedTimelinePage(cards: feedCards) }
     func setLiked(contentId: String, liked: Bool) async throws {
         log("like \(contentId) \(liked)")
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let resumeNow = lock.withLock { () -> Bool in
+                if held {
+                    waiters.append(continuation)
+                    return false
+                }
+                return true
+            }
+            if resumeNow { continuation.resume() }
+        }
         if let likeError { throw likeError }
     }
     func notInterested(contentId: String) async throws {}
@@ -127,6 +152,22 @@ final class TellomiFeedProfileSyncTests: XCTestCase {
         feed.toggleLike(id: "a2")
         XCTAssertTrue(store.state.posts[1].viewer.liked, "信息流（或详情页）点的，主页跟着变")
         await feed.waitForActions()
+    }
+
+    /// 同一条帖子连点两下：请求一个一个发（后一个等前一个回来），最后落在服务器上的是最后一次点的（`FeedStore` 的点赞队列）。
+    func testTwoQuickLikesGoOutOneAfterTheOther() async {
+        let source = ProfSource()
+        let (feed, store) = await started(source)
+        source.holdLikes()
+        store.toggleLike(store.state.posts[0])
+        store.toggleLike(store.state.posts[0])
+        await Task.yield()
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertEqual(source.calls.filter { $0.hasPrefix("like") }, ["like a1 true"], "第二个要等第一个回来")
+        source.releaseLikes()
+        await store.waitForTasks()
+        XCTAssertEqual(source.calls.filter { $0.hasPrefix("like") }, ["like a1 true", "like a1 false"])
+        XCTAssertFalse(feed.card(id: "a1")?.viewer.liked ?? true)
     }
 
     func testALikeThatFailsIsRevertedEverywhereAndTheProfileShowsAFailedNotice() async {
@@ -453,6 +494,37 @@ final class TellomiFeedProfilePresentationTests: XCTestCase {
         XCTAssertEqual(body { _, p in p.me.blocked = true; p.isPrivate = true }, .blockedByMe, "屏蔽优先")
         XCTAssertEqual(body { _, p in p.regionUnavailable = true }, .regionUnavailable)
         XCTAssertEqual(body { _, p in p.isPrivate = true; p.me.isSelf = true; p.regionUnavailable = false }, .none, "自己的私密账号照样看得到")
+    }
+
+    func testRowsForEachPageAndBody() {
+        typealias Row = FeedProfilePresentation.Row
+        func rows(_ change: @escaping (inout FeedProfilePageState, inout FeedProfilePage) -> Void = { _, _ in }) -> [Row] {
+            FeedProfilePresentation(state: state(change)).rows
+        }
+        XCTAssertEqual(FeedProfilePresentation(state: FeedProfilePageState()).rows, [.status(.loading)])
+        var failed = FeedProfilePageState()
+        failed.failed = true
+        failed.loading = false
+        failed.retryAfterSeconds = 9
+        XCTAssertEqual(FeedProfilePresentation(state: failed).rows, [.status(.failed(retryAfterSeconds: 9))])
+        var gone = FeedProfilePageState()
+        gone.gone = true
+        XCTAssertEqual(FeedProfilePresentation(state: gone).rows, [.status(.gone)])
+        var hidden = FeedProfilePageState()
+        hidden.feedHidden = true
+        XCTAssertEqual(FeedProfilePresentation(state: hidden).rows, [])
+
+        XCTAssertEqual(rows(), [.header], "帖子还没取回来、也没在取")
+        XCTAssertEqual(rows { s, _ in s.postsLoading = true }, [.header, .status(.loading)])
+        XCTAssertEqual(rows { s, _ in s.postsLoadedOnce = true }, [.header, .status(.empty(isSelf: false))])
+        XCTAssertEqual(rows { s, p in s.postsLoadedOnce = true; p.me.isSelf = true }, [.header, .status(.empty(isSelf: true))])
+        XCTAssertEqual(rows { s, _ in s.postsFailed = true; s.postsLoadedOnce = true }, [.header, .status(.postsFailed)])
+        XCTAssertEqual(rows { _, p in p.isPrivate = true }, [.header, .status(.privateLocked)])
+        XCTAssertEqual(rows { _, p in p.me.blocked = true }, [.header, .status(.blocked)])
+        XCTAssertEqual(rows { _, p in p.regionUnavailable = true }, [.header, .status(.regionUnavailable)])
+        XCTAssertEqual(rows { s, _ in s.posts = [card("a"), card("b")] }, [.header, .post("a"), .post("b")])
+        XCTAssertEqual(rows { s, _ in s.posts = [card("a")]; s.postsLoading = true }, [.header, .post("a"), .status(.loadingMore)])
+        XCTAssertEqual(rows { s, _ in s.posts = [card("a")]; s.postsFailed = true }, [.header, .post("a"), .status(.loadMoreFailed)])
     }
 
     func testSpinnersAndPaging() {

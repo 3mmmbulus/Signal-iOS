@@ -11230,7 +11230,112 @@
 "TELLOMI_FEED_NOT_INTERESTED" = "不感兴趣";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCK" = "屏蔽";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCKED" = "已屏蔽";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCKED_BODY" = "取消屏蔽后才能再看到 TA 的动态。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCKED_TITLE" = "你已屏蔽这个人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCK_CONFIRM" = "屏蔽这个人？你们将互相看不到对方的动态，关注关系也会解除。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_CANCEL_REQUEST" = "撤回";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_CANCEL_REQUEST_CONFIRM" = "撤回关注请求？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_EMPTY_SELF_BODY" = "你发布的动态会显示在这里。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_EMPTY_TITLE" = "还没有动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOW" = "关注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWED" = "已关注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWERS_FORMAT" = "%@ 粉丝";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWING" = "已关注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWING_FORMAT" = "关注 %@ 人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_GONE_BODY" = "它可能已被删除，或者你没有权限查看。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_GONE_TITLE" = "看不到这个主页";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_HIDDEN_FROM" = "TA 看不到你的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_LOAD_FAILED" = "没能加载这个主页";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_HIDE_FROM_OFF" = "恢复让 TA 看我的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_HIDE_FROM_ON" = "不让 TA 看我的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_MUTE_OFF" = "恢复看 TA 的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_MUTE_ON" = "不看 TA 的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MUTED" = "你不会再看到 TA 的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_POSTS_FAILED" = "没能加载动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_PRIVATE_BADGE" = "私密账号";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_PRIVATE_BODY" = "关注后才能看到 TA 的动态。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_PRIVATE_TITLE" = "这是私密账号";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REGION_BODY" = "TA 在另一个内容区域发布动态。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REGION_TITLE" = "这里看不到 TA 的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REQUESTED" = "已发送关注请求";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REQUESTED_BUTTON" = "已请求";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_REQUIRED" = "需要先建立公开主页";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNBLOCK" = "取消屏蔽";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNBLOCKED" = "已取消屏蔽";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNFOLLOW" = "取消关注";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNFOLLOW_CONFIRM" = "取消关注这个人？";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "推荐的动态会出现在这里。";

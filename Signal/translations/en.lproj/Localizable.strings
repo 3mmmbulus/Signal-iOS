@@ -11461,7 +11461,112 @@
 "TELLOMI_FEED_NOT_INTERESTED" = "Not interested";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCK" = "Block";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCKED" = "Blocked";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCKED_BODY" = "Unblock to see their posts again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCKED_TITLE" = "You've blocked this person";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_BLOCK_CONFIRM" = "Block this person? You won't see each other's posts and any follows end.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_CANCEL_REQUEST" = "Withdraw";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_CANCEL_REQUEST_CONFIRM" = "Withdraw your follow request?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_EMPTY_SELF_BODY" = "Posts you publish will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_EMPTY_TITLE" = "No posts yet";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOW" = "Follow";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWED" = "Following";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWERS_FORMAT" = "%@ followers";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWING" = "Following";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_FOLLOWING_FORMAT" = "%@ following";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_GONE_BODY" = "It may have been deleted, or you can't see it.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_GONE_TITLE" = "This profile is not available";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_HIDDEN_FROM" = "They won't see your posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_LOAD_FAILED" = "Couldn't load this profile";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_HIDE_FROM_OFF" = "Let them see my posts again";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_HIDE_FROM_ON" = "Don't let them see my posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_MUTE_OFF" = "See their posts again";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MENU_MUTE_ON" = "Don't see their posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_MUTED" = "You won't see their posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_POSTS_FAILED" = "Couldn't load posts";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_PRIVATE_BADGE" = "Private account";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_PRIVATE_BODY" = "Follow this account to see their posts.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_PRIVATE_TITLE" = "This account is private";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REGION_BODY" = "This person posts in a different content region.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REGION_TITLE" = "Posts are not available here";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REQUESTED" = "Follow request sent";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_REQUESTED_BUTTON" = "Requested";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_REQUIRED" = "Set up your public profile first";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNBLOCK" = "Unblock";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNBLOCKED" = "Unblocked";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNFOLLOW" = "Unfollow";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PROFILE_UNFOLLOW_CONFIRM" = "Unfollow this person?";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "Recommended posts will show up here.";

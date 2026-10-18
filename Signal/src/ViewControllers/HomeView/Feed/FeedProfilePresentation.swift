@@ -66,6 +66,29 @@ struct FeedProfilePresentation: Equatable {
         case regionUnavailable
     }
 
+    /// 列表里的一行（头部、帖子、状态行）。界面按它画：同一个 `rows` 就是同一幅画面。
+    enum Row: Equatable {
+        case header
+        /// 帖子（`posts` 里的 id）。
+        case post(String)
+        case status(Status)
+    }
+
+    /// 没有帖子可画、或者列表底部的状态行。
+    enum Status: Equatable {
+        case loading
+        case failed(retryAfterSeconds: Int?)
+        case gone
+        /// 看得到但没有帖子；自己的主页说法不同。
+        case empty(isSelf: Bool)
+        case postsFailed
+        case privateLocked
+        case blocked
+        case regionUnavailable
+        case loadingMore
+        case loadMoreFailed
+    }
+
     var page: Page
     var failedRetryAfterSeconds: Int?
     var displayName: String
@@ -182,5 +205,43 @@ struct FeedProfilePresentation: Equatable {
         showsLoadingMore = drawsPosts && hasPosts && state.postsLoading
         showsLoadMoreFailed = drawsPosts && hasPosts && state.postsFailed && !state.postsLoading
         canLoadMore = drawsPosts && state.cursor != nil && !state.postsLoading
+    }
+
+    /// 列表里画哪些行：整页状态（加载中 / 失败 / 看不到）一行；内容页是头部 + 下面那块（帖子、或一行状态）。
+    var rows: [Row] {
+        switch page {
+        case .feedHidden:
+            return []
+        case .loading:
+            return [.status(.loading)]
+        case .failed:
+            return [.status(.failed(retryAfterSeconds: failedRetryAfterSeconds))]
+        case .gone:
+            return [.status(.gone)]
+        case .content:
+            var rows: [Row] = [.header]
+            switch body {
+            case .none:
+                if showsPostsSpinner { rows.append(.status(.loading)) }
+            case .posts:
+                rows += posts.map { .post($0.id) }
+                if showsLoadingMore {
+                    rows.append(.status(.loadingMore))
+                } else if showsLoadMoreFailed {
+                    rows.append(.status(.loadMoreFailed))
+                }
+            case .empty:
+                rows.append(.status(.empty(isSelf: isSelf)))
+            case .postsFailed:
+                rows.append(.status(.postsFailed))
+            case .privateLocked:
+                rows.append(.status(.privateLocked))
+            case .blockedByMe:
+                rows.append(.status(.blocked))
+            case .regionUnavailable:
+                rows.append(.status(.regionUnavailable))
+            }
+            return rows
+        }
     }
 }
