@@ -13,7 +13,7 @@ import XCTest
 final class TellomiFeedDynamicTypeUITests: XCTestCase {
 
     @MainActor
-    func testSegmentedControlGetsAMinHeightOnceAndTheClampedFont() {
+    func testSegmentedControlGetsAMinHeightOnceAndTheBodyFont() {
         let control = UISegmentedControl(items: ["A", "B", "C"])
         let host = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 200))
         host.addSubview(control)
@@ -24,11 +24,11 @@ final class TellomiFeedDynamicTypeUITests: XCTestCase {
         control.installFeedDynamicType()
         let heights = control.constraints.filter { $0.identifier == "feed.segmented.minHeight" }
         XCTAssertEqual(heights.count, 1, "装两次也只有一条")
-        XCTAssertEqual(heights[0].constant, FeedDynamicTypeLayout.segmentedMinHeight(lineHeight: UIFont.dynamicTypeFootnoteClamped.lineHeight))
+        XCTAssertEqual(heights[0].constant, FeedDynamicTypeLayout.segmentedMinHeight(lineHeight: UIFont.dynamicTypeBody.lineHeight))
         let attributes = control.titleTextAttributes(for: .normal)
-        XCTAssertEqual((attributes?[.font] as? UIFont)?.pointSize, UIFont.dynamicTypeFootnoteClamped.pointSize)
+        XCTAssertEqual((attributes?[.font] as? UIFont)?.pointSize, UIFont.dynamicTypeBody.pointSize, "短标题放得下：和正文一样大，不夹紧")
         host.layoutIfNeeded()
-        XCTAssertGreaterThanOrEqual(control.frame.height, heights[0].constant - 0.5)
+        XCTAssertGreaterThanOrEqual(control.frame.size.height, heights[0].constant - 0.5)
     }
 
     @MainActor

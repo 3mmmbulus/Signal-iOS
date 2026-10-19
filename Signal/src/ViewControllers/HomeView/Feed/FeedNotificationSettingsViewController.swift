@@ -55,10 +55,10 @@ final class FeedNotificationSettingsViewController: OWSTableViewController2 {
         if let settings = state.settings {
             section.headerTitle = OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_FROM_WHOM", comment: "Feed notification settings: header of the choice of whose notifications to get.")
             for value in FeedNotificationSettings.fromValues {
-                section.add(OWSTableItem(
+                section.add(FeedChoiceRow.item(
                     text: Self.fromTitle(value),
-                    actionBlock: { [weak self] in self?.store.setFromWhom(value) },
-                    accessoryType: settings.fromWhom == value ? .checkmark : .none,
+                    selected: settings.fromWhom == value,
+                    action: { [weak self] in self?.store.setFromWhom(value) },
                 ))
             }
             contents.add(section)
@@ -66,23 +66,23 @@ final class FeedNotificationSettingsViewController: OWSTableViewController2 {
             let switches = OWSTableSection()
             switches.footerTitle = OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_SYSTEM_NOTE", comment: "Feed notification settings: footer saying notices about your own posts always come through.")
             let enabled = state.categoriesEnabled
-            switches.add(OWSTableItem.switch(
-                withText: OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_LIKES", comment: "Feed notification settings: switch for like notifications."),
-                isOn: { settings.likes },
-                isEnabled: { enabled },
-                actionBlock: { [weak self] uiSwitch in self?.store.setLikes(uiSwitch.isOn) },
+            switches.add(FeedSwitchRow.item(
+                text: OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_LIKES", comment: "Feed notification settings: switch for like notifications."),
+                isOn: settings.likes,
+                isEnabled: enabled,
+                action: { [weak self] isOn in self?.store.setLikes(isOn) },
             ))
-            switches.add(OWSTableItem.switch(
-                withText: OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_COMMENTS", comment: "Feed notification settings: switch for comment and reply notifications."),
-                isOn: { settings.comments },
-                isEnabled: { enabled },
-                actionBlock: { [weak self] uiSwitch in self?.store.setComments(uiSwitch.isOn) },
+            switches.add(FeedSwitchRow.item(
+                text: OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_COMMENTS", comment: "Feed notification settings: switch for comment and reply notifications."),
+                isOn: settings.comments,
+                isEnabled: enabled,
+                action: { [weak self] isOn in self?.store.setComments(isOn) },
             ))
-            switches.add(OWSTableItem.switch(
-                withText: OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWS", comment: "Feed notification settings: switch for new follower notifications."),
-                isOn: { settings.follows },
-                isEnabled: { enabled },
-                actionBlock: { [weak self] uiSwitch in self?.store.setFollows(uiSwitch.isOn) },
+            switches.add(FeedSwitchRow.item(
+                text: OWSLocalizedString("TELLOMI_FEED_NOTIF_SETTINGS_FOLLOWS", comment: "Feed notification settings: switch for new follower notifications."),
+                isOn: settings.follows,
+                isEnabled: enabled,
+                action: { [weak self] isOn in self?.store.setFollows(isOn) },
             ))
             contents.add(switches)
         } else if state.loadFailed {

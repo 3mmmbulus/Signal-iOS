@@ -47,6 +47,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     let settingsEnabled: Bool
     /// 齿轮按钮（单测 / 截图用；入口没开时是 nil）。
     private(set) var settingsItem: UIBarButtonItem?
+    /// 入口按钮有 4 个时，「我的动态」和齿轮收进的「···」菜单按钮（单测 / 截图用；其它时候是 nil，那时两个按钮各自在栏上）。
+    private(set) var overflowItem: UIBarButtonItem?
     /// 本机「完全屏蔽」的词：设置页和信息流（`FeedStore`）共用这一份；入口没开时是 nil（信息流不过滤）。
     let blockedKeywords: FeedBlockedKeywords?
 
@@ -123,17 +125,14 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         navigationItem.titleView = topBar
         navigationItem.backButtonDisplayMode = .minimal
         topBar.onSelect = { [weak self] index in self?.scrollToPage(index, animated: true) }
+        // 入口按钮（铃铛、我的动态、搜索、齿轮）有 4 个：标题栏被挤得放不下「Following」，我的动态和齿轮收进「···」菜单
+        let entryCount = [notificationsEnabled, myPostsEnabled, searchEnabled, settingsEnabled].filter { $0 }.count
+        let overflow = FeedDynamicTypeLayout.topBarUsesOverflow(entryCount: entryCount)
+        var rightItems = [UIBarButtonItem]()
         if searchEnabled {
             let search = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), primaryAction: UIAction { [weak self] _ in self?.openSearch() })
             search.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_SEARCH_BUTTON", comment: "Feed: accessibility label of the search button at the top of the feed.")
-            navigationItem.rightBarButtonItem = search
-        }
-        if settingsEnabled {
-            let settings = UIBarButtonItem(image: UIImage(systemName: "gearshape"), primaryAction: UIAction { [weak self] _ in self?.openSettings() })
-            settings.accessibilityLabel = FeedRecommendationSettingsViewController.title
-            settingsItem = settings
-            // 搜索在最右，齿轮在它左边（`rightBarButtonItems` 第一个是最右的）
-            navigationItem.rightBarButtonItems = (navigationItem.rightBarButtonItems ?? []) + [settings]
+            rightItems.append(search)
         }
         var leftItems = [UIBarButtonItem]()
         if notificationsEnabled {
@@ -142,11 +141,33 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
             leftItems.append(UIBarButtonItem(customView: notificationsButton))
             updateNotificationsBadge()
         }
-        if myPostsEnabled {
-            let myPosts = UIBarButtonItem(image: UIImage(systemName: "doc.text"), primaryAction: UIAction { [weak self] _ in self?.openMyPosts() })
-            myPosts.accessibilityLabel = FeedMyPostsViewController.title
-            myPostsItem = myPosts
-            leftItems.append(myPosts)
+        if overflow {
+            let myPosts = UIAction(title: FeedMyPostsViewController.title, image: UIImage(systemName: "doc.text")) { [weak self] _ in self?.openMyPosts() }
+            let settings = UIAction(title: FeedRecommendationSettingsViewController.title, image: UIImage(systemName: "gearshape")) { [weak self] _ in self?.openSettings() }
+            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"), menu: UIMenu(children: [myPosts, settings]))
+            more.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_MORE", comment: "Feed: accessibility label for the ··· button on a post.")
+            overflowItem = more
+            // 搜索在最右，菜单在它左边（`rightBarButtonItems` 第一个是最右的）
+            rightItems.append(more)
+        } else {
+            if settingsEnabled {
+                let settings = UIBarButtonItem(image: UIImage(systemName: "gearshape"), primaryAction: UIAction { [weak self] _ in self?.openSettings() })
+                settings.accessibilityLabel = FeedRecommendationSettingsViewController.title
+                settingsItem = settings
+                // 搜索在最右，齿轮在它左边
+                rightItems.append(settings)
+            }
+            if myPostsEnabled {
+                let myPosts = UIBarButtonItem(image: UIImage(systemName: "doc.text"), primaryAction: UIAction { [weak self] _ in self?.openMyPosts() })
+                myPosts.accessibilityLabel = FeedMyPostsViewController.title
+                myPostsItem = myPosts
+                leftItems.append(myPosts)
+            }
+        }
+        if rightItems.count == 1 {
+            navigationItem.rightBarButtonItem = rightItems[0]
+        } else if !rightItems.isEmpty {
+            navigationItem.rightBarButtonItems = rightItems
         }
         if !leftItems.isEmpty { navigationItem.leftBarButtonItems = leftItems }
 

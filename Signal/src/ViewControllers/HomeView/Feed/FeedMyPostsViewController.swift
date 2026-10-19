@@ -516,6 +516,7 @@ final class FeedMyPostCell: UITableViewCell {
     /// 状态 / 可见范围 / 时间：平时一行，最大字号下竖着排（一行放不下会被截断）。
     let headerStack = UIStackView()
     private let headerSpacer = UIView()
+    private let contentStack = UIStackView()
 
     var onAppeal: (() -> Void)?
 
@@ -559,7 +560,8 @@ final class FeedMyPostCell: UITableViewCell {
         appealButton.contentHorizontalAlignment = .leading
         appealButton.addAction(UIAction { [weak self] _ in self?.onAppeal?() }, for: .touchUpInside)
 
-        let stack = UIStackView(arrangedSubviews: [header, titleLabel, bodyLabel, notesStack, appealButton])
+        let stack = contentStack
+        for view in [header, titleLabel, bodyLabel, notesStack, appealButton] { stack.addArrangedSubview(view) }
         stack.axis = .vertical
         stack.alignment = .fill
         stack.spacing = 6
@@ -579,7 +581,17 @@ final class FeedMyPostCell: UITableViewCell {
 
     override func layoutSubviews() {
         updateHeaderLayout()
+        updateAppealSpacing()
         super.layoutSubviews()
+    }
+
+    /// 备注和「申诉」按钮之间现在的距离（单测用）。
+    var appealSpacingForTesting: CGFloat { contentStack.customSpacing(after: notesStack) }
+
+    /// 备注和「申诉」按钮之间的距离：字大了贴得紧，加大（`FeedDynamicTypeLayout.appealSpacing`）。
+    private func updateAppealSpacing() {
+        let spacing = FeedDynamicTypeLayout.appealSpacing(isAccessibilityCategory: traitCollection.preferredContentSizeCategory.isAccessibilityCategory)
+        if contentStack.customSpacing(after: notesStack) != spacing { contentStack.setCustomSpacing(spacing, after: notesStack) }
     }
 
     private func updateHeaderLayout() {
@@ -618,6 +630,9 @@ final class FeedMyPostCell: UITableViewCell {
             let label = UILabel()
             label.font = .dynamicTypeFootnote
             label.numberOfLines = 0
+            label.lineBreakMode = .byWordWrapping
+            // 备注不省略：最大字号下换行显示全，行高跟着长（不被上面的行或固定行高压扁）
+            label.setContentCompressionResistancePriority(.required, for: .vertical)
             label.text = text
             label.textColor = isError ? .systemRed : UIColor.Signal.secondaryLabel
             notesStack.addArrangedSubview(label)
