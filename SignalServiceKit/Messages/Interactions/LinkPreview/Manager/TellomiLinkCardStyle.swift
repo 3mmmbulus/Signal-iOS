@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
-public import Foundation
+import Foundation
 
 /// 会话里第三方链接卡片的统一样式（产品经理 2026-10-19 定稿，参照 iOS「信息」App；TestFlight 0.1.0 (30) 真机截图里
 /// 同一会话出现三四种样式：大图卡、按 logo 染色的图标卡、「平台名 / 网页 / 域名」的无图卡、只有域名 + 链接图标的小条）。
