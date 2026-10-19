@@ -348,6 +348,10 @@ final class TellomiLinkSenderTest: XCTestCase {
             "https://apps.apple.com/cn/app/wechat/id414478124",
             "https://www.bilibili.com/video/BV1YDhJ6ZEL6",
             "https://item.taobao.com/item.htm?id=674169489573",
+            // 认领但抓页面（2026-10-19）：京东商品页抓真标题；被拦就退回品牌壳
+            "https://item.jd.com/100012043978.html",
+            // 裸域名（输入框里打 `baidu.com`，升级成 https 以后送进来）
+            "https://baidu.com",
             "https://tell.cc/hk881qb",
         ] {
             let url = URL(string: raw)!

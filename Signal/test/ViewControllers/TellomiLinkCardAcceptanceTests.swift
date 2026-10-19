@@ -95,11 +95,11 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
 
     // MARK: - 表 3.7
 
-    /// 图的版式，按 cell 里的视图判。
+    /// 卡的画法，按 cell 里的视图判（产品经理 2026-10-19 定稿，参照 iOS「信息」App）。
     private enum ImageLayout: String {
-        /// 没有图：文字 + 右侧通用链接图标（card-visual §3.2「无图卡」）。
-        case none
-        /// 右上角 54 pt 方形图标（图标卡）。
+        /// 横条，右边是指南针（SF Symbol `safari`，26 pt）：没有图的卡——文字横条（标题 + 域名）、只有域名的横条。
+        case compass
+        /// 横条，右边是 36 pt 的站点图标（圆角 8）：图标横条。
         case icon
         /// 图在上、占满卡宽（大图卡）。
         case large
@@ -119,7 +119,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         }
     }
 
-    /// 发送端带来的预览图：用渐变 + 文字画出来，纯色图标和染色的底一个颜色，截图里看不见它。
+    /// 发送端带来的预览图：用渐变 + 文字画出来。
     private struct Picture {
         let size: CGSize
         let hue: CGFloat
@@ -146,9 +146,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
 
         /// rust/links 应该给的级别。
         var level: String
-        /// 标题位（第三方卡的标题 / 纯链接的域名 / 第一方卡的名字）。
-        var title: String
-        /// 副行；没有这一段就不占这一行。
+        /// 标题位（第三方卡的标题 / 品牌壳的平台名 / 第一方卡的名字）；只有域名的横条没有标题，是 nil。
+        var title: String?
+        /// 第一方卡名字下面的副标题。第三方卡没有副行（2026-10-19 定稿：只有标题 + 域名两行）。
         var subLine: String?
         /// 域名行；第一方卡没有，改成底部的动作按钮。
         var domain: String?
@@ -156,14 +156,19 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         /// 官网卡标题后面的「官方」徽标。
         var officialBadge = false
         var layout: ImageLayout
+        /// 横条按图标主色染了底色（只有图标横条会染；大图卡、文字横条、只有域名的横条一律中性灰）。
         var tinted = false
-        /// 卡片上不该出现的文字：发送端写的描述 / 标题（文档：任何级别都不显示；品牌壳和第一方卡不用发送端的字）。
+        /// 卡片上不该出现的文字：发送端写的描述 / 标题、以前的类型文字（「网页」「商品」）。
         var absent: [String] = []
+        /// 气泡里还画不画正文。nil = 按 `body` 判（消息就是这条链接时不画）；没有协议的裸域名也算「只有链接」。
+        var showsBody: Bool?
 
-        /// 卡上的文字，从上到下。「官方」徽标是画成图、作为附件塞进标题文字里的（标题换行、测量都还是一段文字），所以标题后面多一个附件字符。
+        /// 卡上的文字，从上到下。「官方」徽标是画成图、作为附件塞进标题文字里的，所以标题后面多一个附件字符。
         var texts: [String] {
-            [officialBadge ? title + " \u{FFFC}" : title, subLine, domain, button].compactMap { $0 }
+            [title.map { officialBadge ? $0 + " \u{FFFC}" : $0 }, subLine, domain, button].compactMap { $0 }
         }
+
+        var expectsBody: Bool { showsBody ?? (body != nil) }
     }
 
     private struct Row {
@@ -191,7 +196,8 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         return try! GroupInviteLink(masterKey: masterKey, inviteLinkPassword: Data(repeating: masterKeyByte, count: 16)).url().absoluteString
     }
 
-    /// 表 3.7 的行，顺序就是文档里的顺序；「字段全」= 把可选字段都填上，「只有必填」= 只带 `kinds.toml` 里的必填字段（ADR-0063 §4.6）。
+    /// 表 3.7 的行，顺序就是文档里的顺序，后面接 2026-10-19 加的三行（认领但抓页面、认领平台的随包图标、裸域名）；
+    /// 「字段全」= 把可选字段都填上，「只有必填」= 只带 `kinds.toml` 里的必填字段（ADR-0063 §4.6）。
     private static let rows: [Row] = [
         plainLinkRow,
         genericRow,
@@ -212,9 +218,12 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         stickerRow,
         officialRow,
         unknownKindRow,
+        claimedRow,
+        claimedBundledIconRow,
+        bareDomainRow,
     ]
 
-    /// §3.7 的行 id，测试里单独写一份：表里少了谁，这里对不上。
+    /// 行 id，测试里单独写一份：表里少了谁，这里对不上。
     private static let specRowIds = [
         "plain_link",
         "generic",
@@ -235,14 +244,18 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         "tellomi.sticker",
         "tellomi.official",
         "unknown-kind",
+        "claimed",
+        "claimed-bundled-icon",
+        "bare-domain",
     ]
 
-    // 纯链接：消息就是这条链接、没有预览；接收端本地画无图卡（域名当标题 + 链接图标）。没有可选字段，两张一样。
+    // 纯链接：消息就是这条链接、没有预览；接收端本地画只有域名的横条（域名 + 指南针）。没有可选字段，两张一样。
     private static let plainLinkRow: Row = {
-        let card = Card(url: bilibili, hasPreview: false, level: "plain_link", title: "bilibili.com", layout: .none)
+        let card = Card(url: bilibili, hasPreview: false, level: "plain_link", domain: "bilibili.com", layout: .compass)
         return Row(id: "plain_link", name: "纯链接", full: card, minimal: card)
     }()
 
+    // 大图卡一律中性灰底（「信息」App 的 apple.com 卡），不再按图染色。
     private static let genericRow = Row(
         id: "generic",
         name: "generic",
@@ -255,13 +268,13 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             title: "Wikipedia",
             domain: "wikipedia.org",
             layout: .large,
-            tinted: true,
             absent: ["free online encyclopedia"],
         ),
-        minimal: Card(url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", level: "generic", title: "Wikipedia", domain: "wikipedia.org", layout: .none),
+        minimal: Card(url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", level: "generic", title: "Wikipedia", domain: "wikipedia.org", layout: .compass),
     )
 
-    // 品牌壳：平台名 + 类型文字（kind 由 URL 的路径判，认不出对象就是「网页」）+ 域名；不用发送端的标题和图。
+    // 品牌壳（旧客户端发来的 level 1 rich；认领平台抓不到标题时发送端也退回它）：平台名 + 域名，不再有类型文字；
+    // 有随包图标就是图标横条，按图标主色染底色；不用发送端的标题和图。
     private static let brandWithIconRow = Row(
         id: "brand",
         name: "品牌壳·有图标",
@@ -271,11 +284,10 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             rich: Rich(kind: "product", provider: "taobao", level: 1),
             level: "brand",
             title: "Taobao",
-            subLine: "Product",
             domain: "taobao.com",
             layout: .icon,
             tinted: true,
-            absent: ["登录"],
+            absent: ["登录", "Product"],
         ),
         minimal: Card(
             url: "https://www.taobao.com/",
@@ -283,11 +295,10 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             rich: Rich(kind: "web", provider: "taobao", level: 1),
             level: "brand",
             title: "Taobao",
-            subLine: "Web page",
             domain: "taobao.com",
             layout: .icon,
             tinted: true,
-            absent: ["淘宝网"],
+            absent: ["淘宝网", "Web page"],
         ),
     )
 
@@ -300,10 +311,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             rich: Rich(kind: "deal", provider: "meituan", level: 1),
             level: "brand",
             title: "Meituan",
-            subLine: "Deal",
             domain: "meituan.com",
-            layout: .none,
-            absent: ["双人套餐"],
+            layout: .compass,
+            absent: ["双人套餐", "Deal"],
         ),
         minimal: Card(
             url: "https://www.meituan.com/",
@@ -311,10 +321,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             rich: Rich(kind: "web", provider: "meituan", level: 1),
             level: "brand",
             title: "Meituan",
-            subLine: "Web page",
             domain: "meituan.com",
-            layout: .none,
-            absent: ["美团"],
+            layout: .compass,
+            absent: ["美团", "Web page"],
         ),
     )
 
@@ -326,10 +335,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             rich: Rich(kind: "web", provider: "alipay", level: 1),
             level: "brand",
             title: "Alipay",
-            subLine: "Web page",
             domain: "alipay.com",
-            layout: .none,
-            absent: ["支付宝"],
+            layout: .compass,
+            absent: ["支付宝", "Web page"],
         )
         return Row(id: "brand-payment", name: "品牌壳·支付", full: card, minimal: card)
     }()
@@ -345,11 +353,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 1280, height: 720), hue: 0.55, label: "video"),
             level: "structured",
             title: videoTitle,
-            subLine: "演示UP主 · 4:17",
             domain: "bilibili.com ⋅ Mar 14, 2025",
             layout: .large,
-            tinted: true,
-            absent: ["发送端写的描述"],
+            absent: ["发送端写的描述", "演示UP主"],
         ),
         // 必填 = 标题 + 图
         minimal: Card(
@@ -361,7 +367,6 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             title: videoTitle,
             domain: "bilibili.com",
             layout: .large,
-            tinted: true,
         ),
     )
 
@@ -375,10 +380,10 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 400, height: 400), hue: 0.08, label: "channel"),
             level: "structured",
             title: "Tellomi Studio",
-            subLine: "Tellomi Inc.",
             domain: "youtube.com",
             layout: .icon,
             tinted: true,
+            absent: ["Tellomi Inc."],
         ),
         minimal: Card(
             url: "https://www.youtube.com/@tellomi",
@@ -387,7 +392,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Tellomi Studio",
             domain: "youtube.com",
-            layout: .none,
+            layout: .compass,
         ),
     )
 
@@ -401,10 +406,10 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 300, height: 300), hue: 0.72, label: "track"),
             level: "structured",
             title: "Blue Hour",
-            subLine: "Nova Lin · Night Drive · 3:45",
             domain: "spotify.com",
             layout: .icon,
             tinted: true,
+            absent: ["Nova Lin"],
         ),
         minimal: Card(
             url: "https://open.spotify.com/track/7qiZfU4dY1lWllzX7mPBI3",
@@ -413,7 +418,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Blue Hour",
             domain: "spotify.com",
-            layout: .none,
+            layout: .compass,
         ),
     )
 
@@ -427,10 +432,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 640, height: 640), hue: 0.83, label: "album"),
             level: "structured",
             title: "Night Drive",
-            subLine: "Nova Lin · 12 tracks",
             domain: "spotify.com",
             layout: .large,
-            tinted: true,
+            absent: ["Nova Lin", "12 tracks"],
         ),
         minimal: Card(
             url: "https://open.spotify.com/album/1DFixLWuPkv3KT3TnV35m3",
@@ -439,7 +443,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Night Drive",
             domain: "spotify.com",
-            layout: .none,
+            layout: .compass,
         ),
     )
 
@@ -453,10 +457,10 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 300, height: 300), hue: 0.33, label: "playlist"),
             level: "structured",
             title: "Focus Mix",
-            subLine: "Tellomi Music · 24 tracks",
             domain: "spotify.com",
             layout: .icon,
             tinted: true,
+            absent: ["Tellomi Music"],
         ),
         minimal: Card(
             url: "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
@@ -465,11 +469,11 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Focus Mix",
             domain: "spotify.com",
-            layout: .none,
+            layout: .compass,
         ),
     )
 
-    // 位置：坐标不显示成文字，P1 不画地图缩略图（ADR-0063 §8.3）；必填 = 坐标（或名字）。
+    // 位置：坐标不显示成文字，P1 不画地图缩略图（ADR-0063 §8.3）；必填 = 坐标（或名字）。地址是副行，不再显示。
     private static let placeRow = Row(
         id: "place",
         name: "place",
@@ -479,9 +483,9 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             rich: Rich(kind: "place", provider: "amap", attrs: [("lat", "39.99"), ("lng", "116.47"), ("coord_sys", "gcj02"), ("name", "Lakeside Coffee"), ("address", "88 West Lake Rd")]),
             level: "structured",
             title: "Lakeside Coffee",
-            subLine: "88 West Lake Rd",
             domain: "amap.com",
-            layout: .none,
+            layout: .compass,
+            absent: ["88 West Lake Rd"],
         ),
         minimal: Card(
             url: "https://uri.amap.com/marker?position=116.47,39.99",
@@ -490,7 +494,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "高德地图",
             domain: "amap.com",
-            layout: .none,
+            layout: .compass,
         ),
     )
 
@@ -504,10 +508,10 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 512, height: 512), hue: 0.6, label: "app"),
             level: "structured",
             title: "Tellomi",
-            subLine: "Tellomi Inc. · iOS",
             domain: "apple.com",
             layout: .icon,
             tinted: true,
+            absent: ["Tellomi Inc."],
         ),
         // 必填 = 标题 + 图
         minimal: Card(
@@ -533,10 +537,8 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             picture: Picture(size: CGSize(width: 1280, height: 640), hue: 0.97, label: "repo"),
             level: "structured",
             title: "tellomi/signal-ios: Tellomi for iOS",
-            subLine: "tellomi",
             domain: "github.com",
             layout: .large,
-            tinted: true,
         ),
         minimal: Card(
             url: "https://github.com/tellomi/signal-ios",
@@ -545,7 +547,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "tellomi/signal-ios: Tellomi for iOS",
             domain: "github.com",
-            layout: .none,
+            layout: .compass,
         ),
     )
 
@@ -662,7 +664,6 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             title: videoTitle,
             domain: "bilibili.com",
             layout: .large,
-            tinted: true,
             absent: ["演示UP主"],
         ),
         minimal: Card(
@@ -672,17 +673,100 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "generic",
             title: videoTitle,
             domain: "bilibili.com",
-            layout: .none,
+            layout: .compass,
+        ),
+    )
+
+    // 认领但抓页面（`claimed`，2026-10-19）：注册表认得京东，发送端照普通网页抓真标题和图（不带 rich）；
+    // 字段全 = 页面声明的 180 px apple-touch-icon（图标横条，按主色染色），只有必填 = 只有标题（京东没有随包图标：文字横条）。
+    private static let claimedRow = Row(
+        id: "claimed",
+        name: "认领·抓页面",
+        full: Card(
+            url: "https://item.jd.com/100012043978.html",
+            previewTitle: "Apple iPhone 15 (A3092) 128GB 黑色",
+            previewDescription: "京东JD.COM提供Apple iPhone 15正品行货",
+            picture: Picture(size: CGSize(width: 180, height: 180), hue: 0.0, label: "JD"),
+            level: "generic",
+            title: "Apple iPhone 15 (A3092) 128GB 黑色",
+            domain: "jd.com",
+            layout: .icon,
+            tinted: true,
+            absent: ["京东JD.COM提供", "JD", "Product"],
+        ),
+        minimal: Card(
+            url: "https://item.jd.com/100012043978.html",
+            previewTitle: "Apple iPhone 15 (A3092) 128GB 黑色",
+            level: "generic",
+            title: "Apple iPhone 15 (A3092) 128GB 黑色",
+            domain: "jd.com",
+            layout: .compass,
+        ),
+    )
+
+    // 认领平台的页面没给图：横条右边用平台的随包图标（淘宝），按图标主色染色；
+    // 抓不到标题（被拦的商品页）：发送端退回品牌壳——平台名 + 随包图标，不带 rich。
+    private static let claimedBundledIconRow = Row(
+        id: "claimed-bundled-icon",
+        name: "认领·随包图标",
+        full: Card(
+            url: "https://www.taobao.com/",
+            previewTitle: "淘宝",
+            previewDescription: "淘宝网 - 亚洲较大的网上交易平台",
+            level: "generic",
+            title: "淘宝",
+            domain: "taobao.com",
+            layout: .icon,
+            tinted: true,
+            absent: ["亚洲较大的网上交易平台"],
+        ),
+        minimal: Card(
+            url: "https://item.taobao.com/item.htm?id=674169489573",
+            level: "brand",
+            title: "Taobao",
+            domain: "taobao.com",
+            layout: .icon,
+            tinted: true,
+            absent: ["Product"],
+        ),
+    )
+
+    // 没打协议的裸域名（2026-10-19，§5.6 的例外）：打 `baidu.com` 也出卡；消息就是这个域名时卡片代替气泡。
+    private static let bareDomainRow = Row(
+        id: "bare-domain",
+        name: "裸域名",
+        full: Card(
+            url: "https://baidu.com",
+            body: "baidu.com",
+            previewTitle: "百度一下，你就知道",
+            picture: Picture(size: CGSize(width: 180, height: 180), hue: 0.62, label: "du"),
+            level: "generic",
+            title: "百度一下，你就知道",
+            domain: "baidu.com",
+            layout: .icon,
+            tinted: true,
+            showsBody: false,
+        ),
+        // 前后有别的字：卡片在文字气泡下面，气泡里的链接文字去掉
+        minimal: Card(
+            url: "https://baidu.com",
+            body: "看 baidu.com 吧",
+            previewTitle: "百度一下，你就知道",
+            level: "generic",
+            title: "百度一下，你就知道",
+            domain: "baidu.com",
+            layout: .compass,
+            showsBody: true,
         ),
     )
 
     // MARK: - 用例
 
-    /// 表里有且只有文档 §3.7 的 19 行，每行两种填法。
+    /// 表里有且只有文档 §3.7 的 19 行 + 2026-10-19 加的 3 行，每行两种填法。
     func testTheTableHasExactlyTheRowsOfTheSpec() {
         XCTAssertEqual(Self.rows.map(\.id), Self.specRowIds)
         XCTAssertEqual(Set(Self.rows.map(\.id)).count, Self.rows.count, "行 id 不重复")
-        XCTAssertEqual(Self.rows.count, 19)
+        XCTAssertEqual(Self.rows.count, 22)
     }
 
     /// 每一行、每种填法、浅色与暗色：真排一次、按文档那一行断言、存图、拼联系表。
@@ -767,45 +851,45 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         }
         let traits = hosted.window.traitCollection
 
-        // 三行骨架：标题 → 副行 → 域名行（第一方卡：名字 → 副标题 → 按钮），顺序、内容，缺哪段不占哪一行
+        // 两行字：标题 → 域名（第一方卡：名字 → 副标题 → 按钮），顺序、内容，缺哪段不占哪一行；第三方卡没有副行
         let texts = Self.orderedTexts(in: cardView)
         XCTAssertEqual(texts, card.texts, "\(label)：卡上的文字（从上到下）")
         for absent in card.absent {
             XCTAssertFalse(texts.contains { $0.contains(absent) }, "\(label)：卡上不该有「\(absent)」，实际：\(texts)")
         }
-        // 只有一条链接的消息只画卡片，不再画链接文字（§3.5）
-        XCTAssertEqual(Self.containsBodyText(in: hosted.cellView), card.body != nil, "\(label)：链接文字该不该画在卡片下面")
-        if card.level != "first_party" {
-            if let title = Self.label(withText: card.title, in: cardView) {
-                XCTAssertLessThanOrEqual(title.numberOfLines, 2, "\(label)：标题最多 2 行")
-            }
-            if let subLine = card.subLine, let subLineLabel = Self.label(withText: subLine, in: cardView) {
-                XCTAssertEqual(subLineLabel.numberOfLines, 1, "\(label)：副行 1 行")
+        // 只有一条链接（带不带协议都算）的消息只画卡片、不画气泡；还有别的字时卡片在气泡下面（产品经理 2026-10-19）
+        XCTAssertEqual(Self.containsBodyText(in: hosted.cellView), card.expectsBody, "\(label)：气泡里该不该画正文")
+        let isFirstParty = card.level == "first_party"
+        if !isFirstParty {
+            if let title = card.title, let titleLabel = Self.label(withText: title, in: cardView) {
+                XCTAssertLessThanOrEqual(titleLabel.numberOfLines, 2, "\(label)：标题最多 2 行")
             }
             if let domain = card.domain, let domainLabel = Self.label(withText: domain, in: cardView) {
                 XCTAssertEqual(domainLabel.numberOfLines, 1, "\(label)：域名行 1 行")
             }
+            XCTAssertNil(card.subLine, "\(label)：第三方卡没有副行（表写错了）")
+            XCTAssertEqual(cardView.layer.cornerRadius, CVLinkPreviewView.standaloneCornerRadius, "\(label)：卡片不在气泡里，圆角和气泡一样")
         }
 
-        // 图的版式
+        // 画法：大图卡 / 图标横条 / 指南针横条 / 第一方头像
         let layout = Self.detectLayout(in: cardView)
-        XCTAssertEqual(layout.layout, card.layout, "\(label)：图的版式，实际 \(layout)")
-        let hasLinkIcon = Self.findLinkIcon(in: cardView) != nil
-        XCTAssertEqual(hasLinkIcon, card.layout == .none, "\(label)：只有没有图的卡画通用链接图标")
+        XCTAssertEqual(layout.layout, card.layout, "\(label)：画法，实际 \(layout)")
+        XCTAssertNil(Self.findLinkIcon(in: cardView), "\(label)：通用链接图标不再画了（没有图的横条右边是指南针）")
 
-        // 染色：第三方卡按图染，其余（无图、支付、第一方、域名卡）保持中性底色
+        // 底色：图标横条按图标主色染，大图卡、文字横条、只有域名的横条是中性灰（#E9E9EB / #2C2C2E）；第一方卡照旧
         guard let background = cardView.backgroundColor?.resolvedColor(with: traits) else {
             XCTFail("\(label)：卡片没有底色")
             return
         }
-        let neutral = UIColor.Signal.LightBase.fillTertiary.resolvedColor(with: traits)
+        let neutral = (isFirstParty ? UIColor.Signal.LightBase.fillTertiary : TellomiLinkCardColors.neutralBackground).resolvedColor(with: traits)
         let tinted = Self.distance(background, neutral) > 0.02
         XCTAssertEqual(tinted, card.tinted, "\(label)：\(card.tinted ? "应该染色" : "不该染色")，实际底色 \(background)")
-        if card.tinted, let titleLabel = Self.label(withText: card.title, in: cardView) {
+        if card.tinted, let title = card.title, let titleLabel = Self.label(withText: title, in: cardView) {
             let ratio = Self.contrast(titleLabel.textColor.resolvedColor(with: traits), background)
-            XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(label)：染色卡的标题对比度应 ≥ 4.5:1，实际 \(ratio)")
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(label)：染色横条的标题对比度应 ≥ 4.5:1，实际 \(ratio)")
         }
-        report += "\(label): level \(classified?.level.rawValue ?? "nil"), layout \(layout.layout.rawValue), tinted \(tinted), linkIcon \(hasLinkIcon), height \(Int(hosted.cellView.frame.size.height)), texts \(texts)\n"
+        let hasLinkIcon = layout.layout == .compass
+        report += "\(label): level \(classified?.level.rawValue ?? "nil"), layout \(layout.layout?.rawValue ?? "nothing"), tinted \(tinted), compass \(hasLinkIcon), height \(Int(hosted.cellView.frame.size.height)), texts \(texts)\n"
     }
 
     // MARK: - 视图里读出来的东西
@@ -856,7 +940,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         return view.subviews.contains { containsBodyText(in: $0) }
     }
 
-    /// 卡片里画的通用链接图标（和纯链接卡同一个 `link` 图标，模板渲染）。
+    /// 以前卡片里画的通用链接图标（`link`，模板渲染）；2026-10-19 起换成指南针，不该再出现。
     private static func findLinkIcon(in view: UIView) -> UIImageView? {
         guard let linkData = UIImage(named: "link")?.pngData() else {
             return nil
@@ -888,13 +972,31 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
     }
 
     private struct DetectedLayout: CustomStringConvertible {
-        let layout: ImageLayout
+        let layout: ImageLayout?
         let frame: CGRect?
 
-        var description: String { "\(layout.rawValue) \(frame.map { "\($0)" } ?? "-")" }
+        var description: String { "\(layout?.rawValue ?? "nothing") \(frame.map { "\($0)" } ?? "-")" }
     }
 
-    /// 按视图判版式，同时核几何：图标 54 pt 贴右上（离上 6、离右 10）、大图占满卡宽且宽高比夹在 1.91:1–1:1、第一方头像 56 pt 在左边（§3.2 / §5.2）。
+    /// 横条右边的指南针：SF Symbol（`safari`），26 pt 见方。
+    private static func findCompass(in view: UIView) -> UIImageView? {
+        if
+            let imageView = view as? UIImageView,
+            imageView.image?.isSymbolImage == true,
+            abs(imageView.bounds.size.width - 26) < 0.6,
+            abs(imageView.bounds.size.height - 26) < 0.6
+        {
+            return imageView
+        }
+        for subview in view.subviews {
+            if let found = findCompass(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
+    /// 按视图判画法，同时核几何：图标横条的图标 36 pt 在右边（离右 10）、大图占满卡宽贴顶、指南针 26 pt 在右边、第一方头像 56 pt 在左边（§5.2）。
     @MainActor
     private static func detectLayout(in cardView: UIView) -> DetectedLayout {
         if let imageView = findView(suffix: "CVLinkPreviewImageView", in: cardView) {
@@ -902,14 +1004,21 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             if abs(frame.size.width - cardView.bounds.size.width) < 1.5, frame.minY < 1 {
                 return DetectedLayout(layout: .large, frame: frame)
             }
-            if abs(frame.size.width - 54) < 0.6, abs(frame.size.height - 54) < 0.6 {
+            if abs(frame.size.width - 36) < 0.6, abs(frame.size.height - 36) < 0.6, abs(cardView.bounds.maxX - frame.maxX - 10) < 1 {
                 return DetectedLayout(layout: .icon, frame: frame)
             }
         }
         if let avatar = findAvatar(in: cardView) {
             return DetectedLayout(layout: .avatar, frame: cardView.convert(avatar.bounds, from: avatar))
         }
-        return DetectedLayout(layout: .none, frame: nil)
+        if let compass = findCompass(in: cardView) {
+            let frame = cardView.convert(compass.bounds, from: compass)
+            if abs(cardView.bounds.maxX - frame.maxX - 10) < 1 {
+                return DetectedLayout(layout: .compass, frame: frame)
+            }
+        }
+        // 什么都没认出来（没有图、没有头像、也没有指南针）：和任何期望都对不上
+        return DetectedLayout(layout: nil, frame: nil)
     }
 
     private static func rgb(_ color: UIColor) -> (CGFloat, CGFloat, CGFloat) {
