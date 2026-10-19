@@ -11266,6 +11266,12 @@
 "TELLOMI_FEED_AI_GENERATED" = "AI-generated";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_ARTICLE_MINUTES_FORMAT" = "%@ min read";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_ARTICLE_SUMMARY_ONLY" = "Only the beginning is shown for now.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_AUDIENCE_COUNT" = "%1$@ of %2$@ selected";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

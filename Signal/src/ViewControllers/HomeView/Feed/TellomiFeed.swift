@@ -182,6 +182,22 @@ enum TellomiFeed {
         }
     }
 
+    private static let articleReaderKey = "TellomiFeed.articleReader"
+
+    /// 长文阅读页：帖子详情页里长文那一行从「信息流里的卡片」换成整篇长文（大标题、作者和读完要几分钟、小标题 / 引用 / 列表 / 粗体 / 斜体排版）。
+    /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
+    /// （Internal Settings 里有开关行）。关着时详情页和之前一样（长文只显示摘要的开头几行）。
+    static var isArticleReaderEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: articleReaderKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: articleReaderKey)
+        }
+    }
+
     /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
     /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
     static var isSampleDataEnabled: Bool {

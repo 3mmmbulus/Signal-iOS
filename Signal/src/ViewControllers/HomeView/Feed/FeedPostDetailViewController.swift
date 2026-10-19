@@ -49,15 +49,18 @@ final class FeedPostDetailViewController: OWSViewController {
     private var rows = [Row]()
     private var post: FeedCard
     private var showIpRegion: Bool
+    private let articleReader: Bool
 
     /// - Parameters:
     ///   - post: 信息流里带过来的那张卡片，先用它画出来，再向 Card API 取最新的。
     ///   - showIpRegion: 信息流里是不是显示 IP 属地；详情拿到自己的配置后以配置为准。
     ///   - feed: 信息流的 `FeedStore`。传了就和列表共用它（卡片只在它里面，详情自己不留副本，赞和评论数改在它里面，列表同步）；
     ///     不传就自己独立运行（单测、还没接上的入口）。
-    init(post: FeedCard, source: FeedSource, showIpRegion: Bool, feed: FeedStore? = nil) {
+    ///   - articleReader: 长文时「帖子」那一行换成整篇长文的阅读排版（`FeedArticleCell`）。默认跟 `TellomiFeed.isArticleReaderEnabled`（默认关）。
+    init(post: FeedCard, source: FeedSource, showIpRegion: Bool, feed: FeedStore? = nil, articleReader: Bool = TellomiFeed.isArticleReaderEnabled) {
         self.post = post
         self.showIpRegion = showIpRegion
+        self.articleReader = articleReader
         fallbackShowIpRegion = showIpRegion
         store = FeedPostDetailStore(initial: post, source: source, feed: feed)
         super.init()
@@ -83,6 +86,7 @@ final class FeedPostDetailViewController: OWSViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(FeedPostCell.self, forCellReuseIdentifier: FeedPostCell.reuseIdentifier)
+        tableView.register(FeedArticleCell.self, forCellReuseIdentifier: FeedArticleCell.reuseIdentifier)
         tableView.register(FeedCommentCell.self, forCellReuseIdentifier: FeedCommentCell.reuseIdentifier)
         tableView.register(FeedDetailStatusCell.self, forCellReuseIdentifier: FeedDetailStatusCell.reuseIdentifier)
         tableView.keyboardDismissMode = .interactive
@@ -137,6 +141,11 @@ final class FeedPostDetailViewController: OWSViewController {
         return tableView.visibleCells.compactMap { $0 as? FeedPostCell }.first
     }
 
+    /// 单测 / 截图用：长文阅读页那一行的格子（没打开阅读页、不是长文、不在屏幕上时是 nil）。
+    var articleCell: FeedArticleCell? {
+        return tableView.visibleCells.compactMap { $0 as? FeedArticleCell }.first
+    }
+
     /// 单测 / 截图用：现在的表格。
     var detailTableView: UITableView {
         return tableView
@@ -175,6 +184,11 @@ final class FeedPostDetailViewController: OWSViewController {
             // 行没变（只是帖子上的赞、评论数变了）：就地更新帖子那一格，不整表重载（不闪、不丢滚动位置）
             for case let cell as FeedPostCell in tableView.visibleCells {
                 cell.configure(card: post, showIpRegion: showIpRegion)
+            }
+            // 长文：完整的正文取回来后这一格的高度会变，让表格重新量一次（不动画、不整表重载）
+            for case let cell as FeedArticleCell in tableView.visibleCells {
+                cell.configure(card: post, showIpRegion: showIpRegion)
+                UIView.performWithoutAnimation { tableView.performBatchUpdates(nil) }
             }
         } else {
             rows = newRows
@@ -461,6 +475,13 @@ extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelega
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch rows[indexPath.row] {
+        case .post where articleReader && post.isArticle:
+            let cell = tableView.dequeueReusableCell(withIdentifier: FeedArticleCell.reuseIdentifier, for: indexPath) as! FeedArticleCell
+            cell.onLike = { [weak self] _ in self?.store.toggleLike() }
+            cell.onAuthorTap = onOpenAuthor
+            cell.onTopicTap = onOpenTopic
+            cell.configure(card: post, showIpRegion: showIpRegion)
+            return cell
         case .post:
             let cell = tableView.dequeueReusableCell(withIdentifier: FeedPostCell.reuseIdentifier, for: indexPath) as! FeedPostCell
             cell.isReadOnly = true

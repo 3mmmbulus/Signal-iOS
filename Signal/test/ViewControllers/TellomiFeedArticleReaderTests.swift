@@ -271,3 +271,37 @@ final class TellomiFeedArticleReaderPresentationTests: XCTestCase {
         XCTAssertEqual(p.minutes, 3)
     }
 }
+
+final class TellomiFeedSampleArticleTests: XCTestCase {
+    func testTheSampleArticleHasEveryKindOfBlockAndStyle() async throws {
+        let source = SampleFeedSource(now: { Date() }, commentsLatencyNanos: 0)
+        let cardOptional = try await source.card(contentId: "mine-seed-5")
+        let card = try XCTUnwrap(cardOptional)
+        XCTAssertTrue(card.isArticle)
+        XCTAssertEqual(card.summary, "My sample post 5", "信息流里的卡片还是摘要")
+        let p = FeedArticleReaderPresentation(card: card)
+        XCTAssertFalse(p.summaryOnly)
+        XCTAssertGreaterThanOrEqual(p.minutes, 1)
+        var kinds = Set<String>()
+        var styles = Set<String>()
+        for block in p.blocks {
+            switch block {
+            case .paragraph(let spans): kinds.insert("p"); styles.formUnion(spans.map { "\($0.bold)\($0.italic)" })
+            case .heading(let level, _): kinds.insert("h\(level)")
+            case .quote: kinds.insert("q")
+            case .bullets: kinds.insert("b")
+            case .numbered: kinds.insert("n")
+            }
+        }
+        XCTAssertEqual(kinds, ["p", "h1", "h2", "q", "b", "n"])
+        XCTAssertTrue(styles.contains("truefalse") && styles.contains("falsetrue"), "有粗体也有斜体")
+    }
+
+    func testOnlyArticlesGetTheLongBody() async throws {
+        let source = SampleFeedSource(now: { Date() }, commentsLatencyNanos: 0)
+        let postOptional = try await source.card(contentId: "mine-seed-1")
+        let post = try XCTUnwrap(postOptional)
+        XCTAssertEqual(post.text, "My sample post 1")
+        XCTAssertNil(post.summary)
+    }
+}

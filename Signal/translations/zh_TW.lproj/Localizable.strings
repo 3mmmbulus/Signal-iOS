@@ -11152,6 +11152,12 @@
 "TELLOMI_FEED_AI_GENERATED" = "AI 生成";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_ARTICLE_MINUTES_FORMAT" = "%@ 分鐘閱讀";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_ARTICLE_SUMMARY_ONLY" = "暫時只顯示開頭。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_AUDIENCE_COUNT" = "已選 %1$@ / %2$@ 人";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */

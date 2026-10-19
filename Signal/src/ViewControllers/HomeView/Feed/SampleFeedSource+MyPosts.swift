@@ -150,11 +150,37 @@ extension SampleFeedSource {
             publishedAt: post.createdAt,
             author: Self.me,
             title: post.title,
-            text: post.text,
+            text: post.kind == FeedCard.kindArticle ? Self.sampleArticleBody : post.text,
+            summary: post.kind == FeedCard.kindArticle ? post.text : nil,
             media: [],
             ipRegionLabel: Self.ipLabels[0],
         )
         card.viewer.isAuthor = true
         return card
     }
+
+    /// 样例里长文的整篇正文（点开详情、打开长文阅读页时看到）：小标题、引用、列表、粗体、斜体都有一点，中文为主。
+    static let sampleArticleBody = """
+    # 为什么我开始写长文
+
+    过去一年我在**短动态**里写了很多想法，但越写越觉得，*真正想说清楚的事*，一百个字是放不下的。
+
+    ## 三个原因
+
+    1. 短动态适合记录，不适合论证。
+    2. 长文可以慢慢铺开，读的人也愿意停下来。
+    3. 写完一篇长文，自己的想法才算真的整理过一遍。
+
+    > 写作不是为了表达已经想清楚的东西，而是为了想清楚。
+
+    ## 我的做法
+
+    - 先写**标题**，再写三句话的提纲。
+    - 每天只写一小段，不追求一次写完。
+    - 发布前读一遍，删掉*最没把握*的那一句。
+
+    English is fine too: a *good* article has a **clear** point, and it respects the reader's time.
+
+    谢谢你读到这里。
+    """
 }
