@@ -54,4 +54,30 @@ final class TellomiFeedDynamicTypeTests: XCTestCase {
         XCTAssertTrue(FeedDynamicTypeLayout.stacksPostMetaVertically(isAccessibilityCategory: true))
         XCTAssertFalse(FeedDynamicTypeLayout.stacksPostMetaVertically(isAccessibilityCategory: false))
     }
+
+    func testTheTopBarFoldsItsEntriesIntoAMenuFromFourButtons() {
+        XCTAssertFalse(FeedDynamicTypeLayout.topBarUsesOverflow(entryCount: 0))
+        XCTAssertFalse(FeedDynamicTypeLayout.topBarUsesOverflow(entryCount: 3), "3 个（铃铛、文档、搜索）Mac 上放得下")
+        XCTAssertTrue(FeedDynamicTypeLayout.topBarUsesOverflow(entryCount: 4))
+        XCTAssertTrue(FeedDynamicTypeLayout.topBarUsesOverflow(entryCount: 5))
+        XCTAssertEqual(FeedDynamicTypeLayout.topBarOverflowThreshold, 4)
+    }
+
+    func testSegmentTitlesStayAtBodySizeWhenTheWidestOneFits() {
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 17, widestTitleWidth: 80, segmentWidth: 100, floorPoints: 13), 17)
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 17, widestTitleWidth: 100, segmentWidth: 100, floorPoints: 13), 17, "刚好放得下")
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 17, widestTitleWidth: 0, segmentWidth: 100, floorPoints: 13), 17, "没有标题")
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 17, widestTitleWidth: 200, segmentWidth: 0, floorPoints: 13), 17, "还没布局（宽度 0）")
+    }
+
+    func testSegmentTitlesShrinkProportionallyRoundedDownButNotBelowTheFloor() {
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 33, widestTitleWidth: 140, segmentWidth: 100, floorPoints: 13), 23, "33 × 100/140 = 23.57，向下取整")
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 33, widestTitleWidth: 600, segmentWidth: 100, floorPoints: 13), 13, "最小不低于 13")
+        XCTAssertEqual(FeedDynamicTypeLayout.segmentedTitlePointSize(bodyPoints: 11, widestTitleWidth: 600, segmentWidth: 100, floorPoints: 13), 11, "正文本来就比下限小：不放大")
+    }
+
+    func testTheAppealButtonSitsFurtherFromTheNotesThanTheOtherRows() {
+        XCTAssertEqual(FeedDynamicTypeLayout.appealSpacing(isAccessibilityCategory: false), 10)
+        XCTAssertEqual(FeedDynamicTypeLayout.appealSpacing(isAccessibilityCategory: true), 16)
+    }
 }
