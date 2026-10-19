@@ -50,6 +50,22 @@ final class TellomiFeedDetailExtraRowsTests: XCTestCase {
         XCTAssertEqual(FeedPostDetailPresentation.extraRows(for: shared, saveAvailable: false), [])
     }
 
+    func testSaveIsOffWhenItCannotWorkEvenWithARepostButton() {
+        var card = post(shareable: true)
+        card.viewer.saved = true
+        let actions = FeedPostDetailPresentation.actions(for: card, saveAvailable: false)
+        XCTAssertEqual(actions, FeedDetailActions(repost: true, reposted: false, save: false, saved: true))
+    }
+
+    func testRepostedAndSavedAreNotMixedUp() {
+        var card = post(shareable: true)
+        card.viewer.reposted = true
+        XCTAssertEqual(FeedPostDetailPresentation.actions(for: card, saveAvailable: true), FeedDetailActions(repost: true, reposted: true, save: true, saved: false))
+        card.viewer.reposted = false
+        card.viewer.saved = true
+        XCTAssertEqual(FeedPostDetailPresentation.actions(for: card, saveAvailable: true), FeedDetailActions(repost: true, reposted: false, save: true, saved: true))
+    }
+
     func testTheButtonsShowTheViewersState() {
         var card = post(shareable: true)
         card.viewer.reposted = true
@@ -147,6 +163,15 @@ final class TellomiFeedMediaURLTests: XCTestCase {
         XCTAssertNotNil(FeedMediaURL.remote(key: "a/..b/c", baseUrl: base), "两个点只在整段是 .. 时才算")
     }
 
+    func testOnlyFileUrlsPlayStraightFromTheKey() {
+        for key in ["http://evil.example/a.m4a", "https://evil.example/a.m4a", "ftp://x/a"] {
+            var media = FeedMedia(key: key)
+            media.type = FeedMedia.typeAudio
+            XCTAssertNil(FeedMediaURL.playback(for: media, baseUrl: "https://m.example/"), key)
+            XCTAssertNil(FeedMediaURL.playback(for: media, baseUrl: nil), key)
+        }
+    }
+
     func testALocalFileKeyPlaysFromTheFile() {
         var local = FeedMedia(key: "file:///tmp/a.m4a")
         local.type = FeedMedia.typeAudio
@@ -163,6 +188,11 @@ final class TellomiFeedVoicePlaybackStateTests: XCTestCase {
         media.type = FeedMedia.typeAudio
         media.durationMs = ms
         return media
+    }
+
+    func testANegativeDurationShowsZero() {
+        XCTAssertEqual(FeedVoiceDuration.format(-1000), "0:00")
+        XCTAssertEqual(FeedVoiceDuration.format(-61_000), "0:00")
     }
 
     func testDurationFormat() {
@@ -338,6 +368,22 @@ final class TellomiFeedVoicePlayerTests: XCTestCase {
         let staleClip = loader.clips[1]
         XCTAssertEqual(staleClip.plays, 0)
         XCTAssertEqual(staleClip.stops, 1)
+    }
+
+    func testAnOlderLoadThatFailsLateDoesNotMarkItselfFailedOrDisturbTheNewerOne() async {
+        let loader = FakeLoader()
+        let player = make(loader)
+        player.toggle(media("a"))
+        await spin()
+        player.toggle(media("b"))
+        await spin()
+        loader.failLoading(url("a"))
+        await spin()
+        XCTAssertEqual(player.playback, FeedVoicePlayback(key: "b", loading: true))
+        loader.finishLoading(url("b"))
+        await player.waitForLoad()
+        XCTAssertEqual(player.playback, FeedVoicePlayback(key: "b", playing: true))
+        XCTAssertNil(player.playback.failedKey)
     }
 
     func testPositionUpdatesAreForwardedAndFinishingGoesBackToIdle() async {
@@ -541,6 +587,10 @@ final class TellomiFeedDetailEditStateTests: XCTestCase {
         XCTAssertTrue(on.state.canEditPost)
         let off = FeedPostDetailStore(initial: card, source: PagedSource(), now: { [now] in now })
         XCTAssertFalse(off.state.canEditPost)
+        // 注入的时钟真的用上了：发布在 20 分钟前，按注入的时钟就过了窗口（用系统时钟这条在「未来」，会被当成还在窗口里）
+        let old = FeedCard(id: "p", publishedAt: FeedDates.format(now.addingTimeInterval(-20 * 60)), text: "x", viewer: FeedViewer(isAuthor: true))
+        let late = FeedPostDetailStore(initial: old, source: PagedSource(), editEnabled: true, now: { [now] in now })
+        XCTAssertFalse(late.state.canEditPost)
     }
 }
 
@@ -615,6 +665,21 @@ final class TellomiFeedDetailLocateCommentTests: XCTestCase {
         XCTAssertEqual(source.cursors.count, 1 + FeedPostDetailStore.maxLocatePages)
         XCTAssertEqual(store.state.notice, .commentNotFound)
         XCTAssertNil(store.state.focusCommentId)
+    }
+
+    func testASecondSearchGetsItsOwnPageBudget() async {
+        let source = PagedSource()
+        var pages = ["": page(["c0"], next: "n1")]
+        for i in 1...40 { pages["n\(i)"] = page(["c\(i)"], next: "n\(i + 1)") }
+        source.pages = pages
+        let store = FeedPostDetailStore(initial: post, source: source)
+        store.start()
+        store.locateComment("never")
+        await store.waitForTasks()
+        XCTAssertEqual(source.cursors.count, 1 + FeedPostDetailStore.maxLocatePages)
+        store.locateComment("c15")
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.scrollTarget, "c15", "第二次找有自己的 10 页额度，不是用完了就直接放弃")
     }
 
     func testAFailedPageStopsTheSearchWithoutANotice() async {
@@ -769,6 +834,19 @@ final class TellomiFeedDetailExtrasSampleTests: XCTestCase {
             _ = try await sample.vote(contentId: "mine-seed-1", options: [0])
             XCTFail("no poll there")
         } catch is FeedAPIError {}
+    }
+
+    func testAnEmptyOrOutOfRangeVoteIsNotAVoteAndDoesNotUseUpTheOnePerPersonVote() async throws {
+        let sample = source()
+        for options in [[Int](), [9, -1]] {
+            do {
+                _ = try await sample.vote(contentId: "mine-seed-3", options: options)
+                XCTFail("\(options) is no vote")
+            } catch is FeedAPIError {}
+        }
+        XCTAssertNil(sample.detailExtras.myVote("mine-seed-3"))
+        let ok = try await sample.vote(contentId: "mine-seed-3", options: [1])
+        XCTAssertEqual(ok.voted, [1])
     }
 
     func testTheSampleCommentsHaveAHeldReplyAndAVoiceComment() async throws {
