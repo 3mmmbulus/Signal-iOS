@@ -332,9 +332,13 @@ final class FeedComposeStore {
     }
 
     func onFailureShown() {
-        state.failed = false
-        state.editWindowClosed = false
-        state.quoteUnavailable = false
+        // 一次改完再通知：逐个字段改的话，第一次 `state.failed = false` 的 didSet 就会让页面再进 consumeNotices，
+        // 那时 `editWindowClosed` 还是 true，又调回这里 —— 无限递归，栈溢出崩溃（编辑过了窗口时必现）。
+        var next = state
+        next.failed = false
+        next.editWindowClosed = false
+        next.quoteUnavailable = false
+        state = next
     }
 
     func onRestoredArticleShown() { state.restoredArticle = false }
