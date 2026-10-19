@@ -109,9 +109,9 @@ public final class TellomiLinkFetchBudget: @unchecked Sendable {
 /// - 完全不存、不发 cookie；
 /// - 重定向自己跟：最多 5 跳，每跳重做 https / 形状 / 私网校验和可达性记录检查；
 /// - 连接 5 s、单个请求 10 s、每条链接 10 s 且最多 3 + 1 个请求；
-/// - 按步骤的 `Content-Type` 白名单；按解压后字节数计的体积上限，边读边计、超了就断；
+/// - 按步骤的 `Content-Type` 白名单；按解压后字节数计的体积上限，边读边计：JSON / 图片超了就断，HTML 超了只留开头 2 MiB 照常解析（§4.4）；
 /// - 短链只读 `Location`，不读正文、不跟随；
-/// - 网络层失败写本机可达性记录，同一 host 之后不再发请求。
+/// - 网络层**明确**失败（DNS、连接被拒 / 被重置、TLS）写本机可达性记录，同一 host 之后不再发请求；超时不写。
 public final class TellomiLinkFetcher: @unchecked Sendable {
 
     public struct Configuration: Sendable {
@@ -154,6 +154,8 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
         /// 解压后的正文。
         public let body: Data
         public let redirectCount: Int
+        /// HTML 超过上限、只读了开头 `maxHtmlBytes` 字节（§4.4：OG 标签都在 `<head>` 里，靠前）。
+        public let isTruncated: Bool
         let stringEncoding: String.Encoding
 
         public var bodyString: String? {
@@ -213,13 +215,14 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
         var redirectCount = 0
         while true {
             switch try await performHop(session: session, url: currentUrl, step: step, deadline: deadline) {
-            case .body(let mimeType, let kind, let body, let encoding):
+            case .body(let mimeType, let kind, let body, let isTruncated, let encoding):
                 return Response(
                     finalUrl: currentUrl,
                     mimeType: mimeType,
                     kind: kind,
                     body: body,
                     redirectCount: redirectCount,
+                    isTruncated: isTruncated,
                     stringEncoding: encoding,
                 )
             case .redirect(let location):
@@ -314,10 +317,32 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
         return URL(string: location, relativeTo: base)?.absoluteURL
     }
 
+    /// 哪些错误算「这个 host 在当前网络明确不可达」、要写可达性记录（ADR-0063 §4.4，产品经理 2026-10-19 定）：
+    /// DNS 解析失败、连接被拒绝 / 被重置、TLS 握手失败（含证书不对，大陆网络对被封站点常见的 RST / 证书劫持）。
+    /// **超时（连接超时、请求超时）一律不算**；没网（`notConnectedToInternet`）这类是设备的事，也不记在某个 host 头上。
+    static func isDefiniteNetworkFailure(_ code: URLError.Code) -> Bool {
+        switch code {
+        case .cannotFindHost,
+             .dnsLookupFailed,
+             .cannotConnectToHost,
+             .networkConnectionLost,
+             .secureConnectionFailed,
+             .serverCertificateHasBadDate,
+             .serverCertificateUntrusted,
+             .serverCertificateHasUnknownRoot,
+             .serverCertificateNotYetValid,
+             .clientCertificateRejected,
+             .clientCertificateRequired:
+            return true
+        default:
+            return false
+        }
+    }
+
     // MARK: - 一跳
 
     private enum HopResult {
-        case body(mimeType: String, kind: TellomiLinkFetchBodyKind, body: Data, encoding: String.Encoding)
+        case body(mimeType: String, kind: TellomiLinkFetchBodyKind, body: Data, isTruncated: Bool, encoding: String.Encoding)
         case redirect(location: String?)
     }
 
@@ -400,7 +425,8 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
             var body = Data()
             var failure: TellomiLinkFetchError?
             var isRedirect = false
-            var didConnect = false
+            /// HTML 读满上限后主动断开：断开后的 cancel / 计时器都不算失败
+            var isTruncated = false
             var isFinished = false
 
             init(step: TellomiLinkFetchStep, configuration: Configuration) {
@@ -446,7 +472,7 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
 
         private func fail(task: URLSessionTask, with error: TellomiLinkFetchError) {
             lock.lock()
-            if let state = states[task.taskIdentifier], !state.isFinished, state.failure == nil {
+            if let state = states[task.taskIdentifier], !state.isFinished, !state.isTruncated, state.failure == nil {
                 state.failure = error
             }
             lock.unlock()
@@ -503,6 +529,10 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
                 return .cancel
             }
             state.kind = kind
+            // HTML 不因为大而放弃：只读开头（见 `didReceive`），所以不按 Content-Length 提前断
+            if kind == .html {
+                return .allow
+            }
             // 没压缩时 Content-Length 就是解压后的长度，超了直接断；压缩的只能边读边计
             let contentEncoding = httpResponse.value(forHTTPHeaderField: "Content-Encoding")?.lowercased().trimmingCharacters(in: .whitespaces)
             let isIdentity = contentEncoding == nil || contentEncoding == "" || contentEncoding == "identity"
@@ -516,28 +546,27 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
             guard let state = state(for: dataTask) else { return }
             lock.lock()
-            guard state.failure == nil, let kind = state.kind else {
+            guard state.failure == nil, !state.isTruncated, let kind = state.kind else {
                 lock.unlock()
                 return
             }
             // URLSession 交上来的是已经解压的字节：按解压后的数计
-            if state.body.count + data.count > state.configuration.maxBytes(for: kind) {
+            let maxBytes = state.configuration.maxBytes(for: kind)
+            if state.body.count + data.count > maxBytes, kind == .html {
+                // HTML：留下开头正好 maxBytes 字节，断开连接，按成功交回（产品经理 2026-10-19 定，ADR-0063 §4.4）
+                state.body.append(data.prefix(maxBytes - state.body.count))
+                state.isTruncated = true
+                lock.unlock()
+                dataTask.cancel()
+                return
+            }
+            if state.body.count + data.count > maxBytes {
                 state.failure = .tooLarge
                 lock.unlock()
                 dataTask.cancel()
                 return
             }
             state.body.append(data)
-            lock.unlock()
-        }
-
-        func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-            guard let state = state(for: task) else { return }
-            let didConnect = metrics.transactionMetrics.contains {
-                $0.connectEndDate != nil || $0.isReusedConnection || $0.responseStartDate != nil
-            }
-            lock.lock()
-            state.didConnect = state.didConnect || didConnect
             lock.unlock()
         }
 
@@ -558,15 +587,15 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
         private static func outcome(state: TaskState, error: Error?) -> Result<HopResult, HopFailure> {
             let gotResponse = state.response != nil
             if let failure = state.failure {
-                // 自己的计时器到点：还没连上就算连接超时（网络层）
-                let isNetworkLevel = failure == .timeout && !gotResponse && !state.didConnect
-                return .failure(HopFailure(error: failure, isNetworkLevel: isNetworkLevel))
+                // 自己的计时器到点（超时）不写可达性记录：超时不算「明确不可达」（ADR-0063 §4.4）
+                return .failure(HopFailure(error: failure, isNetworkLevel: false))
             }
             if state.isRedirect, let response = state.response {
                 return .success(.redirect(location: response.value(forHTTPHeaderField: "Location")))
             }
-            if let error {
-                return .failure(classify(error, gotResponse: gotResponse, didConnect: state.didConnect))
+            // HTML 读满上限后是我们自己断的：带着开头这一段按成功交回
+            if let error, !state.isTruncated {
+                return .failure(classify(error, gotResponse: gotResponse))
             }
             guard let response = state.response, let kind = state.kind else {
                 return .failure(HopFailure(error: .other, isNetworkLevel: false))
@@ -580,35 +609,24 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
                 mimeType: response.mimeType?.lowercased() ?? "",
                 kind: kind,
                 body: state.body,
+                isTruncated: state.isTruncated,
                 encoding: encoding,
             ))
         }
 
-        private static func classify(_ error: Error, gotResponse: Bool, didConnect: Bool) -> HopFailure {
+        private static func classify(_ error: Error, gotResponse: Bool) -> HopFailure {
             guard let urlError = error as? URLError else {
                 return HopFailure(error: .other, isNetworkLevel: false)
             }
             switch urlError.code {
             case .timedOut:
-                return HopFailure(error: .timeout, isNetworkLevel: !gotResponse && !didConnect)
+                return HopFailure(error: .timeout, isNetworkLevel: false)
             case .cancelled:
                 return HopFailure(error: .cancelled, isNetworkLevel: false)
-            case .cannotFindHost,
-                 .dnsLookupFailed,
-                 .cannotConnectToHost,
-                 .networkConnectionLost,
-                 .secureConnectionFailed,
-                 .serverCertificateHasBadDate,
-                 .serverCertificateUntrusted,
-                 .serverCertificateHasUnknownRoot,
-                 .serverCertificateNotYetValid,
-                 .clientCertificateRejected,
-                 .clientCertificateRequired:
-                // DNS 失败、TCP 连接失败 / 被重置、TLS 握手失败。已经收到响应再断的不算「这个 host 不可达」
-                return HopFailure(error: .network, isNetworkLevel: !gotResponse)
             default:
-                // 没网（notConnectedToInternet）这类是设备的事，不记在某个 host 头上
-                return HopFailure(error: .network, isNetworkLevel: false)
+                // 已经收到响应再断的不算「这个 host 不可达」
+                let isDefinite = TellomiLinkFetcher.isDefiniteNetworkFailure(urlError.code)
+                return HopFailure(error: .network, isNetworkLevel: isDefinite && !gotResponse)
             }
         }
     }
