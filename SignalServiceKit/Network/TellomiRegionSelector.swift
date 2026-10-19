@@ -208,3 +208,167 @@ public final class TellomiRegionSelector: Sendable {
         }
     }
 }
+
+// MARK: - 远程配置驱动的切区（REGION_PROFILE 第六节之二）
+// 放在这个文件里而不是新建：新文件要手工登记进 project.pbxproj（BUILD_IOS.md）。
+
+/// Tellomi：远程配置驱动的切区（超级仓库 `docs/signal/REGION_PROFILE.md` 第六节之二）。
+///
+/// 规则和 Android `TellomiRegionAutoSwitch`、Desktop `ts/util/tellomiRegionTarget.std.ts` 逐条一致：
+/// - `global.tellomi.region.target` 只认 `global` / `cn`；没下发、空、不认识 = 目标 global 且「没明说」。
+/// - 当前区 ≠ 目标：先探目标，探通了才切（`switch`），探不通留在原地（`target-unreachable`）。
+/// - 当前区 = 目标且没明说：功能关着（`off`），什么都不探，连 `tellomi.cn` 的名字都不解析。
+/// - 当前区 = 目标且明说了：探当前区。通 = `stay`（失败计数清零）；不通计一次，不到阈值 `current-failing`，
+///   到阈值去探另一个开着的区，通了切过去（`failover`），不通 `no-alternative`。
+/// - 失败切走之后，下一轮当前区 ≠ 目标，目标一探通就切回来。撤回 = 改远程配置的值。
+public struct TellomiRegionAutoSwitch {
+    public static let key = "global.tellomi.region.target"
+    public static let defaultFailureThreshold = 3
+
+    public enum Reason: String, Sendable {
+        case off
+        case stay
+        case `switch`
+        case targetUnreachable = "target-unreachable"
+        case currentFailing = "current-failing"
+        case failover
+        case noAlternative = "no-alternative"
+    }
+
+    public struct Target: Equatable, Sendable {
+        public let id: TellomiRegionId
+        public let explicit: Bool
+    }
+
+    public static func parseTarget(_ value: String?) -> Target {
+        switch value {
+        case "global": return Target(id: .global, explicit: true)
+        case "cn": return Target(id: .cn, explicit: true)
+        default: return Target(id: .global, explicit: false)
+        }
+    }
+
+    let profiles: () -> [TellomiRegionProfile]
+    let currentId: () -> TellomiRegionId
+    let targetValue: () -> String?
+    let loadFailures: () -> Int
+    let storeFailures: (Int) -> Void
+    let probe: (TellomiRegionProfile) async -> Bool
+    let switchTo: (TellomiRegionId) throws -> Void
+    let failureThreshold: Int
+
+    public init(
+        profiles: @escaping () -> [TellomiRegionProfile],
+        currentId: @escaping () -> TellomiRegionId,
+        targetValue: @escaping () -> String?,
+        loadFailures: @escaping () -> Int,
+        storeFailures: @escaping (Int) -> Void,
+        probe: @escaping (TellomiRegionProfile) async -> Bool,
+        switchTo: @escaping (TellomiRegionId) throws -> Void,
+        failureThreshold: Int = TellomiRegionAutoSwitch.defaultFailureThreshold,
+    ) {
+        self.profiles = profiles
+        self.currentId = currentId
+        self.targetValue = targetValue
+        self.loadFailures = loadFailures
+        self.storeFailures = storeFailures
+        self.probe = probe
+        self.switchTo = switchTo
+        self.failureThreshold = failureThreshold
+    }
+
+    public func evaluate() async -> Reason {
+        let enabled = profiles().filter(\.enabled)
+        func profile(_ id: TellomiRegionId) -> TellomiRegionProfile? { enabled.first { $0.id == id } }
+
+        let current = profile(currentId())?.id ?? .global
+        var target = Self.parseTarget(targetValue())
+        if profile(target.id) == nil {
+            target = Target(id: .global, explicit: false)
+        }
+
+        if current != target.id {
+            guard let targetProfile = profile(target.id), await probe(targetProfile) else {
+                return .targetUnreachable
+            }
+            return doSwitch(to: target.id) ? .switch : .targetUnreachable
+        }
+
+        guard target.explicit else {
+            if loadFailures() != 0 {
+                storeFailures(0)
+            }
+            return .off
+        }
+
+        guard let currentProfile = profile(current) else {
+            return .off
+        }
+        if await probe(currentProfile) {
+            if loadFailures() != 0 {
+                storeFailures(0)
+            }
+            return .stay
+        }
+
+        let failures = loadFailures() + 1
+        storeFailures(failures)
+        guard failures >= failureThreshold else {
+            return .currentFailing
+        }
+
+        guard let other = enabled.first(where: { $0.id != current }), await probe(other) else {
+            return .noAlternative
+        }
+        return doSwitch(to: other.id) ? .failover : .noAlternative
+    }
+
+    private func doSwitch(to id: TellomiRegionId) -> Bool {
+        do {
+            try switchTo(id)
+            storeFailures(0)
+            return true
+        } catch {
+            Logger.warn("[Tellomi region] auto switch to \(id.rawValue) failed: \(error)")
+            return false
+        }
+    }
+}
+
+/// 接本进程装上的 provider、远程配置和 app group 里的失败计数。只在主 App 里跑：NSE / 分享扩展跟着 app group 里记住的区走。
+public enum TellomiRegionAutoSwitchRunner {
+    private static let running = AtomicBool(false, lock: .init())
+
+    /// 远程配置刷新之后、回到前台时调。同一时刻只跑一轮；功能关着时不碰网络。
+    public static func evaluateAsync(_ why: String) {
+        guard CurrentAppContext().isMainApp, let provider = TellomiNetProvider.installed else {
+            return
+        }
+        guard running.tryToSetFlag() else {
+            return
+        }
+        Task.detached(priority: .utility) {
+            defer { running.set(false) }
+            let store = TellomiRegionStore.appGroup
+            let auto = TellomiRegionAutoSwitch(
+                profiles: { provider.profiles },
+                currentId: { provider.activeRegion.id },
+                targetValue: { RemoteConfig.current.tellomiRegionTarget },
+                loadFailures: { store.targetFailures() },
+                storeFailures: { store.setTargetFailures($0) },
+                probe: { region in
+                    let result = await TellomiRegionSelector.chatEndpointProbe(region, TellomiRegionSelector.Thresholds.defaults.probeTimeout)
+                    if case .ok = result {
+                        return true
+                    }
+                    return false
+                },
+                switchTo: { id in _ = try provider.switchTo(id) },
+            )
+            let reason = await auto.evaluate()
+            if reason != .off {
+                Logger.info("[Tellomi region] auto switch (\(why)): \(reason.rawValue), now on \(provider.activeRegion.id.rawValue)")
+            }
+        }
+    }
+}

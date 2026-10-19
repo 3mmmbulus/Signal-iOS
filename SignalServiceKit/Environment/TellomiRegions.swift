@@ -72,10 +72,10 @@ public struct TellomiRegionProfile: Equatable, Sendable {
 
 /// 编进包里的区域表，和当前区。
 ///
-/// global 档就是今天的常量（逐字节一致），CN 档按契约第四节生成、`enabled = false`。
+/// global 档就是今天的常量（逐字节一致），CN 档按契约第四节生成（`enabled = true`，由远程配置决定切不切）。
 /// 各调用点在**用的时候**取 `current()`（`TSConstantsStaging` 的端点、内容代理 / uptime / 调试日志），
 /// 不在启动时存下来，这样以后切区（#1056 第三刀：重建 `Net`）之后新建的连接就用新区，不会「半切换」。
-/// 现在 CN 关着，所以当前区恒为 global，行为不变。
+/// 没有远程配置下发 `global.tellomi.region.target` 时谁也不切，当前区恒为 global，行为不变。
 public enum TellomiRegions {
     static let globalDomain = ".tellomi.app"
     static let cnDomain = ".tellomi.cn"
@@ -101,8 +101,9 @@ public enum TellomiRegions {
         feed: "https://feed.tellomi.app",
     )
 
-    /// CN 档：`enabled = false`，直到备案完成（契约第五节第 2 条）。
-    public static let cn = cnOf(global)
+    /// CN 档：`enabled = true` 表示「可以用」。默认仍在 global；切不切由远程配置 `global.tellomi.region.target`
+    /// 决定（`TellomiRegionAutoSwitch`，超级仓库 REGION_PROFILE 第六节之二），没下发就谁也不切。
+    public static let cn = cnOf(global, enabled: true)
 
     /// 包内区域表。首次访问时核一遍：坏了是构建缺陷，拒绝启动（契约第五节第 8 条，和 Desktop 启动时抛同一语义）。
     public static let all: [TellomiRegionProfile] = {
@@ -195,6 +196,27 @@ public enum TellomiRegions {
         return String(rest)
     }
 
+    /// 主机名所在的 Tellomi 根域（`tellomi.app` / `tellomi.cn`），不在两者之下给 nil。
+    static func tellomiRoot(of host: String) -> String? {
+        var host = host.lowercased()
+        while host.hasSuffix(".") {
+            host.removeLast()
+        }
+        for root in [String(globalDomain.dropFirst()), String(cnDomain.dropFirst())] where host == root || host.hasSuffix("." + root) {
+            return root
+        }
+        return nil
+    }
+
+    /// 服务端下发的主机（例如 `global.gif.proxyUrl`）是不是在这个区的根域下。下发值按账号、不按区，
+    /// 切到 CN 之后还指着 `tellomi.app` 的就不用（REGION_PROFILE 第六节之二）。测试区（根域不是 Tellomi 的）不过滤。
+    static func isHost(_ host: String, inRegion region: TellomiRegionProfile) -> Bool {
+        guard let regionRoot = tellomiRoot(of: hostOf(region.chat)) else {
+            return true
+        }
+        return tellomiRoot(of: host) == regionRoot
+    }
+
     /// 是不是测试构建换进来的测试区（`testRegionProfiles`）：借用 `cn` 的 id，主机却不在 `tellomi.cn` 下。
     /// 包里的区（包括将来开着的真 CN）一律 false。
     static func isTestRegion(_ region: TellomiRegionProfile) -> Bool {
@@ -230,9 +252,6 @@ public enum TellomiRegions {
         }
 
         if let cn = profiles.first(where: { $0.id == .cn }) {
-            if cn.enabled {
-                problems.append("the cn region must stay disabled until the ICP filing is done")
-            }
             for endpoint in cn.endpoints where !hostOf(endpoint).hasSuffix(cnDomain) {
                 problems.append("cn endpoint outside tellomi.cn: \(endpoint)")
             }
@@ -329,6 +348,8 @@ public enum TellomiRegions {
 public struct TellomiRegionStore {
     static let regionIdKey = "TellomiRegion.currentId"
     static let lastSwitchAtKey = "TellomiRegion.lastSwitchAt"
+    /// 远程配置驱动切区：当前区连续探测失败的次数（`TellomiRegionAutoSwitch`）。
+    static let targetFailuresKey = "TellomiRegion.targetFailures"
 
     private let userDefaults: () -> UserDefaults?
 
@@ -354,6 +375,14 @@ public struct TellomiRegionStore {
         }
         userDefaults.set(id.rawValue, forKey: Self.regionIdKey)
         userDefaults.set(date, forKey: Self.lastSwitchAtKey)
+    }
+
+    public func targetFailures() -> Int {
+        userDefaults()?.integer(forKey: Self.targetFailuresKey) ?? 0
+    }
+
+    public func setTargetFailures(_ count: Int) {
+        userDefaults()?.set(count, forKey: Self.targetFailuresKey)
     }
 
     /// 只记切区时间、记住的区不动（切到测试区时用，见 `TellomiNetProvider.switchTo`）。

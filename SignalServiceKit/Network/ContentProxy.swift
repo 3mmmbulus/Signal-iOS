@@ -63,7 +63,10 @@ public enum ContentProxy {
     /// **只认 https**：和代理之间必须先做 TLS，下发一个 `http://` 进来等于让服务端一行配置就把所有客户端
     /// 降回明文 CONNECT——那在大陆直接不通，所以宁可回落。和 Android 的 `ContentProxySelector.parseProxyUrl`
     /// （tellomi/Signal-Android#12）同口径。
-    static func endpoint(remoteProxyUrl: String?) -> Endpoint {
+    ///
+    /// Tellomi（REGION_PROFILE 第六节之二）：下发值按账号、不按区。主机不在当前区的 Tellomi 根域下（例如切到 CN 之后
+    /// 还是 `contentproxy.tellomi.app`）就不用，回落当前区自己的代理。和 Android `ContentProxySelector` 同口径。
+    static func endpoint(remoteProxyUrl: String?, region: TellomiRegionProfile = TellomiRegions.active()) -> Endpoint {
         guard
             let remoteProxyUrl,
             let components = URLComponents(string: remoteProxyUrl.trimmingCharacters(in: .whitespacesAndNewlines)),
@@ -75,6 +78,10 @@ public enum ContentProxy {
                 Logger.warn("Ignoring global.gif.proxyUrl, not an https:// URL with a host. Falling back to the build-time proxy.")
             }
             return defaultEndpoint
+        }
+        guard TellomiRegions.isHost(host, inRegion: region) else {
+            Logger.warn("Ignoring global.gif.proxyUrl, its host is not in the current region. Falling back to the region's proxy.")
+            return Endpoint(host: region.contentProxyHost, port: region.contentProxyPort)
         }
         return Endpoint(host: host, port: components.port ?? 443)
     }

@@ -257,7 +257,15 @@ struct TellomiContentProxyEndpointTests {
     /// 备案之后换域名就是改这一行下发值，不用发版。
     @Test
     func aCnHostWithoutAnExplicitPortGets443() {
-        #expect(ContentProxy.endpoint(remoteProxyUrl: "https://contentproxy.tellomi.cn") == .init(host: "contentproxy.tellomi.cn", port: 443))
+        #expect(ContentProxy.endpoint(remoteProxyUrl: "https://contentproxy.tellomi.cn", region: TellomiRegions.cn) == .init(host: "contentproxy.tellomi.cn", port: 443))
+    }
+
+    /// REGION_PROFILE 第六节之二：下发值按账号、不按区。不在当前区根域下的不用，回落当前区自己的代理。
+    @Test
+    func aHostOutsideTheCurrentRegionFallsBackToTheRegionsProxy() {
+        #expect(ContentProxy.endpoint(remoteProxyUrl: "https://contentproxy.tellomi.app:443", region: TellomiRegions.cn) == .init(host: "contentproxy.tellomi.cn", port: 443))
+        #expect(ContentProxy.endpoint(remoteProxyUrl: "https://contentproxy.tellomi.cn", region: TellomiRegions.global) == .init(host: "contentproxy.tellomi.app", port: 443))
+        #expect(ContentProxy.endpoint(remoteProxyUrl: "https://proxy.example.com", region: TellomiRegions.global) == .init(host: "contentproxy.tellomi.app", port: 443))
     }
 
     @Test
@@ -270,7 +278,7 @@ struct TellomiContentProxyEndpointTests {
     /// （第一版就是这么写的，去掉 https 检查它照样绿）。
     @Test
     func plaintextHttpIsRefused() {
-        #expect(ContentProxy.endpoint(remoteProxyUrl: "http://contentproxy.tellomi.cn:8080") == ContentProxy.defaultEndpoint)
+        #expect(ContentProxy.endpoint(remoteProxyUrl: "http://contentproxy.tellomi.cn:8080", region: TellomiRegions.cn) == ContentProxy.defaultEndpoint)
     }
 
     @Test(arguments: [nil, "", "   ", "contentproxy.tellomi.app:443", "https://"] as [String?])
