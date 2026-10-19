@@ -83,6 +83,10 @@ final class FeedPostCell: UITableViewCell {
         storage.addLayoutManager(layout)
         let point = gesture.location(in: topicsLabel)
         let character = layout.characterIndex(for: point, in: container, fractionOfDistanceBetweenInsertionPoints: nil)
+        // characterIndex 对「文字右边的空白」也会给出最近的字符：点在那一行文字的范围之外（留 8pt 宽松）就不算点中话题
+        let glyph = layout.glyphIndexForCharacter(at: character)
+        let usedRect = layout.lineFragmentUsedRect(forGlyphAt: glyph, effectiveRange: nil)
+        guard usedRect.insetBy(dx: -8, dy: -4).contains(point) else { return }
         if let index = FeedTopicChips.index(atCharacter: character, in: card.topics) {
             onTopicTap(card.topics[index])
         }
