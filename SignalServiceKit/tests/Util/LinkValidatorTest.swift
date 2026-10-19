@@ -119,9 +119,22 @@ class LinkValidatorTest: XCTestCase {
             ("看这个https://b23.tv/abc。", "https://b23.tv/abc"),
             ("（https://b23.tv/abc）", "https://b23.tv/abc"),
             ("「https://b23.tv/abc」", "https://b23.tv/abc"),
-            // Tellomi: a cut right after a URL delimiter would point at another page, so no preview (as upstream)
-            ("https://zh.wikipedia.org/wiki/中国", nil),
-            ("https://v.douyin.com/iABC/复制此链接", nil),
+            // Tellomi (PM 2026-10-19, ADR-0063 §5.6): Chinese in the path / query / fragment is part of the link (as Telegram);
+            // it is percent-encoded as UTF-8 and gets a preview. A cut right after a URL delimiter is still never made.
+            ("https://zh.wikipedia.org/wiki/中国", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            ("看 https://zh.wikipedia.org/wiki/中国 吧", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            ("https://www.baidu.com/s?wd=天气", "https://www.baidu.com/s?wd=%E5%A4%A9%E6%B0%94"),
+            ("https://v.douyin.com/iABC/复制此链接", "https://v.douyin.com/iABC/%E5%A4%8D%E5%88%B6%E6%AD%A4%E9%93%BE%E6%8E%A5"),
+            ("https://signal.org/a/中文#第二节", "https://signal.org/a/%E4%B8%AD%E6%96%87#%E7%AC%AC%E4%BA%8C%E8%8A%82"),
+            // already-encoded parts stay as they are; mixed raw + encoded is fine
+            ("https://signal.org/%E4%B8%AD/国", "https://signal.org/%E4%B8%AD/%E5%9B%BD"),
+            // it ends at Chinese sentence punctuation and at full-width / no-break spaces
+            ("https://zh.wikipedia.org/wiki/中国，很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            ("https://zh.wikipedia.org/wiki/中国。", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            ("https://zh.wikipedia.org/wiki/中国\u{3000}很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            // hidden characters would be invisible once encoded: no preview
+            ("https://signal.org/a/中\u{200B}文", nil),
+            ("https://signal.org/a/中\u{2066}文", nil),
             // Tellomi: the cut link must still pass every upstream rule
             ("https://example.org/a很好", nil),
             // Tellomi: never cut inside the host (a mixed-script host is a spoofing risk), only in path / query / fragment
