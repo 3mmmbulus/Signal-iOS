@@ -257,11 +257,18 @@ public final class TellomiLinkClassifier: @unchecked Sendable {
     /// 交给 rust/links 判定用的正文：预览是 https、正文里这条链接写成 `http://…` 或没写协议、注册表又认领它时，
     /// 把正文里那一处换成 https 写法，rust/links 的「链接在正文里」（`url_appears_in_body`）才找得到；别的情况原样返回。
     /// 只换判定用的这一份，显示的正文不动。
+    /// 例外（用户 2026-10-19）：预览是裸域名（`https://baidu.com`）时，正文里没写协议的那一处（`baidu.com`）不归注册表也换——
+    /// 写明 `http://` 的那一处仍只在注册表认领时才换（``TellomiBareDomain``）。
     func bodyForRegistry(_ body: String, previewUrl: String) -> String {
-        Self.body(body, upgradingLinkTo: previewUrl, claims: claimsHttpsUpgrade(of:))
+        Self.body(body, upgradingLinkTo: previewUrl, claims: claimsHttpsUpgrade(of:), bareDomain: TellomiBareDomain.isBareDomainUrl(_:))
     }
 
-    static func body(_ body: String, upgradingLinkTo previewUrl: String, claims: (String) -> Bool) -> String {
+    static func body(
+        _ body: String,
+        upgradingLinkTo previewUrl: String,
+        claims: (String) -> Bool,
+        bareDomain: (String) -> Bool = { _ in false },
+    ) -> String {
         guard
             let scheme = previewUrl.range(of: "https://", options: [.anchored, .caseInsensitive]),
             !body.contains(previewUrl)
@@ -278,6 +285,7 @@ public final class TellomiLinkClassifier: @unchecked Sendable {
         }
         // 每一处都换（后面紧跟的是不是链接的结尾由 rust/links 判，`b23.tv/abcdef` 那一处它不认，后面的 `b23.tv/abc` 还在）
         var replaced = [Range<String.Index>]()
+        var schemeless = [Range<String.Index>]()
         var searchFrom = body.startIndex
         while let found = body.range(of: needle, range: searchFrom..<body.endIndex) {
             searchFrom = body.index(after: found.lowerBound)
@@ -289,10 +297,18 @@ public final class TellomiLinkClassifier: @unchecked Sendable {
                 continue
             } else {
                 replaced.append(found)
+                schemeless.append(found)
             }
         }
-        guard !replaced.isEmpty, claims(previewUrl) else {
+        guard !replaced.isEmpty else {
             return body
+        }
+        if !claims(previewUrl) {
+            // 裸域名的例外只换没写协议的那几处
+            guard !schemeless.isEmpty, bareDomain(previewUrl) else {
+                return body
+            }
+            replaced = schemeless
         }
         var result = body
         for range in replaced.reversed() {

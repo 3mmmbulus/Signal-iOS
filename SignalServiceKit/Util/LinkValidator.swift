@@ -132,6 +132,8 @@ public enum LinkValidator {
     /// （NSDataDetector 把没写协议的也当 http），换成 https 写法再验一遍上游的规则（含上面「后面紧贴中文」的截断）；
     /// 只有注册表认领这条 https（品牌、短链；第一方除外，`TellomiLinkClassifier.claimsHttpsUpgrade`）才用它出卡片。
     /// 抓的永远是 https，不抓明文 http；不归注册表的 http 链接照上游没有卡片。
+    /// 例外（用户 2026-10-19，同 iOS「信息」App）：没写协议的**裸域名**（`baidu.com`）不归注册表也出卡片，限制见 ``TellomiBareDomain``；
+    /// 写明 `http://` 的不在例外里。
     static func tellomiHttpsUpgrade(
         _ parsedUrl: URL,
         matchedText: String,
@@ -141,10 +143,13 @@ public enum LinkValidator {
             return nil
         }
         let rest: Substring
+        let isSchemeless: Bool
         if let scheme = matchedText.range(of: "http://", options: [.anchored, .caseInsensitive]) {
             rest = matchedText[scheme.upperBound...]
+            isSchemeless = false
         } else if !matchedText.contains("://") {
             rest = matchedText[...]
+            isSchemeless = true
         } else {
             return nil
         }
@@ -160,9 +165,12 @@ public enum LinkValidator {
         } else {
             return nil
         }
-        guard claims(url.absoluteString) else {
-            return nil
+        if claims(url.absoluteString) {
+            return url
         }
-        return url
+        if isSchemeless, TellomiBareDomain.httpsUrl(forTypedText: String(rest)) != nil, TellomiBareDomain.isBareDomainUrl(url.absoluteString) {
+            return url
+        }
+        return nil
     }
 }
