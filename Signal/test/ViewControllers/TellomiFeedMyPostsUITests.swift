@@ -137,7 +137,7 @@ final class TellomiFeedMyPostsUITests: XCTestCase {
         XCTAssertNil(FeedMyPostsViewController.statusTexts(for: .failed(retryAfterSeconds: nil)).body)
         XCTAssertEqual(FeedMyPostsViewController.statusTexts(for: .failed(retryAfterSeconds: 7)).body, FeedProfileViewController.throttledText(7))
         XCTAssertEqual(FeedMyPostsViewController.statusTexts(for: .loadMoreFailed(retryAfterSeconds: 9)).body, FeedProfileViewController.throttledText(9))
-        XCTAssertEqual(FeedMyPostsViewController.toastText(for: .throttled(retryAfterSeconds: 5)), FeedProfileViewController.throttledText(5))
+        XCTAssertEqual(FeedMyPostsViewController.toastText(for: FeedMyPostsNotice.throttled(retryAfterSeconds: 5)), FeedProfileViewController.throttledText(5))
         XCTAssertEqual(FeedMyPostsViewController.toastText(for: FeedAppealResult.throttled(retryAfterSeconds: nil)), FeedProfileViewController.throttledText(nil))
         let toasts = [
             FeedMyPostsViewController.toastText(for: FeedMyPostsNotice.deleteFailed),
