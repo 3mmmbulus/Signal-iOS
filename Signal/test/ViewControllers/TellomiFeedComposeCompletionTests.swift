@@ -507,6 +507,8 @@ final class TellomiFeedComposeStoreTests: XCTestCase {
         XCTAssertFalse(store.state.failed)
         XCTAssertNil(store.state.draft.quote, "引用去掉，正文留着")
         XCTAssertEqual(store.state.draft.text, "my thoughts")
+        store.onFailureShown()
+        XCTAssertFalse(store.state.quoteUnavailable, "提示过了就清掉")
         source.publishError = api(400, "quote_unavailable")   // 没有引用时再收到：当普通失败
         store.publish()
         await store.waitForTasks()
