@@ -86,7 +86,7 @@ final class FeedAudiencePickerStore {
 
     /// 读候选人。失败 / 再读一次（`loadFailed` 后点「重试」）；正在读时再调不重复读。
     func load() {
-        if loadRunning || (loadedOnce && !state.loadFailed) { return }
+        if loadRunning || loadedOnce { return }
         loadRunning = true
         state.loading = true
         state.loadFailed = false
@@ -171,8 +171,9 @@ final class FeedAudiencePickerStore {
     }
 
     /// 选了至少一个人才能完成（`include` / `exclude` 都不能是空名单，和 `FeedDraft.problem` 一致）。
+    /// 没读完候选人时一个也选不了，所以不用另外判断加载中。
     var canConfirm: Bool {
-        return !state.loading && !state.selected.isEmpty
+        return !state.selected.isEmpty
     }
 
     /// 选好的名单，按选的先后。

@@ -82,6 +82,11 @@ final class TellomiFeedAudiencePickerTests: XCTestCase {
         XCTAssertFalse(store.state.loadFailed)
     }
 
+    func testTheSameRecipientWithAnotherAciIsOnlyListedOnce() async {
+        let store = await make([person(1, "A"), person(1, "A2", aci: "00000000-0000-4000-8000-0000000000aa")])
+        XCTAssertEqual(store.state.candidates.map(\.displayName), ["A"], "recipient id 一样就是同一个人")
+    }
+
     func testPreselectedPeopleAreTickedAndOnesNoLongerFriendsAreDropped() async {
         let store = await make(
             [person(1, "A"), person(2, "B"), person(3, "C")],
@@ -152,7 +157,7 @@ final class TellomiFeedAudiencePickerTests: XCTestCase {
 
     func testConfirmNeedsAtLeastOnePersonAndAFinishedLoad() async {
         let store = FeedAudiencePickerStore(visibility: .exclude, preselected: [], source: StaticFeedAudienceCandidates([person(1, "A")]))
-        XCTAssertFalse(store.canConfirm, "还在读")
+        XCTAssertFalse(store.canConfirm, "还在读，什么也没选")
         store.load()
         await store.waitForTasks()
         XCTAssertFalse(store.canConfirm, "一个都没选")
