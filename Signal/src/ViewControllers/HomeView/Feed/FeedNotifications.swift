@@ -320,6 +320,8 @@ struct FeedNotificationsState: Equatable {
     var feedHidden = false
     /// 要打开详情的帖子（`openPost` 换好的，已经是 `FeedStore` 里现在的样子）。
     var openCard: FeedCard?
+    /// 打开详情时要定位的评论（评论 / 回复通知，详情页补全开着才带）；和 `openCard` 一起设、一起清。
+    var openFocusCommentId: String?
 
     func tab(_ name: String) -> FeedNotificationsTab { tabs[name] ?? FeedNotificationsTab() }
 }
@@ -556,7 +558,7 @@ final class FeedNotificationsStore {
     }
 
     /// 点赞 / 评论通知：先换成卡片再进详情；帖子删了、作者被屏蔽了就提示一下。
-    func openPost(_ contentId: String) {
+    func openPost(_ contentId: String, focusCommentId: String? = nil) {
         tasks.append(Task { [weak self, source] in
             let card: FeedCard?
             do {
@@ -576,8 +578,10 @@ final class FeedNotificationsStore {
                     self.state.notice = .postGone
                     return
                 }
+                self.state.openFocusCommentId = focusCommentId
                 self.state.openCard = adopted
             } else {
+                self.state.openFocusCommentId = focusCommentId
                 self.state.openCard = card
             }
         })
@@ -586,6 +590,7 @@ final class FeedNotificationsStore {
     /// 详情页已经打开（它自己借着这张卡片了）：这边放手。
     func onCardOpened() {
         state.openCard = nil
+        state.openFocusCommentId = nil
         mirror?.releaseAll()
     }
 

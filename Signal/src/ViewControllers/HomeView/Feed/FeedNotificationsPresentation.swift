@@ -170,6 +170,13 @@ struct FeedNotificationsPresentation: Equatable {
         }
     }
 
+    /// 评论 / 回复通知点进去要定位到的那条评论（通知的 `subject_id` = 新评论本身）；赞、关注、系统通知和没带 id 的是 nil。
+    static func focusCommentId(for row: FeedNotificationRow) -> String? {
+        guard row.kind == FeedNotification.kindComment || row.kind == FeedNotification.kindReply else { return nil }
+        guard let id = row.subjectId?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty else { return nil }
+        return id
+    }
+
     /// 行上能不能「不再通知这条帖子」（滑动菜单）：只有带帖子的赞 / 评论 / 回复。
     static func canMute(_ row: FeedNotificationRow) -> Bool {
         if case .post = target(for: row) { return true }

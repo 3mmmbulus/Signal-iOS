@@ -144,6 +144,7 @@ final class SampleFeedSource: FeedSource {
     /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
     let profiles = SampleProfileState()
     let listsState = SampleListsState()
+    let detailExtras = SampleDetailExtrasState()
     let topicFollows = SampleTopicState()
     let notificationState = SampleNotificationState()
     let myPostsState = SampleMyPostsState()
@@ -383,6 +384,7 @@ final class SampleFeedSource: FeedSource {
         let simulation = self.simulation
         try await simulatedAction(latency: simulation.deleteLatencyNanos, fails: simulation.failsDeletes)
         try locked {
+            if detailExtras.decline(contentId) { return }
             if let index = mine.firstIndex(where: { $0.id == contentId }) {
                 mine.remove(at: index)
                 return
@@ -516,7 +518,7 @@ final class SampleFeedSource: FeedSource {
     /// 一个样例帖子的评论，按时间正序（和引擎一样）。每三条一组：第 0 条直接评论帖子，第 1 条回复它，第 2 条回复第 1 条（楼中楼里「回复 @某人」）。
     /// 条数和帖子卡片上的评论数一致；找不到这个帖子（自己发的、别的 id）就没有评论。
     private func sampleComments(postId: String) -> [FeedCard] {
-        guard let index = Self.sampleIndex(of: postId) else { return [] }
+        guard let index = Self.sampleIndex(of: postId) else { return sampleDetailExtrasComments(postId: postId) }
         let count = (index * 3) % 12
         let current = now()
         return (0..<count).map { j -> FeedCard in

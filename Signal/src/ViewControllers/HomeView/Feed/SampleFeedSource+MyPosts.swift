@@ -156,6 +156,7 @@ extension SampleFeedSource {
             ipRegionLabel: Self.ipLabels[0],
         )
         card.viewer.isAuthor = true
+        applyDetailExtras(to: &card)
         return card
     }
 

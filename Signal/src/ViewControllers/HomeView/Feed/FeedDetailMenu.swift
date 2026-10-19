@@ -15,6 +15,8 @@ enum FeedDetailMenuItem: Equatable {
     case deleteComment
     /// 删自己的帖子。
     case deletePost
+    /// 编辑自己的帖子（第 23 条，发布后 15 分钟内；`TellomiFeed.isDetailExtrasEnabled` 开着才有）。
+    case edit
     /// 自己帖子的置顶、回复选项、隐藏点赞数、查看数据。
     case own(FeedOwnPostAction)
 
@@ -22,7 +24,7 @@ enum FeedDetailMenuItem: Equatable {
     var isDestructive: Bool {
         switch self {
         case .deleteComment, .deletePost: return true
-        case .notInterested, .report, .own: return false
+        case .notInterested, .report, .own, .edit: return false
         }
     }
 
@@ -35,6 +37,7 @@ enum FeedDetailMenuItem: Equatable {
         case .report: return "TELLOMI_FEED_MENU_REPORT"
         case .deleteComment: return "TELLOMI_FEED_MENU_DELETE_COMMENT"
         case .deletePost: return "TELLOMI_FEED_MENU_DELETE_POST"
+        case .edit: return "TELLOMI_FEED_MINE_EDIT"
         case .own(let action):
             switch action {
             case .pin: return "TELLOMI_FEED_MENU_PIN"
@@ -52,7 +55,7 @@ enum FeedDetailMenuItem: Equatable {
         switch self {
         case .deleteComment: return "TELLOMI_FEED_DELETE_COMMENT_CONFIRM"
         case .deletePost: return "TELLOMI_FEED_DELETE_POST_CONFIRM"
-        case .notInterested, .report, .own: return nil
+        case .notInterested, .report, .own, .edit: return nil
         }
     }
 }
@@ -61,9 +64,10 @@ enum FeedDetailMenuItem: Equatable {
 enum FeedDetailMenu {
     /// 帖子本身的「···」。自己的帖子：置顶 / 回复选项 / 点赞数 / 数据，最后是删除；别人的：不感兴趣、举报。
     /// 开放内容（外部作者）也一样能不感兴趣、能举报。
-    static func items(forPost post: FeedCard) -> [FeedDetailMenuItem] {
+    /// `canEdit`：自己的帖子还能编辑（`FeedPostDetailState.canEditPost`）时，「编辑」排在最前面。
+    static func items(forPost post: FeedCard, canEdit: Bool = false) -> [FeedDetailMenuItem] {
         if post.viewer.isAuthor {
-            return FeedOwnPostAction.available(for: post).map { .own($0) } + [.deletePost]
+            return (canEdit ? [.edit] : []) + FeedOwnPostAction.available(for: post).map { .own($0) } + [.deletePost]
         }
         return [.notInterested, .report]
     }
@@ -75,7 +79,7 @@ enum FeedDetailMenu {
             switch item {
             case .own: return false
             case .report: return reportAvailable
-            case .notInterested, .deleteComment, .deletePost: return true
+            case .notInterested, .deleteComment, .deletePost, .edit: return true
             }
         }
     }

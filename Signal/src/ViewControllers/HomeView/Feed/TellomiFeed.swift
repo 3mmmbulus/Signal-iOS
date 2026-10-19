@@ -198,6 +198,22 @@ enum TellomiFeed {
         }
     }
 
+    private static let detailExtrasKey = "TellomiFeed.detailExtras"
+
+    /// 详情页补全：投票、转发 / 收藏按钮、语音评论播放（只读）、作者批准 / 拒绝等着的回复、从通知点评论直接定位到那一条、自己帖子「···」里的「编辑」（窗口内）。
+    /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
+    /// （Internal Settings 里有开关行）。关着时详情页和通知页和之前一样。
+    static var isDetailExtrasEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: detailExtrasKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: detailExtrasKey)
+        }
+    }
+
     /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
     /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
     static var isSampleDataEnabled: Bool {

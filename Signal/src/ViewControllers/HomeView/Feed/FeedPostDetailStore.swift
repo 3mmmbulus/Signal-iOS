@@ -44,6 +44,8 @@ struct FeedPostDetailState {
         /// 被限速：`state.retryAfterSeconds` 是还要等几秒（可能没有）。
         case throttled
         case failed
+        /// 从通知点进来要定位的那条评论找不到了（删了、被拒了，或翻了很多页还没有）。
+        case commentNotFound
     }
 
     enum Leave: Equatable {
@@ -85,6 +87,14 @@ struct FeedPostDetailState {
     var retryAfterSeconds: Int?
     /// 引擎说这个区域的动态关了（404 `feed_hidden`）：页面该收起，不是「操作失败」。
     var feedHidden = false
+    /// 详情页补全开着（`TellomiFeed.isDetailExtrasEnabled`）：帖子「···」里才有「编辑」。
+    var editEnabled = false
+    /// 编辑窗口判断用的「现在」（单测换成固定时间）。
+    var now: () -> Date = Date.init
+    /// 正在找的评论（从通知点进来的那一条）：评论还没翻到之前一直是它；找到或放弃就清掉。
+    var focusCommentId: String?
+    /// 找到了：界面该滚到这一条并高亮；界面处理完调 `onScrolled()` 清掉。
+    var scrollTarget: String?
 
     init(post: FeedCard) {
         self.post = post
@@ -93,7 +103,14 @@ struct FeedPostDetailState {
 
     var threads: [FeedCommentThread] { FeedCommentThreads.build(comments) }
     /// 帖子「···」菜单里该有的几项（评论的见 `FeedDetailMenu.items(forComment:)`）。
-    var postMenu: [FeedDetailMenuItem] { FeedDetailMenu.items(forPost: post) }
+    var postMenu: [FeedDetailMenuItem] { FeedDetailMenu.items(forPost: post, canEdit: canEditPost) }
+    /// 自己的帖子在编辑窗口里（发布后 `editWindowSeconds` 内，第 23 条）、有可改的内容、详情页补全开着：菜单里给「编辑」。
+    /// 长文只拿到摘要（正文还没取回来）时不给，免得把正文改成空的。
+    var canEditPost: Bool {
+        guard editEnabled, post.viewer.isAuthor, let target = FeedEditTarget.of(post) else { return false }
+        if post.isArticle, (post.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return false }
+        return target.isWithinWindow(now: now(), windowSeconds: editWindowSeconds)
+    }
     /// 评论框还能再输入多少个码点（引擎 `MaxCommentChars` = 500；决定：到上限不让再输入，显示剩余数，I-20）。组字中可以是负数。
     var draftRemaining: Int { FeedInputLimit.remaining(draft, limit: FeedInputLimit.commentText) }
     var canSend: Bool {
@@ -129,8 +146,12 @@ final class FeedPostDetailStore {
     private var moderating = FeedInFlight()
     private var leaving = false
     private var tasks = [Task<Void, Never>]()
+    /// 为了找一条评论已经自动翻了几页。
+    private var locatePages = 0
+    /// 找一条评论最多自动翻几页（评论一页 20 条左右；翻太多是在耗流量，也多半是那条已经没了）。
+    static let maxLocatePages = 10
 
-    init(initial: FeedCard, source: FeedSource, savedMessages: FeedSavedMessages? = nil, feed: FeedStore? = nil) {
+    init(initial: FeedCard, source: FeedSource, savedMessages: FeedSavedMessages? = nil, feed: FeedStore? = nil, editEnabled: Bool = false, now: @escaping () -> Date = Date.init) {
         self.source = source
         self.savedMessages = savedMessages
         self.feed = feed
@@ -145,6 +166,8 @@ final class FeedPostDetailStore {
         } else {
             self.state = FeedPostDetailState(post: initial)
         }
+        state.editEnabled = editEnabled
+        state.now = now
     }
 
     // MARK: - 和信息流 store 同步
@@ -265,6 +288,7 @@ final class FeedPostDetailStore {
                 self.state.loading = false
                 self.state.loadedOnce = true
                 self.commentsBusy = false
+                self.resolveFocus()
             } catch {
                 Logger.warn("feed detail comments failed: \(error)")
                 guard generation == self.commentsGeneration else { return }
@@ -272,6 +296,7 @@ final class FeedPostDetailStore {
                 self.state.failed = true
                 self.state.loadedOnce = true
                 self.commentsBusy = false
+                self.giveUpFocus()
             }
         }
     }
@@ -292,13 +317,56 @@ final class FeedPostDetailStore {
                 self.state.cursor = page.cursor
                 self.state.loading = false
                 self.commentsBusy = false
+                self.resolveFocus()
             } catch {
                 Logger.warn("feed detail comments page failed: \(error)")
                 guard generation == self.commentsGeneration else { return }
                 self.state.loading = false
                 self.commentsBusy = false
+                self.giveUpFocus()
             }
         }
+    }
+
+    // MARK: - 定位到某条评论
+
+    /// 从通知点进来，要看的是某一条评论（通知的 `subject_id`）：评论翻到了就让界面滚过去高亮；
+    /// 这一页没有就一页一页往后翻（最多 `maxLocatePages` 页）；翻完还没有就提示一句「这条评论已经看不到了」。
+    /// 第一页还没回来时只记下，回来后接着找。
+    func locateComment(_ id: String) {
+        let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        locatePages = 0
+        state.scrollTarget = nil
+        state.focusCommentId = trimmed
+        if state.loadedOnce, !commentsBusy { resolveFocus() }
+    }
+
+    /// 界面滚过去了。
+    func onScrolled() {
+        state.scrollTarget = nil
+    }
+
+    private func resolveFocus() {
+        guard let id = state.focusCommentId else { return }
+        if state.comments.contains(where: { $0.id == id }) {
+            state.focusCommentId = nil
+            state.scrollTarget = id
+            return
+        }
+        guard state.loadedOnce else { return }
+        if state.cursor != nil, locatePages < Self.maxLocatePages {
+            locatePages += 1
+            loadMoreComments()
+            return
+        }
+        state.focusCommentId = nil
+        state.notice = .commentNotFound
+    }
+
+    /// 评论取不回来（失败）：不再找了；评论区自己有「重试」，不另外提示。
+    private func giveUpFocus() {
+        state.focusCommentId = nil
     }
 
     // MARK: - 帖子上的动作（同信息流，Android 同一套规则）
