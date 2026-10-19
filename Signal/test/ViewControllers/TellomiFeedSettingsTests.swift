@@ -552,6 +552,22 @@ final class TellomiFeedKeywordFilterTests: XCTestCase {
         XCTAssertEqual(store.tab(.following).cards.map(\.id), ["a", "b"])
     }
 
+    func testARefreshAlsoDropsShownCardsThatMatchAWordAddedMeanwhile() async {
+        let source = SettingsSource()
+        source.pages[.recommend] = FeedTimelinePage(cards: [card("c", "keep me"), card("d", "has a phone-only word")], nextCursor: nil)
+        let list = InMemoryFeedBlockedKeywords()
+        let store = FeedStore(source: source, blockedKeywords: list)
+        store.onTabShown(.recommend)
+        await store.waitForLoad(.recommend)
+        XCTAssertEqual(store.tab(.recommend).cards.map(\.id), ["c", "d"])
+
+        // 设置页刚加了词：刷新后屏幕上原来那条也要没掉（不只是新来的页）
+        list.add(keyword: "phone-only", expiresAt: nil)
+        store.refresh(.recommend)
+        await store.waitForLoad(.recommend)
+        XCTAssertEqual(store.tab(.recommend).cards.map(\.id), ["c"])
+    }
+
     func testNoListMeansNoFiltering() async {
         let source = SettingsSource()
         source.pages[.following] = FeedTimelinePage(cards: [card("a", "spoiler")], nextCursor: nil)
