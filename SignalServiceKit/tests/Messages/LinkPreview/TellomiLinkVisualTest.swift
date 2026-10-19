@@ -272,6 +272,44 @@ final class TellomiLinkVisualTest: XCTestCase {
         XCTAssertEqual(asked[1], ["0", "0", "", "brand"], "没有图标名：不显示图，kind 也不传")
     }
 
+    // MARK: - 认领档（claimed，2026-10-19）：页面没给图时用随包图标，不当无图卡
+
+    private let claimedTaobao = TellomiLinkCard(level: .generic, domain: "taobao.com", showImage: false, icon: "taobao.png", tintable: true)
+
+    func testAClaimedCardWithoutAPageImageIsAskedWithTheSizeOfItsIconAndTintedFromIt() {
+        var asked = [[String]]()
+        var tintedWith: (String, UInt32, UInt32, Int)?
+        var bridge = FakeBridge(tintJson: orange)
+        bridge.onLayout = { asked.append(["\($0)", "\($1)", $2, $3]) }
+        bridge.onTint = { tintedWith = ($0, $1, $2, $3.count) }
+
+        XCTAssertTrue(TellomiLinkVisual.usesBundledIcon(claimedTaobao))
+        let visual = TellomiLinkVisual.decide(bridge: bridge, card: claimedTaobao, imageWidth: 114, imageHeight: 114) { Data(count: 32 * 32 * 4) }
+        XCTAssertEqual(asked, [["114", "114", "", "generic"]], "随包图标的尺寸，不是 0 × 0（指南针）")
+        XCTAssertEqual(visual.layout, .icon)
+        XCTAssertEqual(visual.tint?.colors(isDark: false)?.background, .init(red: 0xFE, green: 0x75, blue: 0x00))
+        XCTAssertEqual(tintedWith?.0, "icon")
+    }
+
+    func testAClaimedCardWithAPageImageUsesThePageImageAndAPlainGenericCardNeverUsesAnIcon() {
+        var withImage = claimedTaobao
+        withImage.showImage = true
+        XCTAssertFalse(TellomiLinkVisual.usesBundledIcon(withImage), "页面给了图：用页面的图")
+
+        var noIcon = claimedTaobao
+        noIcon.icon = nil
+        XCTAssertFalse(TellomiLinkVisual.usesBundledIcon(noIcon))
+        var asked = [[String]]()
+        var bridge = FakeBridge(layoutName: "no_image")
+        bridge.onLayout = { asked.append(["\($0)", "\($1)", $2, $3]) }
+        _ = TellomiLinkVisual.layout(bridge: bridge, card: noIcon, imageWidth: 1200, imageHeight: 630)
+        XCTAssertEqual(asked[0], ["0", "0", "", "generic"], "什么都没有的 generic 卡才是无图卡")
+
+        var structured = claimedTaobao
+        structured.level = .structured
+        XCTAssertFalse(TellomiLinkVisual.usesBundledIcon(structured))
+    }
+
     func testAPaymentShellIsNeverTintedEvenWithAnIcon() {
         var payment = taobao
         payment.payment = true
