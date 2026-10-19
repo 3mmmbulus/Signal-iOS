@@ -45,6 +45,8 @@ final class FeedStore {
     private let blockedKeywords: FeedBlockedKeywords?
 
     private(set) var config: FeedConfig?
+    /// 配置拉到了（没拉到不调）。未成年人时限（I-15）靠它记住 `minor_mode`。
+    var onConfigLoaded: ((FeedConfig) -> Void)?
     private(set) var tabs = FeedTab.allCases
     private(set) var tabStates = [FeedTab: FeedTabState]()
     /// 点了「不感兴趣」、还没撤销的。卡片留在列表里，显示成反馈卡。
@@ -397,6 +399,7 @@ final class FeedStore {
             self.config = config
             tabs = FeedTab.fromApiNames(config.tabs)
             notify(.list(nil))
+            onConfigLoaded?(config)
         } catch {
             Logger.warn("feed config failed: \(error)")
         }

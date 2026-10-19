@@ -202,6 +202,21 @@ enum TellomiFeed {
 
     private static let detailExtrasKey = "TellomiFeed.detailExtras"
 
+    /// 未成年人时限（I-15）：引擎说是未成年人模式（`config.minor_mode`，记住上一次的）时，动态每天最多 40 分钟、22:00–6:00 不能用，
+    /// 到点盖上提示页。默认关；只有内部构建认这个值，开关行在 Internal Settings。关着时不计时、不锁。
+    static var isMinorTimeEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: minorTimeKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: minorTimeKey)
+        }
+    }
+
+    private static let minorTimeKey = "TellomiFeed.minorTime"
+
     /// 详情页补全：投票、转发 / 收藏按钮、语音评论播放（只读）、作者批准 / 拒绝等着的回复、从通知点评论直接定位到那一条、自己帖子「···」里的「编辑」（窗口内）。
     /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
     /// （Internal Settings 里有开关行）。关着时详情页和通知页和之前一样。
