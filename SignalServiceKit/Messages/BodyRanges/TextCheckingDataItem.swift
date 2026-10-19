@@ -121,6 +121,10 @@ public struct TextCheckingDataItem: Equatable {
                 {
                     dataType = .emailAddress
                 } else {
+                    // Tellomi（产品经理 2026-10-19）：带零宽 / 方向控制等看不见字符的链接，不认成可点的链接
+                    guard !LinkValidator.tellomiLinkHasHiddenCharacter(in: text, range: match.range) else {
+                        return nil
+                    }
                     dataType = .link
                 }
             } else if resultType.contains(.quote) {

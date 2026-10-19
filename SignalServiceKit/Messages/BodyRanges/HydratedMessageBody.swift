@@ -857,6 +857,10 @@ public class HydratedMessageBody: Equatable, Hashable {
             // But what we really want is to check the text which will ultimately be presented to
             // the user.
             let rawTextOfMatch = (hydratedText as NSString).substring(with: match.range)
+            // Tellomi（产品经理 2026-10-19）：带看不见字符的链接不可点；长文本页的 UITextView 自带识别管不到单条，整段不识别链接（同上游对仿冒字符的做法）
+            guard !LinkValidator.tellomiLinkHasHiddenCharacter(in: hydratedText, range: match.range) else {
+                return false
+            }
             guard isValidLink(rawTextOfMatch) else {
                 return false
             }

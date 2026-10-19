@@ -65,6 +65,8 @@ public enum LinkValidator {
         ) { match, _, stop in
             guard let match else { return }
             guard let matchedRange = Range(match.range, in: entireMessage.text) else { return }
+            // Tellomi（产品经理 2026-10-19）：带看不见字符的链接整条不出卡、也不可点（见 `tellomiLinkHasHiddenCharacter`）
+            guard !tellomiLinkHasHiddenCharacter(in: entireMessage.text, range: match.range) else { return }
             // Tellomi：识别范围后面紧跟的那个字符。NSDataDetector 会在零宽、方向控制这类看不见的字符前结束链接，
             // 路径里有中文的链接要靠它判断「整条带了看不见的字符」（见 `tellomiPercentEncodedIri`）。
             let nextScalar = entireMessage.text.unicodeScalars[matchedRange.upperBound...].first
@@ -209,6 +211,42 @@ public enum LinkValidator {
         default:
             return false
         }
+    }
+
+    /// Tellomi（产品经理 2026-10-19，ADR-0063 §5.6）：链接里带零宽、方向控制这类看不见的字符的，整条不出卡片，也不认成可点的链接
+    /// （与 Android `Linkifier` / `LinkUtil.hasHiddenCharacter`、Desktop 同一规则）。NSDataDetector 会在这种字符**前面**就结束链接
+    /// （「https://signal.org/a\u{200B}b」认出「https://signal.org/a」），所以除了识别范围里面，还要看范围后面紧跟的那个字符。
+    ///
+    /// - 看不见：`isHiddenScalar` 那几类（格式、控制、私用、代理、未分配、行 / 段分隔符），和上面路径里有中文的链接同一张表；
+    /// - 链接已经在空白、换行、中文句读（`isIriTerminator`）处结束的，后面再跟看不见的字符不算链接的一部分
+    ///   （「…/中国 \u{200B}」「…/中国，\u{200B}很好」照常出卡、可点；换行、Tab、U+2028/2029 紧跟链接也照常）。
+    /// - `range` 是 `text` 上的 NSRange（UTF-16），即 NSDataDetector 给的 `match.range`。
+    public static func tellomiLinkHasHiddenCharacter(in text: String, range: NSRange) -> Bool {
+        // 不用 `Range(_:in:)`：U+200C / U+200D 这类字符和前一个字算同一个字（grapheme），按字取整会把它吞掉；按 UTF-16 / 码点取
+        let utf16 = text.utf16
+        let scalars = text.unicodeScalars
+        guard
+            range.location != NSNotFound,
+            let lower16 = utf16.index(utf16.startIndex, offsetBy: range.location, limitedBy: utf16.endIndex),
+            let upper16 = utf16.index(lower16, offsetBy: range.length, limitedBy: utf16.endIndex),
+            let lower = lower16.samePosition(in: scalars),
+            let upper = upper16.samePosition(in: scalars)
+        else {
+            return false
+        }
+        for scalar in scalars[lower..<upper] {
+            if isIriTerminator(scalar) {
+                // 链接在这里已经正常结束了，后面的不算
+                return false
+            }
+            if isHiddenScalar(scalar) {
+                return true
+            }
+        }
+        if let next = scalars[upper...].first, isHiddenScalar(next), !isIriTerminator(next) {
+            return true
+        }
+        return false
     }
 
     private static func isHiddenScalar(_ scalar: Unicode.Scalar) -> Bool {

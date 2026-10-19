@@ -181,6 +181,10 @@ public class DisplayableText: NSObject {
                 // But what we really want is to check the text which will ultimately be presented to
                 // the user.
                 let rawTextOfMatch = (rawText as NSString).substring(with: match.range)
+                // Tellomi（产品经理 2026-10-19）：带看不见字符的链接不可点（见 `LinkValidator.tellomiLinkHasHiddenCharacter`）
+                guard !LinkValidator.tellomiLinkHasHiddenCharacter(in: rawText, range: match.range) else {
+                    return false
+                }
                 guard isValidLink(linkText: rawTextOfMatch) else {
                     return false
                 }

@@ -146,6 +146,17 @@ class DisplayableTextTest: XCTestCase {
         assertLinkifies("foo http://google.com")
         assertLinkifies("foo https://google.com")
 
+        // Tellomi (PM 2026-10-19): a link with / glued to a zero-width or bidi character is not linkified
+        assertNotLinkifies("foo https://signal.org/a\u{200B}b")
+        assertNotLinkifies("https://signal.org/abc\u{200F} next")
+        assertNotLinkifies("https://signal.org/abc\u{2066}")
+        assertNotLinkifies("https://signal.org/a/中\u{2060}文")
+        // …but a hidden character after a normal end of the link is not part of it
+        assertLinkifies("https://signal.org/abc \u{200B}")
+        assertLinkifies("https://signal.org/abc\n\u{200B}")
+        assertLinkifies("https://signal.org/a/中文\n下一行")
+        assertLinkifies("foo \u{200B} https://signal.org/abc")
+
         // cyrillic host with ascii tld
         assertNotLinkifies("foo http://asĸ.com")
         assertNotLinkifies("http://asĸ.com")

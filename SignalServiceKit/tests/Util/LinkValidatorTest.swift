@@ -151,6 +151,15 @@ class LinkValidatorTest: XCTestCase {
             ("看 https://zh.wikipedia.org/wiki/中国\n很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
             ("https://signal.org/a/中文\t下一段", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
             ("https://signal.org/a/中文\u{2028}下一行", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
+            // Tellomi (PM 2026-10-19): ASCII links with a hidden character in them / glued to one get no preview either
+            ("https://signal.org/a\u{200B}b", nil),
+            ("https://signal.org/abc\u{200F}", nil),
+            ("see https://signal.org/abc\u{2060} next", nil),
+            ("https://signal.org/abc\u{FEFF}", nil),
+            ("https://signal.org/abc\u{2066}", nil),
+            ("https://signal.org/abc\u{200E} https://signal.org/ok", "https://signal.org/ok"),
+            ("https://signal.org/abc \u{200B}", "https://signal.org/abc"),
+            ("https://signal.org/abc\n\u{200B}", "https://signal.org/abc"),
             // Tellomi: the cut link must still pass every upstream rule
             ("https://example.org/a很好", nil),
             // Tellomi: never cut inside the host (a mixed-script host is a spoofing risk), only in path / query / fragment
@@ -173,6 +182,48 @@ class LinkValidatorTest: XCTestCase {
             let actualValue = LinkValidator.firstLinkPreviewURL(in: .init(text: entireMessage, ranges: .empty))
             XCTAssertEqual(actualValue?.absoluteString, expectedValue, entireMessage)
         }
+    }
+
+    func testTellomiLinkHasHiddenCharacter() {
+        func hidden(_ text: String, _ link: String) -> Bool {
+            let range = (text as NSString).range(of: link, options: .literal)
+            XCTAssertNotEqual(range.location, NSNotFound, text)
+            return LinkValidator.tellomiLinkHasHiddenCharacter(in: text, range: range)
+        }
+        // same characters as Android LinkUtilTest_hasHiddenCharacter / Linkifier
+        for scalar in ["\u{200B}", "\u{200C}", "\u{200D}", "\u{200E}", "\u{200F}", "\u{2060}", "\u{2061}", "\u{2062}", "\u{2063}", "\u{2064}", "\u{202A}", "\u{202B}", "\u{202C}", "\u{202D}", "\u{202E}", "\u{2066}", "\u{2067}", "\u{2068}", "\u{2069}", "\u{FEFF}", "\u{00AD}"] {
+            XCTAssertTrue(hidden("https://signal.org/abc\(scalar) next", "https://signal.org/abc"), scalar.unicodeScalars.first!.escaped(asASCII: true))
+            XCTAssertTrue(hidden("https://signal.org/a\(scalar)bc", "https://signal.org/a\(scalar)bc"), scalar.unicodeScalars.first!.escaped(asASCII: true))
+        }
+        XCTAssertFalse(hidden("https://signal.org/abc next", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc\n\u{200B}", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc\r\n", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc\t\u{200B}", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc\u{2028}", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc \u{200B}", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://signal.org/abc,\u{200F} next", "https://signal.org/abc"))
+        XCTAssertFalse(hidden("https://zh.wikipedia.org/wiki/中国，\u{200B}很好", "https://zh.wikipedia.org/wiki/中国，"))
+        XCTAssertFalse(hidden("看 https://signal.org/abc 吧", "https://signal.org/abc"))
+    }
+
+    func testTellomiHiddenCharacterLinksAreNotTappable() throws {
+        let types: NSTextCheckingResult.CheckingType = [.link, .phoneNumber]
+        let detector = try XCTUnwrap(try? NSDataDetector(types: types.rawValue))
+        func links(_ text: String) -> [String] {
+            TextCheckingDataItem.detectedItems(in: text, using: detector).filter { $0.dataType == .link }.map(\.snippet)
+        }
+        XCTAssertEqual(links("https://signal.org/a\u{200B}b"), [])
+        XCTAssertEqual(links("see https://signal.org/abc\u{200F} next"), [])
+        XCTAssertEqual(links("https://signal.org/abc\u{2060}"), [])
+        XCTAssertEqual(links("https://signal.org/abc\u{FEFF}"), [])
+        XCTAssertEqual(links("https://signal.org/a/中\u{200B}文"), [])
+        // only the disguised link is dropped; a normal link in the same message stays tappable
+        XCTAssertEqual(links("https://signal.org/abc\u{200E} https://signal.org/ok"), ["https://signal.org/ok"])
+        // normal ends (space, newline, punctuation) before the hidden character keep the link
+        XCTAssertEqual(links("https://signal.org/abc \u{200B}"), ["https://signal.org/abc"])
+        XCTAssertEqual(links("https://signal.org/abc\n\u{200B}"), ["https://signal.org/abc"])
+        XCTAssertEqual(links("https://signal.org/abc"), ["https://signal.org/abc"])
     }
 
     func testFirstLinkPreviewURLPerformance() throws {
