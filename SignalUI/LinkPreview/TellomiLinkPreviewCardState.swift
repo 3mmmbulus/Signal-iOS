@@ -36,6 +36,10 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
     /// （card-visual §7.3；同 Telegram iOS 对可疑发件人的 `isSuspiciousPeer`）。
     public let isInert: Bool
 
+    /// 图标横条的底色：从卡片显示的那张小图（站点图标 / 方形小图 / 随包图标）取的主色（`TellomiLinkCardStyle.dominantColor`）。
+    /// nil：没有图、取不到颜色（白底图标、透明图）——横条用中性灰。只对 `iconStrip` 有意义（产品经理 2026-10-19 定稿）。
+    public let stripColor: TellomiLinkCardStyle.RGB?
+
     public init(
         base: LinkPreviewState,
         display: TellomiLinkDisplay,
@@ -46,6 +50,7 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
         bundledIcon: TellomiLinkIcon.Icon? = nil,
         userAvatar: UIImage? = nil,
         isInert: Bool = false,
+        stripColor: TellomiLinkCardStyle.RGB? = nil,
     ) {
         self.base = base
         self.display = display
@@ -56,6 +61,37 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
         self.bundledIcon = bundledIcon
         self.userAvatar = userAvatar
         self.isInert = isInert
+        self.stripColor = stripColor
+    }
+
+    // MARK: 统一样式（产品经理 2026-10-19，参照 iOS「信息」App）
+
+    /// 这张卡用四种样式里的哪一种；第一方卡（用户 / 群 / 贴纸 / 官网）不走统一样式，是 nil。
+    public var cardStyle: TellomiLinkCardStyle.Kind? {
+        guard firstParty == nil else {
+            return nil
+        }
+        let layout: TellomiLinkCardStyle.Layout? = switch visual.layout {
+        case .largeImage: .largeImage
+        case .icon: .icon
+        case .noImage: .noImage
+        case .firstParty, nil: nil
+        }
+        return TellomiLinkCardStyle.kind(
+            layout: layout,
+            hasImage: hasLoadedImageOrBlurHash,
+            hasTitle: cardText?.title != nil,
+            isPlainLink: isPlainLink,
+        )
+    }
+
+    /// 卡片上的两行字：标题（页面的 og:title / title；品牌壳是平台名）+ 域名。副行一律不显示。
+    public var cardText: TellomiLinkCardStyle.Text? {
+        TellomiLinkCardStyle.text(
+            title: isPlainLink ? nil : display.title?.filterForDisplay,
+            domain: display.domain?.filterForDisplay ?? (isPlainLink ? display.title?.filterForDisplay : nil),
+            urlString: urlString,
+        )
     }
 
     /// 版式；图片没有显示（品牌壳、用户卡……）或没有决定时是 nil。
