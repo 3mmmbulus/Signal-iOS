@@ -179,10 +179,6 @@ final class FeedPostDetailViewController: OWSViewController {
         if extras {
             voicePlayer.onChange = { [weak self] playback in self?.voicePlaybackChanged(playback) }
         }
-        if extras || eventsEnabled {
-            // 退到后台：语音暂停（和 Android 一样，回来点一下接着放）；详情事件按「离开」收尾并发出去
-            NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        }
         apply(store.state)
         store.start()
         if let focusCommentId { store.locateComment(focusCommentId) }
@@ -191,7 +187,10 @@ final class FeedPostDetailViewController: OWSViewController {
         minorLock = FeedMinorLockController.install(in: self)
     }
 
-    @objc private func appDidEnterBackground() {
+    /// 退到后台：语音暂停（和 Android 一样，回来点一下接着放）；详情事件按「离开」收尾并发出去。
+    /// `OWSViewController` 已经订阅了这个通知，直接覆盖它的钩子（自己再订阅一次的话同名方法编不过，且会调两次）。
+    override func appDidEnterBackground() {
+        super.appDidEnterBackground()
         if extras { voicePlayer.pause() }
         closeDetailEvent(flush: true)
     }
