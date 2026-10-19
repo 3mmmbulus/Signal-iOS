@@ -44,11 +44,21 @@ extension ConversationViewController: ConversationInputToolbarDelegate {
             return
         }
 
-        guard let messageBody = inputToolbar.messageBodyForSending else {
+        guard inputToolbar.messageBodyForSending != nil else {
             return
         }
 
-        tryToSendTextMessage(messageBody, updateKeyboardState: true)
+        // Tellomi（信息卡片 P1）：卡片还在加载就最多等 3 秒再发（见 `tellomiSendAfterLinkPreviewSettles`）。
+        // 没在加载时当场同步执行，和原来一样。等完了重新读一次输入框，带上那一刻已加载好的卡片。
+        inputToolbar.tellomiSendAfterLinkPreviewSettles { [weak self] in
+            guard let self, let inputToolbar = self.inputToolbar else {
+                return
+            }
+            guard inputToolbar.canSendTextMessage, let messageBody = inputToolbar.messageBodyForSending else {
+                return
+            }
+            self.tryToSendTextMessage(messageBody, updateKeyboardState: true)
+        }
     }
 
     public func messageWasSent() {
