@@ -12,12 +12,15 @@ import XCTest
 /// M11 动态（tellomi/tellomi#1355）第一刀：「动态」标签的开关、位置和顶栏。与 Android `FeedTabTest` 同口径。
 final class TellomiFeedTabTests: XCTestCase {
 
-    /// 服务端下发或内部用户强制打开，任一个为真就显示；都没有就不显示（默认关）。
-    func testTabIsShownWhenServerEnablesItOrInternalUserForcesIt() {
-        XCTAssertFalse(TellomiFeed.isTabEnabled(remoteEnabled: false, forcedByInternalUser: false))
-        XCTAssertTrue(TellomiFeed.isTabEnabled(remoteEnabled: true, forcedByInternalUser: false))
-        XCTAssertTrue(TellomiFeed.isTabEnabled(remoteEnabled: false, forcedByInternalUser: true))
-        XCTAssertTrue(TellomiFeed.isTabEnabled(remoteEnabled: true, forcedByInternalUser: true))
+    /// 内部用户强制打开就显示；否则要服务端下发**并且**内容引擎说能看（`engineVisible`）。默认关。
+    /// 与 Android `TellomiFeed.isTabEnabled(remoteEnabled, engineVisible, forcedByInternalUser)` 同口径。
+    func testTabIsShownWhenServerAndEngineAllowItOrInternalUserForcesIt() {
+        XCTAssertFalse(TellomiFeed.isTabEnabled(remoteEnabled: false, engineVisible: false, forcedByInternalUser: false))
+        XCTAssertFalse(TellomiFeed.isTabEnabled(remoteEnabled: true, engineVisible: false, forcedByInternalUser: false))
+        XCTAssertFalse(TellomiFeed.isTabEnabled(remoteEnabled: false, engineVisible: true, forcedByInternalUser: false))
+        XCTAssertTrue(TellomiFeed.isTabEnabled(remoteEnabled: true, engineVisible: true, forcedByInternalUser: false))
+        XCTAssertTrue(TellomiFeed.isTabEnabled(remoteEnabled: false, engineVisible: false, forcedByInternalUser: true))
+        XCTAssertTrue(TellomiFeed.isTabEnabled(remoteEnabled: true, engineVisible: false, forcedByInternalUser: true))
     }
 
     /// 没下发 `global.feed.enabled` 时远程配置读出来是关；下发 true 才开。
@@ -80,7 +83,7 @@ final class TellomiFeedTabTests: XCTestCase {
     /// 动态页两栏横排，翻到第二栏后顶栏跟着换；底栏再点一次「动态」不崩。
     @MainActor
     func testFeedPageHasTwoSwipeablePages() {
-        let feed = FeedViewController()
+        let feed = FeedViewController(source: EmptyFeedSource.shared) // 不连引擎：默认的 FeedSources.current() 要 SSKEnvironment
         let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
         window.rootViewController = OWSNavigationController(rootViewController: feed)
         window.isHidden = false
@@ -112,7 +115,7 @@ final class TellomiFeedTabTests: XCTestCase {
         let directory = URL(fileURLWithPath: root).appendingPathComponent("\(Int(UIScreen.main.bounds.size.width))")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
-        let feed = FeedViewController()
+        let feed = FeedViewController(source: EmptyFeedSource.shared) // 不连引擎：默认的 FeedSources.current() 要 SSKEnvironment
         let window = UIWindow.tellomiTestWindow(frame: UIScreen.main.bounds)
         window.rootViewController = OWSNavigationController(rootViewController: feed)
         window.isHidden = false

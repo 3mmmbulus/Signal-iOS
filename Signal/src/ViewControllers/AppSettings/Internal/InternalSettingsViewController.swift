@@ -171,12 +171,105 @@ class InternalSettingsViewController: OWSTableViewController2 {
 
         // Tellomi（M11 动态）：服务端还没下发 global.feed.enabled 时先打开「动态」标签，用本机样例数据
         let feedSection = OWSTableSection(title: "Tellomi Feed")
-        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. The feed then uses on-device sample data and sends no requests."
+        feedSection.footerTitle = "Show the feed tab before the server enables global.feed.enabled. With \"Feed sample data\" on, the feed uses on-device sample data and sends no requests; off, it talks to the current region's content engine (needs the Signal-Server feed token endpoint). The \"Feed:\" entry switches below are all off by default and apply the next time the feed page is created (relaunch the app)."
         feedSection.add(.switch(
             withText: "Force feed tab",
             isOn: { TellomiFeed.isForcedByInternalUser },
             actionBlock: { uiSwitch in
                 TellomiFeed.isForcedByInternalUser = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed sample data",
+            isOn: { TellomiFeed.useSampleData },
+            isEnabled: { TellomiFeed.isForcedByInternalUser },
+            actionBlock: { uiSwitch in
+                TellomiFeed.useSampleData = uiSwitch.isOn
+            },
+        ))
+        // Feed entry flags (default off; read when the feed page is created, so a change applies after relaunching the app).
+        feedSection.add(.switch(
+            withText: "Feed: author profile page",
+            isOn: { TellomiFeed.isProfilePageEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isProfilePageEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: search and topics",
+            isOn: { TellomiFeed.isSearchEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isSearchEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: notifications",
+            isOn: { TellomiFeed.isNotificationsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isNotificationsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: my posts",
+            isOn: { TellomiFeed.isMyPostsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isMyPostsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: settings",
+            isOn: { TellomiFeed.isSettingsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isSettingsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: compose extras (edit, drafts, people picker)",
+            isOn: { TellomiFeed.isComposeExtrasEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isComposeExtrasEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: lists (follow requests, hidden, blocked, close people)",
+            isOn: { TellomiFeed.isListsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isListsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: article reader (long article page)",
+            isOn: { TellomiFeed.isArticleReaderEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isArticleReaderEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: detail extras (poll, repost/save, voice playback, approve replies, edit)",
+            isOn: { TellomiFeed.isDetailExtrasEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isDetailExtrasEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: detail events (open, dwell, quick exit, share)",
+            isOn: { TellomiFeed.isDetailEventsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isDetailEventsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: share / copy link in the post menu",
+            isOn: { TellomiFeed.isShareEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isShareEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: minor-mode time limit (40 min/day, 22:00–6:00)",
+            isOn: { TellomiFeed.isMinorTimeEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isMinorTimeEnabled = uiSwitch.isOn
             },
         ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))

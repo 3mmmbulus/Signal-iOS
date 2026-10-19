@@ -1031,6 +1031,7 @@ private extension TellomiRegionProfile {
             sfu: other.sfu,
             uptimeHost: uptimeHost ?? other.uptimeHost,
             debugLog: other.debugLog,
+            feed: other.feed,
         )
     }
 }

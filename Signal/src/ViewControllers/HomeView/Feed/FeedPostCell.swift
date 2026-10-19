@@ -29,6 +29,18 @@ final class FeedPostCell: UITableViewCell {
 
     var onLike: ((FeedCard) -> Void)?
     var onNotInterested: ((FeedCard) -> Void)?
+    /// 点头像 / 名字（作者主页入口）。nil = 不响应，也不拦截点击（整行照旧是「打开帖子」）。
+    var onAuthorTap: ((FeedAuthor) -> Void)? {
+        didSet { setAuthorTapEnabled(onAuthorTap != nil) }
+    }
+    /// 点帖子上的某个 `#话题`（话题页入口）。nil = 不响应，也不拦截点击（整行照旧是「打开帖子」）。
+    var onTopicTap: ((FeedTopic) -> Void)? {
+        didSet { topicsLabel.isUserInteractionEnabled = onTopicTap != nil }
+    }
+    /// 帖子详情页最上面那条（这一刀只读）：点赞和「···」不响应，免得点了没反应。
+    var isReadOnly = false
+    /// 只读时点赞仍然可以点（帖子详情页：「···」收起来，赞可以点）。
+    var allowsLikeWhenReadOnly = false
 
     private(set) var card: FeedCard?
 
@@ -42,7 +54,8 @@ final class FeedPostCell: UITableViewCell {
     private let topicsLabel = UILabel()
     private let aiLabel = UILabel()
     private let mediaContainer = UIView()
-    private let likeButton = UIButton(type: .system)
+    /// 单测 / 截图用：点赞按钮。
+    let likeButton = UIButton(type: .system)
     private let commentView = UIStackView()
     private let commentCountLabel = UILabel()
 
@@ -51,6 +64,43 @@ final class FeedPostCell: UITableViewCell {
         selectionStyle = .none
         backgroundColor = .clear
         buildLayout()
+        for view in [avatarView, nameLabel] {
+            view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(authorTapped)))
+        }
+        setAuthorTapEnabled(false)
+        topicsLabel.isUserInteractionEnabled = false
+        topicsLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(topicsTapped(_:))))
+    }
+
+    /// 按点击位置找到点的是哪个话题：照标签同样的字体和宽度排一遍字，问「这个点落在第几个字符」，再交给 `FeedTopicChips`。
+    @objc private func topicsTapped(_ gesture: UITapGestureRecognizer) {
+        guard let card, let onTopicTap, !card.topics.isEmpty else { return }
+        let storage = NSTextStorage(string: FeedTopicChips.text(for: card.topics), attributes: [.font: topicsLabel.font as UIFont])
+        let container = NSTextContainer(size: topicsLabel.bounds.size)
+        container.lineFragmentPadding = 0
+        let layout = NSLayoutManager()
+        layout.addTextContainer(container)
+        storage.addLayoutManager(layout)
+        let point = gesture.location(in: topicsLabel)
+        let character = layout.characterIndex(for: point, in: container, fractionOfDistanceBetweenInsertionPoints: nil)
+        // characterIndex 对「文字右边的空白」也会给出最近的字符：点在那一行文字的范围之外（留 8pt 宽松）就不算点中话题
+        let glyph = layout.glyphIndexForCharacter(at: character)
+        let usedRect = layout.lineFragmentUsedRect(forGlyphAt: glyph, effectiveRange: nil)
+        guard usedRect.insetBy(dx: -8, dy: -4).contains(point) else { return }
+        if let index = FeedTopicChips.index(atCharacter: character, in: card.topics) {
+            onTopicTap(card.topics[index])
+        }
+    }
+
+    private func setAuthorTapEnabled(_ enabled: Bool) {
+        for view in [avatarView, nameLabel] {
+            view.isUserInteractionEnabled = enabled
+        }
+    }
+
+    @objc private func authorTapped() {
+        guard let author = card?.author, tellomiFeedCanOpenProfile(of: author) else { return }
+        onAuthorTap?(author)
     }
 
     @available(*, unavailable)
@@ -181,7 +231,7 @@ final class FeedPostCell: UITableViewCell {
         subtitleLabel.isHidden = subtitle.isEmpty
 
         // 自己的帖子「···」里是编辑 / 删除等（第三节第 26 条），随后面的 PR 做；现在只有别人的帖子有「不感兴趣」
-        moreButton.isHidden = card.viewer.isAuthor
+        moreButton.isHidden = card.viewer.isAuthor || isReadOnly
         moreButton.menu = UIMenu(children: [
             UIAction(
                 title: OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: "Feed: ··· menu item that hides a post and tells the recommender to show fewer like it."),
@@ -202,7 +252,7 @@ final class FeedPostCell: UITableViewCell {
         bodyLabel.isHidden = body == nil
         bodyLabel.numberOfLines = card.isArticle ? Self.articlePreviewLines : 0
 
-        let topics = card.topics.map { "#\($0.label)" }.joined(separator: "  ")
+        let topics = FeedTopicChips.text(for: card.topics)
         topicsLabel.text = topics
         topicsLabel.isHidden = topics.isEmpty
 
@@ -215,6 +265,7 @@ final class FeedPostCell: UITableViewCell {
     private func configureActions(_ card: FeedCard) {
         let liked = card.viewer.liked
         let showCount = !card.stats.likeCountHidden && card.stats.likes > 0
+        likeButton.isUserInteractionEnabled = !isReadOnly || allowsLikeWhenReadOnly
         likeButton.configuration?.image = UIImage(named: liked ? "heart-fill-compact" : "heart")
         likeButton.configuration?.baseForegroundColor = liked ? Self.likedColor : UIColor.Signal.secondaryLabel
         likeButton.configuration?.title = showCount ? OWSFormat.formatInt(card.stats.likes) : nil

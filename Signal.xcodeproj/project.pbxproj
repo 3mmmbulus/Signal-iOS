@@ -171,11 +171,159 @@
 		812A8FDAD4713C93192AC437 /* FeedAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */; };
 		89AA64F1E08A9DE633DF904E /* FeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A93B0DFBCC7C033684326DD /* FeedModels.swift */; };
 		E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */; };
+		E8624A5CC85C58DC575375BC /* TellomiFeedMinorSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1392DFE2CC76CFD8FE25BED2 /* TellomiFeedMinorSessionTests.swift */; };
+		6C7F393D6400D55D7AA6DC5A /* TellomiFeedMinorGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F953A782D9BEEA9C1BD8A57C /* TellomiFeedMinorGateTests.swift */; };
+		9B407B50126622104AFE3E8F /* TellomiFeedMinorLockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A458340A1ACC132319998911 /* TellomiFeedMinorLockUITests.swift */; };
+		CEC64DA39144A56DEB1046EC /* TellomiFeedEventsWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F702E65122B421921B6918BB /* TellomiFeedEventsWiringTests.swift */; };
+		D0B1A9314DB047AC37793A36 /* TellomiFeedEventsWiringUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F3CF42383FDDEC7E1B7ACF /* TellomiFeedEventsWiringUITests.swift */; };
+		1F53E14DBFD62D28E2C4FD1E /* TellomiFeedFixes3UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EDA759BAC9ACF0B0568C55E /* TellomiFeedFixes3UITests.swift */; };
+		F2CBD4A34B018366862D06D0 /* TellomiFeedDetailExtrasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDF90BC3E2B5B251453ADD7 /* TellomiFeedDetailExtrasTests.swift */; };
+		FEE90D14FB79F249B0167165 /* TellomiFeedDetailExtrasUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC26DCBF099A34B4942FE48 /* TellomiFeedDetailExtrasUITests.swift */; };
+		E5FBE2BB02AA2B92D2CC139C /* TellomiFeedArticleReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FB0DF08D3383FD3CBE7F78 /* TellomiFeedArticleReaderTests.swift */; };
+		7D47CC4E715457D4AE85818F /* TellomiFeedArticleReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4738B01EB380F029EF206B2C /* TellomiFeedArticleReaderUITests.swift */; };
+		DE6B284EAF69F9D8402717D4 /* TellomiFeedListsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63F33942E55A0FA4B197C110 /* TellomiFeedListsTests.swift */; };
+		1200DE3DF208B2C19ED65950 /* TellomiFeedListsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136DB56964F4817EB3D94487 /* TellomiFeedListsUITests.swift */; };
+		DC031C3F3FA80AE156798FC8 /* TellomiFeedComposeExtrasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D35D522AEB8870970934B4 /* TellomiFeedComposeExtrasTests.swift */; };
+		0496706E9B2BE8096A9F82F6 /* TellomiFeedComposeExtrasUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C289E427218591ACC4548C8A /* TellomiFeedComposeExtrasUITests.swift */; };
+		DF567CF737A8D027733D723A /* TellomiFeedDynamicTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2553E473777A26DE5807AF9F /* TellomiFeedDynamicTypeTests.swift */; };
+		8EBD8FB9E73A13DCF7E4924D /* TellomiFeedDynamicTypeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD24367058906D4FED9C0B67 /* TellomiFeedDynamicTypeUITests.swift */; };
+		A0E976F53C8D1073C4C2D795 /* TellomiFeedSettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */; };
+		5E822B2ACA877D8AA548CA65 /* TellomiFeedSettingsPageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */; };
+		0918A2389D15BFFE2CB7F1BE /* TellomiFeedMyPostsEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */; };
+		4696A1A6B3C80E07912169CE /* TellomiFeedMyPostsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147A54EED775C31C21BBDBE7 /* TellomiFeedMyPostsUITests.swift */; };
+		E93818C64DF48A672F44A385 /* TellomiFeedMyPostsSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CFDD7E7721195D538D5747 /* TellomiFeedMyPostsSyncTests.swift */; };
+		89D438FAEB38B1F3E0D13D39 /* TellomiFeedNotificationSettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10AC16AA36CAED8CC459E4E0 /* TellomiFeedNotificationSettingsUITests.swift */; };
+		5FA00E04464E33D8AF4AE0B8 /* TellomiFeedNotificationsEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C992CD562B18C56B21F72B5 /* TellomiFeedNotificationsEntryUITests.swift */; };
+		AA00E6B3DFEB78F4553754CC /* TellomiFeedNotificationsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36D752B9570B4E7EF821B23 /* TellomiFeedNotificationsUITests.swift */; };
+		D99A1E513EB7DC74BB070B81 /* TellomiFeedNotifySyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A19AA66656D5FCD75CB0CFA /* TellomiFeedNotifySyncTests.swift */; };
+		4D9A82F8495DE9D32C5944BA /* TellomiFeedSearchEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60D79D58914F450FB927EB78 /* TellomiFeedSearchEntryUITests.swift */; };
+		15A6CD376F8BC312E4CAAD8D /* TellomiFeedSearchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C52E1B0D0503C7253ADB03 /* TellomiFeedSearchUITests.swift */; };
+		EA0B7C7B82C1584F7AB73CC2 /* TellomiFeedTopicUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE385F8A34C3EE2FD9FEB50 /* TellomiFeedTopicUITests.swift */; };
+		D425BE0B97A124F0E530A539 /* TellomiFeedSearchSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A8D2B1E218A1F62B301632 /* TellomiFeedSearchSyncTests.swift */; };
+		8CDBEDC6018B325EE3EBEE36 /* TellomiFeedProfileUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47BC58DE45B65D934D59278 /* TellomiFeedProfileUITests.swift */; };
+		F08A7B65701FF02F6E979B87 /* TellomiFeedProfileSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4B686CFF95ADA4014F4773 /* TellomiFeedProfileSyncTests.swift */; };
+		9A75F1B90096FA169F131137 /* TellomiFeedReportUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B0BD9A8DB82025011EA0A /* TellomiFeedReportUITests.swift */; };
+		E442F508A78443D14CC79C11 /* TellomiFeedDetailMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AE34C82F2349A7B22EDA8C /* TellomiFeedDetailMenuTests.swift */; };
+		0EE68473D99B4F0B6F1C5FA0 /* TellomiFeedDetailUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1793BFE25D130568C02CC13 /* TellomiFeedDetailUITests.swift */; };
+		FCE796603AF96DE922B80185 /* TellomiFeedDetailSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D66797A27D854A6CFC7A347 /* TellomiFeedDetailSyncTests.swift */; };
+		27C8023AFBEC25EE3B85B402 /* TellomiFeedDetailPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8943DC99BC040A1ED382E804 /* TellomiFeedDetailPresentationTests.swift */; };
+		440CCA70E6ACDAA4E197F061 /* TellomiFeedAuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36CACC8E228CDD83B574BF6 /* TellomiFeedAuthTests.swift */; };
+		B358667A03E079A47888C416 /* TellomiFeedCapabilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD7ED759C2BA43BECA69A89 /* TellomiFeedCapabilitiesTests.swift */; };
+		D2F8EAB88C99EFAD25770C70 /* TellomiFeedCardActionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A528EEC38D06C9ADA987DA /* TellomiFeedCardActionsTests.swift */; };
+		CA87CC61C0F8BA2103AFD365 /* TellomiFeedChromeStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9EE2E224F6BDD2B9386726 /* TellomiFeedChromeStateTests.swift */; };
+		077E61E8CF468C38977282F4 /* TellomiFeedComposeCompletionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B00FAEE52662A32CDDA552C /* TellomiFeedComposeCompletionTests.swift */; };
+		860A04AABED990992043CD31 /* TellomiFeedDetailEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813E9C0FEE82AE3C98A68B69 /* TellomiFeedDetailEventsTests.swift */; };
+		ED6D92BC6B916204A8EF93F8 /* TellomiFeedEngineModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB77E7EBC732823818D16B1E /* TellomiFeedEngineModelsTests.swift */; };
+		057AF20B0F6995FBA2AE3293 /* TellomiFeedEventsApiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF1FA76350FF9A36D0F28AD1 /* TellomiFeedEventsApiTests.swift */; };
+		A5C051C0FF75375C31F2A776 /* TellomiFeedFriendsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 674FA3AEBE118E61AFD74142 /* TellomiFeedFriendsTests.swift */; };
+		723BE298D7CCECA3BE6E8DA2 /* TellomiFeedInputLimitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A688429B993F49A48CD1BC1 /* TellomiFeedInputLimitTests.swift */; };
+		7084C72987181AEE158880D7 /* TellomiFeedLocalStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDD8C45B1F72A88AC0A267C /* TellomiFeedLocalStorageTests.swift */; };
+		D785C7CD5EE0C9A5E7CE35F5 /* TellomiFeedMinorTimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4928F0F6D0EAC218EEDBE72D /* TellomiFeedMinorTimeTests.swift */; };
+		6A35D448BC0B7EC5C4431AD5 /* TellomiFeedMyPostsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87FA49FF436212B5F4926D07 /* TellomiFeedMyPostsTests.swift */; };
+		664312AEA00FF38DDC1D50E0 /* TellomiFeedNotificationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AFE3C484C896FF30CEDBA67 /* TellomiFeedNotificationsTests.swift */; };
+		572D6B849ED2DA13D7412B44 /* TellomiFeedPostDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7A1B4275B6870B015BD32E /* TellomiFeedPostDetailTests.swift */; };
+		7665CF623E2FAD3F3182669F /* TellomiFeedPostLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAC6C85524ED91B43ADCD48 /* TellomiFeedPostLinkTests.swift */; };
+		4C44644C192B739D54907643 /* TellomiFeedProfileEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E14787FADBCDB51DEDA10B2 /* TellomiFeedProfileEditTests.swift */; };
+		C9691193B4947BD8A2220C5F /* TellomiFeedProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D817C0D60E6F23558247AA56 /* TellomiFeedProfileTests.swift */; };
+		F3EFDBC3FC15CDBA1E4E6B16 /* TellomiFeedRemoteSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F759A29E621AEC22B387C2C8 /* TellomiFeedRemoteSourceTests.swift */; };
+		3AF342FF2E904E243333F40B /* TellomiFeedReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DB122689392B844810E2C65 /* TellomiFeedReportTests.swift */; };
+		4716DB31769A3AB80DA7D7CB /* TellomiFeedRetryAfterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 511707CD0A92AFBD82E6060D /* TellomiFeedRetryAfterTests.swift */; };
+		A2C0E8277B196415A3E12378 /* TellomiFeedSearchTopicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E56092FCB514087322C66E /* TellomiFeedSearchTopicTests.swift */; };
+		E10A50597607E54C38EE2E5D /* TellomiFeedSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0204D433767FBD29801BC16 /* TellomiFeedSettingsTests.swift */; };
+		26EDCD761B08EF52A30DBEDD /* TellomiFeedSignerResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389AD4FAD45B7B7DF2C645F8 /* TellomiFeedSignerResponseTests.swift */; };
+		6B24573704F9844BC838DB3F /* TellomiFeedTextCapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E5227BBEDCA45E70741C93 /* TellomiFeedTextCapTests.swift */; };
+		B5B624E8A1D48658DC4744CE /* TellomiFeedUploadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C9E851977121F896156C67 /* TellomiFeedUploadTests.swift */; };
 		27DE31ADD3DC4F24A336A274 /* FeedTimelineViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F5B0135B9A2197B1D81FFA /* FeedTimelineViewController.swift */; };
 		D5D462AB2561C9B210993D9D /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B2471F73EB6D124BE0A82 /* FeedViewController.swift */; };
 		3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */; };
 		C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */; };
 		D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */; };
+		FA08E7300BD1BF9E6ADD09E2 /* FeedMinorLockController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0AB6166367BB9FF7AB0C23 /* FeedMinorLockController.swift */; };
+		B965C92615130E1B09D2A703 /* FeedMinorGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0F522CB44FFA7E2229C252 /* FeedMinorGate.swift */; };
+		B76F9D66705AD5D1B56E8A80 /* FeedMinorLockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBDF7D5D9491BD2EA79FFC9 /* FeedMinorLockView.swift */; };
+		F29156850ACB4F842156ABBB /* FeedDetailActionsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489FEF2AA803CFA8F67C4044 /* FeedDetailActionsCell.swift */; };
+		353B6180554D67ABFC223DFB /* FeedDetailExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCFE6DFC1545C2C9FE03B99 /* FeedDetailExtras.swift */; };
+		82E0CB3A82C926051DFFCEA8 /* FeedPollCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125DFF06DA974089B1ED404E /* FeedPollCell.swift */; };
+		AE22AD66FC53E66AAD5BB80A /* FeedVoiceClipPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE637D6755AA09627B0F889 /* FeedVoiceClipPlayer.swift */; };
+		836EA11C381F55801003C313 /* SampleFeedSource+DetailExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = E400A6BA9D444D7AFBF831E8 /* SampleFeedSource+DetailExtras.swift */; };
+		65D5CB1E1AB35D372BDE2045 /* FeedArticleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14039E9323F0131D1CEFA5D /* FeedArticleCell.swift */; };
+		F5FB87C0887A781032BDD81E /* FeedArticleReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BBC9DA9D8BF6E4E055C2B2 /* FeedArticleReader.swift */; };
+		759D17D87E217C18F5158CF2 /* FeedClosePeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8226E1262BD7788243C5532F /* FeedClosePeopleViewController.swift */; };
+		5AFECE02189165202634BDE0 /* FeedListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC028779D56CF28E8CE0891 /* FeedListsViewController.swift */; };
+		E01C5A2FA0716B654DFF1168 /* FeedPeopleLists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9336AB832C6511F3CCDB2B0E /* FeedPeopleLists.swift */; };
+		89CBFEBBD2A9A69F258D15D7 /* FeedPeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07933137A99FABF6ACA2D63D /* FeedPeopleViewController.swift */; };
+		AE09D7DB2B74B87A7014688A /* SampleFeedSource+Lists.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8BA0985A51828771CE680C3 /* SampleFeedSource+Lists.swift */; };
+		F15A851B520CDEE499058F22 /* FeedAudiencePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD01B857D142762352DE76A3 /* FeedAudiencePicker.swift */; };
+		4C1245FE8A1427519A461520 /* FeedAudiencePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613AAE2AE430D8FB82CBB92D /* FeedAudiencePickerViewController.swift */; };
+		8BA737FCE4CC2D76CBB664F8 /* FeedComposeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4105A9FDCA182CDEEBF97DD3 /* FeedComposeLayout.swift */; };
+		A191B59DCA360D916DCB14E2 /* FeedDraftEntryHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C5AD57484D93140D59E145 /* FeedDraftEntryHeader.swift */; };
+		038E556EF7610E76E7D867AE /* FeedDynamicTypeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88E06B76180C9C1E2571044 /* FeedDynamicTypeLayout.swift */; };
+		0B63A44F19E5830EE1C3264A /* FeedDynamicTypeSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC0C0E84D322CD48BE474A1 /* FeedDynamicTypeSupport.swift */; };
+		053A5865ADDA0F40D00DDE5F /* FeedKeywordFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */; };
+		A15ED05C5515210515C3150A /* FeedRecommendationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */; };
+		A3334F5690AB056EA03C9B3B /* FeedSettingsPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */; };
+		A226E978F551CE747BCB747B /* SampleFeedSource+Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1652D13E3BF0C01283E6AFA6 /* SampleFeedSource+Settings.swift */; };
+		147A3898AF1E5B5493EF0C70 /* FeedMyPostsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C4460A5AAE6700DAED3922 /* FeedMyPostsViewController.swift */; };
+		6585055581459795F049BBC4 /* FeedMyPostsPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3A403B1CD183AAEC46D57F /* FeedMyPostsPresentation.swift */; };
+		2C3C6866F25C16D7B2583C60 /* SampleFeedSource+MyPosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45EA32F4B2724481ED89AF79 /* SampleFeedSource+MyPosts.swift */; };
+		EA7CAAFCAFC9E128682D5A37 /* FeedNotificationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5EAA72FFA678195163E2A5 /* FeedNotificationSettingsViewController.swift */; };
+		C7B9AF1C4A8926B8995BD292 /* FeedNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C99009ED369196779890D9A /* FeedNotificationsViewController.swift */; };
+		8A628FCCAE7123FA886E72C8 /* FeedNotificationsPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E35FB68A51AB6CD35DA4D13 /* FeedNotificationsPresentation.swift */; };
+		03F7E1A5AA24D92AAC8A9653 /* SampleFeedSource+Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6ECA6D77E684918A2E960B4 /* SampleFeedSource+Notifications.swift */; };
+		71A183E1E10141500FEC10CF /* FeedSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913D4EC2383B7B58EA1CF510 /* FeedSearchViewController.swift */; };
+		DDB809D9A1BC6A90CB5EB3B9 /* FeedTopicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC7B046A7ECE9AD6C45B6A9 /* FeedTopicViewController.swift */; };
+		2E5BD2A455B91B8CDCB2E19E /* FeedCardMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF24A32362FE46B58449BC1 /* FeedCardMirror.swift */; };
+		A5DBEAD94E4D1F31E38FB6DB /* FeedSearchPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93FC8947545244F58DC971B7 /* FeedSearchPresentation.swift */; };
+		BA232777DFD032D37559AE52 /* SampleFeedSource+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB441D601096728D2C354CF1 /* SampleFeedSource+Search.swift */; };
+		E41036C9CA8712551FD77707 /* FeedProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10EA92003FFADA01EC3E7B35 /* FeedProfileViewController.swift */; };
+		53D31F4AA047B8ABBF08930F /* FeedProfilePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91C74930FF3D99A6C55A818A /* FeedProfilePresentation.swift */; };
+		1FA5EE759ACAF050809C7F78 /* SampleFeedSource+Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC33E40ED92BD1D0A37296E0 /* SampleFeedSource+Profile.swift */; };
+		E342D8AA0F89875B5755C9D8 /* FeedReportPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01995F60E2479A1B8262E2A9 /* FeedReportPresentation.swift */; };
+		0707D78470BFC29495C77F37 /* FeedReportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 881D283766CCC39EE55B148B /* FeedReportViewController.swift */; };
+		DED222693A17295CE7668A73 /* FeedActionFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA93386D732E13A327CA5C5 /* FeedActionFailure.swift */; };
+		92F15A93988C6181F6BBD14C /* FeedDetailMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817DD8A27EBB6E5E0715C8F1 /* FeedDetailMenu.swift */; };
+		F438B6E84001A2405520CE01 /* FeedCommentInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8454BCDDA271C872B2BA3F /* FeedCommentInputView.swift */; };
+		D223D639B98B11B72CAA37AE /* FeedChangeSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BAA323AEAB28F9BB09590E /* FeedChangeSubscription.swift */; };
+		2FF7EE158FC2C97D45B29EB6 /* FeedCommentInputPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB6A63CB73C31D4FE1871AB7 /* FeedCommentInputPresentation.swift */; };
+		DFE5DCF0FF47C257E10361EB /* FeedCommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40BBBD47A25DDDE9C1DF23E /* FeedCommentCell.swift */; };
+		6E46782443FC7E0F36A67EAB /* FeedPostDetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A84BE533D4A7817DEB04B13 /* FeedPostDetailPresentation.swift */; };
+		1BE521762CF92AB3CDA9A9A4 /* FeedPostDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1881359A678683B8568097 /* FeedPostDetailViewController.swift */; };
+		FD9E0C6DB4EC31349EF124C4 /* FeedAPI+Comments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676ED34A862D5A111A91B816 /* FeedAPI+Comments.swift */; };
+		60765FA5BFDE7BAD5A7C33A4 /* FeedAPI+Posts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB525B61AA46603D0128929 /* FeedAPI+Posts.swift */; };
+		2A68508B730F8BEA38EA883B /* FeedAPI+Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDCD4A367275508FCE039EF /* FeedAPI+Profile.swift */; };
+		5236B9D5726A461FB6095528 /* FeedAPI+Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA98A8E0A9E17C61C2358481 /* FeedAPI+Settings.swift */; };
+		3EBC91190198E461F0223388 /* FeedAPI+Upload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F873C39461D8B8CCE48D399 /* FeedAPI+Upload.swift */; };
+		53F6A811B079B2A05CAA5A77 /* FeedAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28BF5272E3387E844B6A856 /* FeedAuth.swift */; };
+		893C1202576FDAC7BFE12DEB /* FeedBackupExclusion+UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86372C664E0F11D70E3425C8 /* FeedBackupExclusion+UIKit.swift */; };
+		B0208485DD4D8E98CB1B9B95 /* FeedBlockedKeywords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A804C704E2EBB0E6B7CC489 /* FeedBlockedKeywords.swift */; };
+		90131F366E72F5A2EF283E5C /* FeedCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC24F87024BA626ED41F421 /* FeedCapabilities.swift */; };
+		DFFF2AC652066556CE1B9066 /* FeedCardActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D710FAF952B95A73A163336 /* FeedCardActions.swift */; };
+		95E12F45500D3C0BB7D3F370 /* FeedChromeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6385380337EF903FDAF998A /* FeedChromeState.swift */; };
+		2769EF0522BC197D1FAD5593 /* FeedCommentThreads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74528E870C8BA05D9A5D5A63 /* FeedCommentThreads.swift */; };
+		4CE45080D831156B9ECA9984 /* FeedComposeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA79659BDEB4962DBD88743 /* FeedComposeStore.swift */; };
+		D3EC50B8790D661777DA9D25 /* FeedComposeSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36ED1843896D5ECC066102C9 /* FeedComposeSupport.swift */; };
+		F13DAD4190B6925D49CDD0EA /* FeedDetailEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD29BDC951B85C49CF51CA6 /* FeedDetailEvents.swift */; };
+		A2AEE9415B2B74F7762F027F /* FeedEntryCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6A1D47909FF241874C83EA /* FeedEntryCheck.swift */; };
+		DDFED79916ECAE7319B7AFB0 /* FeedFriendSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD2C0A9321CAD5A4D4E5 /* FeedFriendSync.swift */; };
+		71F3FCB20CC84BFBF09FC3CD /* FeedImageEncoder+UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FEBBA90D92153CCEFB4E90A /* FeedImageEncoder+UIKit.swift */; };
+		95C6643DD4A143110DD75185 /* FeedImageUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77ADB2078F6276E6E88B6D61 /* FeedImageUploader.swift */; };
+		53E97E73C0D504A32AB1D9AB /* FeedInputLimit.swift in Sources */ = {isa = PBXBuildFile; fileRef = C592097799803DC9FA8B6D70 /* FeedInputLimit.swift */; };
+		999C6F8B7164D76A30DF2943 /* FeedLocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897CB093540FE961B62EAF03 /* FeedLocalStorage.swift */; };
+		D6640BAF6CA3220FC47394FA /* FeedMinorTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E6ADF4711A6F667FDD5861 /* FeedMinorTime.swift */; };
+		B5FBE2EC2626416D8CB9BDC7 /* FeedMyPosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5890974B6B690C37242317F7 /* FeedMyPosts.swift */; };
+		998EE314C7DB11D55CFF49EE /* FeedNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109740BD0BC469270C81CAA6 /* FeedNotifications.swift */; };
+		8C0A02B526FFBB80A9F92EA6 /* FeedPostDetailStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6235BB259D4A2A60455AB6B3 /* FeedPostDetailStore.swift */; };
+		0FB90CC9097641D7852EDA1D /* FeedPostLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1904C3AFCCB52176C2BB43F2 /* FeedPostLink.swift */; };
+		1796FCE099A388C979248309 /* FeedProfileEditStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DCED25B9E656EC095F18049 /* FeedProfileEditStore.swift */; };
+		5C65B897D9F3640AA9C0E1D5 /* FeedProfilePageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA39D6F222DD206E8F384EC /* FeedProfilePageStore.swift */; };
+		153E1448E465A316E642852C /* FeedRecommendationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53BFD00484DCB5CDD0F27E11 /* FeedRecommendationSettings.swift */; };
+		B6207AE771673866586D10AE /* FeedReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F71435B37752664FABE0B4 /* FeedReport.swift */; };
+		B60000175FB466FAC134C5A1 /* FeedRetryAfter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3075BA5FADE8FA7C0D05F9F2 /* FeedRetryAfter.swift */; };
+		3F4452FAD1746048117D4475 /* FeedSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF6250FF30816CFC3A50967 /* FeedSearch.swift */; };
+		799EA4F1A34644D868245B76 /* FeedSigner+UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84C22163D9BD78AA874C8F5 /* FeedSigner+UIKit.swift */; };
+		4101B70AC76E45E8CA908498 /* FeedSignerCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392EB9865378EE867CEDF9B6 /* FeedSignerCore.swift */; };
+		74352B2B5F0F730C84A8D125 /* FeedTextCap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CAE5839EC908BB8BB238389 /* FeedTextCap.swift */; };
+		3DDD64FA00295AB19DD86BC9 /* FeedTopic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87CFCF704AA85D17271B8988 /* FeedTopic.swift */; };
 		4CD26720DD03C3F4EF27FD73 /* TellomiLivePhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD14C4543413216B57721E4 /* TellomiLivePhotoView.swift */; };
 		354DB2048B36902C0D5CC925 /* TellomiLivePhotoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E312428E838335DEAF14C31 /* TellomiLivePhotoTests.swift */; };
 		F7CD99FCD111A4BC584A91CB /* TellomiLivePhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE2420AD03CC6CA7C790D2F /* TellomiLivePhoto.swift */; };
@@ -4737,11 +4885,159 @@
 		7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAPI.swift; sourceTree = "<group>"; };
 		8A93B0DFBCC7C033684326DD /* FeedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedModels.swift; sourceTree = "<group>"; };
 		E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTabTests.swift; sourceTree = "<group>"; };
+		1392DFE2CC76CFD8FE25BED2 /* TellomiFeedMinorSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMinorSessionTests.swift; sourceTree = "<group>"; };
+		F953A782D9BEEA9C1BD8A57C /* TellomiFeedMinorGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMinorGateTests.swift; sourceTree = "<group>"; };
+		A458340A1ACC132319998911 /* TellomiFeedMinorLockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMinorLockUITests.swift; sourceTree = "<group>"; };
+		F702E65122B421921B6918BB /* TellomiFeedEventsWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsWiringTests.swift; sourceTree = "<group>"; };
+		B9F3CF42383FDDEC7E1B7ACF /* TellomiFeedEventsWiringUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsWiringUITests.swift; sourceTree = "<group>"; };
+		8EDA759BAC9ACF0B0568C55E /* TellomiFeedFixes3UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedFixes3UITests.swift; sourceTree = "<group>"; };
+		3BDF90BC3E2B5B251453ADD7 /* TellomiFeedDetailExtrasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailExtrasTests.swift; sourceTree = "<group>"; };
+		3DC26DCBF099A34B4942FE48 /* TellomiFeedDetailExtrasUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailExtrasUITests.swift; sourceTree = "<group>"; };
+		22FB0DF08D3383FD3CBE7F78 /* TellomiFeedArticleReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedArticleReaderTests.swift; sourceTree = "<group>"; };
+		4738B01EB380F029EF206B2C /* TellomiFeedArticleReaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedArticleReaderUITests.swift; sourceTree = "<group>"; };
+		63F33942E55A0FA4B197C110 /* TellomiFeedListsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedListsTests.swift; sourceTree = "<group>"; };
+		136DB56964F4817EB3D94487 /* TellomiFeedListsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedListsUITests.swift; sourceTree = "<group>"; };
+		27D35D522AEB8870970934B4 /* TellomiFeedComposeExtrasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedComposeExtrasTests.swift; sourceTree = "<group>"; };
+		C289E427218591ACC4548C8A /* TellomiFeedComposeExtrasUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedComposeExtrasUITests.swift; sourceTree = "<group>"; };
+		2553E473777A26DE5807AF9F /* TellomiFeedDynamicTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDynamicTypeTests.swift; sourceTree = "<group>"; };
+		AD24367058906D4FED9C0B67 /* TellomiFeedDynamicTypeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDynamicTypeUITests.swift; sourceTree = "<group>"; };
+		992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsUITests.swift; sourceTree = "<group>"; };
+		AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsPageTests.swift; sourceTree = "<group>"; };
+		8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsEntryUITests.swift; sourceTree = "<group>"; };
+		147A54EED775C31C21BBDBE7 /* TellomiFeedMyPostsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsUITests.swift; sourceTree = "<group>"; };
+		93CFDD7E7721195D538D5747 /* TellomiFeedMyPostsSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsSyncTests.swift; sourceTree = "<group>"; };
+		10AC16AA36CAED8CC459E4E0 /* TellomiFeedNotificationSettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedNotificationSettingsUITests.swift; sourceTree = "<group>"; };
+		7C992CD562B18C56B21F72B5 /* TellomiFeedNotificationsEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedNotificationsEntryUITests.swift; sourceTree = "<group>"; };
+		D36D752B9570B4E7EF821B23 /* TellomiFeedNotificationsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedNotificationsUITests.swift; sourceTree = "<group>"; };
+		9A19AA66656D5FCD75CB0CFA /* TellomiFeedNotifySyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedNotifySyncTests.swift; sourceTree = "<group>"; };
+		60D79D58914F450FB927EB78 /* TellomiFeedSearchEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSearchEntryUITests.swift; sourceTree = "<group>"; };
+		07C52E1B0D0503C7253ADB03 /* TellomiFeedSearchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSearchUITests.swift; sourceTree = "<group>"; };
+		8EE385F8A34C3EE2FD9FEB50 /* TellomiFeedTopicUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTopicUITests.swift; sourceTree = "<group>"; };
+		15A8D2B1E218A1F62B301632 /* TellomiFeedSearchSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSearchSyncTests.swift; sourceTree = "<group>"; };
+		B47BC58DE45B65D934D59278 /* TellomiFeedProfileUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedProfileUITests.swift; sourceTree = "<group>"; };
+		9C4B686CFF95ADA4014F4773 /* TellomiFeedProfileSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedProfileSyncTests.swift; sourceTree = "<group>"; };
+		473B0BD9A8DB82025011EA0A /* TellomiFeedReportUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedReportUITests.swift; sourceTree = "<group>"; };
+		49AE34C82F2349A7B22EDA8C /* TellomiFeedDetailMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailMenuTests.swift; sourceTree = "<group>"; };
+		A1793BFE25D130568C02CC13 /* TellomiFeedDetailUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailUITests.swift; sourceTree = "<group>"; };
+		3D66797A27D854A6CFC7A347 /* TellomiFeedDetailSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailSyncTests.swift; sourceTree = "<group>"; };
+		8943DC99BC040A1ED382E804 /* TellomiFeedDetailPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailPresentationTests.swift; sourceTree = "<group>"; };
+		D36CACC8E228CDD83B574BF6 /* TellomiFeedAuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedAuthTests.swift; sourceTree = "<group>"; };
+		7CD7ED759C2BA43BECA69A89 /* TellomiFeedCapabilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedCapabilitiesTests.swift; sourceTree = "<group>"; };
+		B3A528EEC38D06C9ADA987DA /* TellomiFeedCardActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedCardActionsTests.swift; sourceTree = "<group>"; };
+		2D9EE2E224F6BDD2B9386726 /* TellomiFeedChromeStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedChromeStateTests.swift; sourceTree = "<group>"; };
+		4B00FAEE52662A32CDDA552C /* TellomiFeedComposeCompletionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedComposeCompletionTests.swift; sourceTree = "<group>"; };
+		813E9C0FEE82AE3C98A68B69 /* TellomiFeedDetailEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDetailEventsTests.swift; sourceTree = "<group>"; };
+		EB77E7EBC732823818D16B1E /* TellomiFeedEngineModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEngineModelsTests.swift; sourceTree = "<group>"; };
+		FF1FA76350FF9A36D0F28AD1 /* TellomiFeedEventsApiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsApiTests.swift; sourceTree = "<group>"; };
+		674FA3AEBE118E61AFD74142 /* TellomiFeedFriendsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedFriendsTests.swift; sourceTree = "<group>"; };
+		0A688429B993F49A48CD1BC1 /* TellomiFeedInputLimitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedInputLimitTests.swift; sourceTree = "<group>"; };
+		6DDD8C45B1F72A88AC0A267C /* TellomiFeedLocalStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedLocalStorageTests.swift; sourceTree = "<group>"; };
+		4928F0F6D0EAC218EEDBE72D /* TellomiFeedMinorTimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMinorTimeTests.swift; sourceTree = "<group>"; };
+		87FA49FF436212B5F4926D07 /* TellomiFeedMyPostsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsTests.swift; sourceTree = "<group>"; };
+		2AFE3C484C896FF30CEDBA67 /* TellomiFeedNotificationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedNotificationsTests.swift; sourceTree = "<group>"; };
+		5B7A1B4275B6870B015BD32E /* TellomiFeedPostDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedPostDetailTests.swift; sourceTree = "<group>"; };
+		8CAC6C85524ED91B43ADCD48 /* TellomiFeedPostLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedPostLinkTests.swift; sourceTree = "<group>"; };
+		1E14787FADBCDB51DEDA10B2 /* TellomiFeedProfileEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedProfileEditTests.swift; sourceTree = "<group>"; };
+		D817C0D60E6F23558247AA56 /* TellomiFeedProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedProfileTests.swift; sourceTree = "<group>"; };
+		F759A29E621AEC22B387C2C8 /* TellomiFeedRemoteSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedRemoteSourceTests.swift; sourceTree = "<group>"; };
+		1DB122689392B844810E2C65 /* TellomiFeedReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedReportTests.swift; sourceTree = "<group>"; };
+		511707CD0A92AFBD82E6060D /* TellomiFeedRetryAfterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedRetryAfterTests.swift; sourceTree = "<group>"; };
+		E7E56092FCB514087322C66E /* TellomiFeedSearchTopicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSearchTopicTests.swift; sourceTree = "<group>"; };
+		B0204D433767FBD29801BC16 /* TellomiFeedSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsTests.swift; sourceTree = "<group>"; };
+		389AD4FAD45B7B7DF2C645F8 /* TellomiFeedSignerResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSignerResponseTests.swift; sourceTree = "<group>"; };
+		69E5227BBEDCA45E70741C93 /* TellomiFeedTextCapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTextCapTests.swift; sourceTree = "<group>"; };
+		47C9E851977121F896156C67 /* TellomiFeedUploadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedUploadTests.swift; sourceTree = "<group>"; };
 		D6F5B0135B9A2197B1D81FFA /* FeedTimelineViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTimelineViewController.swift; sourceTree = "<group>"; };
 		6E5B2471F73EB6D124BE0A82 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
 		FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopBarView.swift; sourceTree = "<group>"; };
 		FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTab.swift; sourceTree = "<group>"; };
 		81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeed.swift; sourceTree = "<group>"; };
+		2A0AB6166367BB9FF7AB0C23 /* FeedMinorLockController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMinorLockController.swift; sourceTree = "<group>"; };
+		EF0F522CB44FFA7E2229C252 /* FeedMinorGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMinorGate.swift; sourceTree = "<group>"; };
+		CEBDF7D5D9491BD2EA79FFC9 /* FeedMinorLockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMinorLockView.swift; sourceTree = "<group>"; };
+		489FEF2AA803CFA8F67C4044 /* FeedDetailActionsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDetailActionsCell.swift; sourceTree = "<group>"; };
+		CCCFE6DFC1545C2C9FE03B99 /* FeedDetailExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDetailExtras.swift; sourceTree = "<group>"; };
+		125DFF06DA974089B1ED404E /* FeedPollCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPollCell.swift; sourceTree = "<group>"; };
+		3BE637D6755AA09627B0F889 /* FeedVoiceClipPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedVoiceClipPlayer.swift; sourceTree = "<group>"; };
+		E400A6BA9D444D7AFBF831E8 /* SampleFeedSource+DetailExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+DetailExtras.swift"; sourceTree = "<group>"; };
+		F14039E9323F0131D1CEFA5D /* FeedArticleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedArticleCell.swift; sourceTree = "<group>"; };
+		F5BBC9DA9D8BF6E4E055C2B2 /* FeedArticleReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedArticleReader.swift; sourceTree = "<group>"; };
+		8226E1262BD7788243C5532F /* FeedClosePeopleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedClosePeopleViewController.swift; sourceTree = "<group>"; };
+		8EC028779D56CF28E8CE0891 /* FeedListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedListsViewController.swift; sourceTree = "<group>"; };
+		9336AB832C6511F3CCDB2B0E /* FeedPeopleLists.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPeopleLists.swift; sourceTree = "<group>"; };
+		07933137A99FABF6ACA2D63D /* FeedPeopleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPeopleViewController.swift; sourceTree = "<group>"; };
+		B8BA0985A51828771CE680C3 /* SampleFeedSource+Lists.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+Lists.swift"; sourceTree = "<group>"; };
+		BD01B857D142762352DE76A3 /* FeedAudiencePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAudiencePicker.swift; sourceTree = "<group>"; };
+		613AAE2AE430D8FB82CBB92D /* FeedAudiencePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAudiencePickerViewController.swift; sourceTree = "<group>"; };
+		4105A9FDCA182CDEEBF97DD3 /* FeedComposeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedComposeLayout.swift; sourceTree = "<group>"; };
+		25C5AD57484D93140D59E145 /* FeedDraftEntryHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDraftEntryHeader.swift; sourceTree = "<group>"; };
+		E88E06B76180C9C1E2571044 /* FeedDynamicTypeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDynamicTypeLayout.swift; sourceTree = "<group>"; };
+		4AC0C0E84D322CD48BE474A1 /* FeedDynamicTypeSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDynamicTypeSupport.swift; sourceTree = "<group>"; };
+		F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedKeywordFormViewController.swift; sourceTree = "<group>"; };
+		D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedRecommendationSettingsViewController.swift; sourceTree = "<group>"; };
+		28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSettingsPresentation.swift; sourceTree = "<group>"; };
+		1652D13E3BF0C01283E6AFA6 /* SampleFeedSource+Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+Settings.swift"; sourceTree = "<group>"; };
+		A5C4460A5AAE6700DAED3922 /* FeedMyPostsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMyPostsViewController.swift; sourceTree = "<group>"; };
+		BF3A403B1CD183AAEC46D57F /* FeedMyPostsPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMyPostsPresentation.swift; sourceTree = "<group>"; };
+		45EA32F4B2724481ED89AF79 /* SampleFeedSource+MyPosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+MyPosts.swift"; sourceTree = "<group>"; };
+		BB5EAA72FFA678195163E2A5 /* FeedNotificationSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedNotificationSettingsViewController.swift; sourceTree = "<group>"; };
+		4C99009ED369196779890D9A /* FeedNotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedNotificationsViewController.swift; sourceTree = "<group>"; };
+		3E35FB68A51AB6CD35DA4D13 /* FeedNotificationsPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedNotificationsPresentation.swift; sourceTree = "<group>"; };
+		F6ECA6D77E684918A2E960B4 /* SampleFeedSource+Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+Notifications.swift"; sourceTree = "<group>"; };
+		913D4EC2383B7B58EA1CF510 /* FeedSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSearchViewController.swift; sourceTree = "<group>"; };
+		6EC7B046A7ECE9AD6C45B6A9 /* FeedTopicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopicViewController.swift; sourceTree = "<group>"; };
+		3EF24A32362FE46B58449BC1 /* FeedCardMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCardMirror.swift; sourceTree = "<group>"; };
+		93FC8947545244F58DC971B7 /* FeedSearchPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSearchPresentation.swift; sourceTree = "<group>"; };
+		DB441D601096728D2C354CF1 /* SampleFeedSource+Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+Search.swift"; sourceTree = "<group>"; };
+		10EA92003FFADA01EC3E7B35 /* FeedProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedProfileViewController.swift; sourceTree = "<group>"; };
+		91C74930FF3D99A6C55A818A /* FeedProfilePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedProfilePresentation.swift; sourceTree = "<group>"; };
+		BC33E40ED92BD1D0A37296E0 /* SampleFeedSource+Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleFeedSource+Profile.swift"; sourceTree = "<group>"; };
+		01995F60E2479A1B8262E2A9 /* FeedReportPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedReportPresentation.swift; sourceTree = "<group>"; };
+		881D283766CCC39EE55B148B /* FeedReportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedReportViewController.swift; sourceTree = "<group>"; };
+		2CA93386D732E13A327CA5C5 /* FeedActionFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedActionFailure.swift; sourceTree = "<group>"; };
+		817DD8A27EBB6E5E0715C8F1 /* FeedDetailMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDetailMenu.swift; sourceTree = "<group>"; };
+		BC8454BCDDA271C872B2BA3F /* FeedCommentInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentInputView.swift; sourceTree = "<group>"; };
+		C3BAA323AEAB28F9BB09590E /* FeedChangeSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedChangeSubscription.swift; sourceTree = "<group>"; };
+		DB6A63CB73C31D4FE1871AB7 /* FeedCommentInputPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentInputPresentation.swift; sourceTree = "<group>"; };
+		B40BBBD47A25DDDE9C1DF23E /* FeedCommentCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentCell.swift; sourceTree = "<group>"; };
+		2A84BE533D4A7817DEB04B13 /* FeedPostDetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPostDetailPresentation.swift; sourceTree = "<group>"; };
+		9F1881359A678683B8568097 /* FeedPostDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPostDetailViewController.swift; sourceTree = "<group>"; };
+		676ED34A862D5A111A91B816 /* FeedAPI+Comments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedAPI+Comments.swift"; sourceTree = "<group>"; };
+		7AB525B61AA46603D0128929 /* FeedAPI+Posts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedAPI+Posts.swift"; sourceTree = "<group>"; };
+		2DDCD4A367275508FCE039EF /* FeedAPI+Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedAPI+Profile.swift"; sourceTree = "<group>"; };
+		EA98A8E0A9E17C61C2358481 /* FeedAPI+Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedAPI+Settings.swift"; sourceTree = "<group>"; };
+		6F873C39461D8B8CCE48D399 /* FeedAPI+Upload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedAPI+Upload.swift"; sourceTree = "<group>"; };
+		E28BF5272E3387E844B6A856 /* FeedAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAuth.swift; sourceTree = "<group>"; };
+		86372C664E0F11D70E3425C8 /* FeedBackupExclusion+UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedBackupExclusion+UIKit.swift"; sourceTree = "<group>"; };
+		3A804C704E2EBB0E6B7CC489 /* FeedBlockedKeywords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedBlockedKeywords.swift; sourceTree = "<group>"; };
+		CFC24F87024BA626ED41F421 /* FeedCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCapabilities.swift; sourceTree = "<group>"; };
+		4D710FAF952B95A73A163336 /* FeedCardActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCardActions.swift; sourceTree = "<group>"; };
+		D6385380337EF903FDAF998A /* FeedChromeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedChromeState.swift; sourceTree = "<group>"; };
+		74528E870C8BA05D9A5D5A63 /* FeedCommentThreads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentThreads.swift; sourceTree = "<group>"; };
+		4AA79659BDEB4962DBD88743 /* FeedComposeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedComposeStore.swift; sourceTree = "<group>"; };
+		36ED1843896D5ECC066102C9 /* FeedComposeSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedComposeSupport.swift; sourceTree = "<group>"; };
+		ABD29BDC951B85C49CF51CA6 /* FeedDetailEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDetailEvents.swift; sourceTree = "<group>"; };
+		3F6A1D47909FF241874C83EA /* FeedEntryCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEntryCheck.swift; sourceTree = "<group>"; };
+		7808CD2C0A9321CAD5A4D4E5 /* FeedFriendSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedFriendSync.swift; sourceTree = "<group>"; };
+		1FEBBA90D92153CCEFB4E90A /* FeedImageEncoder+UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedImageEncoder+UIKit.swift"; sourceTree = "<group>"; };
+		77ADB2078F6276E6E88B6D61 /* FeedImageUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedImageUploader.swift; sourceTree = "<group>"; };
+		C592097799803DC9FA8B6D70 /* FeedInputLimit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedInputLimit.swift; sourceTree = "<group>"; };
+		897CB093540FE961B62EAF03 /* FeedLocalStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedLocalStorage.swift; sourceTree = "<group>"; };
+		75E6ADF4711A6F667FDD5861 /* FeedMinorTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMinorTime.swift; sourceTree = "<group>"; };
+		5890974B6B690C37242317F7 /* FeedMyPosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMyPosts.swift; sourceTree = "<group>"; };
+		109740BD0BC469270C81CAA6 /* FeedNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedNotifications.swift; sourceTree = "<group>"; };
+		6235BB259D4A2A60455AB6B3 /* FeedPostDetailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPostDetailStore.swift; sourceTree = "<group>"; };
+		1904C3AFCCB52176C2BB43F2 /* FeedPostLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPostLink.swift; sourceTree = "<group>"; };
+		4DCED25B9E656EC095F18049 /* FeedProfileEditStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedProfileEditStore.swift; sourceTree = "<group>"; };
+		6BA39D6F222DD206E8F384EC /* FeedProfilePageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedProfilePageStore.swift; sourceTree = "<group>"; };
+		53BFD00484DCB5CDD0F27E11 /* FeedRecommendationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedRecommendationSettings.swift; sourceTree = "<group>"; };
+		E8F71435B37752664FABE0B4 /* FeedReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedReport.swift; sourceTree = "<group>"; };
+		3075BA5FADE8FA7C0D05F9F2 /* FeedRetryAfter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedRetryAfter.swift; sourceTree = "<group>"; };
+		4CF6250FF30816CFC3A50967 /* FeedSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSearch.swift; sourceTree = "<group>"; };
+		E84C22163D9BD78AA874C8F5 /* FeedSigner+UIKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FeedSigner+UIKit.swift"; sourceTree = "<group>"; };
+		392EB9865378EE867CEDF9B6 /* FeedSignerCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSignerCore.swift; sourceTree = "<group>"; };
+		0CAE5839EC908BB8BB238389 /* FeedTextCap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTextCap.swift; sourceTree = "<group>"; };
+		87CFCF704AA85D17271B8988 /* FeedTopic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopic.swift; sourceTree = "<group>"; };
 		4FD14C4543413216B57721E4 /* TellomiLivePhotoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLivePhotoView.swift; sourceTree = "<group>"; };
 		0E312428E838335DEAF14C31 /* TellomiLivePhotoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLivePhotoTests.swift; sourceTree = "<group>"; };
 		5AE2420AD03CC6CA7C790D2F /* TellomiLivePhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLivePhoto.swift; sourceTree = "<group>"; };
@@ -9311,6 +9607,92 @@
 				FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */,
 				FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */,
 				81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */,
+				2A0AB6166367BB9FF7AB0C23 /* FeedMinorLockController.swift */,
+				EF0F522CB44FFA7E2229C252 /* FeedMinorGate.swift */,
+				CEBDF7D5D9491BD2EA79FFC9 /* FeedMinorLockView.swift */,
+				489FEF2AA803CFA8F67C4044 /* FeedDetailActionsCell.swift */,
+				CCCFE6DFC1545C2C9FE03B99 /* FeedDetailExtras.swift */,
+				125DFF06DA974089B1ED404E /* FeedPollCell.swift */,
+				3BE637D6755AA09627B0F889 /* FeedVoiceClipPlayer.swift */,
+				E400A6BA9D444D7AFBF831E8 /* SampleFeedSource+DetailExtras.swift */,
+				F14039E9323F0131D1CEFA5D /* FeedArticleCell.swift */,
+				F5BBC9DA9D8BF6E4E055C2B2 /* FeedArticleReader.swift */,
+				8226E1262BD7788243C5532F /* FeedClosePeopleViewController.swift */,
+				8EC028779D56CF28E8CE0891 /* FeedListsViewController.swift */,
+				9336AB832C6511F3CCDB2B0E /* FeedPeopleLists.swift */,
+				07933137A99FABF6ACA2D63D /* FeedPeopleViewController.swift */,
+				B8BA0985A51828771CE680C3 /* SampleFeedSource+Lists.swift */,
+				BD01B857D142762352DE76A3 /* FeedAudiencePicker.swift */,
+				613AAE2AE430D8FB82CBB92D /* FeedAudiencePickerViewController.swift */,
+				4105A9FDCA182CDEEBF97DD3 /* FeedComposeLayout.swift */,
+				25C5AD57484D93140D59E145 /* FeedDraftEntryHeader.swift */,
+				E88E06B76180C9C1E2571044 /* FeedDynamicTypeLayout.swift */,
+				4AC0C0E84D322CD48BE474A1 /* FeedDynamicTypeSupport.swift */,
+				F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */,
+				D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */,
+				28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */,
+				1652D13E3BF0C01283E6AFA6 /* SampleFeedSource+Settings.swift */,
+				A5C4460A5AAE6700DAED3922 /* FeedMyPostsViewController.swift */,
+				BF3A403B1CD183AAEC46D57F /* FeedMyPostsPresentation.swift */,
+				45EA32F4B2724481ED89AF79 /* SampleFeedSource+MyPosts.swift */,
+				BB5EAA72FFA678195163E2A5 /* FeedNotificationSettingsViewController.swift */,
+				4C99009ED369196779890D9A /* FeedNotificationsViewController.swift */,
+				3E35FB68A51AB6CD35DA4D13 /* FeedNotificationsPresentation.swift */,
+				F6ECA6D77E684918A2E960B4 /* SampleFeedSource+Notifications.swift */,
+				913D4EC2383B7B58EA1CF510 /* FeedSearchViewController.swift */,
+				6EC7B046A7ECE9AD6C45B6A9 /* FeedTopicViewController.swift */,
+				3EF24A32362FE46B58449BC1 /* FeedCardMirror.swift */,
+				93FC8947545244F58DC971B7 /* FeedSearchPresentation.swift */,
+				DB441D601096728D2C354CF1 /* SampleFeedSource+Search.swift */,
+				10EA92003FFADA01EC3E7B35 /* FeedProfileViewController.swift */,
+				91C74930FF3D99A6C55A818A /* FeedProfilePresentation.swift */,
+				BC33E40ED92BD1D0A37296E0 /* SampleFeedSource+Profile.swift */,
+				01995F60E2479A1B8262E2A9 /* FeedReportPresentation.swift */,
+				881D283766CCC39EE55B148B /* FeedReportViewController.swift */,
+				2CA93386D732E13A327CA5C5 /* FeedActionFailure.swift */,
+				817DD8A27EBB6E5E0715C8F1 /* FeedDetailMenu.swift */,
+				BC8454BCDDA271C872B2BA3F /* FeedCommentInputView.swift */,
+				C3BAA323AEAB28F9BB09590E /* FeedChangeSubscription.swift */,
+				DB6A63CB73C31D4FE1871AB7 /* FeedCommentInputPresentation.swift */,
+				B40BBBD47A25DDDE9C1DF23E /* FeedCommentCell.swift */,
+				2A84BE533D4A7817DEB04B13 /* FeedPostDetailPresentation.swift */,
+				9F1881359A678683B8568097 /* FeedPostDetailViewController.swift */,
+				676ED34A862D5A111A91B816 /* FeedAPI+Comments.swift */,
+				7AB525B61AA46603D0128929 /* FeedAPI+Posts.swift */,
+				2DDCD4A367275508FCE039EF /* FeedAPI+Profile.swift */,
+				EA98A8E0A9E17C61C2358481 /* FeedAPI+Settings.swift */,
+				6F873C39461D8B8CCE48D399 /* FeedAPI+Upload.swift */,
+				E28BF5272E3387E844B6A856 /* FeedAuth.swift */,
+				86372C664E0F11D70E3425C8 /* FeedBackupExclusion+UIKit.swift */,
+				3A804C704E2EBB0E6B7CC489 /* FeedBlockedKeywords.swift */,
+				CFC24F87024BA626ED41F421 /* FeedCapabilities.swift */,
+				4D710FAF952B95A73A163336 /* FeedCardActions.swift */,
+				D6385380337EF903FDAF998A /* FeedChromeState.swift */,
+				74528E870C8BA05D9A5D5A63 /* FeedCommentThreads.swift */,
+				4AA79659BDEB4962DBD88743 /* FeedComposeStore.swift */,
+				36ED1843896D5ECC066102C9 /* FeedComposeSupport.swift */,
+				ABD29BDC951B85C49CF51CA6 /* FeedDetailEvents.swift */,
+				3F6A1D47909FF241874C83EA /* FeedEntryCheck.swift */,
+				7808CD2C0A9321CAD5A4D4E5 /* FeedFriendSync.swift */,
+				1FEBBA90D92153CCEFB4E90A /* FeedImageEncoder+UIKit.swift */,
+				77ADB2078F6276E6E88B6D61 /* FeedImageUploader.swift */,
+				C592097799803DC9FA8B6D70 /* FeedInputLimit.swift */,
+				897CB093540FE961B62EAF03 /* FeedLocalStorage.swift */,
+				75E6ADF4711A6F667FDD5861 /* FeedMinorTime.swift */,
+				5890974B6B690C37242317F7 /* FeedMyPosts.swift */,
+				109740BD0BC469270C81CAA6 /* FeedNotifications.swift */,
+				6235BB259D4A2A60455AB6B3 /* FeedPostDetailStore.swift */,
+				1904C3AFCCB52176C2BB43F2 /* FeedPostLink.swift */,
+				4DCED25B9E656EC095F18049 /* FeedProfileEditStore.swift */,
+				6BA39D6F222DD206E8F384EC /* FeedProfilePageStore.swift */,
+				53BFD00484DCB5CDD0F27E11 /* FeedRecommendationSettings.swift */,
+				E8F71435B37752664FABE0B4 /* FeedReport.swift */,
+				3075BA5FADE8FA7C0D05F9F2 /* FeedRetryAfter.swift */,
+				4CF6250FF30816CFC3A50967 /* FeedSearch.swift */,
+				E84C22163D9BD78AA874C8F5 /* FeedSigner+UIKit.swift */,
+				392EB9865378EE867CEDF9B6 /* FeedSignerCore.swift */,
+				0CAE5839EC908BB8BB238389 /* FeedTextCap.swift */,
+				87CFCF704AA85D17271B8988 /* FeedTopic.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -10379,6 +10761,68 @@
 				B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */,
 				3EA81FA0FB2FA755202E7A4D /* TellomiFeedClientTests.swift */,
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
+				1392DFE2CC76CFD8FE25BED2 /* TellomiFeedMinorSessionTests.swift */,
+				F953A782D9BEEA9C1BD8A57C /* TellomiFeedMinorGateTests.swift */,
+				A458340A1ACC132319998911 /* TellomiFeedMinorLockUITests.swift */,
+				F702E65122B421921B6918BB /* TellomiFeedEventsWiringTests.swift */,
+				B9F3CF42383FDDEC7E1B7ACF /* TellomiFeedEventsWiringUITests.swift */,
+				8EDA759BAC9ACF0B0568C55E /* TellomiFeedFixes3UITests.swift */,
+				3BDF90BC3E2B5B251453ADD7 /* TellomiFeedDetailExtrasTests.swift */,
+				3DC26DCBF099A34B4942FE48 /* TellomiFeedDetailExtrasUITests.swift */,
+				22FB0DF08D3383FD3CBE7F78 /* TellomiFeedArticleReaderTests.swift */,
+				4738B01EB380F029EF206B2C /* TellomiFeedArticleReaderUITests.swift */,
+				63F33942E55A0FA4B197C110 /* TellomiFeedListsTests.swift */,
+				136DB56964F4817EB3D94487 /* TellomiFeedListsUITests.swift */,
+				27D35D522AEB8870970934B4 /* TellomiFeedComposeExtrasTests.swift */,
+				C289E427218591ACC4548C8A /* TellomiFeedComposeExtrasUITests.swift */,
+				2553E473777A26DE5807AF9F /* TellomiFeedDynamicTypeTests.swift */,
+				AD24367058906D4FED9C0B67 /* TellomiFeedDynamicTypeUITests.swift */,
+				992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */,
+				AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */,
+				8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */,
+				147A54EED775C31C21BBDBE7 /* TellomiFeedMyPostsUITests.swift */,
+				93CFDD7E7721195D538D5747 /* TellomiFeedMyPostsSyncTests.swift */,
+				10AC16AA36CAED8CC459E4E0 /* TellomiFeedNotificationSettingsUITests.swift */,
+				7C992CD562B18C56B21F72B5 /* TellomiFeedNotificationsEntryUITests.swift */,
+				D36D752B9570B4E7EF821B23 /* TellomiFeedNotificationsUITests.swift */,
+				9A19AA66656D5FCD75CB0CFA /* TellomiFeedNotifySyncTests.swift */,
+				60D79D58914F450FB927EB78 /* TellomiFeedSearchEntryUITests.swift */,
+				07C52E1B0D0503C7253ADB03 /* TellomiFeedSearchUITests.swift */,
+				8EE385F8A34C3EE2FD9FEB50 /* TellomiFeedTopicUITests.swift */,
+				15A8D2B1E218A1F62B301632 /* TellomiFeedSearchSyncTests.swift */,
+				B47BC58DE45B65D934D59278 /* TellomiFeedProfileUITests.swift */,
+				9C4B686CFF95ADA4014F4773 /* TellomiFeedProfileSyncTests.swift */,
+				473B0BD9A8DB82025011EA0A /* TellomiFeedReportUITests.swift */,
+				49AE34C82F2349A7B22EDA8C /* TellomiFeedDetailMenuTests.swift */,
+				A1793BFE25D130568C02CC13 /* TellomiFeedDetailUITests.swift */,
+				3D66797A27D854A6CFC7A347 /* TellomiFeedDetailSyncTests.swift */,
+				8943DC99BC040A1ED382E804 /* TellomiFeedDetailPresentationTests.swift */,
+				D36CACC8E228CDD83B574BF6 /* TellomiFeedAuthTests.swift */,
+				7CD7ED759C2BA43BECA69A89 /* TellomiFeedCapabilitiesTests.swift */,
+				B3A528EEC38D06C9ADA987DA /* TellomiFeedCardActionsTests.swift */,
+				2D9EE2E224F6BDD2B9386726 /* TellomiFeedChromeStateTests.swift */,
+				4B00FAEE52662A32CDDA552C /* TellomiFeedComposeCompletionTests.swift */,
+				813E9C0FEE82AE3C98A68B69 /* TellomiFeedDetailEventsTests.swift */,
+				EB77E7EBC732823818D16B1E /* TellomiFeedEngineModelsTests.swift */,
+				FF1FA76350FF9A36D0F28AD1 /* TellomiFeedEventsApiTests.swift */,
+				674FA3AEBE118E61AFD74142 /* TellomiFeedFriendsTests.swift */,
+				0A688429B993F49A48CD1BC1 /* TellomiFeedInputLimitTests.swift */,
+				6DDD8C45B1F72A88AC0A267C /* TellomiFeedLocalStorageTests.swift */,
+				4928F0F6D0EAC218EEDBE72D /* TellomiFeedMinorTimeTests.swift */,
+				87FA49FF436212B5F4926D07 /* TellomiFeedMyPostsTests.swift */,
+				2AFE3C484C896FF30CEDBA67 /* TellomiFeedNotificationsTests.swift */,
+				5B7A1B4275B6870B015BD32E /* TellomiFeedPostDetailTests.swift */,
+				8CAC6C85524ED91B43ADCD48 /* TellomiFeedPostLinkTests.swift */,
+				1E14787FADBCDB51DEDA10B2 /* TellomiFeedProfileEditTests.swift */,
+				D817C0D60E6F23558247AA56 /* TellomiFeedProfileTests.swift */,
+				F759A29E621AEC22B387C2C8 /* TellomiFeedRemoteSourceTests.swift */,
+				1DB122689392B844810E2C65 /* TellomiFeedReportTests.swift */,
+				511707CD0A92AFBD82E6060D /* TellomiFeedRetryAfterTests.swift */,
+				E7E56092FCB514087322C66E /* TellomiFeedSearchTopicTests.swift */,
+				B0204D433767FBD29801BC16 /* TellomiFeedSettingsTests.swift */,
+				389AD4FAD45B7B7DF2C645F8 /* TellomiFeedSignerResponseTests.swift */,
+				69E5227BBEDCA45E70741C93 /* TellomiFeedTextCapTests.swift */,
+				47C9E851977121F896156C67 /* TellomiFeedUploadTests.swift */,
 				F9A335C9282F0BF700B5F5FA /* BadgeGiftingChooseBadgeViewControllerStateTest.swift */,
 				CC8AF1A5B874D4FC13BE4BCC /* TellomiNotificationPrimerTest.swift */,
 				D18912ECC3370ED4C2DA27A8 /* TellomiVoiceLevelTests.swift */,
@@ -19442,6 +19886,92 @@
 				3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */,
 				C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */,
 				D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */,
+				FA08E7300BD1BF9E6ADD09E2 /* FeedMinorLockController.swift in Sources */,
+				B965C92615130E1B09D2A703 /* FeedMinorGate.swift in Sources */,
+				B76F9D66705AD5D1B56E8A80 /* FeedMinorLockView.swift in Sources */,
+				F29156850ACB4F842156ABBB /* FeedDetailActionsCell.swift in Sources */,
+				353B6180554D67ABFC223DFB /* FeedDetailExtras.swift in Sources */,
+				82E0CB3A82C926051DFFCEA8 /* FeedPollCell.swift in Sources */,
+				AE22AD66FC53E66AAD5BB80A /* FeedVoiceClipPlayer.swift in Sources */,
+				836EA11C381F55801003C313 /* SampleFeedSource+DetailExtras.swift in Sources */,
+				65D5CB1E1AB35D372BDE2045 /* FeedArticleCell.swift in Sources */,
+				F5FB87C0887A781032BDD81E /* FeedArticleReader.swift in Sources */,
+				759D17D87E217C18F5158CF2 /* FeedClosePeopleViewController.swift in Sources */,
+				5AFECE02189165202634BDE0 /* FeedListsViewController.swift in Sources */,
+				E01C5A2FA0716B654DFF1168 /* FeedPeopleLists.swift in Sources */,
+				89CBFEBBD2A9A69F258D15D7 /* FeedPeopleViewController.swift in Sources */,
+				AE09D7DB2B74B87A7014688A /* SampleFeedSource+Lists.swift in Sources */,
+				F15A851B520CDEE499058F22 /* FeedAudiencePicker.swift in Sources */,
+				4C1245FE8A1427519A461520 /* FeedAudiencePickerViewController.swift in Sources */,
+				8BA737FCE4CC2D76CBB664F8 /* FeedComposeLayout.swift in Sources */,
+				A191B59DCA360D916DCB14E2 /* FeedDraftEntryHeader.swift in Sources */,
+				038E556EF7610E76E7D867AE /* FeedDynamicTypeLayout.swift in Sources */,
+				0B63A44F19E5830EE1C3264A /* FeedDynamicTypeSupport.swift in Sources */,
+				053A5865ADDA0F40D00DDE5F /* FeedKeywordFormViewController.swift in Sources */,
+				A15ED05C5515210515C3150A /* FeedRecommendationSettingsViewController.swift in Sources */,
+				A3334F5690AB056EA03C9B3B /* FeedSettingsPresentation.swift in Sources */,
+				A226E978F551CE747BCB747B /* SampleFeedSource+Settings.swift in Sources */,
+				147A3898AF1E5B5493EF0C70 /* FeedMyPostsViewController.swift in Sources */,
+				6585055581459795F049BBC4 /* FeedMyPostsPresentation.swift in Sources */,
+				2C3C6866F25C16D7B2583C60 /* SampleFeedSource+MyPosts.swift in Sources */,
+				EA7CAAFCAFC9E128682D5A37 /* FeedNotificationSettingsViewController.swift in Sources */,
+				C7B9AF1C4A8926B8995BD292 /* FeedNotificationsViewController.swift in Sources */,
+				8A628FCCAE7123FA886E72C8 /* FeedNotificationsPresentation.swift in Sources */,
+				03F7E1A5AA24D92AAC8A9653 /* SampleFeedSource+Notifications.swift in Sources */,
+				71A183E1E10141500FEC10CF /* FeedSearchViewController.swift in Sources */,
+				DDB809D9A1BC6A90CB5EB3B9 /* FeedTopicViewController.swift in Sources */,
+				2E5BD2A455B91B8CDCB2E19E /* FeedCardMirror.swift in Sources */,
+				A5DBEAD94E4D1F31E38FB6DB /* FeedSearchPresentation.swift in Sources */,
+				BA232777DFD032D37559AE52 /* SampleFeedSource+Search.swift in Sources */,
+				E41036C9CA8712551FD77707 /* FeedProfileViewController.swift in Sources */,
+				53D31F4AA047B8ABBF08930F /* FeedProfilePresentation.swift in Sources */,
+				1FA5EE759ACAF050809C7F78 /* SampleFeedSource+Profile.swift in Sources */,
+				E342D8AA0F89875B5755C9D8 /* FeedReportPresentation.swift in Sources */,
+				0707D78470BFC29495C77F37 /* FeedReportViewController.swift in Sources */,
+				DED222693A17295CE7668A73 /* FeedActionFailure.swift in Sources */,
+				92F15A93988C6181F6BBD14C /* FeedDetailMenu.swift in Sources */,
+				F438B6E84001A2405520CE01 /* FeedCommentInputView.swift in Sources */,
+				D223D639B98B11B72CAA37AE /* FeedChangeSubscription.swift in Sources */,
+				2FF7EE158FC2C97D45B29EB6 /* FeedCommentInputPresentation.swift in Sources */,
+				DFE5DCF0FF47C257E10361EB /* FeedCommentCell.swift in Sources */,
+				6E46782443FC7E0F36A67EAB /* FeedPostDetailPresentation.swift in Sources */,
+				1BE521762CF92AB3CDA9A9A4 /* FeedPostDetailViewController.swift in Sources */,
+				FD9E0C6DB4EC31349EF124C4 /* FeedAPI+Comments.swift in Sources */,
+				60765FA5BFDE7BAD5A7C33A4 /* FeedAPI+Posts.swift in Sources */,
+				2A68508B730F8BEA38EA883B /* FeedAPI+Profile.swift in Sources */,
+				5236B9D5726A461FB6095528 /* FeedAPI+Settings.swift in Sources */,
+				3EBC91190198E461F0223388 /* FeedAPI+Upload.swift in Sources */,
+				53F6A811B079B2A05CAA5A77 /* FeedAuth.swift in Sources */,
+				893C1202576FDAC7BFE12DEB /* FeedBackupExclusion+UIKit.swift in Sources */,
+				B0208485DD4D8E98CB1B9B95 /* FeedBlockedKeywords.swift in Sources */,
+				90131F366E72F5A2EF283E5C /* FeedCapabilities.swift in Sources */,
+				DFFF2AC652066556CE1B9066 /* FeedCardActions.swift in Sources */,
+				95E12F45500D3C0BB7D3F370 /* FeedChromeState.swift in Sources */,
+				2769EF0522BC197D1FAD5593 /* FeedCommentThreads.swift in Sources */,
+				4CE45080D831156B9ECA9984 /* FeedComposeStore.swift in Sources */,
+				D3EC50B8790D661777DA9D25 /* FeedComposeSupport.swift in Sources */,
+				F13DAD4190B6925D49CDD0EA /* FeedDetailEvents.swift in Sources */,
+				A2AEE9415B2B74F7762F027F /* FeedEntryCheck.swift in Sources */,
+				DDFED79916ECAE7319B7AFB0 /* FeedFriendSync.swift in Sources */,
+				71F3FCB20CC84BFBF09FC3CD /* FeedImageEncoder+UIKit.swift in Sources */,
+				95C6643DD4A143110DD75185 /* FeedImageUploader.swift in Sources */,
+				53E97E73C0D504A32AB1D9AB /* FeedInputLimit.swift in Sources */,
+				999C6F8B7164D76A30DF2943 /* FeedLocalStorage.swift in Sources */,
+				D6640BAF6CA3220FC47394FA /* FeedMinorTime.swift in Sources */,
+				B5FBE2EC2626416D8CB9BDC7 /* FeedMyPosts.swift in Sources */,
+				998EE314C7DB11D55CFF49EE /* FeedNotifications.swift in Sources */,
+				8C0A02B526FFBB80A9F92EA6 /* FeedPostDetailStore.swift in Sources */,
+				0FB90CC9097641D7852EDA1D /* FeedPostLink.swift in Sources */,
+				1796FCE099A388C979248309 /* FeedProfileEditStore.swift in Sources */,
+				5C65B897D9F3640AA9C0E1D5 /* FeedProfilePageStore.swift in Sources */,
+				153E1448E465A316E642852C /* FeedRecommendationSettings.swift in Sources */,
+				B6207AE771673866586D10AE /* FeedReport.swift in Sources */,
+				B60000175FB466FAC134C5A1 /* FeedRetryAfter.swift in Sources */,
+				3F4452FAD1746048117D4475 /* FeedSearch.swift in Sources */,
+				799EA4F1A34644D868245B76 /* FeedSigner+UIKit.swift in Sources */,
+				4101B70AC76E45E8CA908498 /* FeedSignerCore.swift in Sources */,
+				74352B2B5F0F730C84A8D125 /* FeedTextCap.swift in Sources */,
+				3DDD64FA00295AB19DD86BC9 /* FeedTopic.swift in Sources */,
 				D91174562E8F35C1009EB756 /* AccountEntropyPoolTextView.swift in Sources */,
 				88E728FF25F0241100A2E4A4 /* AccountSettingsViewController.swift in Sources */,
 				B7AAF126F709681ABCC81C15 /* TellomiLogoutOptionsViewController.swift in Sources */,
@@ -20351,6 +20881,68 @@
 				8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */,
 				66E8ABD7206DBA93C31FE724 /* TellomiFeedClientTests.swift in Sources */,
 				E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */,
+				E8624A5CC85C58DC575375BC /* TellomiFeedMinorSessionTests.swift in Sources */,
+				6C7F393D6400D55D7AA6DC5A /* TellomiFeedMinorGateTests.swift in Sources */,
+				9B407B50126622104AFE3E8F /* TellomiFeedMinorLockUITests.swift in Sources */,
+				CEC64DA39144A56DEB1046EC /* TellomiFeedEventsWiringTests.swift in Sources */,
+				D0B1A9314DB047AC37793A36 /* TellomiFeedEventsWiringUITests.swift in Sources */,
+				1F53E14DBFD62D28E2C4FD1E /* TellomiFeedFixes3UITests.swift in Sources */,
+				F2CBD4A34B018366862D06D0 /* TellomiFeedDetailExtrasTests.swift in Sources */,
+				FEE90D14FB79F249B0167165 /* TellomiFeedDetailExtrasUITests.swift in Sources */,
+				E5FBE2BB02AA2B92D2CC139C /* TellomiFeedArticleReaderTests.swift in Sources */,
+				7D47CC4E715457D4AE85818F /* TellomiFeedArticleReaderUITests.swift in Sources */,
+				DE6B284EAF69F9D8402717D4 /* TellomiFeedListsTests.swift in Sources */,
+				1200DE3DF208B2C19ED65950 /* TellomiFeedListsUITests.swift in Sources */,
+				DC031C3F3FA80AE156798FC8 /* TellomiFeedComposeExtrasTests.swift in Sources */,
+				0496706E9B2BE8096A9F82F6 /* TellomiFeedComposeExtrasUITests.swift in Sources */,
+				DF567CF737A8D027733D723A /* TellomiFeedDynamicTypeTests.swift in Sources */,
+				8EBD8FB9E73A13DCF7E4924D /* TellomiFeedDynamicTypeUITests.swift in Sources */,
+				A0E976F53C8D1073C4C2D795 /* TellomiFeedSettingsUITests.swift in Sources */,
+				5E822B2ACA877D8AA548CA65 /* TellomiFeedSettingsPageTests.swift in Sources */,
+				0918A2389D15BFFE2CB7F1BE /* TellomiFeedMyPostsEntryUITests.swift in Sources */,
+				4696A1A6B3C80E07912169CE /* TellomiFeedMyPostsUITests.swift in Sources */,
+				E93818C64DF48A672F44A385 /* TellomiFeedMyPostsSyncTests.swift in Sources */,
+				89D438FAEB38B1F3E0D13D39 /* TellomiFeedNotificationSettingsUITests.swift in Sources */,
+				5FA00E04464E33D8AF4AE0B8 /* TellomiFeedNotificationsEntryUITests.swift in Sources */,
+				AA00E6B3DFEB78F4553754CC /* TellomiFeedNotificationsUITests.swift in Sources */,
+				D99A1E513EB7DC74BB070B81 /* TellomiFeedNotifySyncTests.swift in Sources */,
+				4D9A82F8495DE9D32C5944BA /* TellomiFeedSearchEntryUITests.swift in Sources */,
+				15A6CD376F8BC312E4CAAD8D /* TellomiFeedSearchUITests.swift in Sources */,
+				EA0B7C7B82C1584F7AB73CC2 /* TellomiFeedTopicUITests.swift in Sources */,
+				D425BE0B97A124F0E530A539 /* TellomiFeedSearchSyncTests.swift in Sources */,
+				8CDBEDC6018B325EE3EBEE36 /* TellomiFeedProfileUITests.swift in Sources */,
+				F08A7B65701FF02F6E979B87 /* TellomiFeedProfileSyncTests.swift in Sources */,
+				9A75F1B90096FA169F131137 /* TellomiFeedReportUITests.swift in Sources */,
+				E442F508A78443D14CC79C11 /* TellomiFeedDetailMenuTests.swift in Sources */,
+				0EE68473D99B4F0B6F1C5FA0 /* TellomiFeedDetailUITests.swift in Sources */,
+				FCE796603AF96DE922B80185 /* TellomiFeedDetailSyncTests.swift in Sources */,
+				27C8023AFBEC25EE3B85B402 /* TellomiFeedDetailPresentationTests.swift in Sources */,
+				440CCA70E6ACDAA4E197F061 /* TellomiFeedAuthTests.swift in Sources */,
+				B358667A03E079A47888C416 /* TellomiFeedCapabilitiesTests.swift in Sources */,
+				D2F8EAB88C99EFAD25770C70 /* TellomiFeedCardActionsTests.swift in Sources */,
+				CA87CC61C0F8BA2103AFD365 /* TellomiFeedChromeStateTests.swift in Sources */,
+				077E61E8CF468C38977282F4 /* TellomiFeedComposeCompletionTests.swift in Sources */,
+				860A04AABED990992043CD31 /* TellomiFeedDetailEventsTests.swift in Sources */,
+				ED6D92BC6B916204A8EF93F8 /* TellomiFeedEngineModelsTests.swift in Sources */,
+				057AF20B0F6995FBA2AE3293 /* TellomiFeedEventsApiTests.swift in Sources */,
+				A5C051C0FF75375C31F2A776 /* TellomiFeedFriendsTests.swift in Sources */,
+				723BE298D7CCECA3BE6E8DA2 /* TellomiFeedInputLimitTests.swift in Sources */,
+				7084C72987181AEE158880D7 /* TellomiFeedLocalStorageTests.swift in Sources */,
+				D785C7CD5EE0C9A5E7CE35F5 /* TellomiFeedMinorTimeTests.swift in Sources */,
+				6A35D448BC0B7EC5C4431AD5 /* TellomiFeedMyPostsTests.swift in Sources */,
+				664312AEA00FF38DDC1D50E0 /* TellomiFeedNotificationsTests.swift in Sources */,
+				572D6B849ED2DA13D7412B44 /* TellomiFeedPostDetailTests.swift in Sources */,
+				7665CF623E2FAD3F3182669F /* TellomiFeedPostLinkTests.swift in Sources */,
+				4C44644C192B739D54907643 /* TellomiFeedProfileEditTests.swift in Sources */,
+				C9691193B4947BD8A2220C5F /* TellomiFeedProfileTests.swift in Sources */,
+				F3EFDBC3FC15CDBA1E4E6B16 /* TellomiFeedRemoteSourceTests.swift in Sources */,
+				3AF342FF2E904E243333F40B /* TellomiFeedReportTests.swift in Sources */,
+				4716DB31769A3AB80DA7D7CB /* TellomiFeedRetryAfterTests.swift in Sources */,
+				A2C0E8277B196415A3E12378 /* TellomiFeedSearchTopicTests.swift in Sources */,
+				E10A50597607E54C38EE2E5D /* TellomiFeedSettingsTests.swift in Sources */,
+				26EDCD761B08EF52A30DBEDD /* TellomiFeedSignerResponseTests.swift in Sources */,
+				6B24573704F9844BC838DB3F /* TellomiFeedTextCapTests.swift in Sources */,
+				B5B624E8A1D48658DC4744CE /* TellomiFeedUploadTests.swift in Sources */,
 				6675F65129261E0C007A311E /* APNSRotationStoreTest.swift in Sources */,
 				F9B93CE028E246D900B3F8A0 /* AppDelegateTest.swift in Sources */,
 				D1139A000000000000000006 /* TellomiUpdateRequiredTest.swift in Sources */,

@@ -11,8 +11,7 @@ import Foundation
 // 客户端必须忽略不认识的字段（Decodable 本来就忽略）；每个可选字段都有默认值，服务端少给一个字段不会让整页解析失败；
 // 一张卡片解析失败只丢这一张（`FeedCardsResponse`）。
 
-/// 动态的配置。引擎还没有配置接口（契约 3.2「待引擎补」），在那之前客户端用这里的默认值，
-/// 只从 `GET /v1/feed/status` 拿「能不能看」。
+/// 动态的配置：`GET /v1/feed/config`（契约 3.2，引擎已有）。没拉到配置时客户端用这里的默认值。
 struct FeedConfig: Decodable, Equatable {
     var enabled = false
     var region: String?
@@ -25,6 +24,12 @@ struct FeedConfig: Decodable, Equatable {
     var cardTtlSeconds = 600
     var limits = FeedLimits()
     var minorMode = false
+    /// 内容偏好里「更多敏感内容」档能不能选（海外 true，大陆 false；契约 3.2）。
+    var sensitiveMoreAvailable = false
+    /// 举报原因：`{"<组>": ["<原因>", …]}`；`fraud` 和 `my_rights` 下的原因要截图，`my_rights` 还要写关系（契约 6.2）。空 = 不给举报入口。
+    var reportReasons = [String: [String]]()
+    /// 作者可能看到的未通过原因代码；文案由客户端定，不认识的代码按 `community_guidelines` 显示（契约 7.3）。
+    var rejectionReasons = [String]()
 
     /// 大陆算法备案之前：编辑精选 + 时间顺序（`dynamic-feed.md` R-1.5）。
     static let recommendModeEditorial = "editorial_chronological"
@@ -46,10 +51,16 @@ struct FeedConfig: Decodable, Equatable {
         cardTtlSeconds = try c.decodeIfPresent(Int.self, forKey: .cardTtlSeconds) ?? 600
         limits = try c.decodeIfPresent(FeedLimits.self, forKey: .limits) ?? FeedLimits()
         minorMode = try c.decodeIfPresent(Bool.self, forKey: .minorMode) ?? false
+        sensitiveMoreAvailable = try c.decodeIfPresent(Bool.self, forKey: .sensitiveMoreAvailable) ?? false
+        reportReasons = try c.decodeIfPresent([String: [String]].self, forKey: .reportReasons) ?? [:]
+        rejectionReasons = try c.decodeIfPresent([String].self, forKey: .rejectionReasons) ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
         case enabled, region, tabs, limits
+        case sensitiveMoreAvailable = "sensitive_more_available"
+        case reportReasons = "report_reasons"
+        case rejectionReasons = "rejection_reasons"
         case recommendMode = "recommend_mode"
         case personalizationToggleVisible = "personalization_toggle_visible"
         case hotEnabled = "hot_enabled"
@@ -66,6 +77,7 @@ struct FeedLimits: Decodable, Equatable {
     var postImages = 10
     var articleChars = 10_000
     var editWindowSeconds = 900
+    var voiceCommentMaxSeconds = 60
 
     init() {}
 
@@ -75,6 +87,7 @@ struct FeedLimits: Decodable, Equatable {
         postImages = try c.decodeIfPresent(Int.self, forKey: .postImages) ?? 10
         articleChars = try c.decodeIfPresent(Int.self, forKey: .articleChars) ?? 10_000
         editWindowSeconds = try c.decodeIfPresent(Int.self, forKey: .editWindowSeconds) ?? 900
+        voiceCommentMaxSeconds = try c.decodeIfPresent(Int.self, forKey: .voiceCommentMaxSeconds) ?? 60
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -82,6 +95,7 @@ struct FeedLimits: Decodable, Equatable {
         case postImages = "post_images"
         case articleChars = "article_chars"
         case editWindowSeconds = "edit_window_seconds"
+        case voiceCommentMaxSeconds = "voice_comment_max_seconds"
     }
 }
 
@@ -119,6 +133,13 @@ struct FeedIdsPage: Decodable {
 struct FeedItemRef: Decodable, Equatable {
     var id: String
     var reason: String?
+    /// `reason == "repost"` 时：转发的人（profile id），第三节第 26 条。
+    var repostedBy: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, reason
+        case repostedBy = "reposted_by"
+    }
 }
 
 /// 界面用的一页：已经把 id 换成了卡片。不是线上的 JSON。
@@ -156,9 +177,19 @@ struct FeedCardResult: Decodable {
     var stats: FeedStats?
     var me: FeedMine?
     var poll: FeedPollState?
+    /// 等帖子作者批准的回复（第 40 条），只有写的人和帖子作者看得到。
+    var held = false
+    /// 能不能给「复制链接 / 分享到其他 App」：公开动态、作者不是私密账号（第 29 条）。没带就当不能。
+    var shareable = false
+    /// 作者置顶了（第 26 条）；主页第一页排在最前。
+    var pinned = false
+    /// `card.quote_of` 那条，引擎直接带上（只一层）。
+    var quoted: FeedQuotedResult?
 
     static let stateOk = "ok"
     static let stateUnavailable = "unavailable"
+    /// 只会出现在 `quoted` 里：作者删了原帖（第 41 条「原动态已被作者删除」）。
+    static let stateDeleted = "deleted"
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -170,10 +201,14 @@ struct FeedCardResult: Decodable {
         stats = try c.decodeIfPresent(FeedStats.self, forKey: .stats)
         me = try c.decodeIfPresent(FeedMine.self, forKey: .me)
         poll = try c.decodeIfPresent(FeedPollState.self, forKey: .poll)
+        held = try c.decodeIfPresent(Bool.self, forKey: .held) ?? false
+        shareable = try c.decodeIfPresent(Bool.self, forKey: .shareable) ?? false
+        pinned = try c.decodeIfPresent(Bool.self, forKey: .pinned) ?? false
+        quoted = (try? c.decodeIfPresent(FeedQuotedResult.self, forKey: .quoted)) ?? nil
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, state, version, card, stats, me, poll
+        case id, state, version, card, stats, me, poll, held, shareable, pinned, quoted
     }
 
     /// `unavailable` 不区分原因（删除、下架、被屏蔽、无权看都一样）。不认识的 state 一律按不可用处理。
@@ -192,8 +227,14 @@ struct FeedCardResult: Decodable {
         if let me {
             result.viewer.liked = me.liked
             result.viewer.saved = me.saved
+            result.viewer.isAuthor = me.author
+            result.viewer.reposted = me.reposted
         }
         result.pollState = poll
+        result.held = held
+        result.shareable = shareable
+        result.pinned = pinned
+        result.quoted = quoted?.toQuoted()
         return result
     }
 }
@@ -213,17 +254,29 @@ struct FeedCard: Decodable, Equatable {
     var text: String?
     var summary: String?
     var media = [FeedMedia]()
+    /// 语音评论的服务端转写；转写还没接上时是空串，空的不显示。
+    var transcript = ""
     var topics = [FeedTopic]()
     var poll: FeedPoll?
-    /// 被引用的帖子 id；要显示时再走一次 Card API。
+    /// 被引用的帖子 id；引擎已把那条嵌在 Card API 外层的 `quoted`，由 `FeedCardResult.toCard()` 填进 `quoted`。
     var quoteOf: String?
     var sourceUrl: String?
     var ipRegionLabel: String?
     var aiGenerated = false
+    /// 评论才有：所属的帖子。
+    var rootId: String?
+    /// 回复别的评论时才有：被回复的那条评论（直接评论帖子时没有）。
     var parentId: String?
     var stats = FeedStats()
     var viewer = FeedViewer()
     var pollState: FeedPollState?
+    // 下面五个来自 Card API 外层，不在 `card` 的 JSON 里（`init(from:)` 不读，由 `toCard()` 填）。
+    var held = false
+    var shareable = false
+    var pinned = false
+    var quoted: FeedQuotedCard?
+    /// 关注流里因为有人转发才出现的（`reason == "repost"`）：卡片顶上写「谁 转发了」。由来源按 `FeedItemRef.repostedBy` 填。
+    var repostedBy: FeedRepostedBy?
 
     static let kindPost = "post"
     static let kindArticle = "article"
@@ -291,18 +344,21 @@ struct FeedCard: Decodable, Equatable {
         text = try c.decodeIfPresent(String.self, forKey: .text)
         summary = try c.decodeIfPresent(String.self, forKey: .summary)
         media = try c.decodeIfPresent([Lossy<FeedMedia>].self, forKey: .media)?.compactMap(\.value) ?? []
+        transcript = try c.decodeIfPresent(String.self, forKey: .transcript) ?? ""
         topics = try c.decodeIfPresent([Lossy<FeedTopic>].self, forKey: .topics)?.compactMap(\.value) ?? []
         poll = try? c.decodeIfPresent(FeedPoll.self, forKey: .poll)
         quoteOf = try c.decodeIfPresent(String.self, forKey: .quoteOf)
         sourceUrl = try c.decodeIfPresent(String.self, forKey: .sourceUrl)
         ipRegionLabel = try c.decodeIfPresent(String.self, forKey: .ipRegionLabel)
         aiGenerated = try c.decodeIfPresent(Bool.self, forKey: .aiGenerated) ?? false
+        rootId = try c.decodeIfPresent(String.self, forKey: .rootId)
         parentId = try c.decodeIfPresent(String.self, forKey: .parentId)
         stats = try c.decodeIfPresent(FeedStats.self, forKey: .stats) ?? FeedStats()
     }
 
     private enum CodingKeys: String, CodingKey {
-        case kind, version, edited, author, title, text, summary, media, topics, poll, stats
+        case kind, version, edited, author, title, text, summary, media, topics, poll, stats, transcript
+        case rootId = "root_id"
         case displayMode = "display_mode"
         case publishedAt = "published_at"
         case quoteOf = "quote_of"
@@ -322,7 +378,7 @@ struct FeedAuthor: Decodable, Equatable {
     var profileId: String
     var displayName: String
     var handle: String?
-    /// 引擎的卡片还没带（契约第十一节第 3 条）；没设 handle 的人显示「Tellomi 号：xxxx」（第三节第 8 条）。
+    /// 只在没设 handle 时给（引擎卡片已带）；界面显示「Tellomi 号：xxxx」（第三节第 8 条）。
     var tellomiNumber: String?
     var avatarKey: String?
     /// 开放内容的作者（`native = false`）给的是外部头像地址。
@@ -369,6 +425,14 @@ struct FeedMedia: Decodable, Equatable {
     var w = 0
     var h = 0
     var alt = ""
+    /// 语音评论（`type == "audio"`）的时长，服务端从文件头读。
+    var durationMs = 0
+
+    static let typeAudio = "audio"
+
+    var isAudio: Bool {
+        return type == Self.typeAudio
+    }
 
     init(key: String, w: Int = 0, h: Int = 0, alt: String = "") {
         self.key = key
@@ -384,10 +448,12 @@ struct FeedMedia: Decodable, Equatable {
         w = try c.decodeIfPresent(Int.self, forKey: .w) ?? 0
         h = try c.decodeIfPresent(Int.self, forKey: .h) ?? 0
         alt = try c.decodeIfPresent(String.self, forKey: .alt) ?? ""
+        durationMs = try c.decodeIfPresent(Int.self, forKey: .durationMs) ?? 0
     }
 
     private enum CodingKeys: String, CodingKey {
         case key, type, w, h, alt
+        case durationMs = "duration_ms"
     }
 
     /// 图片宽高比限制在 3:4（竖）到 16:9（横）之间，免得一张极长的图把整屏占掉。
@@ -403,7 +469,7 @@ struct FeedTopic: Decodable, Equatable {
 }
 
 /// 投票的题面（卡片里，审核时定下）。
-struct FeedPoll: Decodable, Equatable {
+struct FeedPoll: Codable, Equatable {
     var options: [String]
     var closesAt: String?
     var multi: Bool
@@ -459,7 +525,9 @@ struct FeedStats: Decodable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case likes, comments, reposts
-        case likeCountHidden = "like_count_hidden"
+        // 引擎 `Stats.LikesHidden` 的 JSON 名是 `likes_hidden`（api/cards.go）；原来写的 `like_count_hidden` 永远读不到。
+        // 作者自己的帖子设置（`/settings`）里才叫 `like_count_hidden`，不是这里。
+        case likeCountHidden = "likes_hidden"
     }
 }
 
@@ -467,23 +535,88 @@ struct FeedStats: Decodable, Equatable {
 struct FeedMine: Decodable, Equatable {
     var liked: Bool
     var saved: Bool
+    /// 这条是我发的（自己的「···」菜单）。
+    var author: Bool
+    /// 我转发到动态了（第 26 条）。
+    var reposted: Bool
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         liked = try c.decodeIfPresent(Bool.self, forKey: .liked) ?? false
         saved = try c.decodeIfPresent(Bool.self, forKey: .saved) ?? false
+        author = try c.decodeIfPresent(Bool.self, forKey: .author) ?? false
+        reposted = try c.decodeIfPresent(Bool.self, forKey: .reposted) ?? false
     }
 
     private enum CodingKeys: String, CodingKey {
-        case liked, saved
+        case liked, saved, author, reposted
     }
 }
 
-/// 界面用：我和这条的关系。`liked`、`saved` 来自 `FeedMine`，其余引擎还没给。
+/// 界面用：我和这条的关系。`liked`、`saved`、`isAuthor`、`reposted` 来自 `FeedMine`。
 struct FeedViewer: Equatable {
     var liked = false
     var saved = false
     var isAuthor = false
+    var reposted = false
+    /// 引擎没有这个字段（Android 同），恒为 true；详情页发评论被拒（`comments_closed`）后只在本页关掉输入框。
+    var canComment = true
+}
+
+/// Card API 外层的 `quoted`：`ok` 带卡片，`deleted` / `unavailable` 只有 id。形状和一项 `FeedCardResult` 一样，只嵌一层。
+struct FeedQuotedResult: Decodable {
+    var id: String
+    var state: String
+    var card: FeedCard?
+    var stats: FeedStats?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, state, card, stats
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        state = try c.decodeIfPresent(String.self, forKey: .state) ?? FeedCardResult.stateUnavailable
+        card = (try? c.decodeIfPresent(FeedCard.self, forKey: .card)) ?? nil
+        stats = try c.decodeIfPresent(FeedStats.self, forKey: .stats)
+    }
+
+    func toQuoted() -> FeedQuotedCard {
+        var base: FeedCard?
+        if state == FeedCardResult.stateOk, var card {
+            card.id = id
+            if let stats { card.stats = stats }
+            base = card
+        }
+        return FeedQuotedCard(id: id, card: base, deleted: state == FeedCardResult.stateDeleted)
+    }
+}
+
+/// 被引用的那条：`card` 为 nil 是看不到了；`deleted` 是作者删了（第 41 条「原动态已被作者删除」），别的原因不分。
+///
+/// 必须是 class：`FeedCard` 里放 `FeedQuotedCard?`，而它又装着一个 `FeedCard?`，值类型会变成递归存储，编译不过
+/// （"value type 'FeedCard' cannot have a stored property that recursively contains it"）。Android 里都是 class 没有这个问题。
+final class FeedQuotedCard: Equatable {
+    let id: String
+    let card: FeedCard?
+    let deleted: Bool
+
+    init(id: String, card: FeedCard?, deleted: Bool = false) {
+        self.id = id
+        self.card = card
+        self.deleted = deleted
+    }
+
+    static func == (lhs: FeedQuotedCard, rhs: FeedQuotedCard) -> Bool {
+        return lhs.id == rhs.id && lhs.card == rhs.card && lhs.deleted == rhs.deleted
+    }
+}
+
+/// 转发这条的人；名字取不到时只写「转发」。
+struct FeedRepostedBy: Equatable {
+    var profileId: String
+    var displayName: String?
 }
 
 /// `POST /v1/feed/not-interested`。原因最多 40 字，可空（第三节第 11 条）。
