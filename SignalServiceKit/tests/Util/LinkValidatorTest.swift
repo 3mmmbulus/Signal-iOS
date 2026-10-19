@@ -143,6 +143,14 @@ class LinkValidatorTest: XCTestCase {
             // a hidden character after a normal end (space, sentence punctuation) is not part of the link
             ("https://zh.wikipedia.org/wiki/中国 \u{200B}", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
             ("https://zh.wikipedia.org/wiki/中国，\u{200B}很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            // a newline (\n or \r\n), tab or line / paragraph separator right after the link is a normal end
+            ("https://signal.org/a/中文\n", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
+            ("https://signal.org/a/中文\r\n", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
+            ("https://signal.org/a/中文\n下一行", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
+            ("https://signal.org/a/中文\r\n下一行", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
+            ("看 https://zh.wikipedia.org/wiki/中国\n很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            ("https://signal.org/a/中文\t下一段", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
+            ("https://signal.org/a/中文\u{2028}下一行", "https://signal.org/a/%E4%B8%AD%E6%96%87"),
             // Tellomi: the cut link must still pass every upstream rule
             ("https://example.org/a很好", nil),
             // Tellomi: never cut inside the host (a mixed-script host is a spoofing risk), only in path / query / fragment

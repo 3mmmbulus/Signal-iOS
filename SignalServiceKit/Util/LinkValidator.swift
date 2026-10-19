@@ -167,7 +167,9 @@ public enum LinkValidator {
         guard !tail.contains(where: isHiddenScalar(_:)) else {
             return nil
         }
-        if end == scalars.endIndex, let next, isHiddenScalar(next) {
+        // A newline, tab or line / paragraph separator right after the link is a normal end, not a hidden character
+        // (they are `.control` / `.lineSeparator` / `.paragraphSeparator`, but also `isIriTerminator`)
+        if end == scalars.endIndex, let next, isHiddenScalar(next), !isIriTerminator(next) {
             return nil
         }
         guard isValidLink(linkText: String(String.UnicodeScalarView(scalars[..<end]))) else {
