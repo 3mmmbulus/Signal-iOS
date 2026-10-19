@@ -5,7 +5,7 @@
 
 // swiftformat:disable all
 
-// 逐字取自 tellomi/libsignal `rust/links/tests/data/bridge-golden.json`（bot/links-claimed-tier-r1 364d127d）：三端（Android、Desktop、iOS）
+// 逐字取自 tellomi/libsignal `rust/links/tests/data/bridge-golden.json`（bot/links-claimed-tier-r1 edfcb015）：三端（Android、Desktop、iOS）
 // 对同一份注册表 `links-2026101901.json` 必须给出完全一样的答案；这份文件由 rust/links 的 `bridge_golden.rs` 生成，不要手改。
 // 更新：把新的 bridge-golden.json 原样放进下面的字符串。
 
