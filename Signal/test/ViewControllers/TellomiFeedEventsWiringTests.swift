@@ -33,6 +33,23 @@ final class TellomiFeedEventsWiringTests: XCTestCase {
         XCTAssertNil(source.batches[0][0].value)
     }
 
+    func testClosingWithoutFlushKeepsTheEventsBufferedUntilTheNextFlush() async throws {
+        var clock = t0
+        let source = WiringSource()
+        let store = make(source) { clock }
+        store.onDetailOpened(contentId: "a", surface: .hot)
+        clock = t0.addingTimeInterval(2)
+        store.onDetailClosed()
+        await store.waitForEventFlushes()
+        XCTAssertEqual(store.pendingEventCount, 2, "回到动态页还要继续，别急着发；缓冲满了、30 秒到了或退到后台再发")
+        XCTAssertTrue(source.batches.isEmpty)
+        store.onDetailOpened(contentId: "b", surface: .hot)
+        store.onDetailClosed(flush: true)
+        await store.waitForEventFlushes()
+        XCTAssertEqual(source.batches.map { $0.map(\.type) }, [["open", "quick_exit", "open", "quick_exit"]])
+        XCTAssertEqual(store.pendingEventCount, 0)
+    }
+
     func testALongVisitReportsDwellWithTheSeconds() async throws {
         var clock = t0
         let source = WiringSource()
