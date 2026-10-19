@@ -29,6 +29,7 @@ final class FeedPeopleViewController: OWSTableViewController2 {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         title = Self.title(for: mode)
         store.onChange = { [weak self] state in self?.apply(state) }
         apply(store.state)

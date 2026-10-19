@@ -42,6 +42,7 @@ final class FeedKeywordFormViewController: OWSTableViewController2 {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         title = OWSLocalizedString("TELLOMI_FEED_SETTINGS_KEYWORDS_ADD", comment: "Feed settings: row that opens the form to add a muted word.")
         navigationItem.leftBarButtonItem = .cancelButton(dismissingFrom: self)
         let add = UIBarButtonItem.prominentButton(

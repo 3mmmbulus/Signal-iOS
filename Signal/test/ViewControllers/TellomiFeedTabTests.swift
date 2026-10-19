@@ -139,4 +139,19 @@ final class TellomiFeedTabTests: XCTestCase {
         window.isHidden = true
         window.rootViewController = nil
     }
+
+    /// TestFlight 动态预览：测试跑在模拟器 / Xcode 装的包里，没有 TestFlight 收据，所以开关行不出现、写不进去、读永远是 false，
+    /// 动态标签和样例开关都不受它影响（和 App Store 包一样）。
+    func testTestFlightPreviewIsUnavailableOutsideTestFlight() {
+        let key = TellomiFeedPreview.storageKey
+        let saved = UserDefaults.standard.object(forKey: key)
+        defer { UserDefaults.standard.set(saved, forKey: key) }
+
+        XCTAssertFalse(TellomiFeed.isTestFlightPreviewAvailable)
+        TellomiFeed.isTestFlightPreviewEnabled = true
+        XCTAssertFalse(TellomiFeed.isTestFlightPreviewEnabled)
+        UserDefaults.standard.set(true, forKey: key)
+        XCTAssertFalse(TellomiFeed.isTestFlightPreviewEnabled)
+        XCTAssertNil(TellomiFeed.testFlightPreviewPrompt)
+    }
 }

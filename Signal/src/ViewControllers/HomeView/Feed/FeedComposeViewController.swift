@@ -117,6 +117,7 @@ final class FeedComposeViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.background
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -314,7 +315,8 @@ final class FeedComposeViewController: OWSViewController {
         publishButton.isEnabled = store.state.canPublish
         // 锁着：导航栏上面一行写原因（夜间 / 当日用满的标题），解锁就拿掉
         let minorLock = store.state.minorLocked ? minorSession?.lock : nil
-        let prompt = minorLock.map { FeedMinorLockView.title($0) }
+        // 没锁时，TestFlight 预览打开就写「预览·样例数据」（`TellomiFeed.testFlightPreviewPrompt`），否则拿掉
+        let prompt = minorLock.map { FeedMinorLockView.title($0) } ?? TellomiFeed.testFlightPreviewPrompt
         if navigationItem.prompt != prompt { navigationItem.prompt = prompt }
         isModalInPresentation = needsCloseConfirmation
     }

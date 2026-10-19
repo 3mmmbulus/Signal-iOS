@@ -60,6 +60,7 @@ final class FeedProfileViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.background
 
         profileTableView.backgroundColor = .clear
