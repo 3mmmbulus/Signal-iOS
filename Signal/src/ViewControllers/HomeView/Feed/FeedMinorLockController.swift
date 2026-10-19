@@ -77,7 +77,7 @@ final class FeedMinorLockController: UIViewController {
     /// 锁变了，宿主还想做点自己的事（动态标签：藏发布按钮、停曝光）。
     var onLockChanged: ((FeedMinorTime.Lock?) -> Void)?
     /// 「返回聊天」做什么（单测里换掉）。
-    var returnToChats: ((UIViewController) -> Void) = FeedMinorLockController.returnToChats(from:)
+    var returnToChats: @MainActor (UIViewController) -> Void = { FeedMinorLockController.returnToChats(from: $0) }
 
     init(session: FeedMinorSession) {
         self.session = session
