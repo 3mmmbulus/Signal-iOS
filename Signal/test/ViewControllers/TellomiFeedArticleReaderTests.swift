@@ -99,7 +99,11 @@ final class TellomiFeedArticleBodyTests: XCTestCase {
         let long = String(repeating: "字", count: FeedArticleBody.maxCharacters + 500)
         let blocks = FeedArticleBody.parse(long)
         guard case .paragraph(let spans)? = blocks.first else { return XCTFail("no paragraph") }
-        XCTAssertEqual(FeedArticleBody.plainText(spans).count, FeedArticleBody.maxCharacters)
+        XCTAssertEqual(FeedArticleBody.maxCharacters, 50_000)
+        XCTAssertEqual(FeedArticleBody.plainText(spans).count, 50_000)
+        let exact = FeedArticleBody.parse(String(repeating: "a", count: 50_001))
+        guard case .paragraph(let exactSpans)? = exact.first else { return XCTFail("no paragraph") }
+        XCTAssertEqual(FeedArticleBody.plainText(exactSpans).count, 50_000)
     }
 
     // MARK: - 行内
@@ -152,6 +156,37 @@ final class TellomiFeedArticleBodyTests: XCTestCase {
 
     func testAnAsteriskBulletIsNotItalic() {
         XCTAssertEqual(FeedArticleBody.parse("* one *two*"), [.bullets([[span("one "), span("two", italic: true)]])])
+    }
+
+    func testEveryOrderOfTwoDifferentBlockKindsComesOutInTheSameOrder() {
+        let kinds: [(String, FeedArticleBlock)] = [
+            ("p", .paragraph(plain("p"))),
+            ("> q", .quote(plain("q"))),
+            ("- b", .bullets([plain("b")])),
+            ("1. n", .numbered([plain("n")])),
+            ("# h", .heading(level: 1, spans: plain("h"))),
+        ]
+        for first in kinds {
+            for second in kinds where first.0 != second.0 {
+                XCTAssertEqual(FeedArticleBody.parse("\(first.0)\n\(second.0)"), [first.1, second.1], "\(first.0) then \(second.0)")
+                XCTAssertEqual(FeedArticleBody.parse("\(first.0)\n\(second.0)\n\(first.0)"), [first.1, second.1, first.1])
+            }
+        }
+    }
+
+    func testMarkersWithNothingAfterThemAreText() {
+        XCTAssertEqual(FeedArticleBody.parse("# \u{00A0}"), [.paragraph(plain("# \u{00A0}"))])
+        XCTAssertEqual(FeedArticleBody.parse("- \u{00A0}"), [.paragraph(plain("- \u{00A0}"))])
+        XCTAssertEqual(FeedArticleBody.parse("1. \u{00A0}"), [.paragraph(plain("1. \u{00A0}"))])
+        XCTAssertEqual(FeedArticleBody.parse(". item"), [.paragraph(plain(". item"))])
+        XCTAssertEqual(FeedArticleBody.parse("3.xyz"), [.paragraph(plain("3.xyz"))])
+    }
+
+    func testStarsNextToSpacesAreLiteralEvenWhenAMatchingStarFollows() {
+        XCTAssertEqual(FeedArticleBody.inline("x * a* y"), plain("x * a* y"))
+        XCTAssertEqual(FeedArticleBody.inline("x *a * y"), plain("x *a * y"))
+        XCTAssertEqual(FeedArticleBody.inline("x ** a** y"), plain("x ** a** y"))
+        XCTAssertEqual(FeedArticleBody.inline("x **a ** y"), plain("x **a ** y"))
     }
 
     func testManyStarsDoNotHang() {
