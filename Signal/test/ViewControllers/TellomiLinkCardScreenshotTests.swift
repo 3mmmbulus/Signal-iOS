@@ -114,7 +114,8 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         /// 图的下半部分（底部约 30%）的颜色；nil = 整张图一个颜色。大图卡的染色取最下面一条，用来验证方向没有上下颠倒。
         var imageBottomHsb: (CGFloat, CGFloat, CGFloat)?
         /// 画法，按 cell 里的视图判（产品经理 2026-10-19 定稿）：`icon`（图标横条，右边 36 pt 图标）、`large`（整宽大图在上）、
-        /// `compass`（没有图的横条，右边指南针）、`avatar` / `firstparty`（第一方卡）；nil = 不断言。
+        /// `compass`（没有图的横条，右边指南针）、`text`（认领档没图标：只有标题 + 域名，右边什么都没有）、
+        /// `avatar` / `firstparty`（第一方卡）；nil = 不断言。
         var expectedLayout: String?
         /// 染色的色相范围（HSB 的 H，0…1）；nil = 不染色。只有图标横条按图标主色染底色；大图卡、没有图的横条是中性灰。
         var expectedTintHue: ClosedRange<CGFloat>?
@@ -302,6 +303,23 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             cardTexts: ["淘宝", "taobao.com"],
             expectedLayout: "icon",
             expectedTintHue: 0.03...0.12,
+        ),
+        Fixture(
+            // 认领平台没有随包图标（京东，商标授权问题这次不补），页面也没给网站图标：标题 + 域名的横条，不染色、不画指南针（产品经理 2026-10-19 晚）
+            name: "jd-claimed-no-icon",
+            url: "https://item.jd.com/100012043978.html",
+            previewTitle: "Apple iPhone 15 (A3092) 128GB 黑色",
+            expectedLevel: "generic",
+            cardTexts: ["Apple iPhone 15 (A3092) 128GB 黑色", "jd.com"],
+            expectedLayout: "text",
+        ),
+        Fixture(
+            // 同上，页面被拦、抓不到标题：发送端退回品牌壳（不带 rich）——平台名 + 域名，不画指南针
+            name: "jd-claimed-no-title",
+            url: "https://item.jd.com/100012043978.html",
+            expectedLevel: "brand",
+            cardTexts: ["JD", "jd.com"],
+            expectedLayout: "text",
         ),
         Fixture(
             // 没打协议的裸域名（2026-10-19，§5.6 的例外）：消息就是这个域名时卡片代替气泡
@@ -1100,6 +1118,29 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         }
     }
 
+    /// 产品经理 2026-10-19 晚：认领档的卡抓到网站图标是图标横条 + 主色（icon-yellow 美团、icon-white 京东）；
+    /// 什么都没抓到是标题（或平台名）+ 域名的横条，右边不画指南针，不染色。指南针只给完全没信息的卡。
+    @MainActor
+    func testAClaimedCardWithoutAnyIconIsTitleAndDomainWithoutTheCompass() async throws {
+        for name in ["jd-claimed-no-icon", "jd-claimed-no-title"] {
+            let fixture = try XCTUnwrap(Self.fixtures.first { $0.name == name }, name)
+            let hosted = try await hostedCell(for: fixture, dark: Theme.isDarkThemeEnabled)
+            defer { hosted.tearDown() }
+            let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView), "\(name)：找不到卡片")
+            XCTAssertNil(Self.findCompass(in: cardView), "\(name)：不画指南针")
+            XCTAssertNil(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "\(name)：没有图")
+            XCTAssertGreaterThanOrEqual(cardView.bounds.size.height, 44 - 0.5, "\(name)：横条和有指南针时一样高（26 + 上下各 9），实际 \(cardView.bounds.size)")
+        }
+        for name in ["icon-yellow", "icon-white"] {
+            let fixture = try XCTUnwrap(Self.fixtures.first { $0.name == name }, name)
+            let hosted = try await hostedCell(for: fixture, dark: Theme.isDarkThemeEnabled)
+            defer { hosted.tearDown() }
+            let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView), "\(name)：找不到卡片")
+            XCTAssertNotNil(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "\(name)：抓到的网站图标画在横条右边")
+            XCTAssertNil(Self.findCompass(in: cardView), "\(name)：有图标就没有指南针")
+        }
+    }
+
     /// 图标横条：文字列左边离卡 14，文字与图标之间 10，图标 36 pt、离右 10、垂直居中（2026-10-19 定稿）。
     /// 标题写得够长、占满文字列时，文字列右边缘到图标的左边缘就是这个间距。
     @MainActor
@@ -1211,6 +1252,10 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
                 } else {
                     XCTFail("\(fixture.name)：没有图的横条右边应该有指南针")
                 }
+            case "text":
+                XCTAssertNil(imageView, "\(fixture.name)：认领档没图标的横条没有图")
+                XCTAssertNil(Self.findCompass(in: cardView), "\(fixture.name)：认领档有标题（或平台名），右边不画指南针")
+                XCTAssertNil(Self.findLinkIcon(in: cardView), "\(fixture.name)：通用链接图标不再画")
             case "avatar":
                 if let imageView {
                     let frame = cardView.convert(imageView.bounds, from: imageView)

@@ -105,6 +105,8 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         case large
         /// 第一方卡左侧 56 pt 的头像 / 封面 / 图标（§5.2）。
         case avatar
+        /// 横条，右边什么都没有：认领档的卡没有图标时，只有标题（或平台名）+ 域名（产品经理 2026-10-19 晚）。
+        case text
     }
 
     private enum Variant: String, CaseIterable {
@@ -220,6 +222,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         unknownKindRow,
         claimedRow,
         claimedBundledIconRow,
+        claimedNoIconRow,
         bareDomainRow,
     ]
 
@@ -246,6 +249,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         "unknown-kind",
         "claimed",
         "claimed-bundled-icon",
+        "claimed-no-icon",
         "bare-domain",
     ]
 
@@ -694,15 +698,30 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             tinted: true,
             absent: ["京东JD.COM提供", "JD", "Product"],
         ),
+        // 什么都没抓到（没有网站图标、也没有随包图标）：标题 + 域名的横条，右边不画指南针（产品经理 2026-10-19 晚）。
         minimal: Card(
             url: "https://item.jd.com/100012043978.html",
             previewTitle: "Apple iPhone 15 (A3092) 128GB 黑色",
             level: "generic",
             title: "Apple iPhone 15 (A3092) 128GB 黑色",
             domain: "jd.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
+
+    // 认领平台没有随包图标（京东 / 美团 / 拼多多 / 天猫，商标授权问题，这次不补），页面又被拦、抓不到标题：
+    // 发送端退回品牌壳（不带 rich）。平台名 + 域名的横条，不染色、右边不画指南针。
+    private static let claimedNoIconRow: Row = {
+        let card = Card(
+            url: "https://item.jd.com/100012043978.html",
+            level: "brand",
+            title: "JD",
+            domain: "jd.com",
+            layout: .text,
+            absent: ["Product"],
+        )
+        return Row(id: "claimed-no-icon", name: "认领·无随包图标", full: card, minimal: card)
+    }()
 
     // 认领平台的页面没给图：横条右边用平台的随包图标（淘宝），按图标主色染色；
     // 抓不到标题（被拦的商品页）：发送端退回品牌壳——平台名 + 随包图标，不带 rich。
@@ -766,7 +785,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
     func testTheTableHasExactlyTheRowsOfTheSpec() {
         XCTAssertEqual(Self.rows.map(\.id), Self.specRowIds)
         XCTAssertEqual(Set(Self.rows.map(\.id)).count, Self.rows.count, "行 id 不重复")
-        XCTAssertEqual(Self.rows.count, 22)
+        XCTAssertEqual(Self.rows.count, 23)
     }
 
     /// 每一行、每种填法、浅色与暗色：真排一次、按文档那一行断言、存图、拼联系表。
@@ -1017,7 +1036,11 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
                 return DetectedLayout(layout: .compass, frame: frame)
             }
         }
-        // 什么都没认出来（没有图、没有头像、也没有指南针）：和任何期望都对不上
+        // 没有图、没有头像、也没有指南针：只有文字的横条（认领档没图标时）
+        if findView(suffix: "CVLinkPreviewImageView", in: cardView) == nil {
+            return DetectedLayout(layout: .text, frame: nil)
+        }
+        // 什么都没认出来：和任何期望都对不上
         return DetectedLayout(layout: nil, frame: nil)
     }
 

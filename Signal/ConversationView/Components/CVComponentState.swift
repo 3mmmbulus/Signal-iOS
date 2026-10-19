@@ -2334,6 +2334,7 @@ private extension CVComponentState.Builder {
             visual: visual,
             bundledIcon: bundledIcon,
             stripColor: stripColor,
+            isClaimed: card.isClaimedTier,
         )
     }
 

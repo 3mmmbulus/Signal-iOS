@@ -1369,6 +1369,7 @@ private class CVLinkPreviewViewAdapterTellomiBase: CVLinkPreviewViewAdapter {
 }
 
 /// 横条：左边标题（粗）+ 域名（灰），右边站点图标（36 pt，圆角 8）；没有图标时右边是指南针（SF Symbol `safari`）。
+/// 认领档（`claimed`）的卡没有图标时右边什么都不画，只有标题 + 域名（产品经理 2026-10-19 晚：指南针只给完全没信息的卡）。
 /// 图标横条按图标主色染底色（取不到就中性灰），文字横条、只有域名的横条一律中性灰。
 private class CVLinkPreviewViewAdapterTellomiStrip: CVLinkPreviewViewAdapterTellomiBase {
 
@@ -1393,6 +1394,9 @@ private class CVLinkPreviewViewAdapterTellomiStrip: CVLinkPreviewViewAdapterTell
 
     private var trailingSize: CGFloat { style == .iconStrip ? Self.iconSize : Self.compassSize }
 
+    /// 右边有没有东西：图标横条是图标；其余按 `showsCompass`。
+    private var hasTrailing: Bool { style == .iconStrip || (card?.showsCompass ?? true) }
+
     override var rootStackConfig: ManualStackView.Config {
         ManualStackView.Config(
             axis: .horizontal,
@@ -1407,6 +1411,13 @@ private class CVLinkPreviewViewAdapterTellomiStrip: CVLinkPreviewViewAdapterTell
         measurementBuilder: CVCellMeasurement.Builder,
     ) -> [ManualStackSubviewInfo] {
         let trailing = CGSize.square(trailingSize)
+        guard hasTrailing else {
+            // 只有标题 + 域名：文字占满横条，高度和有指南针的横条一样。
+            let maxLabelWidth = max(0, maxWidth - rootStackConfig.layoutMargins.totalWidth)
+            var textStackSize = measureTextStack(maxWidth: maxLabelWidth, measurementBuilder: measurementBuilder)
+            textStackSize.height = max(textStackSize.height, trailing.height)
+            return [textStackSize.asManualSubviewInfo]
+        }
         let maxLabelWidth = max(
             0,
             maxWidth - (rootStackConfig.layoutMargins.totalWidth + trailing.width + rootStackConfig.spacing),
@@ -1434,6 +1445,9 @@ private class CVLinkPreviewViewAdapterTellomiStrip: CVLinkPreviewViewAdapterTell
         {
             imageView.clipsToBounds = true
             return [textStack, imageView]
+        }
+        guard hasTrailing else {
+            return [textStack]
         }
         let compass = linkPreviewView.linkIconView
         let configuration = UIImage.SymbolConfiguration(pointSize: Self.compassSize, weight: .regular)

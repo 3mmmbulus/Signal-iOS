@@ -96,6 +96,10 @@ public struct TellomiLinkCard: Equatable, Sendable {
     public var payment: Bool
     public var reason: String?
 
+    /// 认领档（`claimed`，links-2026101901）的卡：rust/links 的 `reason` 是 `claimed`（抓页面的卡）或
+    /// `claimed_no_title`（抓不到标题，退回平台的品牌壳）。
+    public var isClaimedTier: Bool { reason == "claimed" || reason == "claimed_no_title" }
+
     public init(
         level: Level,
         provider: String? = nil,

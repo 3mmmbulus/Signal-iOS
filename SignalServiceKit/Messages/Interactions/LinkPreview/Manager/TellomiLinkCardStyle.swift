@@ -12,7 +12,7 @@ import Foundation
 /// - `largeImage`：有大图——图在上，下面标题 + 域名；
 /// - `iconStrip`：有小图（站点图标 / 方形小图 / 品牌壳的随包图标）——一条横条，左边标题（粗）+ 域名（灰），右边图标，
 ///   底色取图标的主色，字用黑或白（WCAG 对比度高的那个）；取不到颜色用中性灰；
-/// - `textStrip`：没有图、有标题——中性灰横条，标题 + 域名，右边指南针；
+/// - `textStrip`：没有图、有标题——中性灰横条，标题 + 域名，右边指南针（认领档的卡不画指南针，见 `showsCompass`）；
 /// - `domainStrip`：什么都没抓到——中性灰横条，只有域名，右边指南针。
 ///
 /// 大图 / 小图的分界仍由 rust/links 的 `layout` 定（照 Telegram：短边 ≥ 300、长边 ≥ 600 才是大图）。
@@ -64,6 +64,20 @@ public enum TellomiLinkCardStyle {
             }
         }
         return hasTitle ? .textStrip : .domainStrip
+    }
+
+    /// 横条右边画不画指南针（产品经理 2026-10-19 晚）：指南针只给「完全没信息」的卡。
+    /// 图标横条右边是图标；认领档（`claimed`）的卡没有图时是标题（或平台名）+ 域名的横条，右边什么都不画；
+    /// 其余没有图的横条照 2026-10-19 定稿，右边是指南针。
+    public static func showsCompass(kind: Kind, isClaimed: Bool) -> Bool {
+        switch kind {
+        case .largeImage, .iconStrip:
+            return false
+        case .textStrip:
+            return !isClaimed
+        case .domainStrip:
+            return true
+        }
     }
 
     /// 两行字怎么来：标题取页面的 `og:title` / `<title>`（数据层已经定好，传进来）；空白、和域名一样的标题不显示。

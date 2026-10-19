@@ -40,6 +40,9 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
     /// nil：没有图、取不到颜色（白底图标、透明图）——横条用中性灰。只对 `iconStrip` 有意义（产品经理 2026-10-19 定稿）。
     public let stripColor: TellomiLinkCardStyle.RGB?
 
+    /// 认领档（`claimed`）的卡（`TellomiLinkCard.isClaimedTier`）：没有图时横条右边不画指南针（产品经理 2026-10-19 晚）。
+    public let isClaimed: Bool
+
     public init(
         base: LinkPreviewState,
         display: TellomiLinkDisplay,
@@ -51,6 +54,7 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
         userAvatar: UIImage? = nil,
         isInert: Bool = false,
         stripColor: TellomiLinkCardStyle.RGB? = nil,
+        isClaimed: Bool = false,
     ) {
         self.base = base
         self.display = display
@@ -62,6 +66,7 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
         self.userAvatar = userAvatar
         self.isInert = isInert
         self.stripColor = stripColor
+        self.isClaimed = isClaimed
     }
 
     // MARK: 统一样式（产品经理 2026-10-19，参照 iOS「信息」App）
@@ -83,6 +88,14 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
             hasTitle: cardText?.title != nil,
             isPlainLink: isPlainLink,
         )
+    }
+
+    /// 横条右边画不画指南针（`TellomiLinkCardStyle.showsCompass`）；不走统一样式的卡是 false。
+    public var showsCompass: Bool {
+        guard let cardStyle else {
+            return false
+        }
+        return TellomiLinkCardStyle.showsCompass(kind: cardStyle, isClaimed: isClaimed)
     }
 
     /// 卡片上的两行字：标题（页面的 og:title / title；品牌壳是平台名）+ 域名。副行一律不显示。

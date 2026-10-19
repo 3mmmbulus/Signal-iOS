@@ -15,6 +15,29 @@ final class TellomiLinkCardStyleTest: XCTestCase {
 
     // MARK: - 四种样式
 
+    // MARK: - 指南针只给完全没信息的卡（产品经理 2026-10-19 晚）
+
+    func testTheCompassIsOnlyForACardWithNothingAndNeverForAClaimedCardWithATitle() {
+        // 认领档：抓到网站图标是图标横条（右边图标）；什么都没抓到是标题 + 域名，右边不画指南针。
+        XCTAssertFalse(Style.showsCompass(kind: .iconStrip, isClaimed: true))
+        XCTAssertFalse(Style.showsCompass(kind: .textStrip, isClaimed: true))
+        // 其余卡照 2026-10-19 定稿。
+        XCTAssertTrue(Style.showsCompass(kind: .textStrip, isClaimed: false))
+        XCTAssertTrue(Style.showsCompass(kind: .domainStrip, isClaimed: false))
+        XCTAssertTrue(Style.showsCompass(kind: .domainStrip, isClaimed: true), "连标题都没有：完全没信息")
+        XCTAssertFalse(Style.showsCompass(kind: .iconStrip, isClaimed: false))
+        XCTAssertFalse(Style.showsCompass(kind: .largeImage, isClaimed: false))
+    }
+
+    func testAClaimedCardIsTheOneRustLinksSaysIsClaimed() {
+        XCTAssertTrue(TellomiLinkCard(level: .generic, domain: "jd.com", reason: "claimed").isClaimedTier)
+        XCTAssertTrue(TellomiLinkCard(level: .brand, provider: "jd", domain: "jd.com", showImage: false, reason: "claimed_no_title").isClaimedTier)
+        XCTAssertFalse(TellomiLinkCard(level: .generic, domain: "wikipedia.org").isClaimedTier)
+        XCTAssertFalse(TellomiLinkCard(level: .brand, provider: "meituan", domain: "meituan.com", showImage: false).isClaimedTier)
+        let parsed = TellomiLinkCard.parse(##"{"level":"generic","title":"Apple iPhone 15","domain":"jd.com","show_image":false,"icon":null,"tintable":true,"payment":false,"reason":"claimed"}"##)
+        XCTAssertEqual(parsed?.isClaimedTier, true)
+    }
+
     func testLargeImageNeedsImageAndLargeLayout() {
         XCTAssertEqual(Style.kind(layout: .largeImage, hasImage: true, hasTitle: true, isPlainLink: false), .largeImage)
         XCTAssertEqual(Style.kind(layout: .largeImage, hasImage: true, hasTitle: false, isPlainLink: false), .largeImage)
