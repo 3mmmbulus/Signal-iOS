@@ -588,6 +588,29 @@ final class TellomiFeedComposeStoreTests: XCTestCase {
         XCTAssertFalse(store.state.editWindowClosed)
     }
 
+    /// Mac 上的崩溃（FIX-ios-feed-r3-f74a0ec-compose-onFailureShown-infinite-recursion-crash）：页面在 onChange 里看到提示就调
+    /// onFailureShown；逐个字段改的话第一次通知时 editWindowClosed 还是 true，又调回来，无限递归。现在一次改完、只通知一次。
+    func testClearingTheNoticesNotifiesOnceAndDoesNotReenter() async {
+        let source = ComposeSource()
+        let store = await make(source, edit: FeedEditTarget(id: "e1", kind: "post", title: nil, text: "x", publishedAt: nil))
+        store.onTextChanged("changed")
+        source.publishError = api(409, "edit_window_closed")
+        store.publish()
+        await store.waitForTasks()
+        XCTAssertTrue(store.state.editWindowClosed)
+        var notified = 0
+        store.onChange = { [weak store] state in
+            notified += 1
+            // 和页面一样：还有提示就消费掉（旧代码在这里会一直递归下去）
+            if notified < 10, state.failed || state.editWindowClosed || state.quoteUnavailable { store?.onFailureShown() }
+        }
+        store.onFailureShown()
+        XCTAssertEqual(notified, 1)
+        XCTAssertFalse(store.state.editWindowClosed)
+        XCTAssertFalse(store.state.failed)
+        XCTAssertFalse(store.state.quoteUnavailable)
+    }
+
     // MARK: I-20 标题上限 100（码点）：到了就挡住、粘贴剪短、显示还剩几个
 
     func testTheArticleTitleBlocksTypingAtTheLimitAndCountsDown() async {
