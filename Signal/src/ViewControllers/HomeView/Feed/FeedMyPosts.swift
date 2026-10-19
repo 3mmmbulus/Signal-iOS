@@ -163,9 +163,9 @@ struct FeedEditTarget: Equatable {
         return FeedEditTarget(id: card.id, kind: card.kind, title: card.title, text: card.text ?? "", publishedAt: card.publishedAt)
     }
 
-    /// 未通过和已撤回的不能改（引擎 409 `not_editable`）。
+    /// 只有审核中和已发布的能改；未通过和已撤回的不能（引擎 409 `not_editable`），不认识的状态也不给入口。
     static func of(_ post: FeedMyPost) -> FeedEditTarget? {
-        if post.state == FeedMyPost.stateRejected || post.state == FeedMyPost.stateWithdrawn { return nil }
+        guard post.state == FeedMyPost.statePending || post.state == FeedMyPost.statePublished else { return nil }
         guard post.kind == FeedCard.kindPost || post.kind == FeedCard.kindArticle else { return nil }
         return FeedEditTarget(id: post.id, kind: post.kind, title: post.title, text: post.text ?? "", publishedAt: post.createdAt)
     }

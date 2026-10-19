@@ -75,6 +75,8 @@ struct FeedMyPostRow: Equatable {
     var canDelete: Bool
     /// 只有「未通过、引擎说能申诉、还没申诉过」。已撤回的引擎当前不收申诉，不给按钮。
     var canAppeal: Bool
+    /// 要编辑的那条；未通过 / 已撤回的不能改（nil）。能不能现在改还要看发布后的时间窗（`canEdit`）。
+    var editTarget: FeedEditTarget?
 
     init(post: FeedMyPost) {
         id = post.id
@@ -103,6 +105,12 @@ struct FeedMyPostRow: Equatable {
             && (post.kind == FeedCard.kindPost || post.kind == FeedCard.kindArticle)
         canDelete = true
         canAppeal = post.state == FeedMyPost.stateRejected && post.appealable && post.appealState == nil
+        editTarget = FeedEditTarget.of(post)
+    }
+
+    /// 发布后 15 分钟内（`windowSeconds` 是 config 的 `limits.edit_window_seconds`）、没被拒 / 撤回的才有「编辑」。
+    func canEdit(now: Date, windowSeconds: Int) -> Bool {
+        return editTarget?.isWithinWindow(now: now, windowSeconds: windowSeconds) == true
     }
 }
 

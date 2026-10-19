@@ -109,6 +109,11 @@ final class SampleFeedSource: FeedSource {
         /// 申诉请求先等一会儿（发送中那一帧）；失败（提示「操作失败」）。
         var appealLatencyNanos: UInt64 = 0
         var failsAppeals = false
+        /// 编辑保存：失败（提示「操作失败」）；回 409 `edit_window_closed`（已过 15 分钟）/ `not_editable`；先等一会儿（保存中那一帧）。
+        var failsEdits = false
+        var editsWindowClosed = false
+        var editsNotEditable = false
+        var editLatencyNanos: UInt64 = 0
         /// 申诉时引擎回 409 `already_appealed` / `not_rejected`（行标成复核中 / 重新拉列表）。
         var appealsAlreadyAppealed = false
         var appealsNotRejected = false
@@ -447,6 +452,44 @@ final class SampleFeedSource: FeedSource {
     func reportEvents(_ events: [FeedEventPayload]) async throws {
         locked { reportedEvents += events }
         Logger.debug("feed sample events: \(events.count)")
+    }
+
+    /// 编辑自己的帖子（只改正文和长文标题）：样例里发的（`mine-N`）和自带的审核中那条（`mine-seed-p1`）。
+    /// 和引擎一样：发布 / 创建后超过 `limits.edit_window_seconds`（900 秒）回 409 `edit_window_closed`，
+    /// 未通过 / 已撤回回 409 `not_editable`，不是自己的 / 不存在回 404，正文空 / 长文标题空回 400 `invalid_text`。
+    func editPost(contentId: String, draft: FeedDraft) async throws -> FeedCreatePostResponse {
+        let simulation = self.simulation
+        if simulation.editLatencyNanos > 0 { try? await Task.sleep(nanoseconds: simulation.editLatencyNanos) }
+        if simulation.failsEdits { throw SampleFeedError.simulatedActionFailure }
+        let request = draft.toEditRequest()
+        if request.text.isEmpty || (draft.kind == .article && (request.title ?? "").isEmpty) {
+            throw FeedAPIError(status: 400, code: "invalid_text")
+        }
+        let nowDate = now()
+        func check(createdAt: String?, state: String) throws {
+            if simulation.editsNotEditable || state == FeedMyPost.stateRejected || state == FeedMyPost.stateWithdrawn {
+                throw FeedAPIError(status: 409, code: "not_editable")
+            }
+            let created = createdAt.flatMap(FeedDates.parse)
+            let expired = created.map { nowDate.timeIntervalSince($0) > TimeInterval(FeedLimits().editWindowSeconds) } ?? false
+            if simulation.editsWindowClosed || expired { throw FeedAPIError(status: 409, code: "edit_window_closed") }
+        }
+        let editedOwn: Bool = try locked {
+            guard let index = mine.firstIndex(where: { $0.id == contentId }) else { return false }
+            try check(createdAt: mine[index].publishedAt, state: FeedMyPost.statePublished)
+            mine[index].text = request.text
+            if draft.kind == .article { mine[index].title = request.title }
+            mine[index].edited = true
+            return true
+        }
+        if editedOwn { return FeedCreatePostResponse(id: contentId, state: FeedCreatePostResponse.statePublished) }
+        guard let seed = SampleMyPostsState.seeds(base: nowDate).first(where: { $0.id == contentId }),
+              !myPostsState.snapshot().deleted.contains(contentId) else {
+            throw FeedAPIError(status: 404, code: "not_found")
+        }
+        try check(createdAt: seed.createdAt, state: seed.state)
+        myPostsState.markEdited(contentId, title: draft.kind == .article ? request.title : nil, text: request.text)
+        return FeedCreatePostResponse(id: contentId, state: seed.state)
     }
 
     /// 自己在样例里发的帖子（新的在前），「我的动态」要用。

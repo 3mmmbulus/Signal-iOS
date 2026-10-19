@@ -11,6 +11,7 @@ final class SampleMyPostsState {
     private let lock = NSLock()
     private var deletedIds = Set<String>()
     private var appealedIds = Set<String>()
+    private var edits = [String: (title: String?, text: String)]()
 
     /// 样例里自带的 40 条：最前面是审核中 / 未通过（几种原因、申诉进度）/ 已撤回，后面是 34 条已发布（五档可见范围轮着来）。
     static let seedIds: Set<String> = Set(seeds(base: Date()).map(\.id))
@@ -60,6 +61,18 @@ final class SampleMyPostsState {
         return true
     }
 
+    func markEdited(_ id: String, title: String?, text: String) {
+        lock.lock()
+        edits[id] = (title, text)
+        lock.unlock()
+    }
+
+    func edit(for id: String) -> (title: String?, text: String)? {
+        lock.lock()
+        defer { lock.unlock() }
+        return edits[id]
+    }
+
     func markAppealed(_ id: String) {
         lock.lock()
         appealedIds.insert(id)
@@ -79,6 +92,10 @@ extension SampleFeedSource {
             if state.appealed.contains(post.id) {
                 post.appealable = false
                 post.appealState = FeedMyPost.appealReceived
+            }
+            if let edit = myPostsState.edit(for: post.id) {
+                post.text = edit.text
+                if post.kind == FeedCard.kindArticle { post.title = edit.title }
             }
             posts.append(post)
         }

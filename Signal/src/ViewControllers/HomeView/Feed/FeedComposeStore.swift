@@ -334,6 +334,22 @@ final class FeedComposeStore {
 
     func onRestoredArticleShown() { state.restoredArticle = false }
 
+    /// 放弃草稿（发布页导航栏的「放弃草稿」，已经问过确认）：清空正文 / 标题 / 图 / 投票 / 话题 / 回复选项和名单，
+    /// 可见范围回到默认档，本机存着的长文也删掉。引用的那条留着（那不是草稿内容）；编辑时没有草稿，什么也不做。
+    func discardDraft() {
+        guard state.editing == nil else { return }
+        var next = state
+        var fresh = FeedDraft()
+        fresh.visibility = FeedVisibility.defaultValue(minorMode: state.minorMode)
+        fresh.quote = state.draft.quote
+        next.draft = fresh
+        next.restoredArticle = false
+        next.titleLimitHit = false
+        next.failed = false
+        state = next
+        articleDrafts.clear()
+    }
+
     /// 已经打开了建主页的页面。
     func onProfileRequiredShown() { state.profileRequired = false }
 
