@@ -49,19 +49,35 @@ public final class TellomiLinkSender: @unchecked Sendable {
     private let expandShortLinks: @Sendable () -> Bool
     private let locale: @Sendable () -> Locale
     private let lookups: any TellomiSendLookups
+    private let serverClient: (any TellomiServerLinkPreviewClient)?
+    private let serverFetchEnabled: @Sendable () -> Bool
+    private let serverGate: TellomiServerLinkPreviewGate
 
+    /// `serverClient` / `serverFetchEnabled`：ADR-0063 §6.5 的服务端代抓（白名单那几家），默认不用。
     public init(
         fetcher: TellomiLinkFetcher = .shared,
         classifier: TellomiLinkClassifier = TellomiLinkRegistry.classifier,
         expandShortLinks: @escaping @Sendable () -> Bool,
         locale: @escaping @Sendable () -> Locale = { .current },
         lookups: any TellomiSendLookups,
+        serverClient: (any TellomiServerLinkPreviewClient)? = nil,
+        serverFetchEnabled: @escaping @Sendable () -> Bool = { false },
+        serverGate: TellomiServerLinkPreviewGate = .shared,
     ) {
         self.fetcher = fetcher
         self.classifier = classifier
         self.expandShortLinks = expandShortLinks
         self.locale = locale
         self.lookups = lookups
+        self.serverClient = serverClient
+        self.serverFetchEnabled = serverFetchEnabled
+        self.serverGate = serverGate
+    }
+
+    /// 这条链接这次要不要问服务端（§6.5.6）：有客户端、开关开着、白名单主机、最近没被告知别问。
+    func usesServerFetch(for url: URL) -> Bool {
+        guard serverClient != nil, serverGate.isOpen else { return false }
+        return TellomiServerLinkPreview.isEligible(url, enabled: serverFetchEnabled())
     }
 
     /// 没有注册表时不能用（调用方照 Signal 原样）。
@@ -69,30 +85,79 @@ public final class TellomiLinkSender: @unchecked Sendable {
 
     /// 这条链接的预览。`nil` 表示没有注册表 / 作业开不了（调用方照 Signal 原样），`.notAvailable` 表示 rust/links 判定这条链接没有预览。
     public func preview(for url: URL) async throws -> Result? {
+        let viaServer = usesServerFetch(for: url)
         let context = TellomiLinkSendJob.contextJson(
             unreachableHosts: fetcher.reachability.unreachableHosts(),
-            expandShortLinks: expandShortLinks(),
+            // 走服务端时客户端不碰这个站：短链也由服务端展开（白名单几家的短链都跳回自己家）
+            expandShortLinks: viaServer ? false : expandShortLinks(),
             locale: locale(),
         )
         guard let job = classifier.beginSendJob(url: url.absoluteString, context: context) else {
             return nil
         }
-        return try await preview(job: job, url: url)
+        return try await preview(job: job, url: url, viaServer: viaServer)
     }
 
-    /// 作业已经开好（测试里换成假的）。
-    func preview(job: any TellomiSendJob, url: URL) async throws -> Result {
+    /// 作业已经开好（测试里换成假的）。`viaServer`：这条链接要问服务端（§6.5.6），本机作业只用来拿品牌壳的 `rich`。
+    func preview(job: any TellomiSendJob, url: URL, viaServer: Bool = false) async throws -> Result {
+        let (local, level) = try await localPreview(job: job, url: url)
+        guard viaServer, let serverClient, TellomiServerLinkPreview.mayReplace(level: level) else {
+            return local
+        }
+        if case .groupLinkInactive = local {
+            return local
+        }
+        let answer = await serverClient.fetch(url: url)
+        serverGate.record(answer)
+        guard case .card(let card) = answer else {
+            // 服务端没给卡片（没开、没部署、忙、站点挡了）：照本机的结果（品牌壳），不报错（§5.1 铁律 1、2）
+            let providerId = TellomiServerLinkPreview.providerId(for: url) ?? "-"
+            Logger.info("Link server-fetch \(providerId) \(Self.category(answer))")
+            return local
+        }
+        // 服务端的缩略图也照 Signal 的规则再校验、重编码一次（和本机抓的图同一道关）
+        var thumbnail: Thumbnail?
+        if let imageData = card.imageData {
+            thumbnail = await lookups.thumbnail(from: imageData)
+        }
+        let localDraft: OWSLinkPreviewDraft?
+        if case .found(let draft) = local { localDraft = draft } else { localDraft = nil }
+        Logger.info("Link server-fetch \(card.provider) card image=\(thumbnail != nil)")
+        return .found(OWSLinkPreviewDraft(
+            url: url,
+            title: card.title,
+            imageData: thumbnail?.imageData,
+            imageMimeType: thumbnail?.mimeType,
+            previewDescription: nil,
+            date: nil,
+            isForwarded: false,
+            // 品牌壳的 `rich` 原样带上：还没升级的接收端照旧显示品牌壳，不会更差（§6.5.6）
+            rich: localDraft?.rich,
+        ))
+    }
+
+    static func category(_ answer: TellomiServerLinkPreview.Answer) -> String {
+        switch answer {
+        case .card: return "card"
+        case .noCard: return "no-card"
+        case .notDeployed: return "not-deployed"
+        case .throttled: return "throttled"
+        case .failed: return "failed"
+        }
+    }
+
+    private func localPreview(job: any TellomiSendJob, url: URL) async throws -> (Result, String?) {
         let deps = Deps(fetcher: fetcher, budget: fetcher.makeBudget(), lookups: lookups, url: url)
         guard let outcome = try await TellomiLinkSendJob.run(job: job, deps: deps) else {
-            return .notAvailable
+            return (.notAvailable, nil)
         }
         Logger.info("Link \(outcome.provider ?? "-")/\(outcome.route ?? "-") \(outcome.level) [\(outcome.failures.joined(separator: ","))]")
 
         if outcome.groupLinkInvalid {
-            return .groupLinkInactive
+            return (.groupLinkInactive, outcome.level)
         }
         guard let preview = outcome.preview else {
-            return .notAvailable
+            return (.notAvailable, outcome.level)
         }
 
         // 群头像、贴纸封面、通话头像来自客户端自己；其余的图是 rust/links 点名的那张、客户端校验过的。
@@ -106,7 +171,7 @@ public final class TellomiLinkSender: @unchecked Sendable {
         }
         let title = preview.title.flatMap { $0.isEmpty ? nil : $0 }
         let description = preview.description.flatMap { $0.isEmpty ? nil : $0 }
-        return .found(OWSLinkPreviewDraft(
+        return (.found(OWSLinkPreviewDraft(
             url: url,
             title: title,
             imageData: thumbnail?.imageData,
@@ -115,7 +180,7 @@ public final class TellomiLinkSender: @unchecked Sendable {
             date: preview.date.flatMap { $0 > 0 ? Date(timeIntervalSince1970: Double($0) / 1000) : nil },
             isForwarded: false,
             rich: preview.richHex.flatMap { Data.data(fromHex: $0) },
-        ))
+        )), outcome.level)
     }
 
     // MARK: - 请求怎么做
