@@ -359,6 +359,12 @@ public class RemoteConfig {
         return isEnabled(.tellomiFeedEnabled, defaultValue: false)
     }
 
+    /// Tellomi（ADR-0063 §6.5.7）：白名单那几家（公众号、知乎、微博、小红书、抖音、淘宝 / 天猫商品页）的链接卡片
+    /// 改由服务端代抓（`global.linkPreview.serverFetch`）。没下发就是关；关着时客户端照旧（品牌壳）。
+    public var isTellomiServerLinkPreviewEnabled: Bool {
+        return isEnabled(.tellomiServerLinkPreview, defaultValue: false)
+    }
+
     // MARK: -
 
     public var shouldCheckForServiceExtensionFailures: Bool {
@@ -754,6 +760,8 @@ private enum IsEnabledFlag: String, FlagType {
     case enableGifSearch = "global.gifSearch"
     /// Tellomi（M11 动态，ADR-0071 §8.8）：「动态」标签显不显示。
     case tellomiFeedEnabled = "global.feed.enabled"
+    /// Tellomi（ADR-0063 §6.5.7）：服务端代抓链接卡片。
+    case tellomiServerLinkPreview = "global.linkPreview.serverFetch"
     case messageResendKillSwitch = "ios.messageResendKillSwitch"
     case paymentsResetKillSwitch = "ios.paymentsResetKillSwitch"
     case paypalGiftDonationKillSwitch = "ios.paypalGiftDonationKillSwitch"
@@ -783,6 +791,8 @@ private enum IsEnabledFlag: String, FlagType {
         case .enableGifSearch: false
         // 紧急开关关掉整个区域的动态时也是改这个值，随下一次远程配置拉取生效（dynamic-feed.md R-2.11）
         case .tellomiFeedEnabled: true
+        // 紧急关掉服务端代抓时改这个值，下一次远程配置拉取就生效
+        case .tellomiServerLinkPreview: true
         case .messageResendKillSwitch: false
         case .paymentsResetKillSwitch: false
         case .paypalGiftDonationKillSwitch: false

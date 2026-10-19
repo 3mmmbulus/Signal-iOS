@@ -392,4 +392,117 @@ final class TellomiLinkSenderTest: XCTestCase {
             XCTAssertEqual(error as? LinkPreviewError, .noPreview)
         }
     }
+
+    // MARK: - 服务端代抓（ADR-0063 §6.5）
+
+    private final class FakeServerClient: TellomiServerLinkPreviewClient, @unchecked Sendable {
+        let answer: TellomiServerLinkPreview.Answer
+        private let lock = NSLock()
+        private var _asked = [URL]()
+        var asked: [URL] { lock.withLock { _asked } }
+
+        init(_ answer: TellomiServerLinkPreview.Answer) { self.answer = answer }
+
+        func fetch(url: URL) async -> TellomiServerLinkPreview.Answer {
+            lock.withLock { _asked.append(url) }
+            return answer
+        }
+    }
+
+    private func brandOutcome(url: URL, provider: String = "weixin-mp") -> String {
+        #"{"level":"brand","provider":"\#(provider)","route":"article","kind":"article","preview":{"url":"\#(url.absoluteString)","title":null,"description":null,"image_url":null,"date":null,"rich_hex":"0a02"},"group_link_invalid":false,"lookalike":null,"newly_unreachable_hosts":[],"failures":[]}"#
+    }
+
+    private func makeServerSender(
+        client: FakeServerClient,
+        enabled: Bool,
+        lookups: FakeLookups = FakeLookups(),
+        gate: TellomiServerLinkPreviewGate = TellomiServerLinkPreviewGate(),
+    ) -> TellomiLinkSender {
+        TellomiLinkSender(
+            fetcher: makeLinkFetcher(allowing: nil),
+            expandShortLinks: { true },
+            locale: { Locale(identifier: "zh_Hans_CN") },
+            lookups: lookups,
+            serverClient: client,
+            serverFetchEnabled: { enabled },
+            serverGate: gate,
+        )
+    }
+
+    private let weixinUrl = URL(string: "https://mp.weixin.qq.com/s/AbCdEf")!
+
+    func testAWhitelistedLinkAsksTheServerOnlyWhenTheFlagIsOn() {
+        let client = FakeServerClient(.noCard)
+        XCTAssertFalse(makeServerSender(client: client, enabled: false).usesServerFetch(for: weixinUrl), "开关默认关：不问服务端")
+        XCTAssertTrue(makeServerSender(client: client, enabled: true).usesServerFetch(for: weixinUrl))
+        XCTAssertFalse(makeServerSender(client: client, enabled: true).usesServerFetch(for: URL(string: "https://example.com/a")!), "白名单外不问")
+        XCTAssertFalse(makeServerSender(client: client, enabled: true).usesServerFetch(for: URL(string: "http://mp.weixin.qq.com/s/x")!), "只认 https")
+        let noClient = TellomiLinkSender(fetcher: makeLinkFetcher(allowing: nil), expandShortLinks: { true }, lookups: FakeLookups(), serverFetchEnabled: { true })
+        XCTAssertFalse(noClient.usesServerFetch(for: weixinUrl), "没有客户端（默认）就不问")
+    }
+
+    func testTheServerCardReplacesTheBrandShellButKeepsTheRichBytes() async throws {
+        let client = FakeServerClient(.card(.init(title: "文章标题", provider: "weixin-mp", imageData: pngData(), imageMimeType: "image/jpeg")))
+        let lookups = FakeLookups()
+        let job = ScriptedJob(requests: [], outcome: brandOutcome(url: weixinUrl))
+        let result = try await makeServerSender(client: client, enabled: true, lookups: lookups).preview(job: job, url: weixinUrl, viaServer: true)
+        guard case .found(let draft) = result else { return XCTFail("\(result)") }
+        XCTAssertEqual(draft.title, "文章标题")
+        XCTAssertEqual(draft.imageData, Data([1, 2, 3]), "服务端的图也过 Signal 的缩略图关")
+        XCTAssertEqual(draft.imageMimeType, "image/png")
+        XCTAssertEqual(lookups.thumbnailInputs.count, 1)
+        XCTAssertEqual(draft.rich, Data([0x0a, 0x02]), "品牌壳的 rich 原样带上，旧接收端照旧显示品牌壳")
+        XCTAssertEqual(client.asked, [weixinUrl])
+    }
+
+    func testEveryServerFailureFallsBackToTheBrandShell() async throws {
+        let answers: [TellomiServerLinkPreview.Answer] = [.noCard, .notDeployed, .throttled(retryAfter: 5), .failed]
+        for answer in answers {
+            let client = FakeServerClient(answer)
+            let job = ScriptedJob(requests: [], outcome: brandOutcome(url: weixinUrl))
+            let result = try await makeServerSender(client: client, enabled: true).preview(job: job, url: weixinUrl, viaServer: true)
+            guard case .found(let draft) = result else { return XCTFail("\(answer): \(result)") }
+            XCTAssertNil(draft.title, "\(answer)：照现在的品牌壳")
+            XCTAssertEqual(draft.rich, Data([0x0a, 0x02]))
+        }
+    }
+
+    func testAServerCardWithoutAnImageStillHasATitle() async throws {
+        let client = FakeServerClient(.card(.init(title: "只有标题", provider: "weibo")))
+        let lookups = FakeLookups()
+        let url = URL(string: "https://weibo.com/1234/AbCd")!
+        let job = ScriptedJob(requests: [], outcome: brandOutcome(url: url, provider: "weibo"))
+        let result = try await makeServerSender(client: client, enabled: true, lookups: lookups).preview(job: job, url: url, viaServer: true)
+        guard case .found(let draft) = result else { return XCTFail("\(result)") }
+        XCTAssertEqual(draft.title, "只有标题")
+        XCTAssertNil(draft.imageData)
+        XCTAssertTrue(lookups.thumbnailInputs.isEmpty)
+    }
+
+    func testAStructuredCardIsNeverReplacedByTheServer() async throws {
+        let client = FakeServerClient(.card(.init(title: "服务端", provider: "zhihu")))
+        let url = URL(string: "https://www.zhihu.com/question/1")!
+        let job = ScriptedJob(requests: [], outcome: outcomeJson(preview: #"{"url":"\#(url.absoluteString)","title":"本机结构化","description":null,"image_url":null,"date":null,"rich_hex":null}"#, provider: "zhihu"))
+        let result = try await makeServerSender(client: client, enabled: true).preview(job: job, url: url, viaServer: true)
+        guard case .found(let draft) = result else { return XCTFail("\(result)") }
+        XCTAssertEqual(draft.title, "本机结构化")
+        XCTAssertTrue(client.asked.isEmpty, "结构化卡本来就更好，不问服务端")
+    }
+
+    func testWithoutViaServerTheServerIsNeverAsked() async throws {
+        let client = FakeServerClient(.card(.init(title: "x", provider: "weixin-mp")))
+        let job = ScriptedJob(requests: [], outcome: brandOutcome(url: weixinUrl))
+        _ = try await makeServerSender(client: client, enabled: false).preview(job: job, url: weixinUrl)
+        XCTAssertTrue(client.asked.isEmpty)
+    }
+
+    func testNotDeployedClosesTheGateSoTheNextLinkDoesNotAsk() async throws {
+        let gate = TellomiServerLinkPreviewGate()
+        let client = FakeServerClient(.notDeployed)
+        let sender = makeServerSender(client: client, enabled: true, gate: gate)
+        let job = ScriptedJob(requests: [], outcome: brandOutcome(url: weixinUrl))
+        _ = try await sender.preview(job: job, url: weixinUrl, viaServer: true)
+        XCTAssertFalse(sender.usesServerFetch(for: weixinUrl), "没部署：10 分钟内不再问")
+    }
 }
