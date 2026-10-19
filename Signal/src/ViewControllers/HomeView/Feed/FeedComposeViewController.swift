@@ -11,7 +11,10 @@ import UIKit
 /// 动态的发布页（`dynamic-feed.md` 第三节第 22、23、39 条）。全屏，从动态页右下角的发布按钮进来。
 /// 顶部「动态 / 长文」，正文，图片（最多 10 张），底部可见范围和字数。和 Android `FeedComposeScreen` 同一套行为。
 ///
-/// 话题、投票、评论权限在后面的 PR 加；没做的入口不画。发出去之后带着服务端给的 `state` 关掉，
+/// 草稿、校验、发布 / 编辑请求和失败分类都在 `FeedComposeStore`（有单测）；这个页面只负责画和转交。
+/// 「发布页扩展」（`TellomiFeed.isComposeExtrasEnabled`，默认关）打开时多三样：编辑自己 15 分钟内的帖子（`editTarget`）、
+/// 长文草稿存在本机并在再次打开时接回来、「只给谁看 / 不给谁看」的选人页。关着时和之前一样：草稿只在内存里，
+/// 两档选人的入口显示「还不能选」。发出去之后带着服务端给的 `state` 关掉，
 /// 动态页据此提示「已发布」或「审核中」（R-2.2）。
 final class FeedComposeViewController: OWSViewController {
 
@@ -21,16 +24,23 @@ final class FeedComposeViewController: OWSViewController {
 
     private let source: FeedSource
     private let onPublished: (String) -> Void
+    private let store: FeedComposeStore
+    private let features: FeedFeatureGate?
+    private let audienceCandidates: FeedAudienceCandidateSource?
+    private let extrasEnabled: Bool
+    private var finished = false
 
     /// 这条草稿的去重号（契约 7.2 `client_nonce`）：点了发布、网络断了再点，服务端只收一次。
-    let clientNonce = UUID().uuidString
+    var clientNonce: String { store.clientNonce }
 
-    private(set) var draft = FeedDraft()
-    private(set) var limits = FeedLimits()
-    private(set) var minorMode = false
-    private(set) var isPublishing = false
+    var draft: FeedDraft { store.state.draft }
+    var limits: FeedLimits { store.state.limits }
+    var minorMode: Bool { store.state.minorMode }
+    var isPublishing: Bool { store.state.publishing }
+    var isEditing: Bool { store.state.editing != nil }
 
     private let kindSwitch = FeedKindSwitch()
+    private let editTitleLabel = UILabel()
     private lazy var publishButton = UIBarButtonItem(
         title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISH", comment: "Feed publish page: the button that publishes the post."),
         style: .done,
@@ -48,10 +58,51 @@ final class FeedComposeViewController: OWSViewController {
     let counterLabel = UILabel()
     private var bottomBarBottom: NSLayoutConstraint?
 
-    init(source: FeedSource, onPublished: @escaping (String) -> Void) {
+    /// - Parameters:
+    ///   - editTarget: 编辑这一条（只改正文和长文标题；`FeedEditTarget.of(...)` 给）。nil = 新写一条。
+    ///   - articleDrafts: 长文草稿存哪里。nil：扩展开着用本机存储（不进备份），关着只放内存（不会接回来）。
+    ///   - features: 问引擎有没有 `audience_tokens`；nil = 不问（两档选人显示「还不能选」）。
+    ///   - audienceCandidates: 选人页的候选人来源；nil = 没有（同上）。
+    init(
+        source: FeedSource,
+        editTarget: FeedEditTarget? = nil,
+        articleDrafts: FeedArticleDrafts? = nil,
+        features: FeedFeatureGate? = nil,
+        audienceCandidates: FeedAudienceCandidateSource? = nil,
+        extrasEnabled: Bool = TellomiFeed.isComposeExtrasEnabled,
+        onPublished: @escaping (String) -> Void,
+    ) {
         self.source = source
         self.onPublished = onPublished
+        self.features = features
+        self.audienceCandidates = audienceCandidates
+        self.extrasEnabled = extrasEnabled
+        let drafts: FeedArticleDrafts
+        if let articleDrafts {
+            drafts = articleDrafts
+        } else if extrasEnabled {
+            drafts = StoredFeedArticleDrafts(storage: FeedLocalStorages.backupExcluded)
+        } else {
+            drafts = InMemoryFeedArticleDrafts()
+        }
+        store = FeedComposeStore(editTarget: editTarget, source: source, articleDrafts: drafts)
         super.init()
+        store.onChange = { [weak self] state in self?.stateChanged(state) }
+    }
+
+    /// 动态页和「我的动态」页打开发布页的统一入口：样例数据下（内部开发）接上样例的好友和 `audience_tokens`，
+    /// 其余情况两档选人照旧「还不能选」（好友来源还没定，见报告「需要 erel 决定」）。
+    static func make(source: FeedSource, editTarget: FeedEditTarget? = nil, onPublished: @escaping (String) -> Void) -> FeedComposeViewController {
+        let extras = TellomiFeed.isComposeExtrasEnabled
+        let sample = extras && TellomiFeed.isSampleDataEnabled && editTarget == nil
+        return FeedComposeViewController(
+            source: source,
+            editTarget: editTarget,
+            features: sample ? StaticFeedFeatureGate([FeedFeature.audienceTokens]) : nil,
+            audienceCandidates: sample ? StaticFeedAudienceCandidates(FeedAudienceSamples.candidates()) : nil,
+            extrasEnabled: extras,
+            onPublished: onPublished,
+        )
     }
 
     override func viewDidLoad() {
@@ -63,28 +114,19 @@ final class FeedComposeViewController: OWSViewController {
             primaryAction: UIAction { [weak self] _ in self?.requestClose() },
         )
         navigationItem.leftBarButtonItem?.accessibilityLabel = CommonStrings.dismissButton
-        navigationItem.titleView = kindSwitch
         navigationItem.rightBarButtonItem = publishButton
         kindSwitch.onSelect = { [weak self] kind in self?.setKind(kind) }
+        editTitleLabel.font = UIFont.dynamicTypeHeadlineClamped.semibold()
+        editTitleLabel.textColor = UIColor.Signal.label
+        editTitleLabel.adjustsFontSizeToFitWidth = true
+        editTitleLabel.minimumScaleFactor = 0.7
 
         buildLayout()
         presentationController?.delegate = self
         render()
 
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                let config = try await self.source.config()
-                self.limits = config.limits
-                self.minorMode = config.minorMode
-                if self.draft.isEmpty {
-                    self.draft.visibility = FeedVisibility.defaultValue(minorMode: config.minorMode)
-                }
-                self.render()
-            } catch {
-                Logger.warn("feed compose config failed, using defaults: \(error)")
-            }
-        }
+        store.start()
+        if let features { store.refreshFeatures(features) }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -94,6 +136,7 @@ final class FeedComposeViewController: OWSViewController {
         } else {
             textView.becomeFirstResponder()
         }
+        consumeNotices(store.state)
     }
 
     // MARK: - Layout
@@ -188,18 +231,42 @@ final class FeedComposeViewController: OWSViewController {
     // MARK: - Rendering
 
     var problem: FeedDraft.Problem? {
-        return draft.problem(limits: limits, minorMode: minorMode)
+        return store.state.problem
     }
 
     var canAddImages: Bool {
-        return draft.kind == .post && draft.images.count < limits.postImages
+        return store.state.canAddImages
+    }
+
+    /// 发布页现在的样子（哪些控件显示、可见范围每一档能不能选），由 `FeedComposeLayout` 算。
+    var layout: FeedComposeLayout {
+        return FeedComposeLayout.make(store.state, pickerAvailable: audienceCandidates != nil)
+    }
+
+    private func stateChanged(_ state: FeedComposeState) {
+        render()
+        consumeNotices(state)
     }
 
     private func render() {
         guard isViewLoaded else { return }
+        let layout = self.layout
+        switch layout.title {
+        case .kindSwitch:
+            navigationItem.titleView = kindSwitch
+        case .editPost:
+            editTitleLabel.text = OWSLocalizedString("TELLOMI_FEED_COMPOSE_EDIT_POST", comment: "Feed publish page: title when editing a post that was just published.")
+            navigationItem.titleView = editTitleLabel
+        case .editArticle:
+            editTitleLabel.text = OWSLocalizedString("TELLOMI_FEED_COMPOSE_EDIT_ARTICLE", comment: "Feed publish page: title when editing an article that was just published.")
+            navigationItem.titleView = editTitleLabel
+        }
+        publishButton.title = layout.publishButton == .save
+            ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_SAVE", comment: "Feed publish page: the button that saves the edit of a published post.")
+            : OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISH", comment: "Feed publish page: the button that publishes the post.")
         kindSwitch.selected = draft.kind
 
-        titleField.isHidden = draft.kind != .article
+        titleField.isHidden = !layout.showsTitleField
         if titleField.text != draft.title {
             titleField.text = draft.title
         }
@@ -212,11 +279,12 @@ final class FeedComposeViewController: OWSViewController {
         placeholderLabel.isHidden = !draft.text.isEmpty
 
         renderImages()
-        photoButton.isHidden = draft.kind != .post
+        photoButton.isHidden = !layout.showsPhotoButton
         photoButton.isEnabled = canAddImages
 
-        visibilityButton.configuration?.title = draft.visibility.title
-        visibilityButton.menu = visibilityMenu()
+        visibilityButton.isHidden = !layout.showsVisibilityButton
+        visibilityButton.configuration?.title = visibilityButtonTitle(layout)
+        visibilityButton.menu = visibilityMenu(layout)
 
         let remaining = draft.textLimit(limits) - draft.textLength
         counterLabel.isHidden = remaining > Self.counterVisibleRemaining
@@ -224,7 +292,12 @@ final class FeedComposeViewController: OWSViewController {
         counterLabel.textColor = remaining < 0 ? UIColor.Signal.red : UIColor.Signal.secondaryLabel
 
         publishButton.isEnabled = problem == nil && !isPublishing
-        isModalInPresentation = !draft.isEmpty
+        isModalInPresentation = needsCloseConfirmation
+    }
+
+    /// 关页面要不要先问：扩展关着，写了东西就问；开着，自动存在本机的长文不问（下滑就是「留着草稿」），编辑只在改过之后问。
+    private var needsCloseConfirmation: Bool {
+        return extrasEnabled ? store.state.hasUnsavedChanges : !draft.isEmpty
     }
 
     private func renderImages() {
@@ -271,22 +344,60 @@ final class FeedComposeViewController: OWSViewController {
         return imageView
     }
 
-    /// 可见范围五档。「部分可见」「不给谁看」选人组件接上之前不能选；未成年人只有「仅好友 / 仅自己」。
-    private func visibilityMenu() -> UIMenu {
-        let actions = FeedVisibility.allowed(minorMode: minorMode).map { visibility in
-            let enabled = !visibility.needsAudience
-            let subtitle = enabled
-                ? visibility.subtitle
-                : OWSLocalizedString("TELLOMI_FEED_COMPOSE_VISIBILITY_COMING_SOON", comment: "Feed publish page: shown under the two visibility options that need picking people, which is not available yet.")
-            let action = UIAction(
+    /// 按钮上的字：选了人的两档带人数（「只给部分人 · 3 人」）。
+    private func visibilityButtonTitle(_ layout: FeedComposeLayout) -> String {
+        let title = draft.visibility.title
+        guard let option = layout.visibilityOptions.first(where: \.selected),
+              case .picksPeople(let count) = option.availability, count > 0 else { return title }
+        return String(
+            format: OWSLocalizedString("TELLOMI_FEED_COMPOSE_VISIBILITY_WITH_COUNT", comment: "Feed publish page: visibility button when people were picked. Embeds {{visibility name}} and {{number of people, e.g. '3 people'}}."),
+            title,
+            Self.peopleText(count),
+        )
+    }
+
+    static func peopleText(_ count: Int) -> String {
+        if count == 1 {
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_PEOPLE_ONE", comment: "Feed publish page: one person was picked for the visibility.")
+        }
+        return String(
+            format: OWSLocalizedString("TELLOMI_FEED_COMPOSE_PEOPLE_MANY", comment: "Feed publish page: several people were picked for the visibility. Embeds {{number of people}}."),
+            OWSFormat.formatInt(count),
+        )
+    }
+
+    /// 可见范围五档。「只给部分人」「不给谁看」要选人：有候选人来源和 `audience_tokens` 时点了进选人页，否则显示「还不能选」；
+    /// 未成年人只有「仅好友 / 仅自己」。
+    private func visibilityMenu(_ layout: FeedComposeLayout) -> UIMenu {
+        let actions = layout.visibilityOptions.map { option -> UIAction in
+            let visibility = option.visibility
+            let enabled: Bool
+            let subtitle: String
+            switch option.availability {
+            case .available:
+                enabled = true
+                subtitle = visibility.subtitle
+            case .picksPeople(let count):
+                enabled = true
+                subtitle = count > 0
+                    ? Self.peopleText(count)
+                    : OWSLocalizedString("TELLOMI_FEED_COMPOSE_VISIBILITY_PICK_PEOPLE", comment: "Feed publish page: shown under the two visibility options that need picking people, before anyone was picked.")
+            case .comingSoon:
+                enabled = false
+                subtitle = OWSLocalizedString("TELLOMI_FEED_COMPOSE_VISIBILITY_COMING_SOON", comment: "Feed publish page: shown under the two visibility options that need picking people, which is not available yet.")
+            }
+            return UIAction(
                 title: visibility.title,
                 subtitle: subtitle,
                 attributes: enabled ? [] : .disabled,
-                state: visibility == draft.visibility ? .on : .off,
+                state: option.selected ? .on : .off,
             ) { [weak self] _ in
-                self?.setVisibility(visibility)
+                if visibility.needsAudience {
+                    self?.presentAudiencePicker(for: visibility)
+                } else {
+                    self?.setVisibility(visibility)
+                }
             }
-            return action
         }
         let title = minorMode
             ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_VISIBILITY_MINOR_MODE", comment: "Feed publish page: note in minor mode that only friends or yourself can see posts.")
@@ -294,47 +405,48 @@ final class FeedComposeViewController: OWSViewController {
         return UIMenu(title: title, options: .singleSelection, children: actions)
     }
 
+    private func presentAudiencePicker(for visibility: FeedVisibility) {
+        guard let audienceCandidates, !isEditing, visibility.needsAudience else { return }
+        let current = draft.visibility == visibility ? draft.audience : []
+        let picker = FeedAudiencePickerViewController(visibility: visibility, preselected: current, source: audienceCandidates) { [weak self] members in
+            self?.store.onAudiencePicked(visibility, members)
+        }
+        present(OWSNavigationController(rootViewController: picker), animated: true)
+    }
+
     // MARK: - Editing
 
     func setKind(_ kind: FeedDraftKind) {
-        draft.kind = kind
-        render()
-        if kind == .article, draft.title.isEmpty {
+        store.onKindChanged(kind)
+        if draft.kind == .article, draft.title.isEmpty {
             titleField.becomeFirstResponder()
         }
     }
 
     func setText(_ text: String) {
-        draft.text = text
-        render()
+        store.onTextChanged(text)
     }
 
     func setTitle(_ title: String) {
-        draft.title = title
-        render()
+        store.onTitleChanged(title)
     }
 
     func setVisibility(_ visibility: FeedVisibility) {
-        guard FeedVisibility.selectable(minorMode: minorMode).contains(visibility) else { return }
-        draft.visibility = visibility
-        render()
+        store.onVisibilityChanged(visibility)
     }
 
-    /// 加图，超出上限的部分不要（选图器本身也限了张数，这里兜底）。
+    /// 加图，超出上限的部分不要（选图器本身也限了张数，store 里兜底）。
     func addImages(_ images: [UIImage]) {
-        let room = max(limits.postImages - draft.images.count, 0)
-        draft.images += images.prefix(room).map { FeedDraftImage(image: $0) }
-        render()
+        store.onImagesPicked(images.map { FeedDraftImage(image: $0) })
     }
 
     func removeImage(id: String) {
-        draft.images.removeAll { $0.id == id }
-        render()
+        store.onImageRemoved(id: id)
     }
 
+    /// 标题超过 100 个字时剪回 100（拼音输入中先放行，拼完再剪），和 Android 一致。
     private func titleChanged() {
-        draft.title = titleField.text ?? ""
-        render()
+        store.onTitleChanged(titleField.text ?? "", composing: titleField.markedTextRange != nil)
     }
 
     private func pickImages() {
@@ -350,7 +462,15 @@ final class FeedComposeViewController: OWSViewController {
     // MARK: - Close / publish
 
     private func requestClose() {
-        guard !draft.isEmpty, !isPublishing else {
+        guard !isPublishing else {
+            dismiss(animated: true)
+            return
+        }
+        if extrasEnabled && layout.showsDiscardDraft {
+            presentDraftSheet()
+            return
+        }
+        guard needsCloseConfirmation else {
             dismiss(animated: true)
             return
         }
@@ -371,34 +491,70 @@ final class FeedComposeViewController: OWSViewController {
         presentActionSheet(sheet)
     }
 
+    /// 新写的长文有内容时点关闭：留着草稿（已经自动存在本机了）/ 放弃草稿 / 继续写。
+    private func presentDraftSheet() {
+        let sheet = ActionSheetController(
+            title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_DRAFT_TITLE", comment: "Feed publish page: title of the sheet asking what to do with an unfinished article when closing."),
+            message: OWSLocalizedString("TELLOMI_FEED_COMPOSE_DRAFT_BODY", comment: "Feed publish page: body of that sheet; the article is already saved on this phone."),
+        )
+        sheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_DRAFT_KEEP", comment: "Feed publish page: button that closes the page and keeps the article draft on this phone."),
+            style: .default,
+        ) { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
+        sheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_DRAFT_DISCARD", comment: "Feed publish page: button that deletes the article draft and closes the page."),
+            style: .destructive,
+        ) { [weak self] _ in
+            self?.store.discardDraft()
+            self?.dismiss(animated: true)
+        })
+        sheet.addAction(ActionSheetAction(
+            title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_KEEP_EDITING", comment: "Feed publish page: button that goes back to writing."),
+            style: .cancel,
+        ))
+        presentActionSheet(sheet)
+    }
+
     @objc
     func publish() {
-        guard !isPublishing, problem == nil else { return }
-        isPublishing = true
-        render()
-        let draft = self.draft
-        Task { [weak self, source, clientNonce] in
-            do {
-                let response = try await source.publish(draft: draft, clientNonce: clientNonce)
-                guard let self else { return }
-                self.isPublishing = false
-                self.onPublished(response.state)
-                self.dismiss(animated: true)
-            } catch {
-                Logger.warn("feed publish failed: \(error)")
-                guard let self else { return }
-                self.isPublishing = false
-                self.render()
-                self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISH_FAILED", comment: "Feed publish page: toast when publishing failed."))
-            }
+        store.publish()
+    }
+
+    /// 一次性的提示：发出去了关页面、失败、过了 15 分钟、还没建主页、接回了上次的长文。
+    private func consumeNotices(_ state: FeedComposeState) {
+        if let published = state.publishedState, !finished {
+            finished = true
+            onPublished(published)
+            dismiss(animated: true)
+            return
+        }
+        var text: String?
+        if state.failed {
+            text = state.editing != nil
+                ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_EDIT_FAILED", comment: "Feed publish page: toast when saving the edit failed.")
+                : OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISH_FAILED", comment: "Feed publish page: toast when publishing failed.")
+            store.onFailureShown()
+        } else if state.editWindowClosed {
+            text = OWSLocalizedString("TELLOMI_FEED_COMPOSE_EDIT_WINDOW_CLOSED", comment: "Feed publish page: toast when the post can't be edited anymore because the editing time is over.")
+            store.onFailureShown()
+        } else if state.profileRequired {
+            text = OWSLocalizedString("TELLOMI_FEED_PROFILE_REQUIRED", comment: "Feed: toast when an action needs a public profile first.")
+            store.onProfileRequiredShown()
+        } else if state.restoredArticle, viewIfLoaded?.window != nil {
+            text = OWSLocalizedString("TELLOMI_FEED_COMPOSE_ARTICLE_RESTORED", comment: "Feed publish page: toast when the unfinished article from last time was picked up again.")
+            store.onRestoredArticleShown()
+        }
+        if let text, viewIfLoaded?.window != nil {
+            presentToast(text: text)
         }
     }
 }
 
 extension FeedComposeViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
-        draft.text = textView.text
-        render()
+        store.onTextChanged(textView.text)
     }
 }
 

@@ -11,7 +11,9 @@ import UIKit
 /// 可以删除（左滑，先确认）、对未通过的申诉（每条一次；已撤回的引擎当前不收申诉，没有按钮）、点开已发布的看详情。
 /// 逻辑在 `FeedMyPostsStore`，画什么在 `FeedMyPostsPresentation`；和信息流共用同一个 `FeedStore`：删掉的帖子信息流里同时去掉，点开时详情页拿到的就是信息流里现在的样子。
 ///
-/// 默认不接到任何入口（见 `TellomiFeed.isMyPostsEnabled`），不影响现有页面。编辑（15 分钟内）要用发布页的编辑模式，那个页面这一轮不动，这里先没有「编辑」。
+/// 默认不接到任何入口（见 `TellomiFeed.isMyPostsEnabled`），不影响现有页面。
+/// 「发布页扩展」（`TellomiFeed.isComposeExtrasEnabled`）打开时：发布后 15 分钟内的帖子左滑多一个「编辑」（进发布页的编辑模式），
+/// 本机有没写完的长文时页面顶上多一行「继续写」。
 final class FeedMyPostsViewController: OWSViewController {
 
     let store: FeedMyPostsStore
@@ -20,6 +22,10 @@ final class FeedMyPostsViewController: OWSViewController {
     private let source: FeedSource
     private let feed: FeedStore?
     private let refreshControl = UIRefreshControl()
+    private let composeExtras: Bool
+    private let articleDrafts: FeedArticleDrafts?
+    private let draftHeader = FeedDraftEntryHeader()
+    private var draftEntry: FeedComposeDraftEntry?
 
     private(set) var presentation: FeedMyPostsPresentation
     private(set) var rows = [FeedMyPostsPresentation.Row]()
@@ -37,9 +43,16 @@ final class FeedMyPostsViewController: OWSViewController {
     /// 详情里点 `#话题`；不设就不响应。
     var onOpenTopic: ((FeedTopic) -> Void)?
 
-    init(source: FeedSource, feed: FeedStore?) {
+    init(
+        source: FeedSource,
+        feed: FeedStore?,
+        composeExtras: Bool = TellomiFeed.isComposeExtrasEnabled,
+        articleDrafts: FeedArticleDrafts? = nil,
+    ) {
         self.source = source
         self.feed = feed
+        self.composeExtras = composeExtras
+        self.articleDrafts = composeExtras ? (articleDrafts ?? StoredFeedArticleDrafts(storage: FeedLocalStorages.backupExcluded)) : nil
         self.store = FeedMyPostsStore(source: source, feed: feed)
         self.presentation = FeedMyPostsPresentation(state: store.state)
         super.init()
@@ -70,15 +83,23 @@ final class FeedMyPostsViewController: OWSViewController {
         refreshControl.addAction(UIAction { [weak self] _ in self?.store.refresh() }, for: .valueChanged)
         postsTableView.refreshControl = refreshControl
 
+        draftHeader.onTap = { [weak self] in self?.continueDraft() }
+
         store.onChange = { [weak self] state in self?.apply(state) }
         apply(store.state)
         store.start()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        layoutDraftHeader()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // 从详情页回来：那边删了帖子，这里的行也要去掉
         store.syncWithFeed()
+        refreshDraftEntry()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -100,7 +121,7 @@ final class FeedMyPostsViewController: OWSViewController {
         }
         if !state.loading, refreshControl.isRefreshing { refreshControl.endRefreshing() }
 
-        if state.notice != nil || state.appealNotice != nil {
+        if state.notice != nil || state.appealNotice != nil || state.editNotice != nil {
             // `apply` 是 store 改 `state` 的 didSet 里调进来的：提示在下一轮主线程里显示并清掉
             DispatchQueue.main.async { [weak self] in self?.consumeNotices() }
         }
@@ -158,6 +179,62 @@ final class FeedMyPostsViewController: OWSViewController {
     }
 
     /// 申诉：一个输入理由的对话框（最多 500 个字，多的 store 里按码点截掉）；只给「未通过且能申诉」的（单测 / 截图直接调它）。
+    /// 编辑（单测 / 截图直接调它）：扩展开着、没被拒 / 撤回、在窗口内的帖子进发布页的编辑模式；保存后重新拉列表。
+    func edit(_ row: FeedMyPostRow, now: Date = Date()) {
+        guard composeExtras, row.canEdit(now: now, windowSeconds: store.state.editWindowSeconds), let target = row.editTarget else { return }
+        let compose = FeedComposeViewController.make(source: source, editTarget: target) { [weak self] state in
+            self?.store.onEdited(publishState: state)
+        }
+        let navigationController = OWSNavigationController(rootViewController: compose)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
+    }
+
+    /// 草稿入口：发布页打开时自己会把本机的长文接回来。
+    func continueDraft() {
+        guard composeExtras else { return }
+        let compose = FeedComposeViewController.make(source: source) { [weak self] state in
+            guard let self else { return }
+            let text = state == FeedCreatePostResponse.statePending
+                ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_PENDING", comment: "Feed: toast after publishing when the post waits for review before others can see it.")
+                : OWSLocalizedString("TELLOMI_FEED_COMPOSE_PUBLISHED", comment: "Feed: toast after the post was published.")
+            self.lastToastText = text
+            self.presentToast(text: text)
+            self.feed?.onPublished()
+            self.store.refresh()
+            self.refreshDraftEntry()
+        }
+        let navigationController = OWSNavigationController(rootViewController: compose)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
+    }
+
+    /// 本机有没写完的长文就在列表顶上放一行；没有（或扩展关着）就收起。
+    func refreshDraftEntry() {
+        draftEntry = composeExtras ? FeedComposeDraftEntry.make(articleDrafts?.load()) : nil
+        guard isViewLoaded else { return }
+        if let draftEntry {
+            draftHeader.configure(draftEntry)
+            if postsTableView.tableHeaderView !== draftHeader { postsTableView.tableHeaderView = draftHeader }
+            layoutDraftHeader()
+        } else {
+            postsTableView.tableHeaderView = nil
+        }
+    }
+
+    private func layoutDraftHeader() {
+        guard postsTableView.tableHeaderView === draftHeader, postsTableView.bounds.width > 0 else { return }
+        let size = draftHeader.systemLayoutSizeFitting(
+            CGSize(width: postsTableView.bounds.width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel,
+        )
+        if draftHeader.frame.size.width != postsTableView.bounds.width || draftHeader.frame.size.height != size.height {
+            draftHeader.frame = CGRect(x: 0, y: 0, width: postsTableView.bounds.width, height: size.height)
+            postsTableView.tableHeaderView = draftHeader
+        }
+    }
+
     func presentAppeal(_ row: FeedMyPostRow) {
         guard row.canAppeal, !presentation.appealBusy, store.state.posts.contains(where: { $0.id == row.id }) else { return }
         let alert = UIAlertController(
@@ -207,6 +284,10 @@ final class FeedMyPostsViewController: OWSViewController {
             text = Self.toastText(for: result)
             store.onAppealNoticeShown()
         }
+        if let published = store.state.editNotice {
+            text = Self.editToastText(publishState: published)
+            store.onEditNoticeShown()
+        }
         guard let text else { return }
         lastToastText = text
         if viewIfLoaded?.window != nil { presentToast(text: text) }
@@ -220,6 +301,18 @@ final class FeedMyPostsViewController: OWSViewController {
 
     static var appealTitle: String {
         return OWSLocalizedString("TELLOMI_FEED_MINE_APPEAL", comment: "Feed my posts page: button that opens the appeal dialog for a post that wasn't approved.")
+    }
+
+    static var editTitle: String {
+        return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT", comment: "Feed my posts page: swipe action that edits a post published a few minutes ago.")
+    }
+
+    /// 编辑保存之后：大陆区要重新审核（`pending`），审核通过前别人看到的还是旧的。
+    static func editToastText(publishState: String) -> String {
+        if publishState == FeedCreatePostResponse.statePending {
+            return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT_SAVED_PENDING", comment: "Feed my posts page: toast after saving an edit that has to be reviewed before others see the change.")
+        }
+        return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT_SAVED", comment: "Feed my posts page: toast after saving an edit.")
     }
 
     static func toastText(for notice: FeedMyPostsNotice) -> String {
@@ -355,6 +448,14 @@ extension FeedMyPostsViewController: UITableViewDataSource, UITableViewDelegate 
                 done(false)   // 确认之后才真的删；先让行滑回来
             }
             actions.append(delete)
+        }
+        if composeExtras, row.canEdit(now: Date(), windowSeconds: store.state.editWindowSeconds) {
+            let edit = UIContextualAction(style: .normal, title: Self.editTitle) { [weak self] _, _, done in
+                self?.edit(row)
+                done(true)
+            }
+            edit.backgroundColor = .systemBlue
+            actions.append(edit)
         }
         if row.canAppeal {
             let appeal = UIContextualAction(style: .normal, title: Self.appealTitle) { [weak self] _, _, done in

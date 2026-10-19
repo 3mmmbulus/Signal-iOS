@@ -242,7 +242,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     /// 打开发布页（全屏）。发出去之后提示「已发布」或「审核中」（R-2.2），两栏刷新。
     func showCompose() {
-        let compose = FeedComposeViewController(source: source) { [weak self] state in
+        let compose = FeedComposeViewController.make(source: source) { [weak self] state in
             guard let self else { return }
             let text = state == FeedCreatePostResponse.statePending
                 ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_PENDING", comment: "Feed: toast after publishing when the post waits for review before others can see it.")
