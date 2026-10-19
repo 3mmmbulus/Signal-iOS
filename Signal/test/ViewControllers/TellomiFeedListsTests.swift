@@ -372,9 +372,9 @@ final class TellomiFeedPeopleStoreTests: XCTestCase {
         source.setReadGates([slow, nil])
         let store = FeedPeopleStore(mode: .followRequests, source: source)
         store.refresh()
+        for _ in 0..<50 where source.readCalls < 1 { try? await Task.sleep(nanoseconds: 2_000_000) }
         source.requests = [person("new")]
         store.refresh()
-        await Task.yield()
         for _ in 0..<50 where source.readCalls < 2 { try? await Task.sleep(nanoseconds: 2_000_000) }
         await slow.open()
         await store.waitForTasks()
