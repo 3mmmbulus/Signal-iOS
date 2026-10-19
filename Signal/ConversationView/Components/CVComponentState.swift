@@ -2308,7 +2308,9 @@ private extension CVComponentState.Builder {
         }
         // card-visual §3.2 / §3.3：版式（图标卡 / 大图卡 / 无图）和图的颜色由 rust/links 定，在数据层（工作线程）一起判。
         // 品牌壳的图是随包图标（card-visual §3.9），不看发送端的图：包里读得到才用，读不到就和以前一样只出平台名 + 域名。
-        let icon = card.level == .brand ? card.icon.flatMap { TellomiLinkIcon.icon(named: $0) } : nil
+        // 认领但抓页面的平台（`claimed`，2026-10-19）：页面没给图时，横条右边也用随包图标（rust/links 只在这种卡上给 `icon`）。
+        let usesBundledIcon = card.level == .brand || (card.level == .generic && !card.showImage)
+        let icon = usesBundledIcon ? card.icon.flatMap { TellomiLinkIcon.icon(named: $0) } : nil
         // 版式只看图的真实像素尺寸：图没下完、发送端又没写宽高时不知道多大，按「没有图」问（不能拿 blurHash 的默认尺寸去猜成图标卡，
         // 下完以后真实尺寸若是大图卡版式就跳一下）。
         let visual = TellomiLinkVisualReader.visual(
