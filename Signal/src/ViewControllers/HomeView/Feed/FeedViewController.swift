@@ -279,7 +279,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     /// 点一条帖子：推帖子详情页（`FeedPostDetailViewController`），底栏收起。
     private func openPost(_ card: FeedCard) {
         // 详情页用列表的 store（单一数据源）：赞、评论数改在 store 里，列表这边通过订阅同步
-        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: store.showsIpRegion, feed: store)
+        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: store.showsIpRegion, feed: store, eventSurface: FeedEventSurface(tab: selectedTab))
         if profilePageEnabled {
             detail.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
         }

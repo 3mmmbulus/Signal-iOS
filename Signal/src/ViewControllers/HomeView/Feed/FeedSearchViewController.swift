@@ -199,7 +199,7 @@ final class FeedSearchViewController: OWSViewController {
             onOpenPost(card)
             return
         }
-        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: showIpRegion, feed: feed)
+        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: showIpRegion, feed: feed, eventSurface: .search)
         detail.onOpenAuthor = onOpenAuthor
         detail.onOpenTopic = onOpenTopic
         navigationController?.pushViewController(detail, animated: true)

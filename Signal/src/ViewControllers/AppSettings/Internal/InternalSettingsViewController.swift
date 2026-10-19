@@ -251,6 +251,20 @@ class InternalSettingsViewController: OWSTableViewController2 {
                 TellomiFeed.isDetailExtrasEnabled = uiSwitch.isOn
             },
         ))
+        feedSection.add(.switch(
+            withText: "Feed: detail events (open, dwell, quick exit, share)",
+            isOn: { TellomiFeed.isDetailEventsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isDetailEventsEnabled = uiSwitch.isOn
+            },
+        ))
+        feedSection.add(.switch(
+            withText: "Feed: share / copy link in the post menu",
+            isOn: { TellomiFeed.isShareEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isShareEnabled = uiSwitch.isOn
+            },
+        ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
         contents.add(feedSection)
 

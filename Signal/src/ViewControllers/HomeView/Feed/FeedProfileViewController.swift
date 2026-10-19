@@ -259,7 +259,7 @@ final class FeedProfileViewController: OWSViewController {
             onOpenPost(card)
             return
         }
-        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: presentation.ipRegionLabel != nil || (feed?.showsIpRegion ?? false), feed: feed)
+        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: presentation.ipRegionLabel != nil || (feed?.showsIpRegion ?? false), feed: feed, eventSurface: .profile)
         navigationController?.pushViewController(detail, animated: true)
     }
 

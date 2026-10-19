@@ -59,6 +59,17 @@ final class FeedPostDetailViewController: OWSViewController {
     private let savedMessages: FeedSavedMessages?
     private let focusCommentId: String?
     private let voiceLoader: FeedVoiceLoader
+    private let feedStore: FeedStore?
+    /// 事件（I-13）里这次打开算哪个来源；nil = 不报（通知、我的动态点进来的没有对应的 `surface`）。
+    private let eventSurface: FeedEventSurface?
+    private let eventsEnabled: Bool
+    private let shareEnabled: Bool
+    private var eventOpened = false
+    private var eventClosed = false
+    /// 分享面板怎么弹（参数：外链、做完的回调，`true` = 真的分享了）；nil = 用系统分享面板。单测 / 截图里换掉。
+    var presentShareSheet: ((String, @escaping (Bool) -> Void) -> Void)?
+    /// 把外链放进剪贴板；单测里换掉，免得动真的剪贴板。
+    var copyToPasteboard: (String) -> Void = { UIPasteboard.general.string = $0 }
     private lazy var voicePlayer = FeedVoicePlayer(loader: voiceLoader, baseUrl: { [weak self] in self?.store.state.mediaBaseUrl })
     /// 刚被定位到的评论（高亮几秒）。
     private(set) var highlightedCommentId: String?
@@ -87,6 +98,9 @@ final class FeedPostDetailViewController: OWSViewController {
         savedMessages: FeedSavedMessages? = nil,
         focusCommentId: String? = nil,
         voiceLoader: FeedVoiceLoader = FeedVoiceFileLoader(),
+        eventSurface: FeedEventSurface? = nil,
+        eventsEnabled: Bool = TellomiFeed.isDetailEventsEnabled,
+        shareEnabled: Bool = TellomiFeed.isShareEnabled,
     ) {
         self.post = post
         self.showIpRegion = showIpRegion
@@ -96,8 +110,12 @@ final class FeedPostDetailViewController: OWSViewController {
         self.savedMessages = extras ? savedMessages : nil
         self.focusCommentId = extras ? focusCommentId : nil
         self.voiceLoader = voiceLoader
+        self.feedStore = feed
+        self.eventSurface = eventSurface
+        self.eventsEnabled = eventsEnabled && feed != nil
+        self.shareEnabled = shareEnabled
         fallbackShowIpRegion = showIpRegion
-        store = FeedPostDetailStore(initial: post, source: source, savedMessages: extras ? savedMessages : nil, feed: feed, editEnabled: extras)
+        store = FeedPostDetailStore(initial: post, source: source, savedMessages: extras ? savedMessages : nil, feed: feed, editEnabled: extras, shareEnabled: shareEnabled)
         super.init()
         // 和 Telegram 一样：推进去以后底栏收起来
         hidesBottomBarWhenPushed = true
@@ -158,7 +176,9 @@ final class FeedPostDetailViewController: OWSViewController {
         }
         if extras {
             voicePlayer.onChange = { [weak self] playback in self?.voicePlaybackChanged(playback) }
-            // 退到后台：语音暂停（和 Android 一样，回来点一下接着放）
+        }
+        if extras || eventsEnabled {
+            // 退到后台：语音暂停（和 Android 一样，回来点一下接着放）；详情事件按「离开」收尾并发出去
             NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         }
         apply(store.state)
@@ -167,13 +187,34 @@ final class FeedPostDetailViewController: OWSViewController {
     }
 
     @objc private func appDidEnterBackground() {
-        voicePlayer.pause()
+        if extras { voicePlayer.pause() }
+        closeDetailEvent(flush: true)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        openDetailEvent()
+    }
+
+    /// 打开详情（I-13）：整个页面生命里只报一次 `open`，盖上别的页面再回来、退到后台再回前台都不重报也不重新计时。
+    func openDetailEvent() {
+        guard eventsEnabled, let feedStore, let eventSurface, !eventOpened, !eventClosed else { return }
+        eventOpened = true
+        feedStore.onDetailOpened(contentId: store.state.post.id, surface: eventSurface)
+    }
+
+    /// 离开详情（返回、退到后台）：只收尾一次。
+    func closeDetailEvent(flush: Bool = false) {
+        guard eventOpened, !eventClosed, let feedStore else { return }
+        eventClosed = true
+        feedStore.onDetailClosed(flush: flush)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         // 弹出 / 关闭：不再订阅列表的 store、放掉借着的卡片（盖上别的页面再回来不算离开）
         if isMovingFromParent || isBeingDismissed {
+            closeDetailEvent()
             store.detach()
             if extras { voicePlayer.release() }
         } else if extras {
@@ -348,9 +389,46 @@ final class FeedPostDetailViewController: OWSViewController {
             confirm(item) { [weak self] in self?.store.deletePost() }
         case .edit:
             startEdit()
+        case .share:
+            share()
+        case .copyLink:
+            copyLink()
         case .own:
             break
         }
+    }
+
+    /// 分享帖子外链（系统分享面板）：面板里真的分享了才报 `share`，点开又取消不报。单测里换掉 `presentShareSheet`。
+    func share() {
+        guard let link = shareLink() else { return }
+        let finished: (Bool) -> Void = { [weak self] completed in self?.shareFinished(completed ? .completed : .cancelled) }
+        if let presentShareSheet {
+            presentShareSheet(link, finished)
+            return
+        }
+        let controller = UIActivityViewController(activityItems: [link], applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, completed, _, _ in finished(completed) }
+        controller.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
+        present(controller, animated: true)
+    }
+
+    /// 复制帖子外链：放进剪贴板就算分享完成。
+    func copyLink() {
+        guard let link = shareLink() else { return }
+        copyToPasteboard(link)
+        presentToast(text: OWSLocalizedString("TELLOMI_FEED_LINK_COPIED", comment: "Feed: toast after the link of a post was copied."))
+        shareFinished(.completed)
+    }
+
+    private func shareLink() -> String? {
+        guard store.state.canSharePost else { return nil }
+        return FeedShare.link(for: store.state.post)
+    }
+
+    private func shareFinished(_ outcome: FeedShareOutcome) {
+        guard eventsEnabled, let feedStore, let eventSurface else { return }
+        let post = store.state.post
+        feedStore.onShareFinished(contentId: post.id, surface: eventSurface, shareable: post.shareable, outcome: outcome)
     }
 
     /// 编辑自己的帖子（第 23 条）：打开发布页的编辑模式（只改正文和长文标题）；保存回来 store 重新取这条并提示。
@@ -469,6 +547,10 @@ final class FeedPostDetailViewController: OWSViewController {
             return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_POST", comment: "Feed: ··· menu item that deletes the user's own post.")
         case .edit:
             return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT", comment: "Feed: ··· menu item that edits the user's own post.")
+        case .share:
+            return OWSLocalizedString("TELLOMI_FEED_MENU_SHARE", comment: "Feed: ··· menu item that shares the link of a post with the system share sheet.")
+        case .copyLink:
+            return OWSLocalizedString("TELLOMI_FEED_MENU_COPY_LINK", comment: "Feed: ··· menu item that copies the link of a post.")
         case .own(let action):
             switch action {
             case .pin:
@@ -493,7 +575,7 @@ final class FeedPostDetailViewController: OWSViewController {
             return OWSLocalizedString("TELLOMI_FEED_DELETE_COMMENT_CONFIRM", comment: "Feed: confirmation question before deleting the user's own comment.")
         case .deletePost:
             return OWSLocalizedString("TELLOMI_FEED_DELETE_POST_CONFIRM", comment: "Feed: confirmation question before deleting the user's own post.")
-        case .notInterested, .report, .own, .edit:
+        case .notInterested, .report, .own, .edit, .share, .copyLink:
             return ""
         }
     }
