@@ -534,6 +534,7 @@ final class FeedMyPostCell: UITableViewCell {
         chip.addSubview(statusLabel)
         statusLabel.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(hMargin: 8, vMargin: 2))
         chip.setContentHuggingPriority(.required, for: .horizontal)
+        statusLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         visibilityLabel.font = .dynamicTypeCaption1
         visibilityLabel.textColor = UIColor.Signal.secondaryLabel
@@ -588,6 +589,18 @@ final class FeedMyPostCell: UITableViewCell {
         updateHeaderLayout()
         updateAppealSpacing()
         super.layoutSubviews()
+    }
+
+    /// 表格算行高（自适应高度）时不一定先走 layoutSubviews：先把「表头竖排 / 申诉间距」按现在的字号定下来再量，
+    /// 否则行高按横排 + 6pt 算，排版时才改成竖排 + 16pt，多出来的高度只能从状态标签和「申诉」按钮里挤（最大字号下状态标签被压成一条线）。
+    override func systemLayoutSizeFitting(
+        _ targetSize: CGSize,
+        withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority,
+        verticalFittingPriority: UILayoutPriority,
+    ) -> CGSize {
+        updateHeaderLayout()
+        updateAppealSpacing()
+        return super.systemLayoutSizeFitting(targetSize, withHorizontalFittingPriority: horizontalFittingPriority, verticalFittingPriority: verticalFittingPriority)
     }
 
     /// 备注和「申诉」按钮之间现在的距离（单测用）。
