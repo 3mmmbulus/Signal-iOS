@@ -44,7 +44,8 @@ enum TellomiLinkVisualReader {
         // 缓存键包含决定用到的一切：哪张图、多大、什么 kind / 级别、染不染。
         let key: NSString? = stream.map {
             [
-                String($0.id),
+                // 按图的内容（明文哈希），不按附件行号：行号会被重用（删掉的附件、另一个库），缓存会给另一张图的结果。
+                $0.plaintextHash.base64EncodedString(),
                 "\(width)x\(height)",
                 card.kind ?? "-",
                 card.level.rawValue,
@@ -134,7 +135,7 @@ enum TellomiLinkVisualReader {
             guard card.showImage, let stream = attachment?.attachment.asStream() else {
                 return nil
             }
-            key = "strip|" + String(stream.id)
+            key = "strip|" + stream.plaintextHash.base64EncodedString()
             read = { pixels(of: stream) }
         }
         if let cached = stripColorCache.object(forKey: key as NSString) {

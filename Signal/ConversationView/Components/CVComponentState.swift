@@ -2240,7 +2240,8 @@ private extension CVComponentState.Builder {
                     urlString: urlString,
                     imageAttachment: linkPreviewAttachment,
                     hasImage: referencedLinkPreviewImage != nil,
-                    linkOnlyUrl: tellomiLinkOnlyUrl(message: message),
+                    // 消息带着预览：没写协议的裸域名（`baidu.com`）也算「只有链接」，卡片代替气泡（产品经理 2026-10-19）。
+                    linkOnlyUrl: tellomiLinkOnlyUrl(message: message, allowSchemeless: true),
                 )
             else {
                 return
