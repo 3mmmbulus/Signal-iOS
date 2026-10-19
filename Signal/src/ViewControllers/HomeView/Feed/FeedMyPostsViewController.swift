@@ -464,7 +464,7 @@ final class FeedMyPostCell: UITableViewCell {
 
         visibilityLabel.text = row.visibility?.title
         visibilityLabel.isHidden = row.visibility == nil
-        timeLabel.text = row.createdAt.map { FeedPostCell.relativeTime($0, now: Date()) }
+        timeLabel.text = row.createdAt.flatMap { FeedDates.parse($0) }.map { FeedPostCell.relativeTime($0, now: Date()) }
 
         let preview = FeedMyPostsViewController.previewText(row)
         titleLabel.text = preview.title
