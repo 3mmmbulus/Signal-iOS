@@ -12,11 +12,17 @@ class CVComponentLinkPreview: CVComponentBase, CVComponent {
 
     private let linkPreview: LinkPreviewState
 
+    /// Tellomi（产品经理 2026-10-19 卡片样式定稿）：卡片不在气泡里（代替气泡，或单独一块在文字气泡下面）——
+    /// 不留气泡里的左右内缩，圆角和气泡一样大。
+    private let isStandalone: Bool
+
     init(
         itemModel: CVItemModel,
         linkPreview: LinkPreviewState,
+        isStandalone: Bool = false,
     ) {
         self.linkPreview = linkPreview
+        self.isStandalone = isStandalone
 
         super.init(itemModel: itemModel)
     }
@@ -44,6 +50,7 @@ class CVComponentLinkPreview: CVComponentBase, CVComponent {
             isIncoming: isIncoming,
             // 按下态 / 悬停态只给点了会有反应的卡：不响应点击的域名卡没有，选择模式里点一下是选消息、不是点卡片，也没有。
             isInteractive: Self.respondsToTap(linkPreview) && !isShowingSelectionUI,
+            isStandalone: isStandalone,
             cellMeasurement: cellMeasurement,
         )
 
@@ -60,7 +67,7 @@ class CVComponentLinkPreview: CVComponentBase, CVComponent {
             axis: .vertical,
             alignment: .fill,
             spacing: 0,
-            layoutMargins: UIEdgeInsets(hMargin: 8, vMargin: 0),
+            layoutMargins: isStandalone ? .zero : UIEdgeInsets(hMargin: 8, vMargin: 0),
         )
     }
 

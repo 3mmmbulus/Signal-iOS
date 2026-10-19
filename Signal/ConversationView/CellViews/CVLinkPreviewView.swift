@@ -43,13 +43,19 @@ class CVLinkPreviewView: ManualStackViewWithLayer {
         layer.cornerRadius = 10
     }
 
+    /// Tellomi（产品经理 2026-10-19）：卡片代替气泡、或单独一块放在气泡下面时，圆角和气泡一样大。
+    static let standaloneCornerRadius: CGFloat = 18
+    static let inBubbleCornerRadius: CGFloat = 10
+
     func configureForRendering(
         linkPreview: LinkPreviewState,
         isIncoming: Bool,
         isInteractive: Bool,
+        isStandalone: Bool = false,
         cellMeasurement: CVCellMeasurement,
     ) {
         self.linkPreview = linkPreview
+        layer.cornerRadius = isStandalone ? Self.standaloneCornerRadius : Self.inBubbleCornerRadius
 
         guard let conversationStyle = linkPreview.conversationStyle else {
             owsFailDebug("ConversationStyle not set")
@@ -70,6 +76,10 @@ class CVLinkPreviewView: ManualStackViewWithLayer {
 
         // Layout varies based on link preview type.
         let adapter = Self.adapter(for: linkPreview, isIncoming: isIncoming)
+        // Tellomi 统一样式：横条的底色（图标主色或中性灰）、大图卡的中性灰由样式自己定，收到 / 发出、有没有壁纸都一样（卡片不在气泡里）。
+        if let background = adapter.tellomiBackgroundColor {
+            backgroundColor = background
+        }
         adapter.configureForRendering(
             linkPreviewView: self,
             cellMeasurement: cellMeasurement,
@@ -89,6 +99,17 @@ class CVLinkPreviewView: ManualStackViewWithLayer {
         }
         if linkPreview.isGroupInviteLink || linkPreview.isCallLink {
             return CVLinkPreviewViewAdapterSignalLink(linkPreview: linkPreview, isIncoming: isIncoming)
+        }
+        // Tellomi（产品经理 2026-10-19 卡片样式定稿，参照 iOS「信息」App）：第三方卡只有两种画法——大图卡、横条
+        // （图标横条 / 文字横条 / 只有域名的横条）。以前的图标卡（染色彩条）、无图卡（「京东 / 网页 / jd.com」）、
+        // 纯链接卡（域名 + 链接图标的小条）都并进横条。
+        if let card = linkPreview as? TellomiLinkPreviewCardState, let style = card.cardStyle {
+            switch style {
+            case .largeImage:
+                return CVLinkPreviewViewAdapterTellomiLarge(linkPreview: linkPreview, isIncoming: isIncoming)
+            case .iconStrip, .textStrip, .domainStrip:
+                return CVLinkPreviewViewAdapterTellomiStrip(linkPreview: linkPreview, isIncoming: isIncoming, style: style)
+            }
         }
         if let card = linkPreview as? TellomiLinkPreviewCardState {
             if card.isPlainLink {
@@ -411,6 +432,9 @@ private class CVLinkPreviewViewAdapter {
     }
 
     fileprivate static let sentNonHeroImageSize: CGFloat = 64
+
+    /// Tellomi 统一样式的卡自己定底色；nil：照原来的（按收到 / 发出、有没有壁纸，或 rust/links 的染色）。
+    var tellomiBackgroundColor: UIColor? { nil }
 
     // Default config is a horizontal stack designed to show a small image followed by vertical stack of text.
     //
@@ -1250,6 +1274,230 @@ private class CVLinkPreviewViewAdapterCompact: CVLinkPreviewViewAdapter {
         rootStackSubviews.append(textStack)
 
         return rootStackSubviews
+    }
+}
+
+// MARK: - Tellomi unified card style (产品经理 2026-10-19，参照 iOS「信息」App)
+
+/// 统一样式的颜色：中性灰（浅 / 深两套）和染色横条的字色。卡片不在气泡里，收到 / 发出一样。
+enum TellomiLinkCardColors {
+    /// 中性灰：浅色 #E9E9EB、深色 #2C2C2E（系统 `systemGray5` 的值，「信息」App 里没有颜色可取的横条就是这个灰）。
+    static let neutralBackground = UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0x2C / 255, green: 0x2C / 255, blue: 0x2E / 255, alpha: 1)
+            : UIColor(red: 0xE9 / 255, green: 0xE9 / 255, blue: 0xEB / 255, alpha: 1)
+    }
+    static let neutralTitle = UIColor.label
+    static let neutralSecondary = UIColor.secondaryLabel
+
+    static func color(_ rgb: TellomiLinkCardStyle.RGB) -> UIColor {
+        UIColor(red: CGFloat(rgb.red) / 255, green: CGFloat(rgb.green) / 255, blue: CGFloat(rgb.blue) / 255, alpha: 1)
+    }
+
+    /// 横条的底色、标题色、域名色。有图标主色：底色就是它，字用 WCAG 对比度高的黑 / 白，域名同色 75% 不透明；否则中性灰。
+    /// 主色浅色、深色模式一样（同「信息」App：品牌色不跟着外观变）。
+    static func strip(color: TellomiLinkCardStyle.RGB?) -> (background: UIColor, title: UIColor, secondary: UIColor) {
+        guard let color else {
+            return (neutralBackground, neutralTitle, neutralSecondary)
+        }
+        let text = Self.color(TellomiLinkCardStyle.textColor(on: color))
+        return (Self.color(color), text, text.withAlphaComponent(0.75))
+    }
+}
+
+/// 统一样式的两种画法共用的：两行字（标题粗体最多 2 行 + 域名 1 行），冒充知名域名时标红（ADR-0063 §6.1）。
+private class CVLinkPreviewViewAdapterTellomiBase: CVLinkPreviewViewAdapter {
+
+    var card: TellomiLinkPreviewCardState? { linkPreview as? TellomiLinkPreviewCardState }
+    var cardText: TellomiLinkCardStyle.Text? { card?.cardText }
+
+    var tellomiTitleColor: UIColor { TellomiLinkCardColors.neutralTitle }
+    var tellomiSecondaryColor: UIColor { TellomiLinkCardColors.neutralSecondary }
+
+    override var tellomiBackgroundColor: UIColor? { TellomiLinkCardColors.neutralBackground }
+    override var titleTextColor: UIColor { tellomiTitleColor }
+    override var highlightOverlayColor: UIColor { tellomiTitleColor }
+    override var secondaryTextColor: UIColor { tellomiSecondaryColor }
+
+    override var textStackConfig: ManualStackView.Config {
+        ManualStackView.Config(axis: .vertical, alignment: .leading, spacing: 2, layoutMargins: .zero)
+    }
+
+    private var isLookalike: Bool { card?.isLookalike == true }
+
+    func tellomiTitleConfig() -> CVLabelConfig? {
+        guard let title = cardText?.title else {
+            return nil
+        }
+        return CVLabelConfig.unstyledText(
+            title,
+            font: UIFont.dynamicTypeSubheadline.semibold(),
+            textColor: isLookalike ? .Signal.red : tellomiTitleColor,
+            numberOfLines: TellomiLinkCardStyle.maxTitleLines,
+            lineBreakMode: .byTruncatingTail,
+        )
+    }
+
+    /// 域名行。只有域名（没有标题）时它就是唯一一行，字号和标题一样、不加粗（「信息」App 的 telegram.com 横条）。
+    func tellomiDomainConfig() -> CVLabelConfig? {
+        guard let domain = cardText?.domain else {
+            return nil
+        }
+        let isOnlyLine = cardText?.title == nil
+        return CVLabelConfig.unstyledText(
+            domain,
+            font: isOnlyLine ? UIFont.dynamicTypeSubheadline : UIFont.dynamicTypeFootnote,
+            textColor: isLookalike && isOnlyLine ? .Signal.red : tellomiSecondaryColor,
+            numberOfLines: 1,
+            lineBreakMode: .byTruncatingTail,
+        )
+    }
+
+    override func textStackSubviewInfos(maxWidth: CGFloat) -> [ManualStackSubviewInfo] {
+        [tellomiTitleConfig(), tellomiDomainConfig()].compactMap { $0 }.map {
+            CVText.measureLabel(config: $0, maxWidth: maxWidth).asManualSubviewInfo
+        }
+    }
+
+    override func textStackSubviews() -> [CVLabel] {
+        [tellomiTitleConfig(), tellomiDomainConfig()].compactMap { $0 }.map { config in
+            let label = CVLabel()
+            config.applyForRendering(label: label)
+            return label
+        }
+    }
+}
+
+/// 横条：左边标题（粗）+ 域名（灰），右边站点图标（36 pt，圆角 8）；没有图标时右边是指南针（SF Symbol `safari`）。
+/// 图标横条按图标主色染底色（取不到就中性灰），文字横条、只有域名的横条一律中性灰。
+private class CVLinkPreviewViewAdapterTellomiStrip: CVLinkPreviewViewAdapterTellomiBase {
+
+    private static let iconSize: CGFloat = 36
+    private static let iconCornerRadius: CGFloat = 8
+    private static let compassSize: CGFloat = 26
+
+    private let style: TellomiLinkCardStyle.Kind
+
+    init(linkPreview: LinkPreviewState, isIncoming: Bool, style: TellomiLinkCardStyle.Kind) {
+        self.style = style
+        super.init(linkPreview: linkPreview, isIncoming: isIncoming)
+    }
+
+    private var colors: (background: UIColor, title: UIColor, secondary: UIColor) {
+        TellomiLinkCardColors.strip(color: style == .iconStrip ? card?.stripColor : nil)
+    }
+
+    override var tellomiBackgroundColor: UIColor? { colors.background }
+    override var tellomiTitleColor: UIColor { colors.title }
+    override var tellomiSecondaryColor: UIColor { colors.secondary }
+
+    private var trailingSize: CGFloat { style == .iconStrip ? Self.iconSize : Self.compassSize }
+
+    override var rootStackConfig: ManualStackView.Config {
+        ManualStackView.Config(
+            axis: .horizontal,
+            alignment: .center,
+            spacing: 10,
+            layoutMargins: UIEdgeInsets(top: 9, leading: 14, bottom: 9, trailing: 10),
+        )
+    }
+
+    override func rootStackSubviewInfos(
+        maxWidth: CGFloat,
+        measurementBuilder: CVCellMeasurement.Builder,
+    ) -> [ManualStackSubviewInfo] {
+        let trailing = CGSize.square(trailingSize)
+        let maxLabelWidth = max(
+            0,
+            maxWidth - (rootStackConfig.layoutMargins.totalWidth + trailing.width + rootStackConfig.spacing),
+        )
+        var textStackSize = measureTextStack(maxWidth: maxLabelWidth, measurementBuilder: measurementBuilder)
+        // 横条至少和图标一样高（上下各留 9）。
+        textStackSize.height = max(textStackSize.height, trailing.height)
+        return [
+            textStackSize.asManualSubviewInfo,
+            trailing.asManualSubviewInfo(hasFixedSize: true),
+        ]
+    }
+
+    override func rootStackSubviews(
+        linkPreviewView: CVLinkPreviewView,
+        cellMeasurement: CVCellMeasurement,
+    ) -> [UIView] {
+        let textStack = configureTextStack(linkPreviewView: linkPreviewView, cellMeasurement: cellMeasurement)
+        if
+            style == .iconStrip,
+            let imageView = linkPreviewView.linkPreviewImageView.configure(
+                linkPreview: linkPreview,
+                cornerStyle: .rounded(radius: Self.iconCornerRadius),
+            )
+        {
+            imageView.clipsToBounds = true
+            return [textStack, imageView]
+        }
+        let compass = linkPreviewView.linkIconView
+        let configuration = UIImage.SymbolConfiguration(pointSize: Self.compassSize, weight: .regular)
+        compass.image = UIImage(systemName: "safari", withConfiguration: configuration)?.withRenderingMode(.alwaysTemplate)
+        compass.contentMode = .scaleAspectFit
+        compass.tintColor = tellomiSecondaryColor
+        return [textStack, compass]
+    }
+}
+
+/// 大图卡：图铺满卡宽在上（宽高比夹在 1.91:1–1:1），下面标题 + 域名；中性灰底，不染色（「信息」App 的 apple.com 卡）。
+private class CVLinkPreviewViewAdapterTellomiLarge: CVLinkPreviewViewAdapterTellomiBase {
+
+    override var rootStackConfig: ManualStackView.Config {
+        ManualStackView.Config(axis: .vertical, alignment: .fill, spacing: 0, layoutMargins: .zero)
+    }
+
+    override var textStackConfig: ManualStackView.Config {
+        ManualStackView.Config(
+            axis: .vertical,
+            alignment: .leading,
+            spacing: 2,
+            layoutMargins: UIEdgeInsets(top: 9, leading: 14, bottom: 10, trailing: 14),
+        )
+    }
+
+    override func rootStackSubviewInfos(
+        maxWidth: CGFloat,
+        measurementBuilder: CVCellMeasurement.Builder,
+    ) -> [ManualStackSubviewInfo] {
+        let imageSize = heroImageSize(maxWidth: maxWidth)
+        let maxLabelWidth = max(0, imageSize.width - textStackConfig.layoutMargins.totalWidth)
+        let textStackSize = measureTextStack(maxWidth: maxLabelWidth, measurementBuilder: measurementBuilder)
+        return [
+            imageSize.asManualSubviewInfo,
+            CGSize(width: imageSize.width, height: textStackSize.height).asManualSubviewInfo,
+        ]
+    }
+
+    override func rootStackSubviews(
+        linkPreviewView: CVLinkPreviewView,
+        cellMeasurement: CVCellMeasurement,
+    ) -> [UIView] {
+        var subviews = [UIView]()
+        if let imageView = linkPreviewView.linkPreviewImageView.configure(linkPreview: linkPreview, cornerStyle: .square) {
+            imageView.clipsToBounds = true
+            subviews.append(imageView)
+        } else {
+            owsFailDebug("Could not load image.")
+            subviews.append(UIView.transparentSpacer())
+        }
+        subviews.append(configureTextStack(linkPreviewView: linkPreviewView, cellMeasurement: cellMeasurement))
+        return subviews
+    }
+
+    private func heroImageSize(maxWidth: CGFloat) -> CGSize {
+        let width = min(maxWidth, linkPreview.conversationStyle?.maxMessageWidth ?? maxWidth)
+        let pixelSize = linkPreview.imagePixelSize
+        guard width > 0, pixelSize.width > 0, pixelSize.height > 0 else {
+            return CGSize.ceil(CGSize(width: width, height: width / 1.91))
+        }
+        let rawHeight = width * pixelSize.height / pixelSize.width
+        let height = min(width, max(width / 1.91, rawHeight))
+        return CGSize.ceil(CGSize(width: width, height: height))
     }
 }
 
