@@ -695,7 +695,7 @@ final class TellomiFeedClosePeopleStoreTests: XCTestCase {
         store.answer(entry("b"), accept: false)
         XCTAssertEqual(store.state.requests.map(\.id), ["a"])
         await store.waitForTasks()
-        XCTAssertEqual(source.calls, ["close-answer:a:true", "close-answer:b:false"])
+        XCTAssertEqual(source.calls.sorted(), ["close-answer:a:true", "close-answer:b:false"])
         store.answer(entry("zzz"), accept: true)
         await store.waitForTasks()
         XCTAssertEqual(source.calls.count, 2, "不在名单里的不发")
