@@ -17,6 +17,10 @@ enum FeedDetailMenuItem: Equatable {
     case deletePost
     /// 编辑自己的帖子（第 23 条，发布后 15 分钟内；`TellomiFeed.isDetailExtrasEnabled` 开着才有）。
     case edit
+    /// 分享（系统分享面板，帖子外链；`TellomiFeed.isShareEnabled` 开着、帖子 `shareable` 才有）。分享完成才报 `share` 事件。
+    case share
+    /// 复制帖子外链（同上；复制成功算分享完成）。
+    case copyLink
     /// 自己帖子的置顶、回复选项、隐藏点赞数、查看数据。
     case own(FeedOwnPostAction)
 
@@ -24,7 +28,7 @@ enum FeedDetailMenuItem: Equatable {
     var isDestructive: Bool {
         switch self {
         case .deleteComment, .deletePost: return true
-        case .notInterested, .report, .own, .edit: return false
+        case .notInterested, .report, .own, .edit, .share, .copyLink: return false
         }
     }
 
@@ -38,6 +42,8 @@ enum FeedDetailMenuItem: Equatable {
         case .deleteComment: return "TELLOMI_FEED_MENU_DELETE_COMMENT"
         case .deletePost: return "TELLOMI_FEED_MENU_DELETE_POST"
         case .edit: return "TELLOMI_FEED_MINE_EDIT"
+        case .share: return "TELLOMI_FEED_MENU_SHARE"
+        case .copyLink: return "TELLOMI_FEED_MENU_COPY_LINK"
         case .own(let action):
             switch action {
             case .pin: return "TELLOMI_FEED_MENU_PIN"
@@ -55,7 +61,7 @@ enum FeedDetailMenuItem: Equatable {
         switch self {
         case .deleteComment: return "TELLOMI_FEED_DELETE_COMMENT_CONFIRM"
         case .deletePost: return "TELLOMI_FEED_DELETE_POST_CONFIRM"
-        case .notInterested, .report, .own, .edit: return nil
+        case .notInterested, .report, .own, .edit, .share, .copyLink: return nil
         }
     }
 }
@@ -65,11 +71,13 @@ enum FeedDetailMenu {
     /// 帖子本身的「···」。自己的帖子：置顶 / 回复选项 / 点赞数 / 数据，最后是删除；别人的：不感兴趣、举报。
     /// 开放内容（外部作者）也一样能不感兴趣、能举报。
     /// `canEdit`：自己的帖子还能编辑（`FeedPostDetailState.canEditPost`）时，「编辑」排在最前面。
-    static func items(forPost post: FeedCard, canEdit: Bool = false) -> [FeedDetailMenuItem] {
+    /// `canShare`：详情页开了分享、这条帖子能分享（`FeedPostDetailState.canSharePost`）时，「分享」「复制链接」排在编辑后面、其它项前面。
+    static func items(forPost post: FeedCard, canEdit: Bool = false, canShare: Bool = false) -> [FeedDetailMenuItem] {
+        let share: [FeedDetailMenuItem] = canShare ? [.share, .copyLink] : []
         if post.viewer.isAuthor {
-            return (canEdit ? [.edit] : []) + FeedOwnPostAction.available(for: post).map { .own($0) } + [.deletePost]
+            return (canEdit ? [.edit] : []) + share + FeedOwnPostAction.available(for: post).map { .own($0) } + [.deletePost]
         }
-        return [.notInterested, .report]
+        return share + [.notInterested, .report]
     }
 
     /// 界面上已经做了的项：自己帖子的置顶 / 回复选项 / 点赞数 / 数据（`.own`）还没有页面，先不显示；
@@ -79,7 +87,7 @@ enum FeedDetailMenu {
             switch item {
             case .own: return false
             case .report: return reportAvailable
-            case .notInterested, .deleteComment, .deletePost, .edit: return true
+            case .notInterested, .deleteComment, .deletePost, .edit, .share, .copyLink: return true
             }
         }
     }

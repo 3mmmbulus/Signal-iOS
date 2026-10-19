@@ -95,6 +95,7 @@ final class FeedStore {
     private var lastVisible = [FeedTab: Set<String>]()
     private var impressionRechecks = [FeedTab: Task<Void, Never>]()
     private var events = FeedEventBuffer()
+    private var detailEvents = FeedDetailEventTracker()
     private var flushTimer: Task<Void, Never>?
     /// 被限速（429 / 带 `Retry-After` 的 503）而没发出去的批次：不丢，等解封后先于新事件发出去（I-21）。
     private var heldBatches = [[FeedEventPayload]]()
@@ -271,6 +272,36 @@ final class FeedStore {
             guard !Task.isCancelled, let self else { return }
             self.onCardsVisible(tab, self.lastVisible[tab] ?? [])
         }
+    }
+
+    /// 打开了一条详情（I-13）：报 `open`；还有没收尾的上一条，先按「现在离开」收尾。
+    /// 详情页自己负责什么时候调（出现一次；返回 / 退到后台时 `onDetailClosed`），所以这里不跟动态页的「藏起来」绑在一起（推详情页本身会让动态页消失）。
+    func onDetailOpened(contentId: String, surface: FeedEventSurface) {
+        enqueue(detailEvents.opened(contentId: contentId, surface: surface, now: now()))
+    }
+
+    /// 离开了详情（返回、退到后台）：按停留报 `quick_exit`（≤ 3 秒）、`dwell`（≥ 30 秒）或什么都不报；没有打开的就什么都不做。
+    /// `flush`：退到后台时顺便发掉（马上就可能被系统挂起）。
+    func onDetailClosed(flush: Bool = false) {
+        enqueue(detailEvents.closed(now: now()))
+        if flush { flushEvents() }
+    }
+
+    /// 一次分享做完（I-13）：只有真的完成才报 `share`，取消不报；不能分享（`shareable` 为 false）的卡片也不报。
+    /// 转发（`PUT …/repost`）有自己的接口，别走这里。
+    func onShareFinished(contentId: String, surface: FeedEventSurface, shareable: Bool, outcome: FeedShareOutcome) {
+        guard let event = outcome.event(contentId: contentId, surface: surface, shareable: shareable, at: now()) else { return }
+        enqueue([event])
+    }
+
+    private func enqueue(_ payloads: [FeedEventPayload]) {
+        guard !payloads.isEmpty else { return }
+        var full = false
+        for payload in payloads {
+            full = events.add(payload) || full
+        }
+        if full { flushEvents() }
+        startFlushTimerIfNeeded()
     }
 
     /// 动态页看不见了（切到别的标签、退到后台）：停掉计时，发掉攒着的事件。

@@ -119,6 +119,8 @@ enum TellomiFeed {
     }
 
     private static let myPostsKey = "TellomiFeed.myPosts"
+    private static let detailEventsKey = "TellomiFeed.detailEvents"
+    private static let shareKey = "TellomiFeed.share"
 
     /// 「我的动态」入口（动态页左上角的文档图标）。默认关；只有内部构建认这个值（正式包里永远是 false），
     /// 存在本机 UserDefaults，和 `isNotificationsEnabled` 一样只是开发开关（Internal Settings 里有开关行）。
@@ -211,6 +213,31 @@ enum TellomiFeed {
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: detailExtrasKey)
+        }
+    }
+
+    /// 详情事件（I-13）：打开详情报 `open`、离开时按停留报 `dwell` / `quick_exit`。默认关；只有内部构建认这个值，开关行在 Internal Settings。
+    /// 关着时不多报任何事件（曝光照旧）。
+    static var isDetailEventsEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: detailEventsKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: detailEventsKey)
+        }
+    }
+
+    /// 详情页「···」里的「分享 / 复制链接」（只给 `shareable` 的帖子），分享完成才报 `share` 事件（I-13）。默认关，同上。
+    static var isShareEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: shareKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: shareKey)
         }
     }
 

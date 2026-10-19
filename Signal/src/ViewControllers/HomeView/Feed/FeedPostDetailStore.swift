@@ -89,6 +89,8 @@ struct FeedPostDetailState {
     var feedHidden = false
     /// 详情页补全开着（`TellomiFeed.isDetailExtrasEnabled`）：帖子「···」里才有「编辑」。
     var editEnabled = false
+    /// 详情页开了分享（`TellomiFeed.isShareEnabled`）：帖子「···」里才有「分享」「复制链接」。
+    var shareEnabled = false
     /// 编辑窗口判断用的「现在」（单测换成固定时间）。
     var now: () -> Date = Date.init
     /// 正在找的评论（从通知点进来的那一条）：评论还没翻到之前一直是它；找到或放弃就清掉。
@@ -103,7 +105,11 @@ struct FeedPostDetailState {
 
     var threads: [FeedCommentThread] { FeedCommentThreads.build(comments) }
     /// 帖子「···」菜单里该有的几项（评论的见 `FeedDetailMenu.items(forComment:)`）。
-    var postMenu: [FeedDetailMenuItem] { FeedDetailMenu.items(forPost: post, canEdit: canEditPost) }
+    var postMenu: [FeedDetailMenuItem] { FeedDetailMenu.items(forPost: post, canEdit: canEditPost, canShare: canSharePost) }
+    /// 能分享：开关开着、帖子 `shareable`（公开动态、作者不是私密账号，第 29 条）、不是评论。
+    var canSharePost: Bool {
+        return shareEnabled && post.shareable && post.kind != FeedCard.kindComment
+    }
     /// 自己的帖子在编辑窗口里（发布后 `editWindowSeconds` 内，第 23 条）、有可改的内容、详情页补全开着：菜单里给「编辑」。
     /// 长文只拿到摘要（正文还没取回来）时不给，免得把正文改成空的。
     var canEditPost: Bool {
@@ -151,7 +157,7 @@ final class FeedPostDetailStore {
     /// 找一条评论最多自动翻几页（评论一页 20 条左右；翻太多是在耗流量，也多半是那条已经没了）。
     static let maxLocatePages = 10
 
-    init(initial: FeedCard, source: FeedSource, savedMessages: FeedSavedMessages? = nil, feed: FeedStore? = nil, editEnabled: Bool = false, now: @escaping () -> Date = Date.init) {
+    init(initial: FeedCard, source: FeedSource, savedMessages: FeedSavedMessages? = nil, feed: FeedStore? = nil, editEnabled: Bool = false, shareEnabled: Bool = false, now: @escaping () -> Date = Date.init) {
         self.source = source
         self.savedMessages = savedMessages
         self.feed = feed
@@ -167,6 +173,7 @@ final class FeedPostDetailStore {
             self.state = FeedPostDetailState(post: initial)
         }
         state.editEnabled = editEnabled
+        state.shareEnabled = shareEnabled
         state.now = now
     }
 
