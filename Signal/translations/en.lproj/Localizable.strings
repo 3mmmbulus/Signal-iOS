@@ -11266,6 +11266,36 @@
 "TELLOMI_FEED_AI_GENERATED" = "AI-generated";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_COUNT" = "%1$@ of %2$@ selected";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_EMPTY" = "No friends to pick from yet.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_HINT_EXCLUDE" = "Everyone except the people you pick can see this post.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_HINT_INCLUDE" = "Only the people you pick can see this post.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_LIMIT" = "Pick up to %@ people";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_LOAD_FAILED" = "Couldn't load your friends.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_NO_MATCH" = "No friends match your search.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_SEARCH" = "Search";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_TITLE_EXCLUDE" = "Hide from";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_TITLE_INCLUDE" = "Only some friends";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENTS" = "Comments";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11323,6 +11353,9 @@
 "TELLOMI_FEED_COMPOSE_ARTICLE_HINT" = "Write your article";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_ARTICLE_RESTORED" = "Picked up your unfinished article where you left off";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_DISCARD" = "Discard";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11330,6 +11363,30 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_DISCARD_TITLE" = "Discard this post?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_BODY" = "Your article is saved on this phone, so you can keep writing later.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_DISCARD" = "Discard draft";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_KEEP" = "Keep draft";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_TITLE" = "Keep this draft?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_ARTICLE" = "Edit article";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_FAILED" = "Couldn't save your changes. Try again.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_POST" = "Edit post";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_WINDOW_CLOSED" = "It's been more than 15 minutes since you posted, so this can't be edited.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_KEEP_EDITING" = "Keep editing";
@@ -11347,6 +11404,12 @@
 "TELLOMI_FEED_COMPOSE_PENDING" = "Submitted. Others can see it once it's reviewed.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PEOPLE_MANY" = "%@ people";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PEOPLE_ONE" = "1 person";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_POST_HINT" = "What's on your mind?";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11360,6 +11423,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_REMOVE_IMAGE" = "Remove photo";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_SAVE" = "Save";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_TITLE_HINT" = "Title";
@@ -11395,6 +11461,9 @@
 "TELLOMI_FEED_COMPOSE_VISIBILITY_ONLY_ME_DESCRIPTION" = "Only you can see it";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_PICK_PEOPLE" = "Choose people";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_VISIBILITY_PUBLIC" = "Public";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11402,6 +11471,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "Who can see this";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_WITH_COUNT" = "%1$@ · %2$@";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DELETE_COMMENT_CONFIRM" = "Delete this comment?";
@@ -11510,6 +11582,21 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MINE_DELETE_TITLE" = "Delete this post?";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DRAFT_COUNT" = "%@ characters";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DRAFT_TITLE" = "Continue your unfinished article";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EDIT" = "Edit";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EDIT_SAVED" = "Saved";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EDIT_SAVED_PENDING" = "Saved. Others will see the new version once it's reviewed.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MINE_EMPTY" = "You haven't posted anything yet";

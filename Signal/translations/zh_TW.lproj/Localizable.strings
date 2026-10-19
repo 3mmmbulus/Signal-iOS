@@ -11152,6 +11152,36 @@
 "TELLOMI_FEED_AI_GENERATED" = "AI 生成";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_COUNT" = "已選 %1$@ / %2$@ 人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_EMPTY" = "還沒有可選的好友";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_HINT_EXCLUDE" = "除了你選的人，其他人都能看到這則。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_HINT_INCLUDE" = "只有你選的人能看到這則。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_LIMIT" = "最多選 %@ 人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_LOAD_FAILED" = "好友載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_NO_MATCH" = "沒有符合的好友";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_SEARCH" = "搜尋";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_TITLE_EXCLUDE" = "不給誰看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_AUDIENCE_TITLE_INCLUDE" = "只給部分好友看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENTS" = "留言";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11209,6 +11239,9 @@
 "TELLOMI_FEED_COMPOSE_ARTICLE_HINT" = "寫正文";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_ARTICLE_RESTORED" = "已恢復上次未寫完的長文";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_DISCARD" = "放棄";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11216,6 +11249,30 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_DISCARD_TITLE" = "放棄這則動態？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_BODY" = "長文已儲存在這支手機上，之後可以接著寫。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_DISCARD" = "放棄草稿";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_KEEP" = "保留草稿";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_DRAFT_TITLE" = "保留這篇草稿嗎？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_ARTICLE" = "編輯長文";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_FAILED" = "儲存失敗，請重試";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_POST" = "編輯動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_EDIT_WINDOW_CLOSED" = "發布已超過 15 分鐘，無法再修改";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_KEEP_EDITING" = "繼續編輯";
@@ -11233,6 +11290,12 @@
 "TELLOMI_FEED_COMPOSE_PENDING" = "已送出，審核通過後其他人才能看到";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PEOPLE_MANY" = "%@ 人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_PEOPLE_ONE" = "1 人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_POST_HINT" = "說點什麼…";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11246,6 +11309,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_REMOVE_IMAGE" = "移除圖片";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_SAVE" = "儲存";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_TITLE_HINT" = "標題";
@@ -11281,6 +11347,9 @@
 "TELLOMI_FEED_COMPOSE_VISIBILITY_ONLY_ME_DESCRIPTION" = "只有你能看";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_PICK_PEOPLE" = "選擇人員";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_VISIBILITY_PUBLIC" = "公開";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11288,6 +11357,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE" = "誰可以看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_COMPOSE_VISIBILITY_WITH_COUNT" = "%1$@ · %2$@";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DELETE_COMMENT_CONFIRM" = "要刪除這則留言嗎？";
@@ -11396,6 +11468,21 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MINE_DELETE_TITLE" = "刪除這則動態？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DRAFT_COUNT" = "%@ 字";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_DRAFT_TITLE" = "繼續寫未寫完的長文";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EDIT" = "編輯";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EDIT_SAVED" = "已儲存";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINE_EDIT_SAVED_PENDING" = "已儲存，審核通過後其他人會看到新版本";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MINE_EMPTY" = "你還沒有發過動態";
