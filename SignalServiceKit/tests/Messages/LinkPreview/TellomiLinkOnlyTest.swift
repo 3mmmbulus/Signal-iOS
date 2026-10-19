@@ -65,6 +65,25 @@ final class TellomiLinkOnlyTest: XCTestCase {
         XCTAssertNil(linkOnly("https://"))
     }
 
+    /// 产品经理 2026-10-19（卡片样式定稿）：消息带着预览时，没写协议的链接也只显示卡片，按 https 写法比对预览。
+    func testSchemelessLinkCountsOnlyWhenTheCallerAllowsIt() {
+        func schemeless(_ body: String) -> String? {
+            TellomiLinkOnly.linkOnlyUrl(body: body, hasOtherContent: false, allowSchemeless: true, linkRanges: { text in
+                // NSDataDetector 把整段裸域名认成一条链接
+                text.contains(".") ? [text.startIndex..<text.endIndex] : []
+            })
+        }
+        XCTAssertEqual(schemeless("b23.tv/abc"), "https://b23.tv/abc")
+        XCTAssertEqual(schemeless("  www.jd.com \n"), "https://www.jd.com")
+        XCTAssertEqual(schemeless(url), url)
+        XCTAssertNil(schemeless("mailto:someone@example.org"))
+        XCTAssertNil(schemeless("sgnl://signal.group/#abc"))
+        XCTAssertNil(schemeless("localhost"))
+        XCTAssertNil(schemeless("看 jd.com"))
+        // 默认不开：没有预览时照旧显示文字。
+        XCTAssertNil(linkOnly("b23.tv/abc"))
+    }
+
     func testAnythingButPlainTextKeepsSignalsLayout() {
         XCTAssertNil(linkOnly(url, other: true))
         XCTAssertNil(linkOnly(nil))

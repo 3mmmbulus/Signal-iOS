@@ -98,6 +98,10 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
     /// Tellomi（#1205）：这一条画不画小尾巴、画在哪边。
     private var tellomiBubbleTail: BubbleConfiguration.Tail? {
+        // 卡片在气泡下面时气泡不是这条消息最下面的一块，不画尾巴（卡片自己也不画）。
+        if isTellomiLinkCardBelowBubble {
+            return nil
+        }
         let hasBubbleBackground = !isBubbleTransparent
             && !componentState.isBodyMediaOnlyMessage
             && !wasRemotelyDeleted
@@ -239,8 +243,48 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         if componentState.isBorderlessStickerMessage {
             return true
         }
+        // Tellomi（产品经理 2026-10-19）：消息就是一条链接时卡片代替整个气泡。
+        if isTellomiLinkCardReplacingBubble {
+            return true
+        }
         return isBorderless
     }
+
+    // MARK: - Tellomi link card placement (产品经理 2026-10-19 卡片样式定稿，参照 iOS「信息」App)
+
+    /// 第三方链接卡片放在哪（见 `CVComponentState.TellomiLinkCardPlacement`）。
+    private var tellomiLinkCardPlacement: CVComponentState.TellomiLinkCardPlacement {
+        componentState.tellomiLinkCardPlacement
+    }
+
+    /// 消息就是一条链接：只画卡片，不画气泡（同无边框贴纸：发送者名字、卡片、时间竖着排，时间在气泡外的样式）。
+    private var isTellomiLinkCardReplacingBubble: Bool {
+        linkPreview != nil && tellomiLinkCardPlacement == .replacesBubble
+    }
+
+    /// 文字 + 卡片：文字气泡下面单独一块卡片。
+    private var isTellomiLinkCardBelowBubble: Bool {
+        linkPreview != nil && tellomiLinkCardPlacement == .belowBubble
+    }
+
+    /// 画在气泡里的链接预览；卡片放到气泡外时是 nil。
+    private var inBubbleLinkPreview: CVComponent? {
+        tellomiLinkCardPlacement == .inBubble ? linkPreview : nil
+    }
+
+    /// 文字气泡和下面那块卡片之间的距离。
+    private static let tellomiCardBelowBubbleSpacing: CGFloat = 4
+
+    private var tellomiCardBelowBubbleStackConfig: CVStackViewConfig {
+        CVStackViewConfig(
+            axis: .vertical,
+            alignment: isIncoming ? .leading : .trailing,
+            spacing: Self.tellomiCardBelowBubbleSpacing,
+            layoutMargins: .zero,
+        )
+    }
+
+    private static let measurementKey_tellomiCardBelowBubbleStack = "CVComponentMessage.measurementKey_tellomiCardBelowBubbleStack"
 
     private var tapForMoreState: CVComponentFooter.TapForMoreState {
         standaloneFooter?.tapForMoreState ?? .none
@@ -464,6 +508,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             self.linkPreview = CVComponentLinkPreview(
                 itemModel: itemModel,
                 linkPreview: linkPreviewState.state,
+                isStandalone: componentState.tellomiLinkCardPlacement != .inBubble,
             )
         }
 
@@ -557,9 +602,11 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         )
 
         // No bubbles for borderless stickers.
+        // Tellomi（产品经理 2026-10-19）：卡片代替气泡时也没有气泡。
+        let hasNoBubble = componentState.isBorderlessStickerMessage || isTellomiLinkCardReplacingBubble
         var outerBubbleView: (CVDimmableView & OWSBubbleViewHost)?
-        let tellomiTail = componentState.isBorderlessStickerMessage ? nil : tellomiBubbleTail
-        if !componentState.isBorderlessStickerMessage {
+        let tellomiTail = hasNoBubble ? nil : tellomiBubbleTail
+        if !hasNoBubble {
             let bubbleConfiguration = BubbleConfiguration(
                 corners: .segmented(
                     sharpCorners: sharpCorners,
@@ -624,6 +671,25 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 contentViewSwipeToReplyWrapper.subview = wrapper
 
                 bubbleViewPartner.setBubbleViewHost(bubbleView)
+            } else if
+                isTellomiLinkCardBelowBubble,
+                let cardView = configureSubcomponent(
+                    messageView: componentView,
+                    cellMeasurement: cellMeasurement,
+                    componentDelegate: componentDelegate,
+                    key: .linkPreview,
+                )?.componentView.rootView
+            {
+                // Tellomi（产品经理 2026-10-19）：文字气泡在上，卡片单独一块在下。
+                let stack = componentView.tellomiCardBelowBubbleStack
+                stack.reset()
+                stack.configure(
+                    config: tellomiCardBelowBubbleStackConfig,
+                    cellMeasurement: cellMeasurement,
+                    measurementKey: Self.measurementKey_tellomiCardBelowBubbleStack,
+                    subviews: [bubbleView, cardView],
+                )
+                contentViewSwipeToReplyWrapper.subview = stack
             } else {
                 contentViewSwipeToReplyWrapper.subview = bubbleView
             }
@@ -1018,6 +1084,14 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 measurementKey: Self.measurementKey_contentStack,
                 componentKeys: [.senderName, .sticker, .footer],
             )
+        } else if isTellomiLinkCardReplacingBubble {
+            // Tellomi（产品经理 2026-10-19）：卡片代替气泡，同无边框贴纸。
+            return configureStackView(
+                componentView.contentStack,
+                stackConfig: buildBorderlessStackConfig(),
+                measurementKey: Self.measurementKey_contentStack,
+                componentKeys: [.senderName, .linkPreview, .footer],
+            )
         } else {
             // The non-sticker case.
             // Use multiple stacks.
@@ -1265,7 +1339,12 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         case .tellomiCaptionAboveText, .tellomiCaptionAboveMedia:
             return captionAbove ? sectionType.possibleComponentKeys : []
         case .bottomFullWidth:
-            return captionAbove ? sectionType.possibleComponentKeys.filter { $0 != .bodyMedia } : sectionType.possibleComponentKeys
+            var keys = captionAbove ? sectionType.possibleComponentKeys.filter { $0 != .bodyMedia } : sectionType.possibleComponentKeys
+            // Tellomi（产品经理 2026-10-19）：卡片放在气泡外时不进气泡里的节。
+            if tellomiLinkCardPlacement != .inBubble {
+                keys.removeAll { $0 == .linkPreview }
+            }
+            return keys
         case .bottomNestedText:
             return captionAbove ? sectionType.possibleComponentKeys.filter { $0 != .bodyText } : sectionType.possibleComponentKeys
         case .topFullWidth, .topNested, .bottomNestedShare, .bottomButtons, .bottomLabel:
@@ -1340,7 +1419,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             var applyBottomMargin = false
             if
                 previousSectionItems.isEmpty,
-                quotedReply != nil || linkPreview != nil
+                quotedReply != nil || inBubbleLinkPreview != nil
             {
                 applyTopMargin = true
                 applyBottomMargin = bodyText == nil && standaloneFooter == nil && bodyMedia == nil
@@ -1783,9 +1862,12 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         }
 
         owsAssertDebug(conversationStyle.maxMediaMessageWidth <= conversationStyle.maxMessageWidth)
+        // Tellomi：卡片放在气泡外时文字气泡照普通文字的宽度，卡片自己按媒体宽度量（见下面 `measureTellomiCardBelowBubble`）。
+        let tellomiUnnarrowedContentMaxWidth = max(0, min(conversationStyle.maxMessageWidth, contentMaxWidth))
         let shouldUseNarrowMaxWidth = (
             bodyMedia != nil ||
-                linkPreview != nil,
+                inBubbleLinkPreview != nil ||
+                isTellomiLinkCardReplacingBubble,
         )
         if shouldUseNarrowMaxWidth {
             contentMaxWidth = max(0, min(conversationStyle.maxMediaMessageWidth, contentMaxWidth))
@@ -1797,12 +1879,19 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             contentMaxWidth = max(0, min(conversationStyle.maxMessageWidth, contentMaxWidth))
         }
 
-        let contentStackSize = measureContentStack(
+        var contentStackSize = measureContentStack(
             maxWidth: contentMaxWidth,
             measurementBuilder: measurementBuilder,
         )
         if contentStackSize.width > contentMaxWidth {
             owsFailDebug("contentStackSize: \(contentStackSize) > contentMaxWidth: \(contentMaxWidth)")
+        }
+        if isTellomiLinkCardBelowBubble {
+            contentStackSize = measureTellomiCardBelowBubble(
+                bubbleSize: contentStackSize,
+                maxWidth: tellomiUnnarrowedContentMaxWidth,
+                measurementBuilder: measurementBuilder,
+            )
         }
 
         var hInnerStackSubviewInfos = [ManualStackSubviewInfo]()
@@ -1863,6 +1952,32 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         }
 
         return hOuterStackMeasurement.measuredSize
+    }
+
+    /// Tellomi（产品经理 2026-10-19）：文字气泡（`bubbleSize`）在上，卡片在下，竖着排；返回两块合起来的大小。
+    /// 气泡至少 `bubbleWideCornerRadius × 2` 宽（和下面 hInnerStack 的最小气泡宽一致）；卡片按媒体宽度量。
+    private func measureTellomiCardBelowBubble(
+        bubbleSize: CGSize,
+        maxWidth: CGFloat,
+        measurementBuilder: CVCellMeasurement.Builder,
+    ) -> CGSize {
+        guard let linkPreview else {
+            return bubbleSize
+        }
+        var bubbleSize = bubbleSize
+        bubbleSize.width = max(bubbleSize.width, Self.bubbleWideCornerRadius * 2)
+        let cardMaxWidth = max(0, min(conversationStyle.maxMediaMessageWidth, maxWidth))
+        let cardSize = linkPreview.measure(maxWidth: cardMaxWidth, measurementBuilder: measurementBuilder)
+        return ManualStackView.measure(
+            config: tellomiCardBelowBubbleStackConfig,
+            measurementBuilder: measurementBuilder,
+            measurementKey: Self.measurementKey_tellomiCardBelowBubbleStack,
+            subviewInfos: [
+                bubbleSize.asManualSubviewInfo(hasFixedSize: true),
+                cardSize.asManualSubviewInfo(hasFixedSize: true),
+            ],
+            maxWidth: maxWidth,
+        ).measuredSize
     }
 
     // The behavior of this method has to align exactly with that of configureContentStack().
@@ -2065,6 +2180,13 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 stackConfig: buildBorderlessStackConfig(),
                 measurementKey: Self.measurementKey_contentStack,
                 componentKeys: [.senderName, .sticker, .footer],
+            )
+        } else if isTellomiLinkCardReplacingBubble {
+            // Tellomi（产品经理 2026-10-19）：卡片代替气泡，同无边框贴纸。
+            return measure(
+                stackConfig: buildBorderlessStackConfig(),
+                measurementKey: Self.measurementKey_contentStack,
+                componentKeys: [.senderName, .linkPreview, .footer],
             )
         } else {
             // The non-sticker case.
@@ -2544,6 +2666,8 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
         // Tellomi（ADR-0068 §4.7）：说明文字在媒体上方时用的两节。
         fileprivate let tellomiCaptionAboveTextStackView = ManualStackView(name: "message.tellomiCaptionAboveTextStackView")
         fileprivate let tellomiCaptionAboveMediaStackView = ManualStackView(name: "message.tellomiCaptionAboveMediaStackView")
+        /// Tellomi（产品经理 2026-10-19 卡片样式定稿）：文字 + 卡片时，上面是文字气泡、下面单独一块卡片。
+        fileprivate let tellomiCardBelowBubbleStack = ManualStackView(name: "message.tellomiCardBelowBubbleStack")
 
         // If hasSecondaryContentForSelection is false, this is used to select
         // all content.
@@ -2829,6 +2953,9 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
 
             tellomiTailContentView.removeFromSuperview()
             tellomiTailContentView.reset()
+
+            tellomiCardBelowBubbleStack.reset()
+            tellomiCardBelowBubbleStack.removeFromSuperview()
 
             wallpaperBlurView?.removeFromSuperview()
 
