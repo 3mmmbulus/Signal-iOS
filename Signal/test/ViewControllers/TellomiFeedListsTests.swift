@@ -99,8 +99,9 @@ private final class ListsSource: FeedSource, @unchecked Sendable {
     func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse { FeedCreatePostResponse(id: "x", state: "published") }
 
     func followRequests() async throws -> [FeedFollowRequest] {
+        let snapshot = requests
         try await read()
-        return requests.map { FeedFollowRequest(profile: $0, requestedAt: nil) }
+        return snapshot.map { FeedFollowRequest(profile: $0, requestedAt: nil) }
     }
     func answerFollowRequest(profileId: String, approve: Bool) async throws { try await write("answer:\(profileId):\(approve)") }
     func blocks() async throws -> [FeedBlockEntry] {
@@ -114,8 +115,9 @@ private final class ListsSource: FeedSource, @unchecked Sendable {
     }
     func setHideList(list: String, profileId: String, on: Bool) async throws { try await write("hide:\(list):\(profileId):\(on)") }
     func closePeople() async throws -> FeedClosePeopleResponse {
+        let snapshot = close
         try await read()
-        return close
+        return snapshot
     }
     func addClosePerson(profileId: String) async throws -> String {
         try await write("add:\(profileId)")
@@ -128,7 +130,7 @@ private final class ListsSource: FeedSource, @unchecked Sendable {
             _searchCalls.append("\(scope):\(query)")
             return _searchDelay[query] ?? 0
         }
-        if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
+        if delay > 0 { await Task.detached { try? await Task.sleep(nanoseconds: delay) }.value }
         if let error = readError { throw error }
         var page = FeedSearchPage()
         page.users = users[query] ?? []
@@ -295,9 +297,14 @@ final class TellomiFeedPeopleStoreTests: XCTestCase {
         store.remove(row)
         await store.waitForTasks()
         XCTAssertEqual(source.calls, [])
-        let blocked = await make(.blocked, source)
-        blocked.answer(FeedPeopleRow(key: "a", person: person("a"), block: nil), approve: true)
-        XCTAssertEqual(source.calls, [])
+        let blockedSource = ListsSource()
+        blockedSource.blocksValue = [FeedBlockEntry(type: "author", id: "u1", createdAt: nil, profile: person("u1", "Alice"))]
+        let blocked = await make(.blocked, blockedSource)
+        XCTAssertNotNil(blocked.state.rows.first?.person)
+        blocked.answer(blocked.state.rows[0], approve: true)
+        await blocked.waitForTasks()
+        XCTAssertEqual(blockedSource.calls, [], "只有关注请求页能同意 / 拒绝")
+        XCTAssertEqual(blocked.state.rows.count, 1)
     }
 
     func testUnblockAndRemoveGoToTheRightEndpoints() async {
@@ -372,6 +379,41 @@ final class TellomiFeedPeopleStoreTests: XCTestCase {
         await slow.open()
         await store.waitForTasks()
         XCTAssertEqual(store.state.rows.map(\.key), ["new"])
+    }
+
+    func testAnOlderSlowFailureNeverMarksANewerGoodLoadAsFailed() async {
+        let source = requestsSource(["old"])
+        let slow = Gate()
+        source.setReadGates([slow, nil])
+        source.readError = Boom()
+        let store = FeedPeopleStore(mode: .followRequests, source: source)
+        store.refresh()
+        for _ in 0..<50 where source.readCalls < 1 { try? await Task.sleep(nanoseconds: 2_000_000) }
+        source.readError = nil
+        source.requests = [person("new")]
+        store.refresh()
+        for _ in 0..<50 where source.readCalls < 2 { try? await Task.sleep(nanoseconds: 2_000_000) }
+        await slow.open()
+        await store.waitForTasks()
+        XCTAssertFalse(store.state.failed)
+        XCTAssertEqual(store.state.rows.map(\.key), ["new"])
+    }
+
+    func testAfterAFailureTheSameRowCanBeTriedAgain() async {
+        let source = requestsSource()
+        let store = await make(.followRequests, source)
+        source.actionError = Boom()
+        store.answer(store.state.rows[0], approve: true)
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.rows.map(\.key), ["a", "b", "c"])
+        source.actionError = nil
+        store.answer(store.state.rows[0], approve: true)
+        await store.waitForTasks()
+        XCTAssertEqual(source.calls, ["answer:a:true", "answer:a:true"])
+        XCTAssertEqual(store.state.rows.map(\.key), ["b", "c"])
+        store.refresh()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.rows.map(\.key), ["a", "b", "c"], "引擎没真处理时拉回来要能显示，不能被当成还在处理")
     }
 
     func testNoticeIsCleared() async {
@@ -503,6 +545,38 @@ final class TellomiFeedClosePeopleStoreTests: XCTestCase {
         XCTAssertEqual(store.state.query, "fast")
     }
 
+    func testAnOlderSlowLoadNeverOverwritesANewerOne() async {
+        let source = ListsSource()
+        source.close.mine = [entry("old")]
+        let slow = Gate()
+        source.setReadGates([slow, nil])
+        let store = FeedClosePeopleStore(source: source, debounceNanos: 0)
+        store.refresh()
+        for _ in 0..<50 where source.readCalls < 1 { try? await Task.sleep(nanoseconds: 2_000_000) }
+        source.close.mine = [entry("new")]
+        store.refresh()
+        for _ in 0..<50 where source.readCalls < 2 { try? await Task.sleep(nanoseconds: 2_000_000) }
+        await slow.open()
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.mine.map(\.id), ["new"])
+    }
+
+    func testThrottledRemoveAndAnswerKeepTheWait() async {
+        let source = ListsSource()
+        source.close.mine = [entry("1")]
+        source.close.requests = [entry("a")]
+        let store = await make(source)
+        source.actionError = api(429, "rate_limited", retryAfter: 9)
+        store.remove(entry("1"))
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .throttled(retryAfterSeconds: 9))
+        store.onNoticeShown()
+        store.answer(entry("a"), accept: true)
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.notice, .throttled(retryAfterSeconds: 9))
+        XCTAssertEqual(store.state.requests.map(\.state), ["pending"])
+    }
+
     func testSearchFailureGivesAnEmptyList() async {
         let source = ListsSource()
         let store = await make(source)
@@ -542,6 +616,10 @@ final class TellomiFeedClosePeopleStoreTests: XCTestCase {
         store.add(user("2"))
         await store.waitForTasks()
         XCTAssertEqual(source.calls, ["add:2"], "已经设了不再发")
+        source.addResult = "pending"
+        store.add(user("3"))
+        await store.waitForTasks()
+        XCTAssertEqual(store.state.mine.map(\.state), ["accepted", "pending"], "状态用引擎回的")
     }
 
     func testAddIsRefusedLocallyWhenFullOrBusy() async {
