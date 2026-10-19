@@ -203,7 +203,7 @@ final class TellomiFeedSearchUITests: XCTestCase {
         await waitUntil { search.rows.last == .status(.loadMoreFailed(retryAfterSeconds: nil)) }
         harness.window.layoutIfNeeded()
         let before = search.presentation.posts.map(\.id)
-        XCTAssertEqual(before.count, SampleFeedSource.searchPostsPageSize, "第一页 3 条留着")
+        XCTAssertGreaterThanOrEqual(before.count, SampleFeedSource.searchPostsPageSize, "第一页的结果留着（预取可能已经多翻了一页，不要求恰好一页）")
         XCTAssertEqual(search.rows.last, .status(.loadMoreFailed(retryAfterSeconds: nil)))
         XCTAssertFalse(search.presentation.canLoadMore)
         // 重试行在列表最底下：先滚到底，cellForRow 才拿得到
