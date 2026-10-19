@@ -22,6 +22,10 @@ final class FeedTopBarView: UIView {
     var onSelect: ((Int) -> Void)?
 
     private var buttons = [UIButton]()
+    private var widthConstraints = [NSLayoutConstraint]()
+    /// 最大字号下导航栏给的宽度放不下两栏时，字按比例缩小（只往小走，见 `FeedDynamicTypeLayout.topBarFontScale`）；
+    /// 字号档位变了重置为 1。
+    private var fontScale: CGFloat = 1
     private let stackView = UIStackView()
     private let indicator = UIView()
 
@@ -44,6 +48,7 @@ final class FeedTopBarView: UIView {
         applyTheme()
 
         NotificationCenter.default.addObserver(self, selector: #selector(applyTheme), name: .themeDidChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryChanged), name: UIContentSizeCategory.didChangeNotification, object: nil)
     }
 
     @available(*, unavailable)
@@ -53,17 +58,40 @@ final class FeedTopBarView: UIView {
 
     /// 按选中时（粗体）的宽度算，切换选中时标题不会换行、两栏也不会左右跳。
     override var intrinsicContentSize: CGSize {
-        let width = tabs.reduce(CGFloat(0)) { $0 + Self.buttonWidth(for: $1) }
-        return CGSize(width: width, height: Self.height)
+        return CGSize(width: naturalWidth(scale: fontScale), height: Self.height)
     }
 
-    private static func buttonWidth(for tab: FeedTab) -> CGFloat {
-        let textWidth = (tab.title as NSString).size(withAttributes: [.font: selectedFont]).width
+    private func naturalWidth(scale: CGFloat) -> CGFloat {
+        return tabs.reduce(CGFloat(0)) { $0 + Self.buttonWidth(for: $1, scale: scale) }
+    }
+
+    private static func buttonWidth(for tab: FeedTab, scale: CGFloat) -> CGFloat {
+        let textWidth = (tab.title as NSString).size(withAttributes: [.font: selectedFont(scale: scale)]).width
         return textWidth.rounded(.up) + buttonHorizontalPadding * 2
     }
 
-    private static var selectedFont: UIFont { UIFont.dynamicTypeHeadlineClamped.semibold() }
-    private static var unselectedFont: UIFont { UIFont.dynamicTypeHeadlineClamped }
+    private static func scaled(_ font: UIFont, _ scale: CGFloat) -> UIFont {
+        return scale < 1 ? font.withSize((font.pointSize * scale).rounded(.down)) : font
+    }
+
+    private static func selectedFont(scale: CGFloat) -> UIFont { scaled(UIFont.dynamicTypeHeadlineClamped.semibold(), scale) }
+    private static func unselectedFont(scale: CGFloat) -> UIFont { scaled(UIFont.dynamicTypeHeadlineClamped, scale) }
+
+    @objc
+    private func contentSizeCategoryChanged() {
+        fontScale = 1
+        applyScale()
+    }
+
+    /// 缩放比例变了：两栏的宽度、字体跟着改，并让导航栏重新量。
+    private func applyScale() {
+        for (index, constraint) in widthConstraints.enumerated() where tabs.indices.contains(index) {
+            constraint.constant = Self.buttonWidth(for: tabs[index], scale: fontScale)
+        }
+        invalidateIntrinsicContentSize()
+        updateSelection()
+        setNeedsLayout()
+    }
 
     func setTabs(_ tabs: [FeedTab]) {
         guard tabs != self.tabs else { return }
@@ -83,11 +111,17 @@ final class FeedTopBarView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        let next = FeedDynamicTypeLayout.topBarFontScale(available: bounds.width, natural: naturalWidth(scale: fontScale), current: fontScale)
+        if next < fontScale {
+            fontScale = next
+            applyScale()
+        }
         layoutIndicator()
     }
 
     private func rebuildButtons() {
         buttons.forEach { $0.removeFromSuperview() }
+        widthConstraints = []
         buttons = tabs.enumerated().map { index, tab in
             var config = UIButton.Configuration.plain()
             config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: Self.buttonHorizontalPadding, bottom: 8, trailing: Self.buttonHorizontalPadding)
@@ -96,7 +130,7 @@ final class FeedTopBarView: UIView {
             let button = UIButton(configuration: config)
             button.addAction(UIAction { [weak self] _ in self?.onSelect?(index) }, for: .touchUpInside)
             stackView.addArrangedSubview(button)
-            button.autoSetDimension(.width, toSize: Self.buttonWidth(for: tab))
+            widthConstraints.append(button.autoSetDimension(.width, toSize: Self.buttonWidth(for: tab, scale: fontScale)))
             return button
         }
         invalidateIntrinsicContentSize()
@@ -107,7 +141,7 @@ final class FeedTopBarView: UIView {
         let selected = selectedIndex
         for (index, button) in buttons.enumerated() {
             let isSelected = index == selected
-            let font = isSelected ? Self.selectedFont : Self.unselectedFont
+            let font = isSelected ? Self.selectedFont(scale: fontScale) : Self.unselectedFont(scale: fontScale)
             let color = isSelected ? UIColor.Signal.label : UIColor.Signal.secondaryLabel
             button.configuration?.attributedTitle = AttributedString(
                 tabs[index].title,

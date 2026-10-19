@@ -339,7 +339,7 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
 
     /// 单选的一行：选中的有对勾。
     private static func choiceItem(text: String, selected: Bool, action: @escaping () -> Void) -> OWSTableItem {
-        return OWSTableItem(text: text, actionBlock: action, accessoryType: selected ? .checkmark : .none)
+        return FeedChoiceRow.item(text: text, selected: selected, action: action)
     }
 
     /// 标题（+ 小字）一行；`deleteAction` 非空时右边有个叉，点它删掉这一行。
@@ -430,6 +430,7 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
         let choices = FeedCategoryChoice.allCases
         let control = UISegmentedControl(items: choices.map { categoryTitle($0) })
         control.selectedSegmentIndex = choices.firstIndex(of: choice) ?? 1
+        control.installFeedDynamicType()
         control.addAction(UIAction { [weak control] _ in
             guard let control, choices.indices.contains(control.selectedSegmentIndex) else { return }
             onChange(choices[control.selectedSegmentIndex])

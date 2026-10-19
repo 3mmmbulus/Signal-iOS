@@ -99,15 +99,15 @@ final class FeedKeywordFormViewController: OWSTableViewController2 {
         contents.add(word)
 
         let mode = OWSTableSection()
-        mode.add(OWSTableItem(
+        mode.add(FeedChoiceRow.item(
             text: OWSLocalizedString("TELLOMI_FEED_SETTINGS_KEYWORDS_DOWNRANK", comment: "Feed settings: muted word mode, show less."),
-            actionBlock: { [weak self] in self?.select(block: false) },
-            accessoryType: form.block ? .none : .checkmark,
+            selected: !form.block,
+            action: { [weak self] in self?.select(block: false) },
         ))
-        mode.add(OWSTableItem(
+        mode.add(FeedChoiceRow.item(
             text: OWSLocalizedString("TELLOMI_FEED_SETTINGS_KEYWORDS_BLOCK", comment: "Feed settings: muted word mode, hide completely (this phone only)."),
-            actionBlock: { [weak self] in self?.select(block: true) },
-            accessoryType: form.block ? .checkmark : .none,
+            selected: form.block,
+            action: { [weak self] in self?.select(block: true) },
         ))
         mode.footerTitle = form.block
             ? OWSLocalizedString("TELLOMI_FEED_SETTINGS_KEYWORDS_BLOCK_DESCRIPTION", comment: "Feed settings: says matching posts never appear in your feed (this phone only).")
@@ -116,10 +116,10 @@ final class FeedKeywordFormViewController: OWSTableViewController2 {
 
         let duration = OWSTableSection()
         for days in FeedKeywordForm.dayChoices {
-            duration.add(OWSTableItem(
+            duration.add(FeedChoiceRow.item(
                 text: Self.daysTitle(days),
-                actionBlock: { [weak self] in self?.select(days: days) },
-                accessoryType: form.days == days ? .checkmark : .none,
+                selected: form.days == days,
+                action: { [weak self] in self?.select(days: days) },
             ))
         }
         contents.add(duration)

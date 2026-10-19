@@ -63,6 +63,7 @@ final class FeedNotificationsViewController: OWSViewController {
             tabControl.insertSegment(withTitle: Self.tabTitle(tab, badge: 0), at: index, animated: false)
         }
         tabControl.addAction(UIAction { [weak self] _ in self?.tabChanged() }, for: .valueChanged)
+        tabControl.installFeedDynamicType()
         let tabContainer = UIView()
         tabContainer.addSubview(tabControl)
         tabControl.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(hMargin: 16, vMargin: 8))

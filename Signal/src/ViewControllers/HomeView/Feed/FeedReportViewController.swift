@@ -84,7 +84,7 @@ final class FeedReportViewController: OWSViewController {
         reasonTitleLabel.textColor = UIColor.Signal.label
         reasonTitleLabel.numberOfLines = 0
 
-        emergencyLabel.font = .dynamicTypeSubheadline
+        emergencyLabel.font = .dynamicTypeSubheadlineClamped
         emergencyLabel.textColor = UIColor.Signal.red
         emergencyLabel.numberOfLines = 0
         emergencyLabel.text = OWSLocalizedString("TELLOMI_FEED_REPORT_EMERGENCY", comment: "Feed report page: shown first for reasons about someone's safety; tells the user to call the emergency number if someone is in danger.")

@@ -76,6 +76,7 @@ final class FeedSearchViewController: OWSViewController {
         }
         scopeControl.selectedSegmentIndex = 0
         scopeControl.addAction(UIAction { [weak self] _ in self?.scopeChanged() }, for: .valueChanged)
+        scopeControl.installFeedDynamicType()
         scopeContainer.addSubview(scopeControl)
         scopeControl.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16))
 

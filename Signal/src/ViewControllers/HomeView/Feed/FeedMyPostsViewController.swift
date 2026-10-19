@@ -398,6 +398,9 @@ final class FeedMyPostCell: UITableViewCell {
     let notesStack = UIStackView()
     let appealButton = UIButton(type: .system)
     private let chip = UIView()
+    /// 状态 / 可见范围 / 时间：平时一行，最大字号下竖着排（一行放不下会被截断）。
+    let headerStack = UIStackView()
+    private let headerSpacer = UIView()
 
     var onAppeal: (() -> Void)?
 
@@ -417,8 +420,11 @@ final class FeedMyPostCell: UITableViewCell {
         timeLabel.textColor = UIColor.Signal.secondaryLabel
         timeLabel.textAlignment = .right
         timeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        visibilityLabel.numberOfLines = 0
+        statusLabel.numberOfLines = 0
 
-        let header = UIStackView(arrangedSubviews: [chip, visibilityLabel, UIView(), timeLabel])
+        let header = headerStack
+        for view in [chip, visibilityLabel, headerSpacer, timeLabel] { header.addArrangedSubview(view) }
         header.axis = .horizontal
         header.alignment = .center
         header.spacing = 8
@@ -454,6 +460,21 @@ final class FeedMyPostCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         onAppeal = nil
+    }
+
+    override func layoutSubviews() {
+        updateHeaderLayout()
+        super.layoutSubviews()
+    }
+
+    private func updateHeaderLayout() {
+        let vertical = FeedDynamicTypeLayout.stacksPostMetaVertically(isAccessibilityCategory: traitCollection.preferredContentSizeCategory.isAccessibilityCategory)
+        let axis: NSLayoutConstraint.Axis = vertical ? .vertical : .horizontal
+        guard headerStack.axis != axis else { return }
+        headerStack.axis = axis
+        headerStack.alignment = vertical ? .leading : .center
+        headerSpacer.isHidden = vertical
+        timeLabel.textAlignment = vertical ? .natural : .right
     }
 
     func configure(_ row: FeedMyPostRow) {
