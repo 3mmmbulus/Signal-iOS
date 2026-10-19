@@ -243,10 +243,31 @@ public enum LinkValidator {
                 return true
             }
         }
-        if let next = scalars[upper...].first, isHiddenScalar(next), !isIriTerminator(next) {
+        // NSDataDetector 有时在看不见的字符前面很远就结束了链接：「https://signal.org/a\u{2060}b」「https://signal.org/abc\u{FEFF}」
+        // 都只认出「https://signal.org」。所以要看紧贴在识别范围后面的整段，直到第一个正常的结尾（空白、换行、中文句读、ASCII 句末标点）
+        for scalar in scalars[upper...] {
+            if isIriTerminator(scalar) || isTrailingAsciiPunctuation(scalar) {
+                break
+            }
+            if isHiddenScalar(scalar) {
+                return true
+            }
+        }
+        // 紧贴在链接前面的看不见字符也算（「看 \u{200B}https://…」；「https://sig\u{200B}nal.org/abc」会被认出「nal.org/abc」），同 Android Linkifier
+        if let previous = scalars[..<lower].last, isHiddenScalar(previous), !isIriTerminator(previous) {
             return true
         }
         return false
+    }
+
+    /// 链接后面的 ASCII 句末标点：到这里链接已经正常结束（「https://signal.org/abc,\u{200F} next」照常出卡、可点，同 Android）
+    private static func isTrailingAsciiPunctuation(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar {
+        case ".", ",", "!", "?", ";", ":", "'", "\"", "`", "|", "<", ">", ")", "]", "}":
+            return true
+        default:
+            return false
+        }
     }
 
     private static func isHiddenScalar(_ scalar: Unicode.Scalar) -> Bool {

@@ -224,6 +224,15 @@ class LinkValidatorTest: XCTestCase {
         XCTAssertEqual(links("https://signal.org/abc \u{200B}"), ["https://signal.org/abc"])
         XCTAssertEqual(links("https://signal.org/abc\n\u{200B}"), ["https://signal.org/abc"])
         XCTAssertEqual(links("https://signal.org/abc"), ["https://signal.org/abc"])
+        // NSDataDetector ends these at the host ("https://signal.org"); the host must not stay tappable
+        XCTAssertEqual(links("https://signal.org/a\u{2060}b"), [])
+        XCTAssertEqual(links("https://signal.org/a\u{2066}b"), [])
+        XCTAssertEqual(links("https://signal.org/abc\u{200D}"), [])
+        XCTAssertEqual(links("https://signal.org/abc\u{180E}"), [])
+        // a hidden character glued to the start of a link
+        XCTAssertEqual(links("看 \u{200B}https://signal.org/abc"), [])
+        XCTAssertEqual(links("https://sig\u{200B}nal.org/abc"), [])
+        XCTAssertEqual(links("https://signal.org/abc,\u{200F} next"), ["https://signal.org/abc"])
     }
 
     func testFirstLinkPreviewURLPerformance() throws {
