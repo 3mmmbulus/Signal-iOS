@@ -411,7 +411,8 @@ final class FeedStore {
                 let incoming = page.cards.filter { $0.isRenderable && !$0.matchesAny(blocked) }.map { self.reconciled($0, local: self.card(id: $0.id), keepListOnlyFields: false) }
                 self.refreshHeldCopies(from: incoming)
                 self.update(tab) { state in
-                    state.cards = refresh ? Self.mergeRefresh(incoming: incoming, existing: state.cards) : Self.appendPage(existing: state.cards, incoming: incoming)
+                    // 刷新时，已经在列表里的卡片也要按「完全屏蔽」的词再过一遍：不然设置页刚加的词，刷新后屏幕上原来那几条还留着
+                    state.cards = refresh ? Self.mergeRefresh(incoming: incoming, existing: state.cards.filter { !$0.matchesAny(blocked) }) : Self.appendPage(existing: state.cards, incoming: incoming)
                     state.nextCursor = page.nextCursor
                     state.loading = false
                     state.refreshing = false
