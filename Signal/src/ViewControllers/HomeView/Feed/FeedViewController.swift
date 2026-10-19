@@ -52,6 +52,14 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     /// 本机「完全屏蔽」的词：设置页和信息流（`FeedStore`）共用这一份；入口没开时是 nil（信息流不过滤）。
     let blockedKeywords: FeedBlockedKeywords?
 
+    /// 未成年人时限（I-15，`TellomiFeed.isMinorTimeEnabled`，默认关）：关着时是 nil，不计时、不锁。
+    let minorGate: FeedMinorGate?
+    /// 到点盖在动态上的提示页（单测 / 截图用；没锁时藏着）。
+    let minorLockView = FeedMinorLockView()
+    private var minorTimer: Timer?
+    /// 动态标签算不算「在用」（单测里换掉：Linux / 测试窗口里没有真的标签栏和前后台）。
+    var isFeedTabActive: () -> Bool = { false }
+
     init(
         source: FeedSource = FeedSources.current(),
         profilePageEnabled: Bool = TellomiFeed.isProfilePageEnabled,
@@ -59,7 +67,9 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         notificationsEnabled: Bool = TellomiFeed.isNotificationsEnabled,
         myPostsEnabled: Bool = TellomiFeed.isMyPostsEnabled,
         settingsEnabled: Bool = TellomiFeed.isSettingsEnabled,
-        blockedKeywords: FeedBlockedKeywords? = nil
+        blockedKeywords: FeedBlockedKeywords? = nil,
+        minorTimeEnabled: Bool = TellomiFeed.isMinorTimeEnabled,
+        minorGate: FeedMinorGate? = nil
     ) {
         self.source = source
         self.profilePageEnabled = profilePageEnabled
@@ -71,7 +81,18 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         let keywords = blockedKeywords ?? (settingsEnabled ? StoredFeedBlockedKeywords(storage: FeedLocalStorages.backupExcluded) : nil)
         self.blockedKeywords = keywords
         store = FeedStore(source: source, blockedKeywords: keywords)
+        self.minorGate = minorTimeEnabled ? (minorGate ?? FeedMinorGate(memory: StoredFeedMinorModeMemory(), usage: StoredFeedMinorUsage())) : nil
         super.init()
+        isFeedTabActive = { [weak self] in
+            guard let self else { return false }
+            // 动态标签那一摞（连同推进去的详情、作者页）还在窗口上、App 在前台
+            let root = self.navigationController ?? self
+            return root.viewIfLoaded?.window != nil && UIApplication.shared.applicationState != .background
+        }
+        if let gate = self.minorGate {
+            store.onConfigLoaded = { [weak gate] config in gate?.configLoaded(minorMode: config.minorMode) }
+            gate.onChange = { [weak self] lock in self?.applyMinorLock(lock) }
+        }
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
         for page in pages {
             page.onOpenPost = { [weak self] card in self?.openPost(card) }
@@ -202,6 +223,19 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         composeButton.autoPinEdge(toSuperviewSafeArea: .trailing, withInset: 16)
         composeButton.autoPinEdge(toSuperviewSafeArea: .bottom, withInset: 16)
 
+        minorLockView.isHidden = true
+        view.addSubview(minorLockView)
+        minorLockView.autoPinEdgesToSuperviewEdges()
+        if let minorGate {
+            applyMinorLock(minorGate.lock)
+            // 每 15 秒记一次时；顺便发现「在详情页里切走了标签」（那时这一页收不到 viewWillDisappear）
+            let timer = Timer(timeInterval: TimeInterval(FeedMinorTime.tickMillis) / 1000, repeats: true) { [weak self] _ in
+                Task { @MainActor in self?.minorTimerFired() }
+            }
+            RunLoop.main.add(timer, forMode: .common)
+            minorTimer = timer
+        }
+
         Task { await store.loadConfig() }
 
         // 退到后台：停掉曝光计时，发掉攒着的事件（契约 6.1）
@@ -211,6 +245,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        minorGate?.resume()
         setFeedVisible(true)
         if notificationsEnabled { store.refreshNotificationUnread() }
     }
@@ -218,15 +253,61 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         setFeedVisible(false)
+        // 推进详情 / 作者页、弹出发布页还算在用动态；切到别的标签才停
+        if navigationController?.topViewController === self, presentedViewController == nil {
+            minorGate?.pause()
+        }
+    }
+
+    deinit {
+        minorTimer?.invalidate()
+    }
+
+    func minorTimerFired() {
+        guard let minorGate else { return }
+        if isFeedTabActive() {
+            minorGate.resume()
+            minorGate.tick()
+        } else {
+            minorGate.pause()
+        }
+    }
+
+    /// 锁上：盖上提示页、停掉曝光、顶栏按钮和发布按钮不能点；推进去的页面退回动态（发布页不关，免得丢稿）。
+    func applyMinorLock(_ lock: FeedMinorTime.Lock?) {
+        guard isViewLoaded else { return }
+        let locked = lock != nil
+        if let lock { minorLockView.apply(lock) }
+        minorLockView.isHidden = !locked
+        view.bringSubviewToFront(minorLockView)
+        composeButton.isHidden = locked
+        topBar.isUserInteractionEnabled = !locked
+        for item in (navigationItem.leftBarButtonItems ?? []) + (navigationItem.rightBarButtonItems ?? []) {
+            item.isEnabled = !locked
+        }
+        for page in pages {
+            page.view.accessibilityElementsHidden = locked
+        }
+        if locked {
+            setFeedVisible(false)
+            if let navigationController, navigationController.topViewController !== self, navigationController.viewControllers.contains(self) {
+                navigationController.popToViewController(self, animated: false)
+            }
+        } else if viewIfLoaded?.window != nil {
+            setFeedVisible(true)
+        }
     }
 
     @objc
     private func didEnterBackground() {
+        minorGate?.pause()
         setFeedVisible(false)
     }
 
     @objc
     private func willEnterForeground() {
+        // 这时 applicationState 还是 background，只看动态这一摞在不在窗口上
+        if (navigationController ?? self).viewIfLoaded?.window != nil { minorGate?.resume() }
         if viewIfLoaded?.window != nil {
             setFeedVisible(true)
             if notificationsEnabled { store.refreshNotificationUnread() }
@@ -235,6 +316,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     /// 动态页在不在屏幕上；看不见时 `FeedStore` 停掉曝光计时并发掉攒着的事件。
     func setFeedVisible(_ visible: Bool) {
+        // 未成年人时限锁着时，提示页下面的列表不算看得见（不计曝光）
+        let visible = visible && minorGate?.lock == nil
         for page in pages {
             page.isFeedVisible = visible
         }

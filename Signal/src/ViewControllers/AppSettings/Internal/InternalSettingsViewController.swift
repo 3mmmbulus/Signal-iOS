@@ -265,6 +265,13 @@ class InternalSettingsViewController: OWSTableViewController2 {
                 TellomiFeed.isShareEnabled = uiSwitch.isOn
             },
         ))
+        feedSection.add(.switch(
+            withText: "Feed: minor-mode time limit (40 min/day, 22:00–6:00)",
+            isOn: { TellomiFeed.isMinorTimeEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isMinorTimeEnabled = uiSwitch.isOn
+            },
+        ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
         contents.add(feedSection)
 
