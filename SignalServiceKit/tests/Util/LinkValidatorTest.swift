@@ -16,8 +16,9 @@ class LinkValidatorTest: XCTestCase {
     func testFirstLinkPreviewURL() {
         let testCases: [(String, String?)] = [
             // Invalid: Explicit scheme is required
-            ("signal.org", nil),
-            ("www.signal.org", nil),
+            // Tellomi (2026-10-19, as Apple Messages): a bare domain typed without a scheme gets a preview over https
+            ("signal.org", "https://signal.org"),
+            ("www.signal.org", "https://www.signal.org"),
             ("https.signal.org", nil),
 
             // Invalid: Scheme must be https
@@ -139,6 +140,16 @@ class LinkValidatorTest: XCTestCase {
             ("signal.org/hello", nil),
             ("http://tell.cc/g/abc", nil),
             ("http://a.com https://signal.org/x", "https://signal.org/x"),
+            // Tellomi (2026-10-19): the bare-domain exception — only a domain (one trailing / at most), typed without a scheme
+            ("baidu.com", "https://baidu.com"),
+            ("看 baidu.com 吧", "https://baidu.com"),
+            ("www.baidu.com/", "https://www.baidu.com/"),
+            ("http://baidu.com", nil),
+            ("baidu.com/s?wd=tellomi", nil),
+            ("192.168.1.1", nil),
+            ("router.local", nil),
+            ("example.com", nil),
+            ("invoice.zip", nil),
         ]
         for (entireMessage, expectedValue) in testCases {
             let actualValue = LinkValidator.firstLinkPreviewURL(in: .init(text: entireMessage, ranges: .empty))
