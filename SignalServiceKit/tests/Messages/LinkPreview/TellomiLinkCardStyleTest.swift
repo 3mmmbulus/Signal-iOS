@@ -247,11 +247,22 @@ final class TellomiLinkCardStyleTest: XCTestCase {
 
 /// 产品经理 2026-10-19 批准的 Safari UA 主机（等 `bot/link-cards-weixin-ua-r1` 合进来后并进精确白名单）。
 final class TellomiLinkBrowserUserAgentPendingTest: XCTestCase {
-    func testOnlyExactJdHostsAreListed() {
+    func testOnlyTheApprovedExactHostsAreListed() {
         let hosts = TellomiLinkBrowserUserAgentPending.approvedHosts
-        XCTAssertEqual(hosts, ["jd.com", "www.jd.com", "m.jd.com", "item.jd.com", "item.m.jd.com"])
+        XCTAssertEqual(hosts, [
+            "jd.com", "www.jd.com", "m.jd.com", "item.jd.com", "item.m.jd.com",
+            "m.douban.com",
+            "m.dianping.com",
+            "y.qq.com", "i.y.qq.com", "i2.y.qq.com",
+            "v.youku.com", "m.youku.com",
+            "www.kuaishou.com", "m.kuaishou.com",
+            "www.iqiyi.com", "m.iqiyi.com", "iqiyi.com",
+        ])
         XCTAssertFalse(hosts.contains { $0.contains("*") }, "精确匹配，不用通配")
         XCTAssertFalse(hosts.contains { $0.hasSuffix("baidu.com") }, "百度不需要换 UA")
         XCTAssertFalse(hosts.contains("mp.weixin.qq.com"), "公众号在 weixin-ua 分支的名单里，不重复列")
+        XCTAssertFalse(hosts.contains("www.douban.com") || hosts.contains("movie.douban.com"), "豆瓣只批了移动版")
+        XCTAssertFalse(hosts.contains("www.dianping.com"), "大众点评只批了移动版")
+        XCTAssertFalse(hosts.contains("qq.com") || hosts.contains("www.qq.com"), "QQ 音乐之外的 qq.com 不在内")
     }
 }
