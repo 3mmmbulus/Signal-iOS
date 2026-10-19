@@ -82,12 +82,13 @@ class LinkValidatorTest: XCTestCase {
             ("https://中国互联网络信息中心.中国#fragment", "https://xn--fiqa61au8b7zsevnm8ak20mc4a87e.xn--fiqs8s#fragment"),
             ("https://signal.org#你好", "https://signal.org#%E4%BD%A0%E5%A5%BD"),
 
-            // Invalid characters in path/params
-            ("https://signal.org/你好", nil),
-            ("https://signal.org?你好", nil),
-            ("https://signal.org/hello?你好", nil),
-            ("https://signal.org/наушники", nil),
-            ("https://signal.org/hello?param=наушники", nil),
+            // Tellomi (PM 2026-10-19, ADR-0063 §5.6): non-ASCII text in the path / query is part of the link and is sent
+            // percent-encoded as UTF-8 (upstream: no preview)
+            ("https://signal.org/你好", "https://signal.org/%E4%BD%A0%E5%A5%BD"),
+            ("https://signal.org?你好", "https://signal.org?%E4%BD%A0%E5%A5%BD"),
+            ("https://signal.org/hello?你好", "https://signal.org/hello?%E4%BD%A0%E5%A5%BD"),
+            ("https://signal.org/наушники", "https://signal.org/%D0%BD%D0%B0%D1%83%D1%88%D0%BD%D0%B8%D0%BA%D0%B8"),
+            ("https://signal.org/hello?param=наушники", "https://signal.org/hello?param=%D0%BD%D0%B0%D1%83%D1%88%D0%BD%D0%B8%D0%BA%D0%B8"),
 
             ("", nil),
             ("alice bob jim", nil),
@@ -132,9 +133,16 @@ class LinkValidatorTest: XCTestCase {
             ("https://zh.wikipedia.org/wiki/中国，很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
             ("https://zh.wikipedia.org/wiki/中国。", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
             ("https://zh.wikipedia.org/wiki/中国\u{3000}很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
-            // hidden characters would be invisible once encoded: no preview
+            // hidden characters would be invisible once encoded: no preview for the whole link, not a shortened one
+            // (NSDataDetector ends the match right before them, so the character after the match counts too)
             ("https://signal.org/a/中\u{200B}文", nil),
             ("https://signal.org/a/中\u{2066}文", nil),
+            ("看 https://signal.org/a/中\u{200B}文 吧", nil),
+            ("https://zh.wikipedia.org/wiki/中国\u{200B}", nil),
+            ("https://signal.org/a/中\u{202E}文", nil),
+            // a hidden character after a normal end (space, sentence punctuation) is not part of the link
+            ("https://zh.wikipedia.org/wiki/中国 \u{200B}", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
+            ("https://zh.wikipedia.org/wiki/中国，\u{200B}很好", "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD"),
             // Tellomi: the cut link must still pass every upstream rule
             ("https://example.org/a很好", nil),
             // Tellomi: never cut inside the host (a mixed-script host is a spoofing risk), only in path / query / fragment

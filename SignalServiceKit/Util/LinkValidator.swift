@@ -65,8 +65,11 @@ public enum LinkValidator {
         ) { match, _, stop in
             guard let match else { return }
             guard let matchedRange = Range(match.range, in: entireMessage.text) else { return }
+            // Tellomi：识别范围后面紧跟的那个字符。NSDataDetector 会在零宽、方向控制这类看不见的字符前结束链接，
+            // 路径里有中文的链接要靠它判断「整条带了看不见的字符」（见 `tellomiPercentEncodedIri`）。
+            let nextScalar = entireMessage.text.unicodeScalars[matchedRange.upperBound...].first
             // Tellomi：路径里有中文时 NSDataDetector 有的系统版本给不出 `url`，用编码后的写法（见 `tellomiPercentEncodedIri`）
-            guard let parsedUrl = match.url ?? tellomiPercentEncodedIri(String(entireMessage.text[matchedRange])) else { return }
+            guard let parsedUrl = match.url ?? tellomiPercentEncodedIri(String(entireMessage.text[matchedRange]), followedBy: nextScalar) else { return }
             for style in entireMessage.ranges.collapsedStyles {
                 if
                     style.value.style.contains(style: .spoiler),
@@ -85,7 +88,7 @@ public enum LinkValidator {
                 result = parsedUrl
             } else if let trimmedUrl = tellomiUrlTrimmedBeforeGluedText(matchedText) {
                 result = trimmedUrl
-            } else if let encodedUrl = tellomiPercentEncodedIri(matchedText) {
+            } else if let encodedUrl = tellomiPercentEncodedIri(matchedText, followedBy: nextScalar) {
                 result = encodedUrl
             } else if let upgradedUrl = tellomiHttpsUpgrade(parsedUrl, matchedText: matchedText) {
                 result = upgradedUrl
@@ -138,9 +141,11 @@ public enum LinkValidator {
     /// - 只在上游规则和上面「后面紧贴中文」的截断都不成时才用，原来能出卡片的链接一条都不变（「abc很好」照旧截成「abc」）；
     /// - **域名一个非 ASCII 都不许**（混写域名仿冒，上游的规则照旧）；
     /// - 链接在空白类字符（含全角空格、不换行空格，和 Telegram 一样）和中文句读（，。！？；：、和右括号、右引号）处结束；
-    /// - 方向控制、零宽字符这类看不见的字符编码以后就藏住了，带了的整条不要；
+    /// - 方向控制、零宽字符这类看不见的字符编码以后就藏住了，带了的整条不要。NSDataDetector 会在这种字符**前面**就结束链接
+    ///   （「…/a/中\u{200B}文」只识别出「…/a/中」），所以还要看识别范围后面紧跟的那个字符 `next`：链接没在句读、空白处正常结束、
+    ///   后面紧跟着看不见的字符，也整条不要，不截短出卡片；
     /// - 收方 libsignal `url_appears_in_body` 同步改了：把预览地址里编码过的非 ASCII 解回中文再去正文里找（旧版收方找不到，会丢掉这张预览）。
-    static func tellomiPercentEncodedIri(_ linkText: String) -> URL? {
+    static func tellomiPercentEncodedIri(_ linkText: String, followedBy next: Unicode.Scalar? = nil) -> URL? {
         guard linkText.range(of: "https://", options: [.anchored, .caseInsensitive]) != nil else {
             return nil
         }
@@ -160,6 +165,9 @@ public enum LinkValidator {
             return nil
         }
         guard !tail.contains(where: isHiddenScalar(_:)) else {
+            return nil
+        }
+        if end == scalars.endIndex, let next, isHiddenScalar(next) {
             return nil
         }
         guard isValidLink(linkText: String(String.UnicodeScalarView(scalars[..<end]))) else {
