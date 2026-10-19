@@ -144,6 +144,8 @@
 		812A8FDAD4713C93192AC437 /* FeedAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */; };
 		89AA64F1E08A9DE633DF904E /* FeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A93B0DFBCC7C033684326DD /* FeedModels.swift */; };
 		E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */; };
+		6C7F393D6400D55D7AA6DC5A /* TellomiFeedMinorGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F953A782D9BEEA9C1BD8A57C /* TellomiFeedMinorGateTests.swift */; };
+		9B407B50126622104AFE3E8F /* TellomiFeedMinorLockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A458340A1ACC132319998911 /* TellomiFeedMinorLockUITests.swift */; };
 		CEC64DA39144A56DEB1046EC /* TellomiFeedEventsWiringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F702E65122B421921B6918BB /* TellomiFeedEventsWiringTests.swift */; };
 		D0B1A9314DB047AC37793A36 /* TellomiFeedEventsWiringUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F3CF42383FDDEC7E1B7ACF /* TellomiFeedEventsWiringUITests.swift */; };
 		1F53E14DBFD62D28E2C4FD1E /* TellomiFeedFixes3UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EDA759BAC9ACF0B0568C55E /* TellomiFeedFixes3UITests.swift */; };
@@ -208,6 +210,8 @@
 		3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */; };
 		C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */; };
 		D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */; };
+		B965C92615130E1B09D2A703 /* FeedMinorGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0F522CB44FFA7E2229C252 /* FeedMinorGate.swift */; };
+		B76F9D66705AD5D1B56E8A80 /* FeedMinorLockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBDF7D5D9491BD2EA79FFC9 /* FeedMinorLockView.swift */; };
 		F29156850ACB4F842156ABBB /* FeedDetailActionsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489FEF2AA803CFA8F67C4044 /* FeedDetailActionsCell.swift */; };
 		353B6180554D67ABFC223DFB /* FeedDetailExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCFE6DFC1545C2C9FE03B99 /* FeedDetailExtras.swift */; };
 		82E0CB3A82C926051DFFCEA8 /* FeedPollCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125DFF06DA974089B1ED404E /* FeedPollCell.swift */; };
@@ -4825,6 +4829,8 @@
 		7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAPI.swift; sourceTree = "<group>"; };
 		8A93B0DFBCC7C033684326DD /* FeedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedModels.swift; sourceTree = "<group>"; };
 		E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTabTests.swift; sourceTree = "<group>"; };
+		F953A782D9BEEA9C1BD8A57C /* TellomiFeedMinorGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMinorGateTests.swift; sourceTree = "<group>"; };
+		A458340A1ACC132319998911 /* TellomiFeedMinorLockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMinorLockUITests.swift; sourceTree = "<group>"; };
 		F702E65122B421921B6918BB /* TellomiFeedEventsWiringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsWiringTests.swift; sourceTree = "<group>"; };
 		B9F3CF42383FDDEC7E1B7ACF /* TellomiFeedEventsWiringUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEventsWiringUITests.swift; sourceTree = "<group>"; };
 		8EDA759BAC9ACF0B0568C55E /* TellomiFeedFixes3UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedFixes3UITests.swift; sourceTree = "<group>"; };
@@ -4889,6 +4895,8 @@
 		FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopBarView.swift; sourceTree = "<group>"; };
 		FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTab.swift; sourceTree = "<group>"; };
 		81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeed.swift; sourceTree = "<group>"; };
+		EF0F522CB44FFA7E2229C252 /* FeedMinorGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMinorGate.swift; sourceTree = "<group>"; };
+		CEBDF7D5D9491BD2EA79FFC9 /* FeedMinorLockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMinorLockView.swift; sourceTree = "<group>"; };
 		489FEF2AA803CFA8F67C4044 /* FeedDetailActionsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDetailActionsCell.swift; sourceTree = "<group>"; };
 		CCCFE6DFC1545C2C9FE03B99 /* FeedDetailExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDetailExtras.swift; sourceTree = "<group>"; };
 		125DFF06DA974089B1ED404E /* FeedPollCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPollCell.swift; sourceTree = "<group>"; };
@@ -9541,6 +9549,8 @@
 				FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */,
 				FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */,
 				81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */,
+				EF0F522CB44FFA7E2229C252 /* FeedMinorGate.swift */,
+				CEBDF7D5D9491BD2EA79FFC9 /* FeedMinorLockView.swift */,
 				489FEF2AA803CFA8F67C4044 /* FeedDetailActionsCell.swift */,
 				CCCFE6DFC1545C2C9FE03B99 /* FeedDetailExtras.swift */,
 				125DFF06DA974089B1ED404E /* FeedPollCell.swift */,
@@ -10682,6 +10692,8 @@
 				B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */,
 				3EA81FA0FB2FA755202E7A4D /* TellomiFeedClientTests.swift */,
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
+				F953A782D9BEEA9C1BD8A57C /* TellomiFeedMinorGateTests.swift */,
+				A458340A1ACC132319998911 /* TellomiFeedMinorLockUITests.swift */,
 				F702E65122B421921B6918BB /* TellomiFeedEventsWiringTests.swift */,
 				B9F3CF42383FDDEC7E1B7ACF /* TellomiFeedEventsWiringUITests.swift */,
 				8EDA759BAC9ACF0B0568C55E /* TellomiFeedFixes3UITests.swift */,
@@ -19787,6 +19799,8 @@
 				3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */,
 				C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */,
 				D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */,
+				B965C92615130E1B09D2A703 /* FeedMinorGate.swift in Sources */,
+				B76F9D66705AD5D1B56E8A80 /* FeedMinorLockView.swift in Sources */,
 				F29156850ACB4F842156ABBB /* FeedDetailActionsCell.swift in Sources */,
 				353B6180554D67ABFC223DFB /* FeedDetailExtras.swift in Sources */,
 				82E0CB3A82C926051DFFCEA8 /* FeedPollCell.swift in Sources */,
@@ -20774,6 +20788,8 @@
 				8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */,
 				66E8ABD7206DBA93C31FE724 /* TellomiFeedClientTests.swift in Sources */,
 				E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */,
+				6C7F393D6400D55D7AA6DC5A /* TellomiFeedMinorGateTests.swift in Sources */,
+				9B407B50126622104AFE3E8F /* TellomiFeedMinorLockUITests.swift in Sources */,
 				CEC64DA39144A56DEB1046EC /* TellomiFeedEventsWiringTests.swift in Sources */,
 				D0B1A9314DB047AC37793A36 /* TellomiFeedEventsWiringUITests.swift in Sources */,
 				1F53E14DBFD62D28E2C4FD1E /* TellomiFeedFixes3UITests.swift in Sources */,
