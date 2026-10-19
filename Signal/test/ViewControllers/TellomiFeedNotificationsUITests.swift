@@ -172,7 +172,10 @@ final class TellomiFeedNotificationsUITests: XCTestCase {
         let follow = try XCTUnwrap(rowIndex(notes) { $0.kind == FeedNotification.kindFollow })
         notes.tableView(notes.notificationsTableView, didSelectRowAt: IndexPath(row: follow, section: 0))
         XCTAssertTrue(harness.navigation.topViewController is FeedProfileViewController)
+        // 推主页是 animated：转场没走完时 pop 会被忽略，等它走完再 pop
+        try await Task.sleep(nanoseconds: 700_000_000)
         harness.navigation.popViewController(animated: false)
+        await waitUntil { harness.navigation.topViewController === notes }
 
         notes.store.selectTab(FeedAPI.notificationsSystem)
         await notes.store.waitForTasks()
@@ -296,6 +299,8 @@ final class TellomiFeedNotificationsUITests: XCTestCase {
         XCTAssertEqual(notes.store.state.tab(FeedAPI.notificationsInteractions).items.count, 30, "已有的留着")
 
         harness.source.simulation.failsNotificationsMore = false
+        // 重试行在列表最底下：先滚到底，cellForRow 才拿得到
+        notes.notificationsTableView.scrollToRow(at: IndexPath(row: notes.rows.count - 1, section: 0), at: .bottom, animated: false)
         let status = try XCTUnwrap(cell(notes, notes.rows.count - 1, as: FeedStatusRowCell.self))
         status.retryButton.sendActions(for: .touchUpInside)
         await notes.store.waitForTasks()

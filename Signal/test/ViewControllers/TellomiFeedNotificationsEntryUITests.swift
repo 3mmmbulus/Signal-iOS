@@ -77,6 +77,8 @@ final class TellomiFeedNotificationsEntryUITests: XCTestCase {
 
         harness.feed.notificationsButton.sendActions(for: .touchUpInside)
         let page = try XCTUnwrap(harness.navigation.topViewController as? FeedNotificationsViewController)
+        // 铃铛是 animated 推页：页面的 view（和 viewDidLoad 里开始的第一次载入）要等一轮才有，先把它加载好再等 store
+        page.loadViewIfNeeded()
         await page.store.waitForTasks()
         XCTAssertEqual(harness.feed.store.notificationUnread, FeedUnreadCounts(follows: 2, system: 2), "通知页里打开互动栏标了已读，铃铛同一份")
         XCTAssertFalse(harness.feed.notificationsButton.dot.isHidden, "新关注和系统通知还没看")
