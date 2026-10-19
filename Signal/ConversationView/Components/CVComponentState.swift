@@ -381,6 +381,48 @@ public struct CVComponentState: Equatable {
 
     let contactShare: ContactShare?
 
+    /// Tellomi（产品经理 2026-10-19 卡片样式定稿，参照 iOS「信息」App）：第三方链接卡片放在哪。
+    /// - `replacesBubble`：消息就是这条链接（去掉首尾空白）——只画卡片，没有气泡、没有气泡里套卡片的双层边框；
+    /// - `belowBubble`：还有别的文字（或引用）——文字留在气泡里，卡片单独一块紧贴在气泡下面，正文里不再显示这条链接；
+    /// - `inBubble`：照原样画在气泡里：第一方卡、群邀请 / 通话卡、消息请求里不响应点击的域名卡、带附件 / 贴纸等别的内容的消息。
+    enum TellomiLinkCardPlacement: Equatable {
+        case inBubble
+        case replacesBubble
+        case belowBubble
+    }
+
+    static func tellomiLinkCardPlacement(
+        linkPreview: LinkPreview?,
+        hasBodyText: Bool,
+        hasQuotedReply: Bool,
+        hasOtherContent: Bool,
+    ) -> TellomiLinkCardPlacement {
+        guard
+            let card = linkPreview?.state as? TellomiLinkPreviewCardState,
+            card.cardStyle != nil,
+            !card.isInert,
+            !hasOtherContent
+        else {
+            return .inBubble
+        }
+        if card.isCardOnly, !hasQuotedReply {
+            return .replacesBubble
+        }
+        return hasBodyText || hasQuotedReply ? .belowBubble : .inBubble
+    }
+
+    var tellomiLinkCardPlacement: TellomiLinkCardPlacement {
+        Self.tellomiLinkCardPlacement(
+            linkPreview: linkPreview,
+            hasBodyText: bodyText != nil,
+            hasQuotedReply: quotedReply != nil,
+            hasOtherContent: bodyMedia != nil || sticker != nil || genericAttachment != nil || audioAttachment != nil
+                || paymentAttachment != nil || archivedPaymentAttachment != nil || viewOnce != nil || contactShare != nil
+                || giftBadge != nil || poll != nil || undownloadableAttachment != nil || bottomButtons != nil
+                || tellomiLocation != nil,
+        )
+    }
+
     struct LinkPreview: Equatable {
         let linkPreview: OWSLinkPreview
         let state: LinkPreviewState
@@ -1494,6 +1536,7 @@ private extension CVComponentState.Builder {
         } else {
             buildTellomiLocalLinkCard(message: message)
         }
+        tellomiRemoveLinkTextForCardBelowBubble(message: message)
 
         let result = build()
         if result.messageCellType == .unknown {
@@ -2096,7 +2139,7 @@ private extension CVComponentState.Builder {
                     linkPreview: linkPreview,
                     urlString: urlString,
                     hasImage: state.hasLoadedImageOrBlurHash,
-                    linkOnlyUrl: tellomiLinkOnlyUrl(message: message),
+                    linkOnlyUrl: tellomiLinkOnlyUrl(message: message, allowSchemeless: true),
                 )
                 self.linkPreview = LinkPreview(
                     linkPreview: linkPreview,
@@ -2197,7 +2240,8 @@ private extension CVComponentState.Builder {
                     urlString: urlString,
                     imageAttachment: linkPreviewAttachment,
                     hasImage: referencedLinkPreviewImage != nil,
-                    linkOnlyUrl: tellomiLinkOnlyUrl(message: message),
+                    // 消息带着预览：没写协议的裸域名（`baidu.com`）也算「只有链接」，卡片代替气泡（产品经理 2026-10-19）。
+                    linkOnlyUrl: tellomiLinkOnlyUrl(message: message, allowSchemeless: true),
                 )
             else {
                 return
@@ -2265,7 +2309,8 @@ private extension CVComponentState.Builder {
         }
         // card-visual §3.2 / §3.3：版式（图标卡 / 大图卡 / 无图）和图的颜色由 rust/links 定，在数据层（工作线程）一起判。
         // 品牌壳的图是随包图标（card-visual §3.9），不看发送端的图：包里读得到才用，读不到就和以前一样只出平台名 + 域名。
-        let icon = card.level == .brand ? card.icon.flatMap { TellomiLinkIcon.icon(named: $0) } : nil
+        // 认领但抓页面的平台（`claimed`，2026-10-19）：页面没给图时，横条右边也用随包图标（rust/links 只在这种卡上给 `icon`）。
+        let icon = TellomiLinkVisual.usesBundledIcon(card) ? card.icon.flatMap { TellomiLinkIcon.icon(named: $0) } : nil
         // 版式只看图的真实像素尺寸：图没下完、发送端又没写宽高时不知道多大，按「没有图」问（不能拿 blurHash 的默认尺寸去猜成图标卡，
         // 下完以后真实尺寸若是大图卡版式就跳一下）。
         let visual = TellomiLinkVisualReader.visual(
@@ -2274,13 +2319,23 @@ private extension CVComponentState.Builder {
             imagePixelSize: sentState.knownImagePixelSize ?? .zero,
             icon: icon,
         )
+        let bundledIcon = visual.layout == .icon ? icon : nil
+        // 小图横条的底色取图标的主色（产品经理 2026-10-19 定稿，参照 iOS「信息」App）；取不到用中性灰。
+        let stripColor = TellomiLinkVisualReader.stripColor(
+            card: card,
+            layout: visual.layout,
+            attachment: imageAttachment,
+            icon: bundledIcon,
+        )
         return TellomiLinkPreviewCardState(
             base: sentState,
             display: display,
             showsImage: card.showImage,
             isCardOnly: isCardOnly,
             visual: visual,
-            bundledIcon: visual.layout == .icon ? icon : nil,
+            bundledIcon: bundledIcon,
+            stripColor: stripColor,
+            isClaimed: card.isClaimedTier,
         )
     }
 
@@ -2413,6 +2468,40 @@ private extension CVComponentState.Builder {
         self.linkPreview = LinkPreview(linkPreview: local, state: state)
     }
 
+    /// 文字 + 卡片、卡片放在气泡下面时（`TellomiLinkCardPlacement.belowBubble`），气泡里的正文去掉这条链接（产品经理 2026-10-19）。
+    /// 只改显示：复制、转发、编辑、搜索用的仍是完整正文。带格式 / 提及的正文、长文（附件里的全文）、说明文字不动——范围会错位。
+    private mutating func tellomiRemoveLinkTextForCardBelowBubble(message: TSMessage) {
+        let placement = CVComponentState.tellomiLinkCardPlacement(
+            linkPreview: linkPreview,
+            hasBodyText: bodyText != nil,
+            hasQuotedReply: quotedReply != nil,
+            hasOtherContent: bodyMedia != nil || sticker != nil || genericAttachment != nil || audioAttachment != nil
+                || paymentAttachment != nil || archivedPaymentAttachment != nil || viewOnce != nil || contactShare != nil
+                || giftBadge != nil || poll != nil || undownloadableAttachment != nil || !bottomButtonsActions.isEmpty,
+        )
+        guard
+            placement == .belowBubble,
+            case .bodyText(let displayableText, _) = bodyText,
+            message.bodyRanges?.hasRanges != true,
+            let body = message.body,
+            case .text(let shownText) = displayableText.fullTextValue,
+            shownText == body,
+            let urlString = linkPreview?.state.urlString,
+            let stripped = TellomiLinkCardStyle.bodyRemovingLink(body, previewUrl: urlString)
+        else {
+            return
+        }
+        let strippedText = CVComponentState.displayableBodyText(
+            text: stripped,
+            ranges: nil,
+            interaction: message,
+            transaction: transaction,
+        )
+        let hasTapForMore = strippedText.isTextTruncated
+            && !viewStateSnapshot.textExpansion.isTextExpanded(interactionId: message.uniqueId)
+        bodyText = .bodyText(displayableText: strippedText, hasTapForMore: hasTapForMore)
+    }
+
     /// 消息就是一条链接、发出来时没有预览（预览关了，或没抓到）：接收端也画一张无图卡（card-visual §3.5，与 Android / Desktop 一样）。
     private mutating func buildTellomiLocalLinkCard(message: TSMessage) {
         let classifier = TellomiLinkRegistry.classifier
@@ -2452,7 +2541,8 @@ private extension CVComponentState.Builder {
     /// 消息除了一条链接什么都没有（card-visual §3.5）时，那条链接；否则 nil。
     /// 「什么都没有」：没有格式 / 提及、附件、贴纸、联系人、支付、礼物、投票、阅后即焚、故事、已删除，
     /// 正文是普通文字，而且 Signal 自己的链接识别把整段认成一条链接（清单同 Android `TellomiLinkOnly.hasOtherContent`）。
-    private func tellomiLinkOnlyUrl(message: TSMessage) -> String? {
+    /// `allowSchemeless`：没写协议的链接也算（返回 https 写法），只在消息带着预览时用（见 `TellomiLinkOnly.linkOnlyUrl`）。
+    private func tellomiLinkOnlyUrl(message: TSMessage, allowSchemeless: Bool = false) -> String? {
         guard
             case .bodyText(let displayableText, let hasTapForMore) = bodyText,
             !hasTapForMore
@@ -2480,6 +2570,7 @@ private extension CVComponentState.Builder {
         return TellomiLinkOnly.linkOnlyUrl(
             body: message.body,
             hasOtherContent: hasOtherContent,
+            allowSchemeless: allowSchemeless,
             linkRanges: { text in
                 // 便宜的前缀检查过了才到这里；Signal 拒绝链接化的正文（可疑链接）不算「一条链接」。
                 guard displayableText.shouldAllowLinkification, let detector = Self.tellomiLinkDetector else {

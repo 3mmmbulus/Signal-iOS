@@ -142,8 +142,10 @@ public enum TellomiLinkVisual {
 
     /// nil：没有决定（桥失败），卡片照没有版式之前的样子显示。不显示图的卡问的时候没有图；
     /// 品牌壳的“图”是随包图标（card-visual §3.9），调用方传图标的尺寸，没有图标传 0 × 0。
+    /// 认领档（`claimed`，2026-10-19）页面没给图的 generic 卡也一样：rust/links 给了 `icon` 就按随包图标问，
+    /// 不能当无图卡（指南针只留给什么都没有的卡）。
     public static func layout(bridge: any Bridge, card: TellomiLinkCard, imageWidth: Int, imageHeight: Int) -> Layout? {
-        let showsImage = card.showImage || (card.level == .brand && card.icon != nil)
+        let showsImage = card.showImage || usesBundledIcon(card)
         do {
             let text = try bridge.layout(
                 imageWidth: showsImage ? UInt32(clamping: max(imageWidth, 0)) : 0,
@@ -154,6 +156,19 @@ public enum TellomiLinkVisual {
             return parseLayout(text)
         } catch {
             return nil
+        }
+    }
+
+    /// 卡片的“图”是不是随包图标：品牌壳带 `icon`；或认领档 generic 卡带 `icon`、页面没给图（`show_image` 为 false）。
+    /// rust/links 只在这两种卡上给 `icon`。
+    public static func usesBundledIcon(_ card: TellomiLinkCard) -> Bool {
+        guard card.icon != nil else {
+            return false
+        }
+        switch card.level {
+        case .brand: return true
+        case .generic: return !card.showImage
+        default: return false
         }
     }
 

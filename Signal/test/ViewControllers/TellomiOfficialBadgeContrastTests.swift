@@ -162,6 +162,11 @@ final class TellomiOfficialBadgeContrastTests: XCTestCase {
             let message = try insert(thread: thread, incoming: scenario.incoming)
             let hosted = try host(message: message, thread: thread, scenario: scenario)
             defer { hosted.tearDown() }
+            // 统一卡片样式（产品经理 2026-10-19）只管第三方卡：官网卡是第一方卡，照旧画在气泡里（气泡里的圆角 10、气泡的底），
+            // 徽标量的底还是这个气泡里的卡底，不是横条的中性灰 / 图标主色
+            let cardView = try XCTUnwrap(Self.findCard(in: hosted.cellView), "\(scenario.name)：找不到卡片")
+            XCTAssertEqual(cardView.layer.cornerRadius, CVLinkPreviewView.inBubbleCornerRadius, "\(scenario.name)：官网卡留在气泡里")
+            XCTAssertNil(Self.findLabel(text: "tellomi.app", in: cardView), "\(scenario.name)：第一方卡没有域名行（不是统一样式的横条）")
 
             var readings = [(String, Reading?)]()
             let configured = try measure(hosted, name: scenario.name, suffix: "configured")
@@ -232,6 +237,30 @@ final class TellomiOfficialBadgeContrastTests: XCTestCase {
         let label: UILabel
         let range: NSRange
         let attachment: NSTextAttachment
+    }
+
+    private static func findCard(in view: UIView) -> UIView? {
+        if NSStringFromClass(type(of: view)).hasSuffix("CVLinkPreviewView") {
+            return view
+        }
+        for subview in view.subviews {
+            if let found = findCard(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
+    private static func findLabel(text: String, in view: UIView) -> UILabel? {
+        if let label = view as? UILabel, (label.attributedText?.string ?? label.text) == text {
+            return label
+        }
+        for subview in view.subviews {
+            if let found = findLabel(text: text, in: subview) {
+                return found
+            }
+        }
+        return nil
     }
 
     private static func findBadge(in view: UIView) -> Badge? {

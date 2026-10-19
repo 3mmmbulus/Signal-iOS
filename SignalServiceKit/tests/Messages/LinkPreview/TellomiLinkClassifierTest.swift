@@ -213,6 +213,20 @@ final class TellomiLinkClassifierTest: XCTestCase {
         XCTAssertEqual(upgraded("http://b23.tv/abc", "http://b23.tv/abc"), "http://b23.tv/abc")
     }
 
+    /// 裸域名的例外（用户 2026-10-19）：预览是裸域名、注册表不认领时，只换正文里没写协议的那一处；写明 http:// 的不换。
+    func testABareDomainIsUpgradedOnlyWhereItWasTypedWithoutAScheme() {
+        let bare: (String, String) -> String = { body, previewUrl in
+            TellomiLinkClassifier.body(body, upgradingLinkTo: previewUrl, claims: { _ in false }, bareDomain: TellomiBareDomain.isBareDomainUrl(_:))
+        }
+        XCTAssertEqual(bare("baidu.com", "https://baidu.com"), "https://baidu.com")
+        XCTAssertEqual(bare("看 baidu.com 吧", "https://baidu.com/"), "看 https://baidu.com 吧")
+        XCTAssertEqual(bare("http://baidu.com", "https://baidu.com"), "http://baidu.com", "写明 http:// 的不在例外里")
+        XCTAssertEqual(bare("http://baidu.com 和 baidu.com", "https://baidu.com"), "http://baidu.com 和 https://baidu.com")
+        XCTAssertEqual(bare("baidu.com/s?wd=1", "https://baidu.com/s?wd=1"), "baidu.com/s?wd=1", "带路径的不是裸域名")
+        XCTAssertEqual(bare("192.168.1.1", "https://192.168.1.1"), "192.168.1.1", "IP 不算")
+        XCTAssertEqual(bare("nas.local", "https://nas.local"), "nas.local", "内网后缀不算")
+    }
+
     /// 注册表只在真要换的时候问一次。
     func testTheRegistryIsAskedOnlyWhenThereIsSomethingToUpgrade() {
         var asked = [String]()

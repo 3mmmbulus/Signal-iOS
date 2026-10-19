@@ -113,9 +113,11 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         var urlTextShown = false
         /// 图的下半部分（底部约 30%）的颜色；nil = 整张图一个颜色。大图卡的染色取最下面一条，用来验证方向没有上下颠倒。
         var imageBottomHsb: (CGFloat, CGFloat, CGFloat)?
-        /// 版式，按 cell 里的视图判：`icon`（右上角 54 pt 图标，照 Telegram）、`large`（整宽大图）、`text`（没有图）；nil = 不断言。
+        /// 画法，按 cell 里的视图判（产品经理 2026-10-19 定稿）：`icon`（图标横条，右边 36 pt 图标）、`large`（整宽大图在上）、
+        /// `compass`（没有图的横条，右边指南针）、`text`（认领档没图标：只有标题 + 域名，右边什么都没有）、
+        /// `avatar` / `firstparty`（第一方卡）；nil = 不断言。
         var expectedLayout: String?
-        /// 染色的色相范围（HSB 的 H，0…1）；nil = 不染色（保持默认卡片底色）。
+        /// 染色的色相范围（HSB 的 H，0…1）；nil = 不染色。只有图标横条按图标主色染底色；大图卡、没有图的横条是中性灰。
         var expectedTintHue: ClosedRange<CGFloat>?
         /// 卡片上不该出现的文字（第一方卡没有域名行）。
         var absentTexts: [String] = []
@@ -144,7 +146,10 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             rich: .init(kind: "video", provider: "bilibili", level: 2, attrs: [("author", "演示UP主"), ("duration_ms", "257000"), ("published_at", "2025-03-14T10:00:00Z")]),
             image: (CGSize(width: 1280, height: 720), (0.55, 0.55, 0.85)),
             expectedLevel: "structured",
-            cardTexts: ["【演示】给朋友发一条视频链接会长什么样", "演示UP主 · 4:17", "bilibili.com"],
+            // 第三方卡只有标题 + 域名两行（2026-10-19），副行（作者 · 时长）不再显示；大图卡中性灰底
+            cardTexts: ["【演示】给朋友发一条视频链接会长什么样", "bilibili.com"],
+            expectedLayout: "large",
+            absentTexts: ["演示UP主", "4:17", "发送端写的描述"],
         ),
         Fixture(
             name: "taobao-brand",
@@ -152,22 +157,23 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             previewTitle: "登录",
             rich: .init(kind: "product", provider: "taobao", level: 1, attrs: []),
             expectedLevel: "brand",
-            cardTexts: ["Taobao", "Product", "taobao.com"],
-            // 品牌壳的图是随包图标（card-visual §3.9）：淘宝官网的图标，橙底，按它染色；发送端的预览标题不显示。
+            cardTexts: ["Taobao", "taobao.com"],
+            // 品牌壳的图是随包图标（card-visual §3.9）：淘宝官网的图标，橙底，横条按它的主色染底色；发送端的预览标题、类型文字都不显示。
             expectedLayout: "icon",
             expectedTintHue: 0.03...0.12,
-            absentTexts: ["登录"],
+            absentTexts: ["登录", "Product"],
             titleText: "Taobao",
         ),
         Fixture(
-            // 官网没有声明图标的品牌壳：只出平台名 + 域名（和以前一样，无图卡，不染色）。
+            // 没有随包图标的品牌壳：平台名 + 域名，右边指南针，中性灰。
             name: "meituan-brand-no-icon",
             url: "https://www.meituan.com/",
             previewTitle: "美团",
             rich: .init(kind: "web", provider: "meituan", level: 1, attrs: []),
             expectedLevel: "brand",
             cardTexts: ["Meituan", "meituan.com"],
-            expectedLayout: "text",
+            expectedLayout: "compass",
+            absentTexts: ["Web page"],
         ),
         Fixture(
             // 支付金融：品牌壳，不染色（ADR-0063 L10），也没有图标。
@@ -177,11 +183,12 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             rich: .init(kind: "web", provider: "alipay", level: 1, attrs: []),
             expectedLevel: "brand",
             cardTexts: ["Alipay", "alipay.com"],
-            expectedLayout: "text",
+            expectedLayout: "compass",
+            absentTexts: ["Web page"],
         ),
         Fixture(name: "tellomi-user", url: "https://tell.cc/hk881qb", previewTitle: "Tellomi", expectedLevel: "first_party", cardTexts: ["@hk881qb", "Tellomi user", "Message"], expectedLayout: "firstparty", absentTexts: ["tell.cc"]),
         Fixture(name: "tellomi-official", url: "https://tellomi.app/download", previewTitle: "Tellomi", expectedLevel: "first_party", cardTexts: ["Tellomi website", "/download", "Open"], expectedLayout: "firstparty", absentTexts: ["tellomi.app"]),
-        Fixture(name: "generic", url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", previewDescription: "Wikipedia is a free online encyclopedia, created and edited by volunteers.", expectedLevel: "generic", cardTexts: ["Wikipedia", "wikipedia.org"], expectedLayout: "text"),
+        Fixture(name: "generic", url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", previewDescription: "Wikipedia is a free online encyclopedia, created and edited by volunteers.", expectedLevel: "generic", cardTexts: ["Wikipedia", "wikipedia.org"], expectedLayout: "compass"),
         Fixture(
             name: "with-text",
             body: "看看这个 https://www.bilibili.com/video/BV1YDhJ6ZEL6",
@@ -190,12 +197,16 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             rich: .init(kind: "video", provider: "bilibili", level: 2, attrs: [("author", "演示UP主"), ("duration_ms", "257000")]),
             image: (CGSize(width: 1280, height: 720), (0.55, 0.55, 0.85)),
             expectedLevel: "structured",
-            cardTexts: ["演示UP主 · 4:17"],
+            // 还有别的字：文字留在气泡里（链接文字去掉），卡片单独一块在气泡下面
+            cardTexts: ["【演示】给朋友发一条视频链接会长什么样", "bilibili.com"],
             urlTextShown: true,
+            expectedLayout: "large",
+            absentTexts: ["演示UP主"],
         ),
-        Fixture(name: "no-preview", url: "https://www.bilibili.com/video/BV1YDhJ6ZEL6", hasPreview: false, expectedLevel: "plain_link", cardTexts: ["bilibili.com"]),
+        Fixture(name: "no-preview", url: "https://www.bilibili.com/video/BV1YDhJ6ZEL6", hasPreview: false, expectedLevel: "plain_link", cardTexts: ["bilibili.com"], expectedLayout: "compass"),
         Fixture(name: "lookalike", url: "https://www.bi1ibili.com/video/BV1YDhJ6ZEL6", hasPreview: false, expectedLevel: "plain_link", cardTexts: ["bi1ibili.com"]),
         Fixture(
+            // 美团是认领平台（`claimed`）：发送端照普通网页抓，带页面自己的图标，不带 rich → generic + 图标横条，按图标主色染底色
             name: "icon-yellow",
             url: "https://www.meituan.com/",
             previewTitle: "美团",
@@ -206,6 +217,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             expectedTintHue: 0.09...0.17,
         ),
         Fixture(
+            // 白底图标：取不到主色，横条用中性灰
             name: "icon-white",
             url: "https://www.jd.com/",
             previewTitle: "京东",
@@ -222,8 +234,8 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             image: (CGSize(width: 1400, height: 800), (0.06, 0.9, 0.95)),
             expectedLevel: "generic",
             cardTexts: ["Cloudflare", "cloudflare.com"],
+            // 大图卡一律中性灰底（「信息」App 的 apple.com 卡），不再按图染色
             expectedLayout: "large",
-            expectedTintHue: 0.02...0.10,
         ),
         Fixture(
             name: "large-two-tone",
@@ -234,7 +246,6 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             cardTexts: ["Apple", "apple.com"],
             imageBottomHsb: (0.78, 0.7, 0.7),
             expectedLayout: "large",
-            expectedTintHue: 0.72...0.84,
         ),
         Fixture(
             name: "tellomi-group",
@@ -282,6 +293,45 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             expectedLayout: "avatar",
             absentTexts: ["24 stickers"],
             stickerPackInstalled: true,
+        ),
+        Fixture(
+            // 认领平台的页面没给图：横条右边用随包图标（淘宝），按图标主色染色（2026-10-19）
+            name: "taobao-claimed-bundled-icon",
+            url: "https://www.taobao.com/",
+            previewTitle: "淘宝",
+            expectedLevel: "generic",
+            cardTexts: ["淘宝", "taobao.com"],
+            expectedLayout: "icon",
+            expectedTintHue: 0.03...0.12,
+        ),
+        Fixture(
+            // 认领平台没有随包图标（京东，商标授权问题这次不补），页面也没给网站图标：标题 + 域名的横条，不染色、不画指南针（产品经理 2026-10-19 晚）
+            name: "jd-claimed-no-icon",
+            url: "https://item.jd.com/100012043978.html",
+            previewTitle: "Apple iPhone 15 (A3092) 128GB 黑色",
+            expectedLevel: "generic",
+            cardTexts: ["Apple iPhone 15 (A3092) 128GB 黑色", "jd.com"],
+            expectedLayout: "text",
+        ),
+        Fixture(
+            // 同上，页面被拦、抓不到标题：发送端退回品牌壳（不带 rich）——平台名 + 域名，不画指南针
+            name: "jd-claimed-no-title",
+            url: "https://item.jd.com/100012043978.html",
+            expectedLevel: "brand",
+            cardTexts: ["JD", "jd.com"],
+            expectedLayout: "text",
+        ),
+        Fixture(
+            // 没打协议的裸域名（2026-10-19，§5.6 的例外）：消息就是这个域名时卡片代替气泡
+            name: "bare-domain",
+            body: "baidu.com",
+            url: "https://baidu.com",
+            previewTitle: "百度一下，你就知道",
+            image: (CGSize(width: 180, height: 180), (0.62, 0.85, 0.9)),
+            expectedLevel: "generic",
+            cardTexts: ["百度一下，你就知道", "baidu.com"],
+            expectedLayout: "icon",
+            expectedTintHue: 0.55...0.70,
         ),
     ]
 
@@ -395,7 +445,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             }
             // 消息就是这条链接时只显示卡片：正文组件没有了，链接只能从卡片读到（对照：有文字时正文也在标签里）
             if fixture.name == "with-text" {
-                XCTAssertTrue(labels.contains { $0.contains("看看这个 https://www.bilibili.com/video/BV1YDhJ6ZEL6") }, "with-text：正文也要读，实际：\(labels)")
+                XCTAssertTrue(labels.contains { $0.contains("看看这个") }, "with-text：正文也要读，实际：\(labels)")
             }
             hosted.tearDown()
         }
@@ -791,9 +841,10 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         XCTAssertTrue(Self.texts(in: cardView).contains("Weekly sync"))
     }
 
-    /// 染色的卡在深色外观下：同一个色相、更暗的底、字色对比度仍达标；截图存 `cards-incoming-dark.png`。
+    /// 图标横条的底色是图标主色，浅色、深色一样（同「信息」App：品牌色不跟着外观变），字色对比度两种外观都达标；
+    /// 截图存 `cards-incoming-dark.png`。
     @MainActor
-    func testTintedCardsFollowTheAppearance() async throws {
+    func testIconStripColourIsTheSameInBothAppearances() async throws {
         let width = shotWidth
         let thread = write { tx -> TSContactThread in
             let thread = ContactThreadFactory().create(transaction: tx)
@@ -812,7 +863,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             let dark = try await host(message: message, thread: thread, width: width, dark: true)
             let darkBackground = Self.cardBackground(in: dark)
             if let lightBackground, let darkBackground {
-                XCTAssertLessThan(Self.luminance(darkBackground), Self.luminance(lightBackground), "\(fixture.name)：深色下的底应该比浅色下更暗")
+                XCTAssertLessThan(Self.distance(darkBackground, lightBackground), 0.02, "\(fixture.name)：图标主色不跟着外观变，浅 \(lightBackground)，深 \(darkBackground)")
             } else {
                 XCTFail("\(fixture.name)：找不到卡片底色")
             }
@@ -866,7 +917,8 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             if let cardView = Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView) {
                 XCTAssertNil(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "\(fixture.name)：域名卡没有图")
                 let background = cardView.backgroundColor?.resolvedColor(with: hosted.window.traitCollection)
-                let plain = UIColor.Signal.LightBase.fillTertiary.resolvedColor(with: hosted.window.traitCollection)
+                // 只有域名的横条：中性灰（#E9E9EB / #2C2C2E），和会话里别的没图横条一样
+                let plain = TellomiLinkCardColors.neutralBackground.resolvedColor(with: hosted.window.traitCollection)
                 XCTAssertLessThan(background.map { Self.distance($0, plain) } ?? 1, 0.02, "\(fixture.name)：不染色，实际底色 \(String(describing: background))")
             } else {
                 XCTFail("\(fixture.name)：找不到卡片视图")
@@ -949,7 +1001,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         return try await host(message: message, thread: thread, width: shotWidth, dark: dark)
     }
 
-    /// 卡片里画的通用链接图标（和纯链接卡同一个 `link` 图标，模板渲染）。
+    /// 以前卡片里画的通用链接图标（`link`，模板渲染）；2026-10-19 起换成指南针，不该再出现。
     private static func findLinkIcon(in view: UIView) -> UIImageView? {
         guard let linkData = UIImage(named: "link")?.pngData() else {
             return nil
@@ -989,14 +1041,14 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         return nil
     }
 
-    /// §3.7：副行 1 行，放不下截断在末尾（Signal 原来是 3 行）。
+    /// 2026-10-19 定稿：第三方卡只有标题（最多 2 行，放不下截断在末尾）+ 域名（1 行）两行字，副行（作者 · 时长……）不再显示。
     @MainActor
-    func testTheSubLineIsOneLineAndTruncatesAtTheEnd() async throws {
+    func testAThirdPartyCardHasNoSubLineAndATwoLineTitle() async throws {
         let longAuthor = String(repeating: "一个非常非常长的作者名字", count: 8)
         let fixture = Fixture(
             name: "video-long-author",
             url: "https://www.bilibili.com/video/BV1YDhJ6ZEL6",
-            previewTitle: "【演示】给朋友发一条视频链接会长什么样",
+            previewTitle: String(repeating: "【演示】给朋友发一条视频链接会长什么样", count: 4),
             rich: .init(kind: "video", provider: "bilibili", level: 2, attrs: [("author", longAuthor), ("duration_ms", "257000")]),
             image: (CGSize(width: 1280, height: 720), (0.55, 0.55, 0.85)),
             expectedLevel: "structured",
@@ -1004,29 +1056,48 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         let hosted = try await hostedCell(for: fixture)
         defer { hosted.tearDown() }
         let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView))
-        let subLine = try XCTUnwrap(Self.label(startingWith: String(longAuthor.prefix(6)), in: cardView), "找不到副行")
-        XCTAssertEqual(subLine.numberOfLines, 1, "副行最多 1 行")
-        // 一行的标签比字体的行高略高（测量时取整 / 留白），两行就超过 1.5 倍行高了
-        XCTAssertLessThan(subLine.bounds.size.height, subLine.font.lineHeight * 1.5, "副行只占一行的高度，实际 \(subLine.bounds.size.height)，行高 \(subLine.font.lineHeight)")
-        XCTAssertEqual(subLine.lineBreakMode, .byTruncatingTail, "放不下截断在末尾")
-        // 标题还是最多 2 行（不在这一条里动）
+        XCTAssertNil(Self.label(startingWith: String(longAuthor.prefix(6)), in: cardView), "副行不再显示")
+        XCTAssertFalse(Self.texts(in: cardView).contains { $0.contains("4:17") }, "时长是副行的一部分，也不显示")
         let title = try XCTUnwrap(Self.label(startingWith: "【演示】", in: cardView))
-        XCTAssertEqual(title.numberOfLines, 2)
+        XCTAssertEqual(title.numberOfLines, 2, "标题最多 2 行")
+        XCTAssertEqual(title.lineBreakMode, .byTruncatingTail, "放不下截断在末尾")
+        XCTAssertLessThan(title.bounds.size.height, title.font.lineHeight * 2.5, "标题最多占两行的高度，实际 \(title.bounds.size.height)，行高 \(title.font.lineHeight)")
+        let domain = try XCTUnwrap(Self.label(startingWith: "bilibili.com", in: cardView))
+        XCTAssertEqual(domain.numberOfLines, 1, "域名 1 行")
+        XCTAssertEqual(Self.texts(in: cardView).count, 2, "只有标题和域名两行字，实际 \(Self.texts(in: cardView))")
     }
 
-    /// §3.2：「无图卡」——标题（有的话）+ 域名，右侧通用链接图标；没有图的卡（generic 无图、没有随包图标的品牌壳、支付壳）都一样，
-    /// 不是只有纯链接卡才画。有图的卡（图标卡、大图卡）和第一方卡不画。
+    /// 横条右边的指南针：SF Symbol（`safari`），26 pt 见方。
+    private static func findCompass(in view: UIView) -> UIImageView? {
+        if
+            let imageView = view as? UIImageView,
+            imageView.image?.isSymbolImage == true,
+            abs(imageView.bounds.size.width - 26) < 0.6,
+            abs(imageView.bounds.size.height - 26) < 0.6
+        {
+            return imageView
+        }
+        for subview in view.subviews {
+            if let found = findCompass(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
+    /// 2026-10-19 定稿：没有图的卡（generic 无图、没有随包图标的品牌壳、支付壳、纯链接）都是横条，右边一个指南针（「信息」App 的样子），
+    /// 贴右（离右 10）、垂直居中；以前的通用链接图标不再画。有图的卡（图标横条、大图卡）和第一方卡没有指南针。
     @MainActor
-    func testEveryCardWithoutAnImageShowsTheLinkIconOnTheRight() async throws {
-        let withIcon = ["generic", "meituan-brand-no-icon", "alipay-payment", "no-preview"]
+    func testEveryCardWithoutAnImageShowsTheCompassOnTheRight() async throws {
+        let withCompass = ["generic", "meituan-brand-no-icon", "alipay-payment", "no-preview"]
         let without = ["taobao-brand", "icon-yellow", "large-orange", "tellomi-user", "tellomi-official"]
         var shots = [UIImage]()
         defer {
             if shooting {
-                try? save(stack(shots, width: shotWidth), name: "w2-link-icon-cards.png")
+                try? save(stack(shots, width: shotWidth), name: "w2-compass-cards.png")
             }
         }
-        for name in withIcon + without {
+        for name in withCompass + without {
             let fixture = try XCTUnwrap(Self.fixtures.first { $0.name == name }, name)
             let hosted = try await hostedCell(for: fixture, dark: Theme.isDarkThemeEnabled)
             defer { hosted.tearDown() }
@@ -1034,24 +1105,47 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
                 shots.append(render(hosted))
             }
             let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView), "\(name)：找不到卡片")
-            let icon = Self.findLinkIcon(in: cardView)
-            if withIcon.contains(name) {
-                let iconView = try XCTUnwrap(icon, "\(name)：无图卡右侧应该有通用链接图标")
-                let frame = cardView.convert(iconView.bounds, from: iconView)
-                XCTAssertEqual(frame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "\(name)：图标贴右边（离右 10），实际 \(frame) / 卡宽 \(cardView.bounds.size.width)")
-                XCTAssertEqual(frame.midY, cardView.bounds.size.height / 2, accuracy: 1.5, "\(name)：图标垂直居中，实际 \(frame) / 卡高 \(cardView.bounds.size.height)")
-                XCTAssertGreaterThan(frame.size.width, 10, "\(name)：图标有大小")
+            XCTAssertNil(Self.findLinkIcon(in: cardView), "\(name)：通用链接图标不再画")
+            let compass = Self.findCompass(in: cardView)
+            if withCompass.contains(name) {
+                let compassView = try XCTUnwrap(compass, "\(name)：没有图的横条右边应该有指南针")
+                let frame = cardView.convert(compassView.bounds, from: compassView)
+                XCTAssertEqual(frame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "\(name)：指南针贴右边（离右 10），实际 \(frame) / 卡宽 \(cardView.bounds.size.width)")
+                XCTAssertEqual(frame.midY, cardView.bounds.size.height / 2, accuracy: 1.5, "\(name)：指南针垂直居中，实际 \(frame) / 卡高 \(cardView.bounds.size.height)")
             } else {
-                XCTAssertNil(icon, "\(name)：有图 / 第一方卡不画通用链接图标")
+                XCTAssertNil(compass, "\(name)：有图 / 第一方卡没有指南针")
             }
         }
     }
 
-    /// card-visual §3.2：图标卡的文字与图间距——iOS 取 Telegram 的 6（cutout 宽 = 图宽 + 6），不是 Android 的 10。
-    /// 标题写得够长、占满文字列时，文字列右边缘到图的左边缘就是这个间距。
+    /// 产品经理 2026-10-19 晚：认领档的卡抓到网站图标是图标横条 + 主色（icon-yellow 美团、icon-white 京东）；
+    /// 什么都没抓到是标题（或平台名）+ 域名的横条，右边不画指南针，不染色。指南针只给完全没信息的卡。
     @MainActor
-    func testTheIconCardKeepsSixPointsBetweenTheTextColumnAndTheIcon() async throws {
-        // 图标画成细网格：纯色图标和染色的底一个颜色，截图里看不见它
+    func testAClaimedCardWithoutAnyIconIsTitleAndDomainWithoutTheCompass() async throws {
+        for name in ["jd-claimed-no-icon", "jd-claimed-no-title"] {
+            let fixture = try XCTUnwrap(Self.fixtures.first { $0.name == name }, name)
+            let hosted = try await hostedCell(for: fixture, dark: Theme.isDarkThemeEnabled)
+            defer { hosted.tearDown() }
+            let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView), "\(name)：找不到卡片")
+            XCTAssertNil(Self.findCompass(in: cardView), "\(name)：不画指南针")
+            XCTAssertNil(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "\(name)：没有图")
+            XCTAssertGreaterThanOrEqual(cardView.bounds.size.height, 44 - 0.5, "\(name)：横条和有指南针时一样高（26 + 上下各 9），实际 \(cardView.bounds.size)")
+        }
+        for name in ["icon-yellow", "icon-white"] {
+            let fixture = try XCTUnwrap(Self.fixtures.first { $0.name == name }, name)
+            let hosted = try await hostedCell(for: fixture, dark: Theme.isDarkThemeEnabled)
+            defer { hosted.tearDown() }
+            let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView), "\(name)：找不到卡片")
+            XCTAssertNotNil(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "\(name)：抓到的网站图标画在横条右边")
+            XCTAssertNil(Self.findCompass(in: cardView), "\(name)：有图标就没有指南针")
+        }
+    }
+
+    /// 图标横条：文字列左边离卡 14，文字与图标之间 10，图标 36 pt、离右 10、垂直居中（2026-10-19 定稿）。
+    /// 标题写得够长、占满文字列时，文字列右边缘到图标的左边缘就是这个间距。
+    @MainActor
+    func testTheIconStripKeepsTenPointsBetweenTheTextColumnAndTheIcon() async throws {
+        // 图标画成细网格，截图里看得出图标的位置
         detailedImages = true
         let fixture = Fixture(
             name: "icon-long-title",
@@ -1063,16 +1157,18 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         let hosted = try await hostedCell(for: fixture, dark: Theme.isDarkThemeEnabled)
         defer { hosted.tearDown() }
         if shooting {
-            try save(render(hosted), name: "w2-icon-card-long-title.png")
+            try save(render(hosted), name: "w2-icon-strip-long-title.png")
         }
         let cardView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewView", in: hosted.cellView))
-        let imageView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "应该是图标卡")
+        let imageView = try XCTUnwrap(Self.findView(suffix: "CVLinkPreviewImageView", in: cardView), "应该是图标横条")
         let textStack = try XCTUnwrap(Self.findNamedStack("textStack", in: cardView))
         let iconFrame = cardView.convert(imageView.bounds, from: imageView)
         let textFrame = cardView.convert(textStack.bounds, from: textStack)
-        XCTAssertEqual(iconFrame.size.width, 54, accuracy: 0.6)
-        XCTAssertEqual(iconFrame.minX - textFrame.maxX, 6, accuracy: 0.6, "文字列与图标之间 6（Telegram cutout），实际文字列 \(textFrame)、图标 \(iconFrame)")
-        XCTAssertEqual(textFrame.minX, 10, accuracy: 0.6, "文字离左 10（和图离右一样）")
+        XCTAssertEqual(iconFrame.size.width, 36, accuracy: 0.6)
+        XCTAssertEqual(iconFrame.minX - textFrame.maxX, 10, accuracy: 0.6, "文字列与图标之间 10，实际文字列 \(textFrame)、图标 \(iconFrame)")
+        XCTAssertEqual(textFrame.minX, 14, accuracy: 0.6, "文字离左 14")
+        XCTAssertEqual(iconFrame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "图标离右 10")
+        XCTAssertEqual(iconFrame.midY, cardView.bounds.size.height / 2, accuracy: 1.5, "图标垂直居中")
     }
 
     /// 审计 §3 第 2 条：大图卡（短边 ≥ 300 且长边 ≥ 600，由 rust/links 定）仍按 Signal 旧的「宽 ≥ 气泡最大宽 × 2」挑缩略图档位，
@@ -1139,14 +1235,27 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             case "icon":
                 if let imageView {
                     let frame = cardView.convert(imageView.bounds, from: imageView)
-                    XCTAssertEqual(frame.size.width, 54, accuracy: 0.6, "\(fixture.name)：图标卡的图标 54 pt（Telegram iOS 小图），实际 \(frame)")
-                    XCTAssertEqual(frame.size.height, 54, accuracy: 0.6, "\(fixture.name)：图标卡的图标 54 pt（Telegram iOS 小图），实际 \(frame)")
-                    XCTAssertEqual(frame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "\(fixture.name)：图标贴右侧、离右边 10（和文字离左一样，Telegram 的内缩左右对称），实际 \(frame) / 卡宽 \(cardView.bounds.size.width)")
-                    XCTAssertEqual(frame.minY, 6, accuracy: 1, "\(fixture.name)：图标贴上边、离上边 6（不垂直居中），实际 \(frame)")
-                    XCTAssertGreaterThanOrEqual(cardView.bounds.size.height, 66 - 0.5, "\(fixture.name)：卡最矮 = 图 54 + 上下各 6，实际 \(cardView.bounds.size)")
+                    XCTAssertEqual(frame.size.width, 36, accuracy: 0.6, "\(fixture.name)：图标横条的图标 36 pt，实际 \(frame)")
+                    XCTAssertEqual(frame.size.height, 36, accuracy: 0.6, "\(fixture.name)：图标横条的图标 36 pt，实际 \(frame)")
+                    XCTAssertEqual(frame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "\(fixture.name)：图标在右边、离右 10，实际 \(frame) / 卡宽 \(cardView.bounds.size.width)")
+                    XCTAssertEqual(frame.midY, cardView.bounds.size.height / 2, accuracy: 1.5, "\(fixture.name)：图标垂直居中，实际 \(frame) / 卡高 \(cardView.bounds.size.height)")
+                    XCTAssertGreaterThanOrEqual(cardView.bounds.size.height, 54 - 0.5, "\(fixture.name)：横条最矮 = 图标 36 + 上下各 9，实际 \(cardView.bounds.size)")
                 } else {
-                    XCTFail("\(fixture.name)：图标卡应该有图")
+                    XCTFail("\(fixture.name)：图标横条应该有图标")
                 }
+                XCTAssertNil(Self.findCompass(in: cardView), "\(fixture.name)：有图标就没有指南针")
+            case "compass":
+                XCTAssertNil(imageView, "\(fixture.name)：没有图的横条没有图")
+                if let compass = Self.findCompass(in: cardView) {
+                    let frame = cardView.convert(compass.bounds, from: compass)
+                    XCTAssertEqual(frame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "\(fixture.name)：指南针离右 10，实际 \(frame)")
+                } else {
+                    XCTFail("\(fixture.name)：没有图的横条右边应该有指南针")
+                }
+            case "text":
+                XCTAssertNil(imageView, "\(fixture.name)：认领档没图标的横条没有图")
+                XCTAssertNil(Self.findCompass(in: cardView), "\(fixture.name)：认领档有标题（或平台名），右边不画指南针")
+                XCTAssertNil(Self.findLinkIcon(in: cardView), "\(fixture.name)：通用链接图标不再画")
             case "avatar":
                 if let imageView {
                     let frame = cardView.convert(imageView.bounds, from: imageView)
@@ -1157,6 +1266,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
                     XCTFail("\(fixture.name)：第一方卡应该有消息带来的头像 / 封面")
                 }
             case "large":
+                XCTAssertNil(Self.findCompass(in: cardView), "\(fixture.name)：大图卡没有指南针")
                 if let imageView {
                     let frame = cardView.convert(imageView.bounds, from: imageView)
                     XCTAssertEqual(frame.size.width, cardView.bounds.size.width, accuracy: 1, "\(fixture.name)：大图卡的图占满卡宽，实际 \(frame)")
@@ -1203,8 +1313,13 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
                 XCTFail("\(fixture.name)：找不到标题")
             }
         } else if fixture.expectedLayout != nil {
-            let plain = UIColor.Signal.LightBase.fillTertiary.resolvedColor(with: traits)
+            // 第一方卡照旧（气泡里的半透明底）；第三方卡（大图卡、没有图的横条、取不到主色的图标横条）是中性灰 #E9E9EB / #2C2C2E
+            let isFirstParty = fixture.expectedLevel == "first_party"
+            let plain = (isFirstParty ? UIColor.Signal.LightBase.fillTertiary : TellomiLinkCardColors.neutralBackground).resolvedColor(with: traits)
             XCTAssertLessThan(Self.distance(background, plain), 0.02, "\(fixture.name)：不该染色，实际底色 \(background)")
+        }
+        if fixture.expectedLevel != "first_party", fixture.expectedLayout != nil {
+            XCTAssertEqual(cardView.layer.cornerRadius, CVLinkPreviewView.standaloneCornerRadius, "\(fixture.name)：卡片不在气泡里，圆角和气泡一样")
         }
     }
 

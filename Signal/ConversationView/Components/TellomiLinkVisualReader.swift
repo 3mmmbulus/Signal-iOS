@@ -33,7 +33,8 @@ enum TellomiLinkVisualReader {
         icon: TellomiLinkIcon.Icon? = nil,
         bridge: any TellomiLinkVisual.Bridge = TellomiLinkVisual.Native(),
     ) -> TellomiLinkVisual.Visual {
-        if card.level == .brand {
+        // 品牌壳；或认领但抓页面的平台（`claimed`）页面没给图、用随包图标代替时
+        if card.level == .brand || (icon != nil && TellomiLinkVisual.usesBundledIcon(card)) {
             return brandVisual(card: card, icon: icon, bridge: bridge)
         }
         let width = Int(imagePixelSize.width.rounded())
@@ -43,7 +44,8 @@ enum TellomiLinkVisualReader {
         // 缓存键包含决定用到的一切：哪张图、多大、什么 kind / 级别、染不染。
         let key: NSString? = stream.map {
             [
-                String($0.id),
+                // 按图的内容（明文哈希），不按附件行号：行号会被重用（删掉的附件、另一个库），缓存会给另一张图的结果。
+                $0.plaintextHash.base64EncodedString(),
                 "\(width)x\(height)",
                 card.kind ?? "-",
                 card.level.rawValue,
@@ -78,6 +80,7 @@ enum TellomiLinkVisualReader {
         let key = [
             "icon",
             icon?.name ?? "-",
+            card.level.rawValue,
             card.kind ?? "-",
             card.tintable ? "t" : "-",
             card.payment ? "p" : "-",
@@ -94,6 +97,57 @@ enum TellomiLinkVisualReader {
         )
         cache.setObject(CachedVisual(visual), forKey: key)
         return visual
+    }
+
+    // MARK: - 图标横条的底色（产品经理 2026-10-19 定稿，参照 iOS「信息」App）
+
+    private final class CachedStripColor {
+        let color: TellomiLinkCardStyle.RGB?
+        init(_ color: TellomiLinkCardStyle.RGB?) { self.color = color }
+    }
+
+    private static let stripColorCache: NSCache<NSString, CachedStripColor> = {
+        let cache = NSCache<NSString, CachedStripColor>()
+        cache.countLimit = 300
+        return cache
+    }()
+
+    /// 小图横条的底色：把卡片显示的那张小图（品牌壳是随包图标）缩成 32×32，取主色（`TellomiLinkCardStyle.dominantColor`）。
+    /// 只有小图版式（`icon`，或桥没有决定时）才取；大图卡、无图卡、支付壳是 nil（中性灰）。图还没下载完也是 nil，下完消息重建时再取。
+    static func stripColor(
+        card: TellomiLinkCard,
+        layout: TellomiLinkVisual.Layout?,
+        attachment: ReferencedAttachment?,
+        icon: TellomiLinkIcon.Icon?,
+    ) -> TellomiLinkCardStyle.RGB? {
+        guard layout == .icon || layout == nil, !card.payment else {
+            return nil
+        }
+        let key: String
+        let read: () -> Data?
+        if card.level == .brand || (icon != nil && TellomiLinkVisual.usesBundledIcon(card)) {
+            guard let icon else {
+                return nil
+            }
+            key = "strip|icon|" + icon.name
+            read = { pixels(of: icon.image) }
+        } else {
+            guard card.showImage, let stream = attachment?.attachment.asStream() else {
+                return nil
+            }
+            key = "strip|" + stream.plaintextHash.base64EncodedString()
+            read = { pixels(of: stream) }
+        }
+        if let cached = stripColorCache.object(forKey: key as NSString) {
+            return cached.color
+        }
+        guard let data = read() else {
+            return nil
+        }
+        let size = Int(TellomiLinkVisual.tintSize)
+        let color = TellomiLinkCardStyle.dominantColor(rgba: [UInt8](data), width: size, height: size)
+        stripColorCache.setObject(CachedStripColor(color), forKey: key as NSString)
+        return color
     }
 
     /// 缩成 32×32 的 R G B A（不预乘），原点在左上——`Links.tint` 的大图卡取的是最下面那一条。
