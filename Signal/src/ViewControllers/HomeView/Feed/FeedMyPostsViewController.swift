@@ -15,6 +15,8 @@ import UIKit
 /// 「发布页扩展」（`TellomiFeed.isComposeExtrasEnabled`）打开时：发布后 15 分钟内的帖子左滑多一个「编辑」（进发布页的编辑模式），
 /// 本机有没写完的长文时页面顶上多一行「继续写」。
 final class FeedMyPostsViewController: OWSViewController {
+    /// 未成年人时限的提示页（时限关着时是 nil）。
+    private(set) var minorLock: FeedMinorLockController?
 
     let store: FeedMyPostsStore
     let postsTableView = UITableView(frame: .zero, style: .plain)
@@ -102,6 +104,9 @@ final class FeedMyPostsViewController: OWSViewController {
         store.onChange = { [weak self] state in self?.apply(state) }
         apply(store.state)
         store.start()
+
+        // 未成年人时限（I-15）：和动态标签过同一个检查（`FeedMinorSession`），锁着时盖上提示页。放最后，盖在所有东西上面
+        minorLock = FeedMinorLockController.install(in: self)
     }
 
     override func viewDidLayoutSubviews() {

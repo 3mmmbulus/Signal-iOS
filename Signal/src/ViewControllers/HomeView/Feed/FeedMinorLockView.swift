@@ -13,6 +13,9 @@ final class FeedMinorLockView: UIView {
     let iconView = UIImageView()
     let titleLabel = UILabel()
     let bodyLabel = UILabel()
+    /// 「返回聊天」。
+    let returnButton = UIButton(type: .system)
+    var onReturnToChats: (() -> Void)?
     private let scrollView = UIScrollView()
 
     private(set) var lock: FeedMinorTime.Lock?
@@ -40,11 +43,25 @@ final class FeedMinorLockView: UIView {
         bodyLabel.textAlignment = .center
         bodyLabel.numberOfLines = 0
 
-        let stack = UIStackView(arrangedSubviews: [iconView, titleLabel, bodyLabel])
+        var buttonConfiguration = UIButton.Configuration.filled()
+        buttonConfiguration.cornerStyle = .capsule
+        buttonConfiguration.title = Self.returnTitle
+        buttonConfiguration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.dynamicTypeHeadline
+            return outgoing
+        }
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
+        returnButton.configuration = buttonConfiguration
+        returnButton.titleLabel?.numberOfLines = 0
+        returnButton.addAction(UIAction { [weak self] _ in self?.onReturnToChats?() }, for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [iconView, titleLabel, bodyLabel, returnButton])
         stack.axis = .vertical
         stack.alignment = .center
         stack.spacing = 12
         stack.setCustomSpacing(20, after: iconView)
+        stack.setCustomSpacing(28, after: bodyLabel)
 
         addSubview(scrollView)
         scrollView.autoPinEdgesToSuperviewEdges()
@@ -74,10 +91,14 @@ final class FeedMinorLockView: UIView {
         bodyLabel.text = Self.body(lock)
     }
 
+    static var returnTitle: String {
+        return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_RETURN_TO_CHATS", comment: "Feed minor mode: button on the page covering the feed that goes back to the chats tab.")
+    }
+
     static func title(_ lock: FeedMinorTime.Lock) -> String {
         switch lock {
         case .night:
-            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE", comment: "Feed minor mode: title of the page covering the feed between 22:00 and 6:00.")
+            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE", comment: "Feed minor mode: title of the page covering the feed between 22:00 and 6:00 (rest time).")
         case .daily:
             return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE", comment: "Feed minor mode: title of the page covering the feed after 40 minutes of use today.")
         }

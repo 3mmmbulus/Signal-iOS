@@ -13,6 +13,8 @@ import UIKit
 ///
 /// 默认不接到任何入口（见 `TellomiFeed.isProfilePageEnabled`），不影响现有页面。
 final class FeedProfileViewController: OWSViewController {
+    /// 未成年人时限的提示页（时限关着时是 nil）。
+    private(set) var minorLock: FeedMinorLockController?
 
     /// 要先问一句的操作（关注按钮上的取消关注 / 撤回请求；屏蔽在「···」里）。
     enum Confirmation: Equatable {
@@ -78,6 +80,9 @@ final class FeedProfileViewController: OWSViewController {
         store.onChange = { [weak self] state in self?.apply(state) }
         apply(store.state)
         store.start()
+
+        // 未成年人时限（I-15）：和动态标签过同一个检查（`FeedMinorSession`），锁着时盖上提示页。放最后，盖在所有东西上面
+        minorLock = FeedMinorLockController.install(in: self)
     }
 
     override func viewWillAppear(_ animated: Bool) {

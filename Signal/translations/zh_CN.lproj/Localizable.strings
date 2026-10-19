@@ -11509,16 +11509,19 @@
 "TELLOMI_FEED_MINE_TITLE" = "我的动态";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_DAILY_BODY" = "未成年人模式下，动态每天最多使用 40 分钟，明天再来吧。聊天不受影响。";
+"TELLOMI_FEED_MINOR_LOCK_DAILY_BODY" = "未成年人每天可以浏览动态 40 分钟，明天再来吧。聊天不受影响。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE" = "今天的动态时间已用完";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY" = "未成年人模式下，22:00–6:00 不能使用动态。聊天不受影响。";
+"TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY" = "22:00 到次日 6:00 不能使用动态，早点休息。聊天不受影响。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE" = "夜间不能使用动态";
+"TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE" = "现在是休息时间";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINOR_LOCK_RETURN_TO_CHATS" = "返回聊天";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "更多";

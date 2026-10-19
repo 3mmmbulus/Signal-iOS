@@ -29,6 +29,10 @@ final class FeedComposeViewController: OWSViewController {
     private let audienceCandidates: FeedAudienceCandidateSource?
     private let extrasEnabled: Bool
     private var finished = false
+    /// 未成年人时限（I-15）：锁着时发布按钮不能点、导航栏上面一行（`navigationItem.prompt`）说为什么，草稿留在这一页（长文照样存在本机），解锁后接着发。
+    /// 发布页也算「在用动态」（计时）。时限关着时是 nil。
+    let minorSession: FeedMinorSession?
+    private var minorObservation: FeedMinorObservation?
 
     /// 这条草稿的去重号（契约 7.2 `client_nonce`）：点了发布、网络断了再点，服务端只收一次。
     var clientNonce: String { store.clientNonce }
@@ -70,6 +74,7 @@ final class FeedComposeViewController: OWSViewController {
         features: FeedFeatureGate? = nil,
         audienceCandidates: FeedAudienceCandidateSource? = nil,
         extrasEnabled: Bool = TellomiFeed.isComposeExtrasEnabled,
+        minorSession: FeedMinorSession? = FeedMinorSession.current,
         onPublished: @escaping (String) -> Void,
     ) {
         self.source = source
@@ -86,8 +91,13 @@ final class FeedComposeViewController: OWSViewController {
             drafts = InMemoryFeedArticleDrafts()
         }
         store = FeedComposeStore(editTarget: editTarget, source: source, articleDrafts: drafts)
+        self.minorSession = minorSession
         super.init()
         store.onChange = { [weak self] state in self?.stateChanged(state) }
+        if let minorSession {
+            store.setMinorLocked(minorSession.isLocked)
+            minorObservation = minorSession.observe { [weak self] lock in self?.store.setMinorLocked(lock != nil) }
+        }
     }
 
     /// 动态页和「我的动态」页打开发布页的统一入口：样例数据下（内部开发）接上样例的好友和 `audience_tokens`，
@@ -127,6 +137,16 @@ final class FeedComposeViewController: OWSViewController {
 
         store.start()
         if let features { store.refreshFeatures(features) }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        minorSession?.screenWillAppear(self)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        minorSession?.screenDidDisappear(self)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -291,7 +311,11 @@ final class FeedComposeViewController: OWSViewController {
         counterLabel.text = OWSFormat.formatInt(remaining)
         counterLabel.textColor = remaining < 0 ? UIColor.Signal.red : UIColor.Signal.secondaryLabel
 
-        publishButton.isEnabled = problem == nil && !isPublishing
+        publishButton.isEnabled = store.state.canPublish
+        // 锁着：导航栏上面一行写原因（夜间 / 当日用满的标题），解锁就拿掉
+        let minorLock = store.state.minorLocked ? minorSession?.lock : nil
+        let prompt = minorLock.map { FeedMinorLockView.title($0) }
+        if navigationItem.prompt != prompt { navigationItem.prompt = prompt }
         isModalInPresentation = needsCloseConfirmation
     }
 

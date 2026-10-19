@@ -14,6 +14,8 @@ import UIKit
 /// 帖子已经看不到了显示「已不可见」。底部是评论输入框（`FeedCommentInputView`，评论关了就收起），点一条评论回复它。
 /// 转发、收藏、语音评论等随后面的步骤接。
 final class FeedPostDetailViewController: OWSViewController {
+    /// 未成年人时限的提示页（时限关着时是 nil）。
+    private(set) var minorLock: FeedMinorLockController?
 
     /// 离评论列表底部还剩几行时取下一页。
     static let loadMoreThreshold = 3
@@ -184,6 +186,9 @@ final class FeedPostDetailViewController: OWSViewController {
         apply(store.state)
         store.start()
         if let focusCommentId { store.locateComment(focusCommentId) }
+
+        // 未成年人时限（I-15）：和动态标签过同一个检查（`FeedMinorSession`），锁着时盖上提示页。放最后，盖在所有东西上面
+        minorLock = FeedMinorLockController.install(in: self)
     }
 
     @objc private func appDidEnterBackground() {

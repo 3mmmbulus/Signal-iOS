@@ -11740,16 +11740,19 @@
 "TELLOMI_FEED_MINE_TITLE" = "My posts";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_DAILY_BODY" = "In minor mode, Feed can be used for up to 40 minutes a day. Come back tomorrow. Chats are not affected.";
+"TELLOMI_FEED_MINOR_LOCK_DAILY_BODY" = "Minors can browse Feed for 40 minutes a day. Come back tomorrow. Chats are not affected.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE" = "Today's Feed time is up";
+"TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE" = "Today's Feed time is used up";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY" = "In minor mode, Feed can't be used from 22:00 to 6:00. Chats are not affected.";
+"TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY" = "Feed can't be used from 22:00 to 6:00 the next day. Get some rest. Chats are not affected.";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
-"TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE" = "Feed is unavailable at night";
+"TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE" = "It's time to rest";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_MINOR_LOCK_RETURN_TO_CHATS" = "Back to Chats";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MORE" = "More";

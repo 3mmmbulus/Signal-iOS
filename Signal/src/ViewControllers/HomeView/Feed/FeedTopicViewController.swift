@@ -12,6 +12,8 @@ import UIKit
 ///
 /// 默认不接到任何入口（见 `TellomiFeed.isSearchEnabled`），不影响现有页面。
 final class FeedTopicViewController: OWSViewController {
+    /// 未成年人时限的提示页（时限关着时是 nil）。
+    private(set) var minorLock: FeedMinorLockController?
 
     let store: FeedTopicStore
     let topicTableView = UITableView(frame: .zero, style: .plain)
@@ -69,6 +71,9 @@ final class FeedTopicViewController: OWSViewController {
         store.onChange = { [weak self] state in self?.apply(state) }
         apply(store.state)
         store.start()
+
+        // 未成年人时限（I-15）：和动态标签过同一个检查（`FeedMinorSession`），锁着时盖上提示页。放最后，盖在所有东西上面
+        minorLock = FeedMinorLockController.install(in: self)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
