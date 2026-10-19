@@ -36,6 +36,11 @@ struct FeedComposeState: Equatable {
     var publishedState: String?
     /// 引擎有 `audience_tokens`（I-19）：「部分好友 / 屏蔽某些人」才能选。打开页面时 `refreshFeatures` 问；没问到之前和查不到都是 false。
     var audienceAvailable = false
+    /// 未成年人时限锁着（I-15）：不能发，草稿留在这一页（长文照样自动存在本机），解锁后接着发。已经在发的那一次不拦。
+    var minorLocked = false
+
+    /// 发布按钮能不能点。
+    var canPublish: Bool { problem == nil && !publishing && !minorLocked }
 
     /// 编辑时可见范围不动，所以不查可见范围那两项；没改动也不能保存。
     var problem: FeedDraft.Problem? {
@@ -285,7 +290,7 @@ final class FeedComposeStore {
 
     func publish() {
         let current = state
-        if current.publishing || current.problem != nil { return }
+        if current.publishing || current.problem != nil || current.minorLocked { return }
         state.publishing = true
         state.failed = false
         state.editWindowClosed = false
@@ -348,6 +353,12 @@ final class FeedComposeStore {
         next.failed = false
         state = next
         articleDrafts.clear()
+    }
+
+    /// 未成年人时限锁上 / 解开（`FeedMinorSession`）。
+    func setMinorLocked(_ locked: Bool) {
+        guard state.minorLocked != locked else { return }
+        state.minorLocked = locked
     }
 
     /// 已经打开了建主页的页面。
