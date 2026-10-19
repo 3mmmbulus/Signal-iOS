@@ -38,6 +38,9 @@ final class FeedNotificationsViewController: OWSViewController {
     /// 详情里点 `#话题`；不设就不响应。
     var onOpenTopic: ((FeedTopic) -> Void)?
 
+    /// 详情页补全开着（`TellomiFeed.isDetailExtrasEnabled`）：点评论 / 回复通知，详情页直接定位到那一条评论。
+    var detailExtras = TellomiFeed.isDetailExtrasEnabled
+
     private var shownPeople = [String: FeedPersonSummary]()
 
     init(initialTab: String = FeedAPI.notificationsInteractions, source: FeedSource, feed: FeedStore?) {
@@ -163,7 +166,7 @@ final class FeedNotificationsViewController: OWSViewController {
     func open(_ row: FeedNotificationRow) {
         switch FeedNotificationsPresentation.target(for: row) {
         case .post(let contentId):
-            store.openPost(contentId)
+            store.openPost(contentId, focusCommentId: detailExtras ? FeedNotificationsPresentation.focusCommentId(for: row) : nil)
         case .profile(let id):
             openPerson(id: id)
         case nil:
@@ -192,7 +195,7 @@ final class FeedNotificationsViewController: OWSViewController {
         if let onOpenPost {
             onOpenPost(card)
         } else {
-            let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: showIpRegion, feed: feed)
+            let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: showIpRegion, feed: feed, focusCommentId: store.state.openFocusCommentId)
             detail.onOpenAuthor = onOpenAuthor
             detail.onOpenTopic = onOpenTopic
             navigationController?.pushViewController(detail, animated: true)

@@ -20,6 +20,10 @@ final class FeedPostDetailViewController: OWSViewController {
 
     private enum Row: Equatable {
         case post
+        /// 详情页补全开着：帖子下面的投票。
+        case poll
+        /// 详情页补全开着：帖子下面的转发 / 收藏按钮。
+        case actions
         case comment(FeedPostDetailPresentation.CommentRow)
         case status(FeedPostDetailPresentation.CommentsPhase)
     }
@@ -50,6 +54,18 @@ final class FeedPostDetailViewController: OWSViewController {
     private var post: FeedCard
     private var showIpRegion: Bool
     private let articleReader: Bool
+    private let extras: Bool
+    private let source: FeedSource
+    private let savedMessages: FeedSavedMessages?
+    private let focusCommentId: String?
+    private let voiceLoader: FeedVoiceLoader
+    private lazy var voicePlayer = FeedVoicePlayer(loader: voiceLoader, baseUrl: { [weak self] in self?.store.state.mediaBaseUrl })
+    /// 刚被定位到的评论（高亮几秒）。
+    private(set) var highlightedCommentId: String?
+    /// 拒绝回复前的确认；nil = 用自带的确认弹窗。单测 / 截图里换掉。
+    var confirmDecline: ((@escaping () -> Void) -> Void)?
+    /// 编辑页打开了（单测 / 截图用）。
+    private(set) var presentedEditor: FeedComposeViewController?
 
     /// - Parameters:
     ///   - post: 信息流里带过来的那张卡片，先用它画出来，再向 Card API 取最新的。
@@ -57,12 +73,31 @@ final class FeedPostDetailViewController: OWSViewController {
     ///   - feed: 信息流的 `FeedStore`。传了就和列表共用它（卡片只在它里面，详情自己不留副本，赞和评论数改在它里面，列表同步）；
     ///     不传就自己独立运行（单测、还没接上的入口）。
     ///   - articleReader: 长文时「帖子」那一行换成整篇长文的阅读排版（`FeedArticleCell`）。默认跟 `TellomiFeed.isArticleReaderEnabled`（默认关）。
-    init(post: FeedCard, source: FeedSource, showIpRegion: Bool, feed: FeedStore? = nil, articleReader: Bool = TellomiFeed.isArticleReaderEnabled) {
+    ///   - extras: 详情页补全：投票、转发 / 收藏、语音评论播放、作者批准 / 拒绝等着的回复、定位到评论、「···」里的「编辑」。默认跟 `TellomiFeed.isDetailExtrasEnabled`（默认关）。
+    ///   - savedMessages: 「我的收藏」的实现（iOS 的那个要在 Mac 上接）；nil = 不显示「收藏」按钮。
+    ///   - focusCommentId: 从评论通知点进来要定位的评论；只在 `extras` 开着时用。
+    ///   - voiceLoader: 语音评论怎么下载、出声（单测换成假的）。
+    init(
+        post: FeedCard,
+        source: FeedSource,
+        showIpRegion: Bool,
+        feed: FeedStore? = nil,
+        articleReader: Bool = TellomiFeed.isArticleReaderEnabled,
+        extras: Bool = TellomiFeed.isDetailExtrasEnabled,
+        savedMessages: FeedSavedMessages? = nil,
+        focusCommentId: String? = nil,
+        voiceLoader: FeedVoiceLoader = FeedVoiceFileLoader(),
+    ) {
         self.post = post
         self.showIpRegion = showIpRegion
         self.articleReader = articleReader
+        self.extras = extras
+        self.source = source
+        self.savedMessages = extras ? savedMessages : nil
+        self.focusCommentId = extras ? focusCommentId : nil
+        self.voiceLoader = voiceLoader
         fallbackShowIpRegion = showIpRegion
-        store = FeedPostDetailStore(initial: post, source: source, feed: feed)
+        store = FeedPostDetailStore(initial: post, source: source, savedMessages: extras ? savedMessages : nil, feed: feed, editEnabled: extras)
         super.init()
         // 和 Telegram 一样：推进去以后底栏收起来
         hidesBottomBarWhenPushed = true
@@ -88,6 +123,8 @@ final class FeedPostDetailViewController: OWSViewController {
         tableView.register(FeedPostCell.self, forCellReuseIdentifier: FeedPostCell.reuseIdentifier)
         tableView.register(FeedArticleCell.self, forCellReuseIdentifier: FeedArticleCell.reuseIdentifier)
         tableView.register(FeedCommentCell.self, forCellReuseIdentifier: FeedCommentCell.reuseIdentifier)
+        tableView.register(FeedPollCell.self, forCellReuseIdentifier: FeedPollCell.reuseIdentifier)
+        tableView.register(FeedDetailActionsCell.self, forCellReuseIdentifier: FeedDetailActionsCell.reuseIdentifier)
         tableView.register(FeedDetailStatusCell.self, forCellReuseIdentifier: FeedDetailStatusCell.reuseIdentifier)
         tableView.keyboardDismissMode = .interactive
         tableView.setContentHuggingPriority(.defaultLow, for: .vertical)
@@ -119,8 +156,18 @@ final class FeedPostDetailViewController: OWSViewController {
         store.onChange = { [weak self] state in
             self?.apply(state)
         }
+        if extras {
+            voicePlayer.onChange = { [weak self] playback in self?.voicePlaybackChanged(playback) }
+            // 退到后台：语音暂停（和 Android 一样，回来点一下接着放）
+            NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        }
         apply(store.state)
         store.start()
+        if let focusCommentId { store.locateComment(focusCommentId) }
+    }
+
+    @objc private func appDidEnterBackground() {
+        voicePlayer.pause()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -128,6 +175,9 @@ final class FeedPostDetailViewController: OWSViewController {
         // 弹出 / 关闭：不再订阅列表的 store、放掉借着的卡片（盖上别的页面再回来不算离开）
         if isMovingFromParent || isBeingDismissed {
             store.detach()
+            if extras { voicePlayer.release() }
+        } else if extras {
+            voicePlayer.pause()
         }
     }
 
@@ -144,6 +194,32 @@ final class FeedPostDetailViewController: OWSViewController {
     /// 单测 / 截图用：长文阅读页那一行的格子（没打开阅读页、不是长文、不在屏幕上时是 nil）。
     var articleCell: FeedArticleCell? {
         return tableView.visibleCells.compactMap { $0 as? FeedArticleCell }.first
+    }
+
+    /// 单测 / 截图用：投票那一行的格子。
+    var pollCell: FeedPollCell? {
+        return tableView.visibleCells.compactMap { $0 as? FeedPollCell }.first
+    }
+
+    /// 单测 / 截图用：转发 / 收藏那一行的格子。
+    var actionsCell: FeedDetailActionsCell? {
+        return tableView.visibleCells.compactMap { $0 as? FeedDetailActionsCell }.first
+    }
+
+    /// 单测 / 截图用：某条评论的格子（不在屏幕上时是 nil）。
+    func commentCell(_ id: String) -> FeedCommentCell? {
+        guard let index = commentRowIndex(id) else { return nil }
+        return tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? FeedCommentCell
+    }
+
+    /// 单测 / 截图用：语音播放器现在的状态。
+    var voicePlayback: FeedVoicePlayback {
+        return voicePlayer.playback
+    }
+
+    /// 单测：等语音这次加载走完。
+    func waitForVoice() async {
+        await voicePlayer.waitForLoad()
     }
 
     /// 单测 / 截图用：现在的表格。
@@ -174,6 +250,9 @@ final class FeedPostDetailViewController: OWSViewController {
         closeIfFinished(state)
 
         var newRows: [Row] = [.post]
+        if extras {
+            newRows += FeedPostDetailPresentation.extraRows(for: post, saveAvailable: savedMessages != nil).map { $0 == .poll ? Row.poll : Row.actions }
+        }
         let phase = FeedPostDetailPresentation.commentsPhase(for: state)
         if phase == .content {
             newRows += FeedPostDetailPresentation.commentRows(for: state).map { Row.comment($0) }
@@ -190,9 +269,27 @@ final class FeedPostDetailViewController: OWSViewController {
                 cell.configure(card: post, showIpRegion: showIpRegion)
                 UIView.performWithoutAnimation { tableView.performBatchUpdates(nil) }
             }
+            // 投票 / 转发 / 收藏：票数、转发 / 收藏状态变了就地更新；投完票选项条的高度会变
+            for case let cell as FeedPollCell in tableView.visibleCells {
+                cell.configure(card: post)
+                UIView.performWithoutAnimation { tableView.performBatchUpdates(nil) }
+            }
+            if let actions = FeedPostDetailPresentation.actions(for: post, saveAvailable: savedMessages != nil) {
+                for case let cell as FeedDetailActionsCell in tableView.visibleCells {
+                    cell.configure(actions)
+                }
+            }
         } else {
             rows = newRows
             tableView.reloadData()
+        }
+
+        if let target = state.scrollTarget {
+            // 和提示一样放到下一轮主线程：不在 store 的 didSet 里再改 store
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.store.state.scrollTarget == target else { return }   // 已经滚过了（连着几次 apply）
+                self.scrollToComment(target)
+            }
         }
 
         if FeedPostDetailPresentation.hasMoreComments(for: state) {
@@ -249,10 +346,76 @@ final class FeedPostDetailViewController: OWSViewController {
             confirm(item) { [weak self] in self?.store.deleteComment(comment) }
         case .deletePost:
             confirm(item) { [weak self] in self?.store.deletePost() }
+        case .edit:
+            startEdit()
         case .own:
             break
         }
     }
+
+    /// 编辑自己的帖子（第 23 条）：打开发布页的编辑模式（只改正文和长文标题）；保存回来 store 重新取这条并提示。
+    /// 只有详情页补全开着、帖子还在编辑窗口里才进（单测 / 截图直接调它）。
+    func startEdit() {
+        guard extras, store.state.canEditPost, let target = FeedEditTarget.of(store.state.post), presentedEditor == nil else { return }
+        let compose = FeedComposeViewController.make(source: source, editTarget: target) { [weak self] publishState in
+            self?.store.onEdited(publishState: publishState)
+        }
+        presentedEditor = compose
+        let navigationController = OWSNavigationController(rootViewController: compose)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
+    }
+
+    // MARK: - 拒绝回复 / 语音 / 定位
+
+    /// 拒绝一条等着的回复 = 删掉它：先确认（Android 同样），确认了才调 store。单测 / 截图直接调它。
+    func declineConfirmed(_ comment: FeedCard) {
+        let proceed: () -> Void = { [weak self] in self?.store.declineComment(comment) }
+        if let confirmDecline {
+            confirmDecline(proceed)
+            return
+        }
+        OWSActionSheets.showConfirmationAlert(
+            title: OWSLocalizedString("TELLOMI_FEED_DETAIL_DECLINE_TITLE", comment: "Feed: question before the post author declines a reply that is waiting for approval."),
+            message: OWSLocalizedString("TELLOMI_FEED_DETAIL_DECLINE_BODY", comment: "Feed: explanation under the decline question: the reply will be deleted."),
+            proceedTitle: OWSLocalizedString("TELLOMI_FEED_DETAIL_DECLINE", comment: "Feed: post author's button that declines (deletes) a reply that is waiting for them."),
+            proceedStyle: .destructive,
+            proceedAction: { _ in proceed() },
+            fromViewController: self,
+        )
+    }
+
+    /// 语音放到哪变了：只更新看得见的评论格子里的语音那一行。
+    private func voicePlaybackChanged(_ playback: FeedVoicePlayback) {
+        for case let cell as FeedCommentCell in tableView.visibleCells {
+            cell.updatePlayback(playback)
+        }
+    }
+
+    private func commentRowIndex(_ id: String) -> Int? {
+        return rows.firstIndex { row in
+            if case .comment(let commentRow) = row { return commentRow.comment.id == id }
+            return false
+        }
+    }
+
+    /// 滚到某条评论并高亮几秒（从评论通知点进来）。单测 / 截图直接调它。
+    func scrollToComment(_ id: String) {
+        store.onScrolled()
+        guard let index = commentRowIndex(id) else { return }
+        highlightedCommentId = id
+        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+        tableView.scrollToRow(at: IndexPath(row: index, section: 0), at: .middle, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.highlightSeconds) { [weak self] in
+            guard let self, self.highlightedCommentId == id else { return }
+            self.highlightedCommentId = nil
+            if let current = self.commentRowIndex(id) {
+                self.tableView.reloadRows(at: [IndexPath(row: current, section: 0)], with: .none)
+            }
+        }
+    }
+
+    static let highlightSeconds: TimeInterval = 2.5
 
     /// 打开举报页（`comment` 是 nil = 举报帖子本身）。提交成功详情页提示「已提交」；`feed_hidden` 跟着收起。
     private(set) var presentedReport: FeedReportViewController?
@@ -304,6 +467,8 @@ final class FeedPostDetailViewController: OWSViewController {
             return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_COMMENT", comment: "Feed: ··· menu item that deletes the user's own comment.")
         case .deletePost:
             return OWSLocalizedString("TELLOMI_FEED_MENU_DELETE_POST", comment: "Feed: ··· menu item that deletes the user's own post.")
+        case .edit:
+            return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT", comment: "Feed: ··· menu item that edits the user's own post.")
         case .own(let action):
             switch action {
             case .pin:
@@ -328,7 +493,7 @@ final class FeedPostDetailViewController: OWSViewController {
             return OWSLocalizedString("TELLOMI_FEED_DELETE_COMMENT_CONFIRM", comment: "Feed: confirmation question before deleting the user's own comment.")
         case .deletePost:
             return OWSLocalizedString("TELLOMI_FEED_DELETE_POST_CONFIRM", comment: "Feed: confirmation question before deleting the user's own post.")
-        case .notInterested, .report, .own:
+        case .notInterested, .report, .own, .edit:
             return ""
         }
     }
@@ -450,6 +615,16 @@ final class FeedPostDetailViewController: OWSViewController {
             return OWSLocalizedString("TELLOMI_FEED_COMMENT_PROFILE_REQUIRED", comment: "Feed: toast when commenting needs the user to set up their public profile first.")
         case .parentGone:
             return OWSLocalizedString("TELLOMI_FEED_COMMENT_PARENT_GONE", comment: "Feed: toast when the comment being replied to no longer exists.")
+        case .saved:
+            return OWSLocalizedString("TELLOMI_FEED_SAVED_DONE", comment: "Feed: toast after a post was saved to Saved Messages.")
+        case .reposted:
+            return OWSLocalizedString("TELLOMI_FEED_REPOSTED_DONE", comment: "Feed: toast after a post was reposted to the user's own feed.")
+        case .edited:
+            return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT_SAVED", comment: "Feed: toast after an edit of the user's own post was saved.")
+        case .editedPending:
+            return OWSLocalizedString("TELLOMI_FEED_MINE_EDIT_SAVED_PENDING", comment: "Feed: toast after an edit was saved and the post will be reviewed again before others see the change.")
+        case .commentNotFound:
+            return OWSLocalizedString("TELLOMI_FEED_DETAIL_COMMENT_NOT_FOUND", comment: "Feed: toast when the comment a notification pointed to can no longer be found.")
         default:
             return nil
         }
@@ -491,10 +666,37 @@ extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelega
             cell.onTopicTap = onOpenTopic
             cell.configure(card: post, showIpRegion: showIpRegion)
             return cell
+        case .poll:
+            let cell = tableView.dequeueReusableCell(withIdentifier: FeedPollCell.reuseIdentifier, for: indexPath) as! FeedPollCell
+            cell.setIndented(!(articleReader && post.isArticle))
+            cell.onVote = { [weak self] options in self?.store.vote(options) }
+            cell.configure(card: post)
+            return cell
+        case .actions:
+            let cell = tableView.dequeueReusableCell(withIdentifier: FeedDetailActionsCell.reuseIdentifier, for: indexPath) as! FeedDetailActionsCell
+            cell.setIndented(!(articleReader && post.isArticle))
+            cell.onRepost = { [weak self] in self?.store.toggleRepost() }
+            cell.onSave = { [weak self] in self?.store.toggleSave() }
+            if let actions = FeedPostDetailPresentation.actions(for: post, saveAvailable: savedMessages != nil) {
+                cell.configure(actions)
+            }
+            return cell
         case .comment(let row):
             let cell = tableView.dequeueReusableCell(withIdentifier: FeedCommentCell.reuseIdentifier, for: indexPath) as! FeedCommentCell
-            cell.configure(row: row)
+            let comment = row.comment
             cell.onAuthorTap = onOpenAuthor
+            if extras {
+                cell.onApprove = { [weak self] in self?.store.approveComment(comment) }
+                cell.onDecline = { [weak self] in self?.declineConfirmed(comment) }
+                cell.onVoiceToggle = { [weak self] media in self?.voicePlayer.toggle(media) }
+                cell.configure(
+                    row: row,
+                    extras: FeedCommentExtras(comment: comment, post: post, highlighted: comment.id == highlightedCommentId),
+                    playback: voicePlayer.playback
+                )
+            } else {
+                cell.configure(row: row)
+            }
             return cell
         case .status(let phase):
             let cell = tableView.dequeueReusableCell(withIdentifier: FeedDetailStatusCell.reuseIdentifier, for: indexPath) as! FeedDetailStatusCell
@@ -509,6 +711,8 @@ extension FeedPostDetailViewController: UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard store.state.canComment, case .comment(let row) = rows[indexPath.row] else { return }
+        // 等批准的回复还没公开，不能回复它（作者先批准或拒绝）
+        if extras, row.comment.held { return }
         store.replyTo(row.comment)
         commentInput.focus()
     }

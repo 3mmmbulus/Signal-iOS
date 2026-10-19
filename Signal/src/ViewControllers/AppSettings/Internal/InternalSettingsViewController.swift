@@ -244,6 +244,13 @@ class InternalSettingsViewController: OWSTableViewController2 {
                 TellomiFeed.isArticleReaderEnabled = uiSwitch.isOn
             },
         ))
+        feedSection.add(.switch(
+            withText: "Feed: detail extras (poll, repost/save, voice playback, approve replies, edit)",
+            isOn: { TellomiFeed.isDetailExtrasEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isDetailExtrasEnabled = uiSwitch.isOn
+            },
+        ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
         contents.add(feedSection)
 
