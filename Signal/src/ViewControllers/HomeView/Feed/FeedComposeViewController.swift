@@ -37,7 +37,7 @@ final class FeedComposeViewController: OWSViewController {
     var limits: FeedLimits { store.state.limits }
     var minorMode: Bool { store.state.minorMode }
     var isPublishing: Bool { store.state.publishing }
-    var isEditing: Bool { store.state.editing != nil }
+    var isEditingPost: Bool { store.state.editing != nil }
 
     private let kindSwitch = FeedKindSwitch()
     private let editTitleLabel = UILabel()
@@ -406,7 +406,7 @@ final class FeedComposeViewController: OWSViewController {
     }
 
     private func presentAudiencePicker(for visibility: FeedVisibility) {
-        guard let audienceCandidates, !isEditing, visibility.needsAudience else { return }
+        guard let audienceCandidates, !isEditingPost, visibility.needsAudience else { return }
         let current = draft.visibility == visibility ? draft.audience : []
         let picker = FeedAudiencePickerViewController(visibility: visibility, preselected: current, source: audienceCandidates) { [weak self] members in
             self?.store.onAudiencePicked(visibility, members)

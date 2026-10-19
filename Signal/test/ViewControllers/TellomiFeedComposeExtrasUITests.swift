@@ -40,7 +40,7 @@ final class TellomiFeedComposeExtrasUITests: XCTestCase {
         let window = show(compose)
         defer { window.isHidden = true }
 
-        XCTAssertTrue(compose.isEditing)
+        XCTAssertTrue(compose.isEditingPost)
         XCTAssertFalse(compose.navigationItem.titleView is FeedKindSwitch)
         XCTAssertEqual((compose.navigationItem.titleView as? UILabel)?.text, OWSLocalizedString("TELLOMI_FEED_COMPOSE_EDIT_POST", comment: ""))
         XCTAssertEqual(compose.navigationItem.rightBarButtonItem?.title, OWSLocalizedString("TELLOMI_FEED_COMPOSE_SAVE", comment: ""))
