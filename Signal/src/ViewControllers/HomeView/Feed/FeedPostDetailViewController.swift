@@ -126,6 +126,7 @@ final class FeedPostDetailViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
 
         view.backgroundColor = UIColor.Signal.background
         navigationItem.largeTitleDisplayMode = .never

@@ -61,6 +61,7 @@ final class FeedReportViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.groupedBackground
         buildReasons()
         buildForm()

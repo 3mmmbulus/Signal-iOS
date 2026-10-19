@@ -46,6 +46,7 @@ public class LinkPreviewFetcherImpl: LinkPreviewFetcher {
         tsAccountManager: any TSAccountManager,
         linkFetcher: TellomiLinkFetcher = .shared,
         usesTellomiSendJob: Bool = false,
+        serverFetchEnabled: @escaping @Sendable () -> Bool = { RemoteConfig.current.isTellomiServerLinkPreviewEnabled },
     ) {
         self.authCredentialManager = authCredentialManager
         self.db = db
@@ -58,6 +59,9 @@ public class LinkPreviewFetcherImpl: LinkPreviewFetcher {
                 fetcher: linkFetcher,
                 expandShortLinks: { [db = fetcher.db] in db.read { TellomiLinkPreviewLocalSettings.isShortLinkExpansionEnabled(tx: $0) } },
                 lookups: WeakLookups(fetcher),
+                // ADR-0063 §6.5：白名单那几家由服务端代抓；远程配置 global.linkPreview.serverFetch 默认关
+                serverClient: SignalServerLinkPreviewClient(),
+                serverFetchEnabled: serverFetchEnabled,
             )
         } : nil
     }
@@ -489,5 +493,40 @@ private extension HTMLMetadata {
                 }
                 return date
             }
+    }
+}
+
+// MARK: - Tellomi 服务端代抓（ADR-0063 §6.5）
+
+/// `POST /v1/tellomi/link-preview`：走已登录账号的鉴权（和别的 `/v1/` 请求一样），链接放在请求体里。
+///
+/// UNVERIFIED（box 上不能编译 iOS）：`TSRequest(url:method:parameters:)` 带 JSON 体与账号鉴权、`asyncRequest` 在非 2xx 时抛错、
+/// `Error.httpStatusCode` / `httpResponseHeaders`——照 `SignalServerFeedAuthFetcher`（FeedAuth.swift）同一套写法。
+struct SignalServerLinkPreviewClient: TellomiServerLinkPreviewClient {
+
+    func fetch(url: URL) async -> TellomiServerLinkPreview.Answer {
+        var request = TSRequest(
+            url: URL(string: TellomiServerLinkPreview.path)!,
+            method: "POST",
+            parameters: ["url": TellomiServerLinkPreview.requestUrlString(url)],
+        )
+        request.timeoutInterval = TellomiServerLinkPreview.requestTimeout
+        do {
+            let response = try await SSKEnvironment.shared.networkManagerRef.asyncRequest(request)
+            return TellomiServerLinkPreview.answer(
+                status: response.responseStatusCode,
+                body: response.responseBodyData,
+                retryAfter: nil,
+            )
+        } catch {
+            guard let status = error.httpStatusCode else {
+                return .failed
+            }
+            return TellomiServerLinkPreview.answer(
+                status: status,
+                body: nil,
+                retryAfter: error.httpResponseHeaders?["Retry-After"],
+            )
+        }
     }
 }

@@ -24,6 +24,7 @@ final class FeedListsViewController: OWSTableViewController2 {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         title = Self.title
         updateTableContents()
     }

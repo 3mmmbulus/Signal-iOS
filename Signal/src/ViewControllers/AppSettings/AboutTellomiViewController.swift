@@ -222,7 +222,40 @@ final class AboutTellomiViewController: OWSTableViewController2 {
         )
         contents.add(openSourceSection)
 
+        // TestFlight 动态预览（`TellomiFeedPreview`）：只有 TestFlight 装的包有这一组；App Store 包、Xcode 装的开发包都没有
+        if TellomiFeed.isTestFlightPreviewAvailable {
+            contents.add(feedPreviewSection())
+        }
+
         self.contents = contents
+    }
+
+    /// 一行开关，默认关。打开后底栏马上出现「动态」（`tellomiFeedTabStateDidChange`），里面全是本机样例；关掉「动态」就消失。
+    private func feedPreviewSection() -> OWSTableSection {
+        let section = OWSTableSection()
+        section.headerTitle = OWSLocalizedString(
+            "SETTINGS_ABOUT_TELLOMI_SECTION_TESTFLIGHT",
+            value: "TestFlight",
+            comment: "Tellomi: section header in About Tellomi that only appears in TestFlight builds.",
+        )
+        section.add(.switch(
+            withText: OWSLocalizedString(
+                "SETTINGS_ABOUT_TELLOMI_FEED_PREVIEW",
+                value: "Feed preview (sample data)",
+                comment: "Tellomi: switch in About Tellomi, TestFlight builds only. Turns on the Feed tab with on-device sample posts.",
+            ),
+            accessibilityIdentifier: "tellomi.about.feedPreview",
+            isOn: { TellomiFeed.isTestFlightPreviewEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isTestFlightPreviewEnabled = uiSwitch.isOn
+            },
+        ))
+        section.footerTitle = OWSLocalizedString(
+            "SETTINGS_ABOUT_TELLOMI_FEED_PREVIEW_FOOTER",
+            value: "Only in TestFlight builds. Shows the Feed tab with sample posts stored on this phone. Nothing you post, like or report there is sent to a server.",
+            comment: "Tellomi: footer under the TestFlight feed preview switch in About Tellomi.",
+        )
+        return section
     }
 
     /// 邮箱行：点一下复制（右侧写着「点击复制」），长按出「写邮件」（需求 3.2：长按 / 次级动作）

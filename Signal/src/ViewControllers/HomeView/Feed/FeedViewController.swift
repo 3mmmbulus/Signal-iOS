@@ -130,6 +130,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
 
         view.backgroundColor = UIColor.Signal.background
         navigationItem.largeTitleDisplayMode = .never

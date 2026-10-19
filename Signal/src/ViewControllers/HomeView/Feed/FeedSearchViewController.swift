@@ -63,6 +63,7 @@ final class FeedSearchViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.background
 
         searchBar.placeholder = OWSLocalizedString("TELLOMI_FEED_SEARCH_PLACEHOLDER", comment: "Feed search page: placeholder in the search field.")

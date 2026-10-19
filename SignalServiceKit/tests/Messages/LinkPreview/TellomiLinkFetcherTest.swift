@@ -144,7 +144,7 @@ final class TellomiLinkFetcherTest: XCTestCase {
         XCTAssertEqual(TellomiLinkFetchContract.maxImageRequestsPerLink, 1)
         XCTAssertEqual(TellomiLinkFetchContract.maxHtmlBytes, 2 * 1024 * 1024)
         XCTAssertEqual(TellomiLinkFetchContract.maxJsonBytes, 256 * 1024)
-        XCTAssertEqual(TellomiLinkReachability.memoLifetime, 30 * 60)
+        XCTAssertEqual(TellomiLinkReachability.memoLifetime, 2 * 60)
         XCTAssertEqual(TellomiLinkRegionPrior.current, .global)
     }
 
@@ -293,23 +293,65 @@ final class TellomiLinkFetcherTest: XCTestCase {
 
     // MARK: - 体积与类型
 
-    func testOversizedHtmlIsRefused() async throws {
-        let oversized = Data(repeating: UInt8(ascii: "a"), count: TellomiLinkFetchContract.maxHtmlBytes + 1)
+    /// 产品经理 2026-10-19 定（ADR-0063 §4.4）：HTML 超过 2 MiB 不放弃，只留开头 2 MiB 照常解析标题和图。
+    func testOversizedHtmlIsTruncatedNotRefused() async throws {
+        let head = "<html><head><meta property=\"og:title\" content=\"大页面\"></head><body>"
+        var oversized = Data(head.utf8)
+        oversized.append(Data(repeating: UInt8(ascii: "a"), count: TellomiLinkFetchContract.maxHtmlBytes + 1))
+        let oversizedBody = oversized
         let server = try await startServer { request in
             let headers = [("Content-Type", "text/html")]
             switch request.path {
-            case "/declared": return .response(status: 200, headers: headers, body: oversized)
-            case "/streamed": return .closeDelimited(status: 200, headers: headers, body: oversized)
+            case "/declared": return .response(status: 200, headers: headers, body: oversizedBody)
+            case "/streamed": return .closeDelimited(status: 200, headers: headers, body: oversizedBody)
             default: return .html(Self.page)
             }
         }
         let fetcher = makeFetcher(server: server)
 
+        for path in ["/declared", "/streamed"] {
+            for step in [TellomiLinkFetchStep.page, .html] {
+                let response = try await fetcher.fetch(server.url(path), step: step, budget: fetcher.makeBudget())
+                XCTAssertEqual(response.kind, .html, path)
+                XCTAssertTrue(response.isTruncated, path)
+                XCTAssertEqual(response.body.count, TellomiLinkFetchContract.maxHtmlBytes, path)
+                XCTAssertEqual(response.body.prefix(head.utf8.count), Data(head.utf8), path)
+            }
+        }
+        // 没超的页面不标截断
+        let small = try await fetcher.fetch(server.url("/small"), step: .page, budget: fetcher.makeBudget())
+        XCTAssertFalse(small.isTruncated)
+        XCTAssertEqual(small.bodyString, Self.page)
+    }
+
+    func testHtmlExactlyAtTheLimitIsNotTruncated() async throws {
+        let exact = Data(repeating: UInt8(ascii: "a"), count: TellomiLinkFetchContract.maxHtmlBytes)
+        let server = try await startServer { _ in .response(status: 200, headers: [("Content-Type", "text/html")], body: exact) }
+        let fetcher = makeFetcher(server: server)
+
+        let response = try await fetcher.fetch(server.url("/exact"), step: .html, budget: fetcher.makeBudget())
+        XCTAssertFalse(response.isTruncated)
+        XCTAssertEqual(response.body.count, TellomiLinkFetchContract.maxHtmlBytes)
+    }
+
+    func testOversizedImageIsStillRefused() async throws {
+        var png = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        png.append(Data(count: TellomiLinkFetchContract.maxImageBytes))
+        let pngBody = png
+        let server = try await startServer { request in
+            let headers = [("Content-Type", "image/png")]
+            return request.path == "/declared"
+                ? .response(status: 200, headers: headers, body: pngBody)
+                : .closeDelimited(status: 200, headers: headers, body: pngBody)
+        }
+        let fetcher = makeFetcher(server: server)
+
+        // 图片截了就是坏图：照旧超了就放弃（卡片没有图）
         await expectFailure(.tooLarge) {
-            _ = try await fetcher.fetch(server.url("/declared"), step: .page, budget: fetcher.makeBudget())
+            _ = try await fetcher.fetch(server.url("/declared"), step: .image, budget: fetcher.makeBudget())
         }
         await expectFailure(.tooLarge) {
-            _ = try await fetcher.fetch(server.url("/streamed"), step: .page, budget: fetcher.makeBudget())
+            _ = try await fetcher.fetch(server.url("/streamed"), step: .image, budget: fetcher.makeBudget())
         }
     }
 
@@ -324,9 +366,10 @@ final class TellomiLinkFetcherTest: XCTestCase {
         }
         let fetcher = makeFetcher(server: server)
 
-        await expectFailure(.tooLarge) {
-            _ = try await fetcher.fetch(server.url("/bomb"), step: .page, budget: fetcher.makeBudget())
-        }
+        // 解压到 2 MiB 就停，只留开头（不会把 16 MiB 全解出来）
+        let truncated = try await fetcher.fetch(server.url("/bomb"), step: .page, budget: fetcher.makeBudget())
+        XCTAssertTrue(truncated.isTruncated)
+        XCTAssertEqual(truncated.body.count, TellomiLinkFetchContract.maxHtmlBytes)
         // 正常的压缩页面照常解开（说明上限计的是解压后的字节）
         let response = try await fetcher.fetch(server.url("/small"), step: .page, budget: fetcher.makeBudget())
         XCTAssertEqual(response.bodyString, Self.page)
@@ -504,6 +547,36 @@ final class TellomiLinkFetcherTest: XCTestCase {
         _ = try await fetcher.fetch(server.url("/ok"), step: .page, budget: fetcher.makeBudget())
     }
 
+    /// 产品经理 2026-10-19 定（ADR-0063 §4.4）：只有明确失败才记；超时（连接超时、请求超时）不记。
+    func testOnlyDefiniteNetworkFailuresAreRecorded() {
+        for code: URLError.Code in [
+            .cannotFindHost, .dnsLookupFailed, .cannotConnectToHost, .networkConnectionLost,
+            .secureConnectionFailed, .serverCertificateUntrusted, .serverCertificateHasUnknownRoot,
+        ] {
+            XCTAssertTrue(TellomiLinkFetcher.isDefiniteNetworkFailure(code), "\(code.rawValue)")
+        }
+        for code: URLError.Code in [.timedOut, .notConnectedToInternet, .cancelled, .badServerResponse, .unknown] {
+            XCTAssertFalse(TellomiLinkFetcher.isDefiniteNetworkFailure(code), "\(code.rawValue)")
+        }
+    }
+
+    func testRequestTimeoutBeforeAnyResponseDoesNotMarkTheHost() async throws {
+        // 连上了但一个字节都不回、自己的计时器到点：原来没收到响应也算「连接超时」写进记录，现在不写
+        let server = try await startServer { _ in .stall }
+        let reachability = TellomiLinkReachability()
+        let fetcher = makeFetcher(
+            server: server,
+            configuration: fastConfiguration(connectTimeout: 0.5, requestTimeout: 0.8, perLinkBudget: 2),
+            reachability: reachability,
+        )
+
+        await expectFailure(.timeout) {
+            _ = try await fetcher.fetch(server.url("/stall"), step: .html, budget: fetcher.makeBudget())
+        }
+        XCTAssertFalse(reachability.isKnownUnreachable(host: "127.0.0.1"))
+        XCTAssertEqual(reachability.unreachableHosts(), [])
+    }
+
     func testReachabilityMemoLifetimeAndNetworkChange() {
         final class Clock: @unchecked Sendable {
             var now = Date(timeIntervalSince1970: 1_800_000_000)
@@ -518,9 +591,9 @@ final class TellomiLinkFetcherTest: XCTestCase {
 
         reachability.recordNetworkFailure(host: "Blocked.Example.CN")
         XCTAssertTrue(reachability.isKnownUnreachable(host: "blocked.example.cn"))
-        clock.now += 29 * 60
+        clock.now += 119
         XCTAssertTrue(reachability.isKnownUnreachable(host: "blocked.example.cn"))
-        clock.now += 60
+        clock.now += 1
         XCTAssertFalse(reachability.isKnownUnreachable(host: "blocked.example.cn"))
 
         reachability.recordNetworkFailure(host: "blocked.example.cn")

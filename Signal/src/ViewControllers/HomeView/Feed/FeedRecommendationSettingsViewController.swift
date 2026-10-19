@@ -45,6 +45,7 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         title = Self.title
         store.onChange = { [weak self] state in self?.apply(state) }
         apply(store.state)

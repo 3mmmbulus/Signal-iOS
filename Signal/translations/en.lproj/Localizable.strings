@@ -9426,6 +9426,12 @@
 /* Tellomi: shown when the user long-presses an email in About Tellomi but no mail account is set up. */
 "SETTINGS_ABOUT_TELLOMI_EMAIL_UNAVAILABLE_MESSAGE" = "Your device isn't set up to send email. The address has been copied, so you can paste it into another email app.";
 
+/* Tellomi: switch in About Tellomi, TestFlight builds only. Turns on the Feed tab with on-device sample posts. */
+"SETTINGS_ABOUT_TELLOMI_FEED_PREVIEW" = "Feed preview (sample data)";
+
+/* Tellomi: footer under the TestFlight feed preview switch in About Tellomi. */
+"SETTINGS_ABOUT_TELLOMI_FEED_PREVIEW_FOOTER" = "Only in TestFlight builds. Shows the Feed tab with sample posts stored on this phone. Nothing you post, like or report there is sent to a server.";
+
 /* Tellomi: row in About Tellomi that opens the website. */
 "SETTINGS_ABOUT_TELLOMI_OFFICIAL_WEBSITE" = "Official website";
 
@@ -9452,6 +9458,9 @@
 
 /* Tellomi: section header in About Tellomi. */
 "SETTINGS_ABOUT_TELLOMI_SECTION_OPEN_SOURCE" = "Open source";
+
+/* Tellomi: section header in About Tellomi that only appears in TestFlight builds. */
+"SETTINGS_ABOUT_TELLOMI_SECTION_TESTFLIGHT" = "TestFlight";
 
 /* Tellomi: section header in About Tellomi. */
 "SETTINGS_ABOUT_TELLOMI_SECTION_UPDATES" = "Updates";
@@ -12458,6 +12467,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TELLOMI_NUMBER_FORMAT" = "Tellomi No. %@";
+
+/* Tellomi: line above the navigation bar on every feed page while the TestFlight feed preview is on. The feed shows on-device sample posts only and nothing is sent to a server. */
+"TELLOMI_FEED_TESTFLIGHT_PREVIEW_BADGE" = "Preview · Sample data";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_THROTTLED" = "Too many requests. Please try again later.";

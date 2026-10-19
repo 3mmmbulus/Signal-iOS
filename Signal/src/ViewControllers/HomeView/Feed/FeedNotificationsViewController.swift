@@ -58,6 +58,7 @@ final class FeedNotificationsViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.background
 
         let settingsButton = UIBarButtonItem(image: UIImage(systemName: "gearshape"), primaryAction: UIAction { [weak self] _ in self?.openSettings() })
