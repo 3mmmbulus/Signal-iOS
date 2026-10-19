@@ -472,7 +472,14 @@ final class FeedPostDetailViewController: OWSViewController {
         for case let cell as FeedCommentCell in tableView.visibleCells {
             cell.updatePlayback(playback)
         }
+        // 「播放失败」那行出现 / 消失会改变行高：让表格重新量一次，否则只能从语音那一行里挤（播放按钮被压扁）
+        if playback.failedKey != lastVoiceFailedKey {
+            lastVoiceFailedKey = playback.failedKey
+            UIView.performWithoutAnimation { tableView.performBatchUpdates(nil) }
+        }
     }
+
+    private var lastVoiceFailedKey: String?
 
     private func commentRowIndex(_ id: String) -> Int? {
         return rows.firstIndex { row in
