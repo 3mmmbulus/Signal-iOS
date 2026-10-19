@@ -7,9 +7,9 @@ import LibSignalClient
 import XCTest
 @testable import SignalServiceKit
 
-/// ADR-0063 §5.1 / §8.1（tellomi/tellomi#1423）：iOS 上真的 libsignal 原生库，对同一份注册表 `links-2026092702.json`，
+/// ADR-0063 §5.1 / §8.1（tellomi/tellomi#1423）：iOS 上真的 libsignal 原生库，对同一份注册表 `links-2026101901.json`，
 /// 必须和 Android、Desktop 给出**一模一样**的答案。共享的黄金数据是 rust/links 的 `bridge_golden.rs` 生成的
-/// `bridge-golden.json`（``TellomiLinkBridgeGolden``）：classify 51 条 + receive_check、identify、layout、open_plan、tint、send。
+/// `bridge-golden.json`（``TellomiLinkBridgeGolden``）：classify 53 条 + receive_check、identify、layout、open_plan、tint、send。
 /// 发送端的 5 条经过 ``TellomiLinkSendJob/run`` 重放：客户端问的请求和最后的预览都必须和黄金一致。
 final class TellomiLinkBridgeGoldenTest: XCTestCase {
 
@@ -35,7 +35,7 @@ final class TellomiLinkBridgeGoldenTest: XCTestCase {
 
     func testEveryClassifyCaseGivesTheGoldenCard() throws {
         let cases = try cases("classify")
-        XCTAssertEqual(cases.count, 51)
+        XCTAssertEqual(cases.count, 53)
         for c in cases {
             let name = c["name"] as? String ?? "?"
             let preview = try XCTUnwrap(c["preview"] as? String, name)

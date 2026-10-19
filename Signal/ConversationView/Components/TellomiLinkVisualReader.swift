@@ -33,7 +33,8 @@ enum TellomiLinkVisualReader {
         icon: TellomiLinkIcon.Icon? = nil,
         bridge: any TellomiLinkVisual.Bridge = TellomiLinkVisual.Native(),
     ) -> TellomiLinkVisual.Visual {
-        if card.level == .brand {
+        // 品牌壳；或认领但抓页面的平台（`claimed`）页面没给图、用随包图标代替时
+        if card.level == .brand || (icon != nil && !card.showImage) {
             return brandVisual(card: card, icon: icon, bridge: bridge)
         }
         let width = Int(imagePixelSize.width.rounded())
@@ -78,6 +79,7 @@ enum TellomiLinkVisualReader {
         let key = [
             "icon",
             icon?.name ?? "-",
+            card.level.rawValue,
             card.kind ?? "-",
             card.tintable ? "t" : "-",
             card.payment ? "p" : "-",
@@ -122,7 +124,7 @@ enum TellomiLinkVisualReader {
         }
         let key: String
         let read: () -> Data?
-        if card.level == .brand {
+        if card.level == .brand || (icon != nil && !card.showImage) {
             guard let icon else {
                 return nil
             }

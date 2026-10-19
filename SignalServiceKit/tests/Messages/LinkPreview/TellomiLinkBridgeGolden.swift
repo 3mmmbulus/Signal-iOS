@@ -5,8 +5,8 @@
 
 // swiftformat:disable all
 
-// 逐字取自 tellomi/libsignal `rust/links/tests/data/bridge-golden.json`（tellomi-0.102.0 17e78e59b）：三端（Android、Desktop、iOS）
-// 对同一份注册表 `links-2026092702.json` 必须给出完全一样的答案；这份文件由 rust/links 的 `bridge_golden.rs` 生成，不要手改。
+// 逐字取自 tellomi/libsignal `rust/links/tests/data/bridge-golden.json`（bot/links-claimed-tier-r1 364d127d）：三端（Android、Desktop、iOS）
+// 对同一份注册表 `links-2026101901.json` 必须给出完全一样的答案；这份文件由 rust/links 的 `bridge_golden.rs` 生成，不要手改。
 // 更新：把新的 bridge-golden.json 原样放进下面的字符串。
 
 enum TellomiLinkBridgeGolden {
@@ -421,6 +421,22 @@ enum TellomiLinkBridgeGolden {
       "name": "§6.1 a group name is cleaned like a title",
       "preview": "{\"has_image\":true,\"rich\":\"0a0d74656c6c6f6d692e67726f7570120774656c6c6f6d69\",\"title\":\"​周末⁠爬山群‍\",\"url\":\"https://tell.cc/g#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}",
       "receive_check": "{\"keep_preview\":true,\"keep_rich\":true}"
+    },
+    {
+      "body": "https://item.taobao.com/item.htm?id=100032608854",
+      "card": "{\"level\":\"generic\",\"provider\":null,\"provider_name\":null,\"kind\":null,\"route\":null,\"title\":\"某某商品\",\"description\":null,\"attrs\":[],\"domain\":\"taobao.com\",\"official_badge\":false,\"first_party\":null,\"lookalike\":null,\"show_image\":true,\"icon\":\"taobao.png\",\"tintable\":true,\"payment\":false,\"reason\":\"claimed\"}",
+      "message": "{}",
+      "name": "claimed tier (2026-10-19), no rich: the page's own card with the platform icon",
+      "preview": "{\"has_image\":true,\"title\":\"某某商品\",\"url\":\"https://item.taobao.com/item.htm?id=100032608854\"}",
+      "receive_check": "{\"keep_preview\":true,\"keep_rich\":false}"
+    },
+    {
+      "body": "https://item.taobao.com/item.htm?id=100032608854",
+      "card": "{\"level\":\"brand\",\"provider\":\"taobao\",\"provider_name\":{\"zh-Hans\":\"淘宝\",\"en\":\"Taobao\"},\"kind\":\"product\",\"route\":\"item\",\"title\":null,\"description\":null,\"attrs\":[],\"domain\":\"taobao.com\",\"official_badge\":false,\"first_party\":null,\"lookalike\":null,\"show_image\":false,\"icon\":\"taobao.png\",\"tintable\":true,\"payment\":false,\"reason\":\"claimed_no_title\"}",
+      "message": "{}",
+      "name": "claimed tier (2026-10-19), no rich, no title: the platform's brand shell",
+      "preview": "{\"has_image\":false,\"url\":\"https://item.taobao.com/item.htm?id=100032608854\"}",
+      "receive_check": "{\"keep_preview\":true,\"keep_rich\":false}"
     }
   ],
   "degraded": "[]",
@@ -537,16 +553,16 @@ enum TellomiLinkBridgeGolden {
       "url": "http://www.163.com/"
     }
   ],
-  "registry": "registry/dist/links-2026092702.json",
-  "registry_version": 2026092702,
+  "registry": "registry/dist/links-2026101901.json",
+  "registry_version": 2026101901,
   "send": [
     {
       "context": "{\"locale\":\"zh-Hans\"}",
       "name": "brand shell, no request",
-      "outcome": "{\"level\":\"brand\",\"provider\":\"taobao\",\"route\":\"item\",\"kind\":\"product\",\"preview\":{\"url\":\"https://item.taobao.com/item.htm?id=100032608854\",\"title\":\"淘宝\",\"description\":null,\"image_url\":null,\"date\":null,\"rich\":{\"kind\":\"product\",\"provider\":\"taobao\",\"schema\":1,\"canonical_url\":\"https://item.taobao.com/item.htm?id=100032608854\",\"attrs\":[],\"level\":1},\"rich_hex\":\"0a0770726f64756374120674616f62616f1801223068747470733a2f2f6974656d2e74616f62616f2e636f6d2f6974656d2e68746d3f69643d3130303033323630383835343001\"},\"group_link_invalid\":false,\"lookalike\":null,\"newly_unreachable_hosts\":[],\"failures\":[]}",
+      "outcome": "{\"level\":\"brand\",\"provider\":\"weibo\",\"route\":\"status\",\"kind\":\"article\",\"preview\":{\"url\":\"https://weibo.com/2803301701/NEfBc8VJE\",\"title\":\"微博\",\"description\":null,\"image_url\":null,\"date\":null,\"rich\":{\"kind\":\"article\",\"provider\":\"weibo\",\"schema\":1,\"canonical_url\":\"https://weibo.com/2803301701/NEfBc8VJE\",\"attrs\":[],\"level\":1},\"rich_hex\":\"0a0761727469636c651205776569626f1801222668747470733a2f2f776569626f2e636f6d2f323830333330313730312f4e4566426338564a453001\"},\"group_link_invalid\":false,\"lookalike\":null,\"newly_unreachable_hosts\":[],\"failures\":[]}",
       "requests": [],
       "script": {},
-      "url": "https://item.taobao.com/item.htm?id=100032608854"
+      "url": "https://weibo.com/2803301701/NEfBc8VJE"
     },
     {
       "context": "{}",

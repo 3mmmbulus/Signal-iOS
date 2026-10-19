@@ -38,10 +38,11 @@ final class TellomiNativeSendJob: TellomiSendJob, @unchecked Sendable {
 }
 
 /// 随 App 带的链接注册表（ADR-0063 §8.1 第 3 行：iOS 随包，热更新在 P1 之后），和拿它做的接收端判定。
-/// 与 Android `TellomiLinkRegistry.kt`、Desktop `linkRegistry.preload.ts` 是同一份文件（`links-2026092702.json`）。
+/// 与 Android `TellomiLinkRegistry.kt`、Desktop `linkRegistry.preload.ts` 是同一份文件（`links-2026101901.json`，
+/// 2026-10-19 起有 `claimed` 档，要 libsignal 的 rust/links 认得它：tellomi/libsignal `bot/links-claimed-tier-r1`）。
 /// 注册表加载失败时什么都不判，预览照 Signal 原样显示。
 public enum TellomiLinkRegistry {
-    public static let bundledResourceName = "links-2026092702"
+    public static let bundledResourceName = "links-2026101901"
 
     public static let classifier = TellomiLinkClassifier(
         registry: loadBundled(),
