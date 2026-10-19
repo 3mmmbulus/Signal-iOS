@@ -28,7 +28,7 @@ final class TellomiFeedDynamicTypeUITests: XCTestCase {
         let attributes = control.titleTextAttributes(for: .normal)
         XCTAssertEqual((attributes?[.font] as? UIFont)?.pointSize, UIFont.dynamicTypeFootnoteClamped.pointSize)
         host.layoutIfNeeded()
-        XCTAssertGreaterThanOrEqual(control.frame.height, heights[0].constant - 0.5)
+        XCTAssertGreaterThanOrEqual(control.frame.size.height, heights[0].constant - 0.5)
     }
 
     @MainActor
