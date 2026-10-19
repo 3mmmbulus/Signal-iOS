@@ -60,6 +60,8 @@ final class TellomiFeedMyPostsEntryUITests: XCTestCase {
         XCTAssertNotNil(item.primaryAction)
         harness.feed.openMyPosts()   // 按钮的动作就是它
         let page = try XCTUnwrap(harness.navigation.topViewController as? FeedMyPostsViewController)
+        // 入口是 animated 推页：页面的 view（和 viewDidLoad 里开始的第一次载入）要等一轮才有，先加载好再等 store
+        page.loadViewIfNeeded()
         await page.store.waitForTasks()
         XCTAssertEqual(page.store.state.posts.count, 30)
         XCTAssertTrue(page.store.isObservingFeed, "和动态页同一个 FeedStore")

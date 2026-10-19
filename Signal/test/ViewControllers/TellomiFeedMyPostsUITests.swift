@@ -355,6 +355,8 @@ final class TellomiFeedMyPostsUITests: XCTestCase {
         XCTAssertFalse(page.presentation.canLoadMore)
 
         harness.source.simulation.failsMyPostsMore = false
+        // 重试行在列表最底下：先滚到底，cellForRow 才拿得到
+        page.postsTableView.scrollToRow(at: IndexPath(row: page.rows.count - 1, section: 0), at: .bottom, animated: false)
         let status = try XCTUnwrap(cell(page, page.rows.count - 1, as: FeedStatusRowCell.self))
         status.retryButton.sendActions(for: .touchUpInside)
         await page.store.waitForTasks()
