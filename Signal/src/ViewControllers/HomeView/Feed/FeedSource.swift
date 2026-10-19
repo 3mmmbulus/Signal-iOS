@@ -76,6 +76,8 @@ protocol FeedSource: AnyObject {
     func followRequests() async throws -> [FeedFollowRequest]
     func answerFollowRequest(profileId: String, approve: Bool) async throws
     func blocks() async throws -> [FeedBlockEntry]
+    /// 从屏蔽名单里取消一项（作者、来源或话题）。
+    func unblock(_ entry: FeedBlockEntry) async throws
     func hideLists() async throws -> FeedHideLists
     func setHideList(list: String, profileId: String, on: Bool) async throws
     func closePeople() async throws -> FeedClosePeopleResponse
@@ -148,6 +150,10 @@ extension FeedSource {
     func followRequests() async throws -> [FeedFollowRequest] { [] }
     func answerFollowRequest(profileId: String, approve: Bool) async throws { throw FeedPublishError.feedNotAvailable }
     func blocks() async throws -> [FeedBlockEntry] { [] }
+    func unblock(_ entry: FeedBlockEntry) async throws {
+        guard entry.type == FeedAPI.targetAuthor else { throw FeedPublishError.feedNotAvailable }
+        try await setBlocked(profileId: entry.id, blocked: false)
+    }
     func hideLists() async throws -> FeedHideLists { throw FeedPublishError.feedNotAvailable }
     func setHideList(list: String, profileId: String, on: Bool) async throws { throw FeedPublishError.feedNotAvailable }
     func closePeople() async throws -> FeedClosePeopleResponse { throw FeedPublishError.feedNotAvailable }
@@ -308,6 +314,7 @@ final class RemoteFeedSource: FeedSource {
     func followRequests() async throws -> [FeedFollowRequest] { try await api.followRequests() }
     func answerFollowRequest(profileId: String, approve: Bool) async throws { try await api.answerFollowRequest(profileId: profileId, approve: approve) }
     func blocks() async throws -> [FeedBlockEntry] { try await api.blocks() }
+    func unblock(_ entry: FeedBlockEntry) async throws { try await api.block(type: entry.type, id: entry.id, on: false) }
     func hideLists() async throws -> FeedHideLists { try await api.hideLists() }
     func setHideList(list: String, profileId: String, on: Bool) async throws { try await api.setHideList(list: list, profileId: profileId, on: on) }
     func closePeople() async throws -> FeedClosePeopleResponse { try await api.closePeople() }

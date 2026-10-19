@@ -111,6 +111,15 @@ final class SampleFeedSource: FeedSource {
         var failsAppeals = false
         /// 编辑保存：失败（提示「操作失败」）；回 409 `edit_window_closed`（已过 15 分钟）/ `not_editable`；先等一会儿（保存中那一帧）。
         var failsEdits = false
+        /// 名单页（见 `SampleFeedSource+Lists.swift`）：请求先等一会儿（加载中那一帧）；读名单 / 处理一行失败；被限速（429 带这么多秒）；
+        /// 回应关注请求时对方已撤回（404）；关心的人：满 3 个（409 `close_people_full`）/ 还没建主页（409 `profile_required`）。
+        var listsLatencyNanos: UInt64 = 0
+        var failsListsLoad = false
+        var failsListsActions = false
+        var listsThrottledRetryAfterSeconds: Int?
+        var followRequestWithdrawn = false
+        var closePeopleFull = false
+        var closePeopleProfileRequired = false
         var editsWindowClosed = false
         var editsNotEditable = false
         var editLatencyNanos: UInt64 = 0
@@ -134,6 +143,7 @@ final class SampleFeedSource: FeedSource {
 
     /// 作者主页样例的关系状态（关注 / 屏蔽 / 不看·不让看），见 `SampleFeedSource+Profile.swift`。
     let profiles = SampleProfileState()
+    let listsState = SampleListsState()
     let topicFollows = SampleTopicState()
     let notificationState = SampleNotificationState()
     let myPostsState = SampleMyPostsState()

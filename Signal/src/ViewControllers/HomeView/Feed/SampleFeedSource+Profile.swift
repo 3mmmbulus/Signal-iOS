@@ -130,6 +130,7 @@ extension SampleFeedSource {
                 if on { hiddenFrom.insert(profileId) } else { hiddenFrom.remove(profileId) }
             }
         }
+        if !on { removeFromSeededHideList(list: list, profileId: profileId) }
     }
 
     private func simulatedProfileAction(latency: UInt64, fails: Bool) async throws {
