@@ -166,6 +166,22 @@ enum TellomiFeed {
         }
     }
 
+    private static let listsKey = "TellomiFeed.lists"
+
+    /// 名单页：关注请求、不看 TA 的动态、不让 TA 看我的动态、动态屏蔽列表、关心的人。入口是动态设置页里的一行和「我的动态」右上角的按钮。
+    /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
+    /// （Internal Settings 里有开关行）。关着时设置页和「我的动态」页和之前一样，没有这个入口。
+    static var isListsEnabled: Bool {
+        get {
+            guard DebugFlags.internalSettings else { return false }
+            return UserDefaults.standard.bool(forKey: listsKey)
+        }
+        set {
+            guard DebugFlags.internalSettings else { return }
+            UserDefaults.standard.set(newValue, forKey: listsKey)
+        }
+    }
+
     /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
     /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
     static var isSampleDataEnabled: Bool {

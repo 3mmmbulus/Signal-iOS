@@ -230,6 +230,13 @@ class InternalSettingsViewController: OWSTableViewController2 {
                 TellomiFeed.isComposeExtrasEnabled = uiSwitch.isOn
             },
         ))
+        feedSection.add(.switch(
+            withText: "Feed: lists (follow requests, hidden, blocked, close people)",
+            isOn: { TellomiFeed.isListsEnabled },
+            actionBlock: { uiSwitch in
+                TellomiFeed.isListsEnabled = uiSwitch.isOn
+            },
+        ))
         feedSection.add(.copyableItem(label: "global.feed.enabled", value: RemoteConfig.current.isTellomiFeedEnabled ? "true" : "false"))
         contents.add(feedSection)
 

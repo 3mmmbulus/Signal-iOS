@@ -14,6 +14,8 @@ import UIKit
 final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
 
     let store: FeedRecommendationSettingsStore
+    private let source: FeedSource
+    private let listsEnabled: Bool
     private let now: () -> Date
     private typealias P = FeedSettingsPresentation
 
@@ -27,7 +29,15 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
     private(set) var categoriesOpen = false
 
     /// `blockedKeywords` 要和动态页的 `FeedStore` 是同一份：设置页加的「完全屏蔽」词，信息流下一次刷新时就认。
-    init(source: FeedSource, blockedKeywords: FeedBlockedKeywords, now: @escaping () -> Date = Date.init) {
+    /// `listsEnabled`（默认跟 `TellomiFeed.isListsEnabled`）打开时，页面最上面多一行「名单」，推名单入口页。
+    init(
+        source: FeedSource,
+        blockedKeywords: FeedBlockedKeywords,
+        listsEnabled: Bool = TellomiFeed.isListsEnabled,
+        now: @escaping () -> Date = Date.init,
+    ) {
+        self.source = source
+        self.listsEnabled = listsEnabled
         self.now = now
         self.store = FeedRecommendationSettingsStore(source: source, blockedKeywords: blockedKeywords, now: now)
         super.init()
@@ -60,6 +70,15 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
 
     private func updateTableContents(_ state: FeedRecommendationSettingsState) {
         let contents = OWSTableContents()
+        if listsEnabled {
+            let section = OWSTableSection()
+            section.add(OWSTableItem(
+                text: FeedListsViewController.title,
+                actionBlock: { [weak self] in self?.openLists() },
+                accessoryType: .disclosureIndicator,
+            ))
+            contents.add(section)
+        }
         switch P.phase(state) {
         case .loading:
             let section = OWSTableSection()
@@ -248,6 +267,12 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
     func toggleCategories() {
         categoriesOpen.toggle()
         apply(store.state)
+    }
+
+    /// 点「名单」一行：推名单入口页（单测 / 截图直接调它）。
+    func openLists() {
+        guard listsEnabled else { return }
+        navigationController?.pushViewController(FeedListsViewController(source: source), animated: true)
     }
 
     /// 暂停推荐 30 天：先确认（单测 / 截图直接调它）。

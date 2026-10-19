@@ -11296,6 +11296,63 @@
 "TELLOMI_FEED_AUDIENCE_TITLE_INCLUDE" = "Only some friends";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ACCEPT" = "Agree";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ACCEPTED" = "Agreed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ADD" = "Add";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ADDED" = "Request sent. They'll show once they agree.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_EXPLAIN" = "Pick up to %1$@ people to show on your public profile. They'll only show after they agree.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_FULL" = "You can pick up to %1$@ people.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_MINE" = "Your close people (%1$@/%2$@)";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_MINE_EMPTY" = "You haven't picked anyone yet.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_NOT_ALLOWED" = "You can't add this person.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_NO_RESULTS" = "No one found";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_PENDING" = "Waiting for them to agree";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REMOVE" = "Remove";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUESTS" = "People who picked you";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUESTS_EMPTY" = "No one yet.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUEST_ACCEPTED" = "Showing you on their profile";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUEST_PENDING" = "Wants to show you on their profile";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_SEARCH_HINT" = "Search by ID or name to add";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_TITLE" = "Close people";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_WITHDRAW" = "Withdraw";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENTS" = "Comments";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11510,6 +11567,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LIKE" = "Like";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_LISTS_TITLE" = "Lists";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LOAD_FAILED" = "Couldn't load posts";
@@ -11804,6 +11864,75 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOT_INTERESTED" = "Not interested";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_APPROVE" = "Approve";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_APPROVED" = "Approved";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_EMPTY" = "You haven't blocked anyone in Feed.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_EXPLAIN" = "Blocking here only affects Feed. It doesn't block anyone in chats.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_OTHER" = "Blocked: %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_SOURCE" = "Source: %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_TITLE" = "Blocked in Feed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_TOPIC" = "Topic: %1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_DECLINE" = "Decline";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_DECLINED" = "Declined";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_HIDDEN_FROM_EMPTY" = "No one here. You can add people from ··· on their profile.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_HIDDEN_FROM_EXPLAIN" = "They can't see any of your posts, public ones included. They won't know.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_HIDDEN_FROM_TITLE" = "Hide my posts from";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_LOAD_FAILED" = "Couldn't load this list";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_MUTED_EMPTY" = "No one here. Choose \"Don't show their posts\" from ··· on a post.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_MUTED_EXPLAIN" = "Their posts won't show in Following or Recommended. They won't know, and you can still open their profile.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_MUTED_TITLE" = "Posts you don't see";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REMOVE" = "Remove";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REMOVED" = "Removed";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REQUESTS_EMPTY" = "No follow requests. People who want to follow your private account will show up here.";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REQUESTS_TITLE" = "Follow requests";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_UNBLOCK" = "Unblock";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_UNBLOCKED" = "Unblocked";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_BLOCK" = "Block";

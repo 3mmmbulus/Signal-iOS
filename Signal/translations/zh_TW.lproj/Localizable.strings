@@ -11182,6 +11182,63 @@
 "TELLOMI_FEED_AUDIENCE_TITLE_INCLUDE" = "只給部分好友看";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ACCEPT" = "同意";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ACCEPTED" = "已同意";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ADD" = "新增";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_ADDED" = "已送出，對方同意後顯示。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_EXPLAIN" = "最多設 %1$@ 個人展示在你的公開主頁上，對方同意後才會顯示。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_FULL" = "最多設 %1$@ 個人。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_MINE" = "我設的人（%1$@/%2$@）";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_MINE_EMPTY" = "還沒有設任何人。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_NOT_ALLOWED" = "不能設這個人。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_NO_RESULTS" = "沒有找到";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_PENDING" = "等對方同意";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REMOVE" = "移除";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUESTS" = "設我為關心的人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUESTS_EMPTY" = "還沒有人。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUEST_ACCEPTED" = "已在對方主頁上展示";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_REQUEST_PENDING" = "想在主頁上展示你";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_SEARCH_HINT" = "搜尋 ID 或名字新增";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_TITLE" = "關心的人";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_CLOSE_PEOPLE_WITHDRAW" = "撤回";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_COMMENTS" = "留言";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11396,6 +11453,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LIKE" = "讚";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_LISTS_TITLE" = "名單";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_LOAD_FAILED" = "載入失敗";
@@ -11690,6 +11750,75 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOT_INTERESTED" = "不感興趣";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_APPROVE" = "同意";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_APPROVED" = "已同意";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_EMPTY" = "你還沒有在動態裡封鎖任何人。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_EXPLAIN" = "這裡的封鎖只對動態生效，不影響聊天。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_OTHER" = "已封鎖：%1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_SOURCE" = "來源：%1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_TITLE" = "動態封鎖名單";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_BLOCKED_TOPIC" = "話題：%1$@";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_DECLINE" = "拒絕";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_DECLINED" = "已拒絕";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_HIDDEN_FROM_EMPTY" = "名單是空的。在別人主頁的「···」裡可以加。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_HIDDEN_FROM_EXPLAIN" = "TA 看不到你的任何動態，公開的也看不到，TA 不會知道。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_HIDDEN_FROM_TITLE" = "不讓 TA 看我的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_LOAD_FAILED" = "名單載入失敗";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_MUTED_EMPTY" = "名單是空的。在別人貼文的「···」裡選「不看 TA 的動態」就會加到這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_MUTED_EXPLAIN" = "TA 的動態不會出現在你的關注和推薦裡，TA 不會知道；TA 的主頁照樣打得開。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_MUTED_TITLE" = "不看 TA 的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REMOVE" = "移出";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REMOVED" = "已移出";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REQUESTS_EMPTY" = "沒有關注請求。想關注你私密帳號的人會出現在這裡。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_REQUESTS_TITLE" = "關注請求";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_UNBLOCK" = "取消封鎖";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_PEOPLE_UNBLOCKED" = "已取消封鎖";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_BLOCK" = "封鎖";

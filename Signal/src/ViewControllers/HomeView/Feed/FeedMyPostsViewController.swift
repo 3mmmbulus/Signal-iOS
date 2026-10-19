@@ -23,6 +23,7 @@ final class FeedMyPostsViewController: OWSViewController {
     private let feed: FeedStore?
     private let refreshControl = UIRefreshControl()
     private let composeExtras: Bool
+    private let listsEnabled: Bool
     private let articleDrafts: FeedArticleDrafts?
     private let draftHeader = FeedDraftEntryHeader()
     private var draftEntry: FeedComposeDraftEntry?
@@ -48,10 +49,12 @@ final class FeedMyPostsViewController: OWSViewController {
         feed: FeedStore?,
         composeExtras: Bool = TellomiFeed.isComposeExtrasEnabled,
         articleDrafts: FeedArticleDrafts? = nil,
+        listsEnabled: Bool = TellomiFeed.isListsEnabled,
     ) {
         self.source = source
         self.feed = feed
         self.composeExtras = composeExtras
+        self.listsEnabled = listsEnabled
         self.articleDrafts = composeExtras ? (articleDrafts ?? StoredFeedArticleDrafts(storage: FeedLocalStorages.backupExcluded)) : nil
         self.store = FeedMyPostsStore(source: source, feed: feed)
         self.presentation = FeedMyPostsPresentation(state: store.state)
@@ -59,6 +62,17 @@ final class FeedMyPostsViewController: OWSViewController {
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.title = Self.title
         hidesBottomBarWhenPushed = true
+        if listsEnabled {
+            let button = UIBarButtonItem(image: UIImage(systemName: "person.2"), primaryAction: UIAction { [weak self] _ in self?.openLists() })
+            button.accessibilityLabel = FeedListsViewController.title
+            navigationItem.rightBarButtonItem = button
+        }
+    }
+
+    /// 点右上角的名单按钮：推名单入口页（单测 / 截图直接调它）。
+    func openLists() {
+        guard listsEnabled else { return }
+        navigationController?.pushViewController(FeedListsViewController(source: source), animated: true)
     }
 
     static var title: String {
