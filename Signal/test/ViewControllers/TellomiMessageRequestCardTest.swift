@@ -36,7 +36,7 @@ final class TellomiMessageRequestCardTest: SignalBaseTest {
     }
 
     /// 发送端写的、想骗人的东西：这些字任何一个出现在域名卡上都是错的。
-    private static let forged = ["冒充：Tellomi 官方客服，请立即回复验证码", "点击领取奖励", "淘宝商品标题", "发送端写的群名"]
+    private static let forged = ["冒充：Tellomi 官方客服，请立即回复验证码", "点击领取奖励", "淘宝商品标题", "发送端写的群名", "冒充：京东客服退款，请点击"]
 
     private func makeThread(accepted: Bool) -> TSContactThread {
         return write { tx in
@@ -171,6 +171,12 @@ final class TellomiMessageRequestCardTest: SignalBaseTest {
         XCTAssertFalse(CVComponentLinkPreview.respondsToTap(state), file: file, line: line)
         XCTAssertFalse(state.isCardOnly, file: file, line: line)
         XCTAssertNotNil(componentState.bodyText, "正文还在", file: file, line: line)
+        // 统一样式（产品经理 2026-10-19）：只有域名的横条（域名 + 指南针），中性灰，不取图标主色；照原样留在气泡里（不代替气泡）
+        XCTAssertEqual(state.cardStyle, .domainStrip, file: file, line: line)
+        XCTAssertEqual(state.cardText?.title, nil, file: file, line: line)
+        XCTAssertEqual(state.cardText?.domain, domain, file: file, line: line)
+        XCTAssertNil(state.stripColor, file: file, line: line)
+        XCTAssertEqual(componentState.tellomiLinkCardPlacement, .inBubble, file: file, line: line)
         // 发送端写的东西一个字都不在
         let texts = [state.title, state.previewDescription, state.displayDomain].compactMap { $0 }
         for word in Self.forged {
@@ -217,6 +223,33 @@ final class TellomiMessageRequestCardTest: SignalBaseTest {
             thread: thread,
         )
         try assertDomainCard(try componentState(message), domain: "taobao.com")
+    }
+
+    /// 认领但抓页面的平台（京东，2026-10-19）：发送端不带 rich、带页面自己的标题；消息请求里一样只有域名，不带随包图标。
+    @MainActor
+    func testAClaimedPlatformLinkIsJustItsDomainToo() throws {
+        try requireBundledRegistry()
+        let thread = makeThread(accepted: false)
+        let url = "https://item.jd.com/100012043978.html"
+        let message = try insertIncoming(
+            body: url,
+            preview: Preview(title: "冒充：京东客服退款，请点击", description: nil, rich: nil, url: url),
+            thread: thread,
+        )
+        try assertDomainCard(try componentState(message), domain: "jd.com")
+    }
+
+    /// 没打协议的裸域名（2026-10-19，§5.6 的例外）：消息请求里也只有域名卡。
+    @MainActor
+    func testABareDomainIsJustItsDomainToo() throws {
+        try requireBundledRegistry()
+        let thread = makeThread(accepted: false)
+        let message = try insertIncoming(
+            body: "baidu.com",
+            preview: Preview(title: "冒充：Tellomi 官方客服，请立即回复验证码", description: nil, rich: nil, url: "https://baidu.com"),
+            thread: thread,
+        )
+        try assertDomainCard(try componentState(message), domain: "baidu.com")
     }
 
     @MainActor
@@ -321,6 +354,11 @@ final class TellomiMessageRequestCardTest: SignalBaseTest {
         XCTAssertFalse(state.isInert)
         XCTAssertTrue(CVComponentLinkPreview.respondsToTap(state))
         XCTAssertTrue(state.isCardOnly, "只有这一条链接时只显示卡片")
+        // 统一样式：没有图的文字横条（标题 + 域名 + 指南针），卡片代替气泡
+        XCTAssertEqual(state.cardStyle, .textStrip)
+        XCTAssertEqual(state.cardText?.title, "维基百科")
+        XCTAssertEqual(state.cardText?.domain, "wikipedia.org")
+        XCTAssertEqual(componentState.tellomiLinkCardPlacement, .replacesBubble)
     }
 
     @MainActor
