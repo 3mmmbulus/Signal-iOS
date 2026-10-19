@@ -11431,10 +11431,31 @@
 "TELLOMI_FEED_DELETE_POST_CONFIRM" = "要刪除這則動態嗎？刪除後無法復原。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_APPROVE" = "核准";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_COMMENT_NOT_FOUND" = "這則留言已經看不到了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_DECLINE" = "拒絕";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_DECLINE_BODY" = "這則回覆會被刪除。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_DECLINE_TITLE" = "拒絕這則回覆？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_BODY" = "可能已被刪除，或你已無法查看。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_TITLE" = "這則動態已無法查看";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_HELD_FOR_YOU" = "等你核准";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_HELD_WAITING" = "作者核准後公開";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_TITLE" = "動態詳情";
@@ -11827,6 +11848,30 @@
 "TELLOMI_FEED_PEOPLE_UNBLOCKED" = "已取消封鎖";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_CLOSED" = "已結束";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_DAYS_LEFT_FORMAT" = "還剩 %@ 天";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_HOURS_LEFT_FORMAT" = "還剩 %@ 小時";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_MINUTES_LEFT_FORMAT" = "還剩 %@ 分鐘";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_MULTI" = "可複選";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_VOTE" = "投票";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_VOTES_FORMAT" = "%@ 票";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_YOUR_CHOICE" = "你的選擇";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_BLOCK" = "封鎖";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -12034,7 +12079,19 @@
 "TELLOMI_FEED_REPORT_VIOLENCE_THREAT" = "暴力或威脅";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPOST" = "轉發到動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPOSTED_DONE" = "已轉發到你的動態";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RETRY" = "重試";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SAVE" = "收藏";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SAVED_DONE" = "已存進「我的收藏」";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_SEARCH_BUTTON" = "搜尋";
@@ -12409,7 +12466,22 @@
 "TELLOMI_FEED_UNDO" = "復原";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_UNDO_REPOST" = "取消轉發";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNLIKE" = "收回讚";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_UNSAVE" = "取消收藏";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_VOICE_PAUSE" = "暫停語音留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_VOICE_PLAY" = "播放語音留言";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_VOICE_PLAY_FAILED" = "語音留言播放失敗。";
 
 /* Button in the first-launch privacy notice: agree. */
 "TELLOMI_FIRST_LAUNCH_AGREE" = "同意";

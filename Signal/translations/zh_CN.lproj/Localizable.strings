@@ -11314,10 +11314,31 @@
 "TELLOMI_FEED_DELETE_POST_CONFIRM" = "要删除这条动态吗？删除后无法恢复。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_APPROVE" = "批准";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_COMMENT_NOT_FOUND" = "这条评论已经看不到了";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_DECLINE" = "拒绝";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_DECLINE_BODY" = "这条回复会被删除。";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_DECLINE_TITLE" = "拒绝这条回复？";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_BODY" = "可能已被删除，或你已无法查看。";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_GONE_TITLE" = "这条动态已不可见";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_HELD_FOR_YOU" = "等你批准";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_DETAIL_HELD_WAITING" = "作者批准后公开";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_DETAIL_TITLE" = "动态详情";
@@ -11710,6 +11731,30 @@
 "TELLOMI_FEED_PEOPLE_UNBLOCKED" = "已取消屏蔽";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_CLOSED" = "已结束";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_DAYS_LEFT_FORMAT" = "还剩 %@ 天";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_HOURS_LEFT_FORMAT" = "还剩 %@ 小时";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_MINUTES_LEFT_FORMAT" = "还剩 %@ 分钟";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_MULTI" = "可多选";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_VOTE" = "投票";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_VOTES_FORMAT" = "%@ 票";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_POLL_YOUR_CHOICE" = "你的选择";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_BLOCK" = "屏蔽";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
@@ -11917,7 +11962,19 @@
 "TELLOMI_FEED_REPORT_VIOLENCE_THREAT" = "暴力或威胁";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPOST" = "转发到动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_REPOSTED_DONE" = "已转发到你的动态";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RETRY" = "重试";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SAVE" = "收藏";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_SAVED_DONE" = "已存进「我的收藏」";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_SEARCH_BUTTON" = "搜索";
@@ -12292,7 +12349,22 @@
 "TELLOMI_FEED_UNDO" = "撤销";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_UNDO_REPOST" = "取消转发";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_UNLIKE" = "取消赞";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_UNSAVE" = "取消收藏";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_VOICE_PAUSE" = "暂停语音评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_VOICE_PLAY" = "播放语音评论";
+
+/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+"TELLOMI_FEED_VOICE_PLAY_FAILED" = "语音评论播放失败。";
 
 /* One-time card about the new attachment panel, line 1: photos and files are pages of the same panel. */
 "TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_1" = "相册与文件：在同一个面板里随手切换，不用离开聊天";
