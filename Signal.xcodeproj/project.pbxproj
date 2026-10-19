@@ -144,6 +144,8 @@
 		812A8FDAD4713C93192AC437 /* FeedAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */; };
 		89AA64F1E08A9DE633DF904E /* FeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A93B0DFBCC7C033684326DD /* FeedModels.swift */; };
 		E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */; };
+		DF567CF737A8D027733D723A /* TellomiFeedDynamicTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2553E473777A26DE5807AF9F /* TellomiFeedDynamicTypeTests.swift */; };
+		8EBD8FB9E73A13DCF7E4924D /* TellomiFeedDynamicTypeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD24367058906D4FED9C0B67 /* TellomiFeedDynamicTypeUITests.swift */; };
 		A0E976F53C8D1073C4C2D795 /* TellomiFeedSettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */; };
 		5E822B2ACA877D8AA548CA65 /* TellomiFeedSettingsPageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */; };
 		0918A2389D15BFFE2CB7F1BE /* TellomiFeedMyPostsEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */; };
@@ -195,6 +197,8 @@
 		3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */; };
 		C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */; };
 		D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */; };
+		038E556EF7610E76E7D867AE /* FeedDynamicTypeLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88E06B76180C9C1E2571044 /* FeedDynamicTypeLayout.swift */; };
+		0B63A44F19E5830EE1C3264A /* FeedDynamicTypeSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC0C0E84D322CD48BE474A1 /* FeedDynamicTypeSupport.swift */; };
 		053A5865ADDA0F40D00DDE5F /* FeedKeywordFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */; };
 		A15ED05C5515210515C3150A /* FeedRecommendationSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */; };
 		A3334F5690AB056EA03C9B3B /* FeedSettingsPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */; };
@@ -4794,6 +4798,8 @@
 		7B2D2BFE42EC40E711CA86AB /* FeedAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedAPI.swift; sourceTree = "<group>"; };
 		8A93B0DFBCC7C033684326DD /* FeedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedModels.swift; sourceTree = "<group>"; };
 		E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTabTests.swift; sourceTree = "<group>"; };
+		2553E473777A26DE5807AF9F /* TellomiFeedDynamicTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDynamicTypeTests.swift; sourceTree = "<group>"; };
+		AD24367058906D4FED9C0B67 /* TellomiFeedDynamicTypeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedDynamicTypeUITests.swift; sourceTree = "<group>"; };
 		992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsUITests.swift; sourceTree = "<group>"; };
 		AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSettingsPageTests.swift; sourceTree = "<group>"; };
 		8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedMyPostsEntryUITests.swift; sourceTree = "<group>"; };
@@ -4845,6 +4851,8 @@
 		FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTopBarView.swift; sourceTree = "<group>"; };
 		FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTab.swift; sourceTree = "<group>"; };
 		81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeed.swift; sourceTree = "<group>"; };
+		E88E06B76180C9C1E2571044 /* FeedDynamicTypeLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDynamicTypeLayout.swift; sourceTree = "<group>"; };
+		4AC0C0E84D322CD48BE474A1 /* FeedDynamicTypeSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedDynamicTypeSupport.swift; sourceTree = "<group>"; };
 		F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedKeywordFormViewController.swift; sourceTree = "<group>"; };
 		D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedRecommendationSettingsViewController.swift; sourceTree = "<group>"; };
 		28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedSettingsPresentation.swift; sourceTree = "<group>"; };
@@ -9479,6 +9487,8 @@
 				FEA477020B68EEA1AEC1F77A /* FeedTopBarView.swift */,
 				FA72756E5F1A70FFEF6A9256 /* FeedTab.swift */,
 				81389CCBCAF315A2428EB6B2 /* TellomiFeed.swift */,
+				E88E06B76180C9C1E2571044 /* FeedDynamicTypeLayout.swift */,
+				4AC0C0E84D322CD48BE474A1 /* FeedDynamicTypeSupport.swift */,
 				F42F2899754C4DFCFB67F152 /* FeedKeywordFormViewController.swift */,
 				D097C70DB7F1677A86819A08 /* FeedRecommendationSettingsViewController.swift */,
 				28EA08FDA59E332AFF1CB460 /* FeedSettingsPresentation.swift */,
@@ -10602,6 +10612,8 @@
 				B26D19271048AC9ADA1E864E /* TellomiFeedComposeTests.swift */,
 				3EA81FA0FB2FA755202E7A4D /* TellomiFeedClientTests.swift */,
 				E6EB4E1CF89815F5B256480E /* TellomiFeedTabTests.swift */,
+				2553E473777A26DE5807AF9F /* TellomiFeedDynamicTypeTests.swift */,
+				AD24367058906D4FED9C0B67 /* TellomiFeedDynamicTypeUITests.swift */,
 				992F9FD4FA44F4F141263516 /* TellomiFeedSettingsUITests.swift */,
 				AA12F56EFA1A73CFE590DC4C /* TellomiFeedSettingsPageTests.swift */,
 				8A87E17FD319606B0F7AF4B6 /* TellomiFeedMyPostsEntryUITests.swift */,
@@ -19694,6 +19706,8 @@
 				3CBB1B7E0061939542B1D762 /* FeedTopBarView.swift in Sources */,
 				C34C9594F3DD0DD736C80E4C /* FeedTab.swift in Sources */,
 				D06519410221076AD00774D6 /* TellomiFeed.swift in Sources */,
+				038E556EF7610E76E7D867AE /* FeedDynamicTypeLayout.swift in Sources */,
+				0B63A44F19E5830EE1C3264A /* FeedDynamicTypeSupport.swift in Sources */,
 				053A5865ADDA0F40D00DDE5F /* FeedKeywordFormViewController.swift in Sources */,
 				A15ED05C5515210515C3150A /* FeedRecommendationSettingsViewController.swift in Sources */,
 				A3334F5690AB056EA03C9B3B /* FeedSettingsPresentation.swift in Sources */,
@@ -20663,6 +20677,8 @@
 				8DBC1BC65F659FE01DE57D3C /* TellomiFeedComposeTests.swift in Sources */,
 				66E8ABD7206DBA93C31FE724 /* TellomiFeedClientTests.swift in Sources */,
 				E626C06E23D3D8E8D0E53A40 /* TellomiFeedTabTests.swift in Sources */,
+				DF567CF737A8D027733D723A /* TellomiFeedDynamicTypeTests.swift in Sources */,
+				8EBD8FB9E73A13DCF7E4924D /* TellomiFeedDynamicTypeUITests.swift in Sources */,
 				A0E976F53C8D1073C4C2D795 /* TellomiFeedSettingsUITests.swift in Sources */,
 				5E822B2ACA877D8AA548CA65 /* TellomiFeedSettingsPageTests.swift in Sources */,
 				0918A2389D15BFFE2CB7F1BE /* TellomiFeedMyPostsEntryUITests.swift in Sources */,
