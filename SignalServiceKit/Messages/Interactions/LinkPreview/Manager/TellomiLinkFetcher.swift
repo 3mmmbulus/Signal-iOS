@@ -104,7 +104,7 @@ public final class TellomiLinkFetchBudget: @unchecked Sendable {
 /// 发送端的安全抓取器（§4.4 契约；§4.10：`rust/links` 不联网，决定抓什么以后由各端的这个抓取器去抓）。
 ///
 /// 与上游 `LinkPreviewFetcherImpl` 原来经 `OWSURLSession` 的做法相比：
-/// - 请求头只有 `User-Agent`（`WhatsApp/2`）、`Accept`、`Accept-Encoding`，外加一个盖掉 CFNetwork 自动语言列表的中性
+/// - 请求头只有 `User-Agent`（`WhatsApp/2`；公众号文章页例外，见 `TellomiLinkFetchContract.browserUserAgentHosts`）、`Accept`、`Accept-Encoding`，外加一个盖掉 CFNetwork 自动语言列表的中性
 ///   `Accept-Language`（见 `TellomiLinkFetchContract.neutralAcceptLanguage`）；上游会经 `addDefaultHeaders()` 带上用户的语言列表；
 /// - 完全不存、不发 cookie；
 /// - 重定向自己跟：最多 5 跳，每跳重做 https / 形状 / 私网校验和可达性记录检查；
@@ -343,7 +343,7 @@ public final class TellomiLinkFetcher: @unchecked Sendable {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: configuration.connectTimeout)
         request.httpMethod = "GET"
         request.httpShouldHandleCookies = false
-        request.setValue(TellomiLinkFetchContract.userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue(TellomiLinkFetchContract.userAgent(for: url, step: step), forHTTPHeaderField: "User-Agent")
         request.setValue(step.acceptHeader, forHTTPHeaderField: "Accept")
         request.setValue(TellomiLinkFetchContract.acceptEncoding, forHTTPHeaderField: "Accept-Encoding")
         request.setValue(TellomiLinkFetchContract.neutralAcceptLanguage, forHTTPHeaderField: "Accept-Language")

@@ -8,8 +8,28 @@ import Foundation
 /// 发送端抓链接预览的契约（超级仓库 `docs/adr/0063-link-system-rich-content.md` §4.4、§6.2；tellomi/tellomi#1423）。
 /// 数字三端一样，改这里要同时改 Android / Desktop 的抓取器和 ADR。
 public enum TellomiLinkFetchContract {
-    /// UA 恒为 `WhatsApp/2`（§3.4.1：不暴露设备型号和版本；注册表的 `fetch.ua` 禁用）。
+    /// UA 默认 `WhatsApp/2`（§3.4.1：不暴露设备型号和版本；注册表的 `fetch.ua` 禁用）。
     public static let userAgent = "WhatsApp/2"
+    /// 唯一的例外（产品经理 2026-10-19 批准，ADR-0063 §3.4.1 / §4.4）：微信公众号文章对 `WhatsApp/2` 回验证码页，
+    /// 对 Safari 才给 OG。这个值写死、所有用户一样，不是本机真实的系统和版本。
+    public static let browserUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+    /// 用 `browserUserAgent` 的主机：**精确匹配**，不含子域、不认通配。只在代码里，注册表和热更新加不了；
+    /// 要加别的域名先问产品经理（再报 owner），三端（Android `TellomiLinkFetcher.kt`、Desktop `linkFetcher.node.ts`）一起改。
+    public static let browserUserAgentHosts: Set<String> = ["mp.weixin.qq.com"]
+
+    /// 这一跳带哪个 UA：只有页面步骤（`page` / `html`）、主机精确落在 `browserUserAgentHosts` 里才换；
+    /// 图片、JSON、短链展开和其余主机一律 `WhatsApp/2`。按每一跳的主机判，重定向到别的主机就换回来。
+    public static func userAgent(for url: URL, step: TellomiLinkFetchStep) -> String {
+        switch step {
+        case .page, .html:
+            guard let host = url.host?.lowercased(), browserUserAgentHosts.contains(host) else {
+                return userAgent
+            }
+            return browserUserAgent
+        case .json, .image, .shortLink:
+            return userAgent
+        }
+    }
     public static let acceptEncoding = "gzip, deflate, br"
     /// CFNetwork 在请求没带 `Accept-Language` 时会**自己补上系统语言列表**（本机实测：不设这个头，线上照样出现
     /// `Accept-Language: zh-CN,zh-Hans;q=0.9`；设成 nil 也一样）。URLSession 没有办法让它不发，所以写死一个不含任何信息、

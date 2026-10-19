@@ -150,6 +150,29 @@ final class TellomiLinkFetcherTest: XCTestCase {
 
     // MARK: - 请求头 / cookie
 
+    /// 产品经理 2026-10-19 批准：只有 `mp.weixin.qq.com` 的页面请求用 Safari UA，精确匹配。
+    func testBrowserUserAgentOnlyForTheExactWhitelistedHostAndPageSteps() throws {
+        let safari = TellomiLinkFetchContract.browserUserAgent
+        XCTAssertEqual(TellomiLinkFetchContract.browserUserAgentHosts, ["mp.weixin.qq.com"])
+        XCTAssertTrue(safari.contains("Safari/"))
+        func ua(_ string: String, _ step: TellomiLinkFetchStep) throws -> String {
+            return TellomiLinkFetchContract.userAgent(for: try XCTUnwrap(URL(string: string)), step: step)
+        }
+        XCTAssertEqual(try ua("https://mp.weixin.qq.com/s/_chjr0XiTqoDg3Qg6JzU_g", .html), safari)
+        XCTAssertEqual(try ua("https://MP.WEIXIN.QQ.COM/s?__biz=x", .page), safari)
+        // 别的步骤照旧
+        XCTAssertEqual(try ua("https://mp.weixin.qq.com/s/abc", .image), "WhatsApp/2")
+        XCTAssertEqual(try ua("https://mp.weixin.qq.com/s/abc", .json), "WhatsApp/2")
+        XCTAssertEqual(try ua("https://mp.weixin.qq.com/s/abc", .shortLink), "WhatsApp/2")
+        // 精确匹配：子域、父域、相似域名、图片 CDN 都不算
+        for other in [
+            "https://weixin.qq.com/", "https://qq.com/", "https://x.mp.weixin.qq.com/s/abc",
+            "https://mp.weixin.qq.com.evil.cn/s/abc", "https://mmbiz.qpic.cn/a.jpg", "https://www.zhihu.com/question/1",
+        ] {
+            XCTAssertEqual(try ua(other, .html), "WhatsApp/2", other)
+        }
+    }
+
     func testWireHeadersAreOnlyTheContractOnes() async throws {
         let server = try await startServer { _ in .html(Self.page) }
         let fetcher = makeFetcher(server: server)
