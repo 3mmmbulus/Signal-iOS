@@ -36,4 +36,32 @@ enum FeedDynamicTypeLayout {
     static func stacksPostMetaVertically(isAccessibilityCategory: Bool) -> Bool {
         return isAccessibilityCategory
     }
+
+    // MARK: - 顶栏入口按钮（Mac 报告 2026-10-19 的 a）
+
+    /// 顶栏上入口按钮（铃铛、我的动态、搜索、齿轮）有 4 个时，标题栏被挤到 117pt（默认字号也只有 80pt 放不下「Following」）：
+    /// 把「我的动态」和齿轮收进一个「···」菜单，栏上只剩铃铛、搜索和菜单（3 个，Mac 上验过放得下）。少于 4 个照旧。
+    static let topBarOverflowThreshold = 4
+
+    static func topBarUsesOverflow(entryCount: Int) -> Bool {
+        return entryCount >= topBarOverflowThreshold
+    }
+
+    // MARK: - 分段控件标题（Mac 报告 d）
+
+    /// 分段标题要的字号：想跟正文一样大（`bodyPoints`，不夹紧），但最宽那条标题（按正文字号量出来是 `widestTitleWidth`）
+    /// 放不进一格（`segmentWidth`，已经扣掉左右留白）就按比例缩小，最小不低于 `floorPoints`（再小的字就和别处不搭了，宁可截断）。向下取整。
+    static func segmentedTitlePointSize(bodyPoints: CGFloat, widestTitleWidth: CGFloat, segmentWidth: CGFloat, floorPoints: CGFloat) -> CGFloat {
+        let floorSize = min(floorPoints, bodyPoints)
+        guard widestTitleWidth > 0, segmentWidth > 0, widestTitleWidth > segmentWidth else { return bodyPoints }
+        let scaled = (bodyPoints * segmentWidth / widestTitleWidth).rounded(.down)
+        return max(floorSize, scaled)
+    }
+
+    // MARK: - 我的动态行里的备注和「申诉」按钮（Mac 报告 e）
+
+    /// 备注（审核中 / 被拒原因 / 申诉结果）和下面「申诉」按钮之间的距离：平时 10，无障碍字号 16（以前和别的行一样是 6，字大了贴得很紧）。
+    static func appealSpacing(isAccessibilityCategory: Bool) -> CGFloat {
+        return isAccessibilityCategory ? 16 : 10
+    }
 }

@@ -34,7 +34,7 @@ final class FeedReportViewController: OWSViewController {
     let reasonsTable = UITableView(frame: .zero, style: .insetGrouped)
     let formScroll = UIScrollView()
     private let reasonTitleLabel = UILabel()
-    private let emergencyLabel = UILabel()
+    let emergencyLabel = UILabel()
     let detailTextView = UITextView()
     private var detailHeightConstraint: NSLayoutConstraint?
     private var lastDetailWidth: CGFloat = 0
@@ -44,7 +44,7 @@ final class FeedReportViewController: OWSViewController {
     private let evidenceTitleLabel = UILabel()
     private let evidenceScroll = UIScrollView()
     let evidenceRow = UIStackView()
-    private let hotlineLabel = UILabel()
+    let hotlineLabel = UILabel()
     private let spinner = UIActivityIndicatorView(style: .medium)
     lazy var submitButton = UIBarButtonItem.prominentButton(
         title: OWSLocalizedString("TELLOMI_FEED_REPORT_SUBMIT", comment: "Feed report page: the button that submits the report."),
@@ -84,7 +84,7 @@ final class FeedReportViewController: OWSViewController {
         reasonTitleLabel.textColor = UIColor.Signal.label
         reasonTitleLabel.numberOfLines = 0
 
-        emergencyLabel.font = .dynamicTypeSubheadlineClamped
+        emergencyLabel.font = .dynamicTypeSubheadline
         emergencyLabel.textColor = UIColor.Signal.red
         emergencyLabel.numberOfLines = 0
         emergencyLabel.text = OWSLocalizedString("TELLOMI_FEED_REPORT_EMERGENCY", comment: "Feed report page: shown first for reasons about someone's safety; tells the user to call the emergency number if someone is in danger.")
