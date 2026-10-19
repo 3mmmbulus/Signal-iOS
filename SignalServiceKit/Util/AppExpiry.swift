@@ -213,6 +213,11 @@ public final class AppExpiry {
 
     /// 这个包是不是从 TestFlight 装的：TestFlight 装的包带沙盒收据（`sandboxReceipt`），App Store 正式包的收据叫 `receipt`，
     /// Xcode 直接装的开发包收据地址照样叫 `sandboxReceipt`，但文件不存在。扩展里 `Bundle.main` 是扩展自己，所以看主 App 的收据。
+    /// 主 App 是不是从 TestFlight 装的（`isTestFlightInstall()` 的公开版；Tellomi TestFlight 动态预览用）。
+    public static var isTestFlightInstallOfMainApp: Bool {
+        return isTestFlightInstall()
+    }
+
     static func isTestFlightInstall(receiptURL: URL? = Bundle.main.app.appStoreReceiptURL, fileManager: FileManager = .default) -> Bool {
         guard let receiptURL, receiptURL.lastPathComponent == "sandboxReceipt" else {
             return false

@@ -51,6 +51,7 @@ final class FeedTopicViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.background
 
         topicTableView.backgroundColor = .clear

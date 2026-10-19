@@ -9312,6 +9312,12 @@
 /* Tellomi: shown when the user long-presses an email in About Tellomi but no mail account is set up. */
 "SETTINGS_ABOUT_TELLOMI_EMAIL_UNAVAILABLE_MESSAGE" = "你的设备还没有设置邮箱。地址已复制，可以粘贴到其他邮件 App 里。";
 
+/* Tellomi: switch in About Tellomi, TestFlight builds only. Turns on the Feed tab with on-device sample posts. */
+"SETTINGS_ABOUT_TELLOMI_FEED_PREVIEW" = "动态预览（样例数据）";
+
+/* Tellomi: footer under the TestFlight feed preview switch in About Tellomi. */
+"SETTINGS_ABOUT_TELLOMI_FEED_PREVIEW_FOOTER" = "只在 TestFlight 版本里有。打开后底栏出现「动态」，内容都是存在这台手机上的样例。在里面发布、点赞、举报都不会发到服务器。";
+
 /* Tellomi: row in About Tellomi that opens the website. */
 "SETTINGS_ABOUT_TELLOMI_OFFICIAL_WEBSITE" = "官方网站";
 
@@ -9338,6 +9344,9 @@
 
 /* Tellomi: section header in About Tellomi. */
 "SETTINGS_ABOUT_TELLOMI_SECTION_OPEN_SOURCE" = "开源";
+
+/* Tellomi: section header in About Tellomi that only appears in TestFlight builds. */
+"SETTINGS_ABOUT_TELLOMI_SECTION_TESTFLIGHT" = "TestFlight";
 
 /* Tellomi: section header in About Tellomi. */
 "SETTINGS_ABOUT_TELLOMI_SECTION_UPDATES" = "更新";
@@ -12227,6 +12236,9 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_TELLOMI_NUMBER_FORMAT" = "Tellomi 号：%@";
+
+/* Tellomi: line above the navigation bar on every feed page while the TestFlight feed preview is on. The feed shows on-device sample posts only and nothing is sent to a server. */
+"TELLOMI_FEED_TESTFLIGHT_PREVIEW_BADGE" = "预览·样例数据";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_THROTTLED" = "操作太频繁，请稍后再试。";

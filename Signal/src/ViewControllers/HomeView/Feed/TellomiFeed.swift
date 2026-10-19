@@ -5,12 +5,14 @@
 
 import Foundation
 import SignalServiceKit
+import UIKit
 
 /// M11 动态（ADR-0071、`docs/product/specs/dynamic-feed.md`、tellomi/tellomi#1355）的总开关。
 ///
 /// 客户端不做任何区域判断（ADR-0071 §十五）：显不显示入口看服务端下发的 `global.feed.enabled`，
 /// 再加上内容引擎说的能不能看（内测名单、紧急开关，`GET /v1/feed/status`，契约 3.1，见 `FeedEntryCheck`）。
 /// 内部用户可以在「Internal → Tellomi Feed → Force feed tab」里先打开，方便在服务端下发之前开发和内测。
+/// TestFlight 装的包可以在「关于 Tellomi → 动态预览」里打开样例预览（`TellomiFeedPreview`，默认关，App Store 包里不生效）。
 /// 和 Android 的 `TellomiFeed`（tellomi/Signal-Android#180）同口径。
 enum TellomiFeed {
 
@@ -18,7 +20,7 @@ enum TellomiFeed {
         return isTabEnabled(
             remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
             engineVisible: engineVisible,
-            forcedByInternalUser: isForcedByInternalUser,
+            forcedByInternalUser: TellomiFeedPreview.tabForced(internalForced: isForcedByInternalUser, previewEnabled: isTestFlightPreviewEnabled),
         )
     }
 
@@ -53,8 +55,53 @@ enum TellomiFeed {
     }
 
     /// 要不要去问内容引擎能不能看：入口可能出现（远程开关开了），或者内部用户要连引擎联调。
+    /// TestFlight 预览打开时永远不问（预览不发任何请求）。
     static var shouldAskEngine: Bool {
-        return RemoteConfig.current.isTellomiFeedEnabled || (isForcedByInternalUser && !useSampleData)
+        return TellomiFeedPreview.shouldAskEngine(
+            previewEnabled: isTestFlightPreviewEnabled,
+            remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
+            internalForced: isForcedByInternalUser,
+            internalUseSampleData: useSampleData,
+        )
+    }
+
+    // MARK: - TestFlight 动态预览（`TellomiFeedPreview`）
+
+    /// 收据只看一次：同一次运行里不会从 TestFlight 变成 App Store。
+    private static let isTestFlightInstall: Bool = AppExpiry.isTestFlightInstallOfMainApp
+
+    /// 「关于 Tellomi」里的「动态预览」行出不出现：只有 TestFlight 装的包（App Store 包、Xcode 装的开发包都没有）。
+    static var isTestFlightPreviewAvailable: Bool {
+        return TellomiFeedPreview.isAvailable(isTestFlightInstall: isTestFlightInstall)
+    }
+
+    /// 「动态预览」开关。默认关；不是 TestFlight 包时读永远是 false、写不进去。
+    static var isTestFlightPreviewEnabled: Bool {
+        get { TellomiFeedPreview.isEnabled(isAvailable: isTestFlightPreviewAvailable, defaults: .standard) }
+        set {
+            guard TellomiFeedPreview.setEnabled(newValue, isAvailable: isTestFlightPreviewAvailable, defaults: .standard) else { return }
+            NotificationCenter.default.post(name: .tellomiFeedTabStateDidChange, object: nil)
+        }
+    }
+
+    /// 预览打开时，每个动态页面导航栏上方那一行（`navigationItem.prompt`）；没开是 nil。
+    static var testFlightPreviewPrompt: String? {
+        guard isTestFlightPreviewEnabled else { return nil }
+        return OWSLocalizedString(
+            "TELLOMI_FEED_TESTFLIGHT_PREVIEW_BADGE",
+            value: "Preview · Sample data",
+            comment: "Tellomi: line above the navigation bar on every feed page while the TestFlight feed preview is on. The feed shows on-device sample posts only and nothing is sent to a server.",
+        )
+    }
+
+    /// 页面开关：内部构建照旧看内部开关；别的构建只有预览打开时、跟着预览的页面才开（`TellomiFeedPreview.Page.followsPreview`）。
+    private static func isPageEnabled(_ page: TellomiFeedPreview.Page, key: String) -> Bool {
+        return TellomiFeedPreview.isPageEnabled(
+            page,
+            internalBuild: DebugFlags.internalSettings,
+            internalValue: { UserDefaults.standard.bool(forKey: key) },
+            previewEnabled: isTestFlightPreviewEnabled,
+        )
     }
 
     private static let forceTabKey = "TellomiFeed.forceFeedTab"
@@ -78,10 +125,7 @@ enum TellomiFeed {
     /// 作者主页入口（点帖子 / 评论上的头像或名字）。默认关；只有内部构建认这个值（正式包里永远是 false），
     /// 存在本机 UserDefaults，和「Force feed tab」一样只是开发开关。还没有 Internal Settings 的开关行（见报告「需要你定的」）。
     static var isProfilePageEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: profilePageKey)
-        }
+        get { isPageEnabled(.profile, key: profilePageKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: profilePageKey)
@@ -93,10 +137,7 @@ enum TellomiFeed {
     /// 搜索页和话题页入口（动态页右上角的搜索按钮、帖子上的 `#话题`）。默认关；只有内部构建认这个值（正式包里永远是 false），
     /// 存在本机 UserDefaults，和 `isProfilePageEnabled` 一样只是开发开关。还没有 Internal Settings 的开关行（见报告「需要你定的」）。
     static var isSearchEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: searchKey)
-        }
+        get { isPageEnabled(.search, key: searchKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: searchKey)
@@ -108,10 +149,7 @@ enum TellomiFeed {
     /// 通知页入口（动态页左上角的铃铛 + 红点）。默认关；只有内部构建认这个值（正式包里永远是 false），
     /// 存在本机 UserDefaults，和 `isSearchEnabled` 一样只是开发开关。还没有 Internal Settings 的开关行（见报告「需要你定的」）。
     static var isNotificationsEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: notificationsKey)
-        }
+        get { isPageEnabled(.notifications, key: notificationsKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: notificationsKey)
@@ -125,10 +163,7 @@ enum TellomiFeed {
     /// 「我的动态」入口（动态页左上角的文档图标）。默认关；只有内部构建认这个值（正式包里永远是 false），
     /// 存在本机 UserDefaults，和 `isNotificationsEnabled` 一样只是开发开关（Internal Settings 里有开关行）。
     static var isMyPostsEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: myPostsKey)
-        }
+        get { isPageEnabled(.myPosts, key: myPostsKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: myPostsKey)
@@ -141,10 +176,7 @@ enum TellomiFeed {
     /// 存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关（Internal Settings 里有开关行）。
     /// 打开时，动态页的信息流才会按本机「完全屏蔽」的词过滤（关着时那份词表不读、不过滤）。
     static var isSettingsEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: settingsKey)
-        }
+        get { isPageEnabled(.settings, key: settingsKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: settingsKey)
@@ -158,10 +190,7 @@ enum TellomiFeed {
     /// 存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关（Internal Settings 里有开关行）。
     /// 关着时发布页和之前一样：草稿只在内存里，两档选人显示「还不能选」。
     static var isComposeExtrasEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: composeExtrasKey)
-        }
+        get { isPageEnabled(.composeExtras, key: composeExtrasKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: composeExtrasKey)
@@ -174,10 +203,7 @@ enum TellomiFeed {
     /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
     /// （Internal Settings 里有开关行）。关着时设置页和「我的动态」页和之前一样，没有这个入口。
     static var isListsEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: listsKey)
-        }
+        get { isPageEnabled(.lists, key: listsKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: listsKey)
@@ -190,10 +216,7 @@ enum TellomiFeed {
     /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
     /// （Internal Settings 里有开关行）。关着时详情页和之前一样（长文只显示摘要的开头几行）。
     static var isArticleReaderEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: articleReaderKey)
-        }
+        get { isPageEnabled(.articleReader, key: articleReaderKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: articleReaderKey)
@@ -221,10 +244,7 @@ enum TellomiFeed {
     /// 默认关；只有内部构建认这个值（正式包里永远是 false），存在本机 UserDefaults，和 `isMyPostsEnabled` 一样只是开发开关
     /// （Internal Settings 里有开关行）。关着时详情页和通知页和之前一样。
     static var isDetailExtrasEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: detailExtrasKey)
-        }
+        get { isPageEnabled(.detailExtras, key: detailExtrasKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: detailExtrasKey)
@@ -234,10 +254,7 @@ enum TellomiFeed {
     /// 详情事件（I-13）：打开详情报 `open`、离开时按停留报 `dwell` / `quick_exit`。默认关；只有内部构建认这个值，开关行在 Internal Settings。
     /// 关着时不多报任何事件（曝光照旧）。
     static var isDetailEventsEnabled: Bool {
-        get {
-            guard DebugFlags.internalSettings else { return false }
-            return UserDefaults.standard.bool(forKey: detailEventsKey)
-        }
+        get { isPageEnabled(.detailEvents, key: detailEventsKey) }
         set {
             guard DebugFlags.internalSettings else { return }
             UserDefaults.standard.set(newValue, forKey: detailEventsKey)
@@ -258,8 +275,21 @@ enum TellomiFeed {
 
     /// 内部用户强制打开动态标签、并且没关掉「Feed sample data」时，信息流用本机样例，不连内容引擎。
     /// 关掉之后强制打开的标签连当前区的内容引擎，用来联调。
+    /// TestFlight 预览打开时一定用本机样例。
     static var isSampleDataEnabled: Bool {
-        return isForcedByInternalUser && useSampleData
+        return TellomiFeedPreview.usesSampleData(
+            previewEnabled: isTestFlightPreviewEnabled,
+            internalForced: isForcedByInternalUser,
+            internalUseSampleData: useSampleData,
+        )
+    }
+}
+
+extension UIViewController {
+    /// TestFlight 动态预览打开时，在导航栏上方写「预览·样例数据」（动态的每个页面在 `viewDidLoad` 里调）。
+    func tellomiApplyFeedPreviewPrompt() {
+        guard let prompt = TellomiFeed.testFlightPreviewPrompt else { return }
+        navigationItem.prompt = prompt
     }
 }
 

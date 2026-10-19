@@ -54,6 +54,7 @@ final class FeedAudiencePickerViewController: OWSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tellomiApplyFeedPreviewPrompt()
         view.backgroundColor = UIColor.Signal.groupedBackground
         title = Self.title(for: store.state.visibility)
         navigationItem.leftBarButtonItem = .cancelButton(dismissingFrom: self)
