@@ -166,6 +166,8 @@ final class TellomiFeedTopicUITests: XCTestCase {
         XCTAssertEqual(topic.presentation.posts.map(\.id), before)
         XCTAssertEqual(topic.rows.last, .status(.loadMoreFailed(retryAfterSeconds: nil)))
         XCTAssertFalse(topic.presentation.canLoadMore, "失败后不自己一直重试")
+        // 重试行在列表最底下：先滚到底，cellForRow 才拿得到
+        topic.topicTableView.scrollToRow(at: IndexPath(row: topic.rows.count - 1, section: 0), at: .bottom, animated: false)
         let retryCell = try XCTUnwrap(statusCell(of: topic, at: topic.rows.count - 1))
         XCTAssertFalse(retryCell.retryButton.isHidden)
 
@@ -276,8 +278,11 @@ final class TellomiFeedTopicUITests: XCTestCase {
 
         topic.onOpenAuthor = { _ in }
         topic.topicTableView.reloadData()
+        topic.topicTableView.layoutIfNeeded()
         harness.window.layoutIfNeeded()
-        let again = try XCTUnwrap(topic.topicTableView.cellForRow(at: IndexPath(row: postIndex, section: 0)) as? FeedPostCell)
+        // reloadData 之后表格要过一轮 run loop 才把单元格重新取出来
+        await waitUntil { topic.topicTableView.cellForRow(at: IndexPath(row: postIndex, section: 0)) is FeedPostCell }
+        let again = try XCTUnwrap(topic.topicTableView.cellForRow(at: IndexPath(row: postIndex, section: 0)) as? FeedPostCell, "visible=\(topic.topicTableView.indexPathsForVisibleRows ?? []) rows=\(topic.rows.count) postIndex=\(postIndex)")
         XCTAssertNotNil(again.onAuthorTap)
 
         var opened: FeedCard?
