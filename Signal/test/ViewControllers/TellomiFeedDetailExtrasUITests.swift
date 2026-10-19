@@ -26,10 +26,12 @@ final class TellomiFeedDetailExtrasUITests: XCTestCase {
         focus: String? = nil,
         freshlyPublished: Bool = false
     ) async throws -> (FeedPostDetailViewController, UIWindow, SampleFeedSource) {
-        let source = SampleFeedSource(now: { Date() }, commentsLatencyNanos: 0)
+        // 「刚发布」：样例的 `mine-seed-1` 是 490 分钟前发的，把样例的「现在」往后拨 489 分钟，它就是 1 分钟前发的。
+        // （不能只改传进来的那张卡片：打开页面后详情会再向 Card API 取一次，换回样例里原来的时间，「编辑」就没了。）
+        let offset: TimeInterval = freshlyPublished ? 489 * 60 : 0
+        let source = SampleFeedSource(now: { Date().addingTimeInterval(offset) }, commentsLatencyNanos: 0)
         let cardOptional = try await source.card(contentId: id)
-        var card = try XCTUnwrap(cardOptional)
-        if freshlyPublished { card.publishedAt = FeedDates.format(Date().addingTimeInterval(-60)) }
+        let card = try XCTUnwrap(cardOptional)
         let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: false, articleReader: false, extras: extras, savedMessages: saved, focusCommentId: focus)
         let navigation = OWSNavigationController(rootViewController: detail)
         let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
@@ -190,7 +192,7 @@ final class TellomiFeedDetailExtrasUITests: XCTestCase {
         let (detail, window, _) = try await open("mine-seed-1", extras: true, focus: "mine-seed-1-voice")
         defer { window.isHidden = true }
         for _ in 0..<50 where detail.highlightedCommentId == nil {
-            RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+            try? await Task.sleep(nanoseconds: 20_000_000)
         }
         XCTAssertEqual(detail.highlightedCommentId, "mine-seed-1-voice")
         XCTAssertNil(detail.detailStore.state.scrollTarget, "The page took the target")
@@ -201,7 +203,7 @@ final class TellomiFeedDetailExtrasUITests: XCTestCase {
         let (detail, window, _) = try await open("mine-seed-1", extras: true, focus: "nope")
         defer { window.isHidden = true }
         for _ in 0..<50 where detail.lastToastText == nil {
-            RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+            try? await Task.sleep(nanoseconds: 20_000_000)
         }
         XCTAssertEqual(detail.lastToastText, FeedPostDetailViewController.toastText(for: .commentNotFound))
         XCTAssertNil(detail.highlightedCommentId)

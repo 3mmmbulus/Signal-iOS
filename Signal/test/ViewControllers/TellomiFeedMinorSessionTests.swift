@@ -193,7 +193,7 @@ private final class ComposeLockSource: FeedSource, @unchecked Sendable {
     func undoNotInterested(contentId: String) async throws {}
     func reportEvents(_ events: [FeedEventPayload]) async throws {}
     func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse {
-        lock.lock(); _publishCount += 1; lock.unlock()
+        lock.withLock { _publishCount += 1 }
         return FeedCreatePostResponse(id: "p1", state: "published")
     }
 }

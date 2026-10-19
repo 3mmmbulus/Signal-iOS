@@ -151,9 +151,7 @@ private final class DefaultUnblockSource: FeedSource, @unchecked Sendable {
     func reportEvents(_ events: [FeedEventPayload]) async throws {}
     func publish(draft: FeedDraft, clientNonce: String) async throws -> FeedCreatePostResponse { FeedCreatePostResponse(id: "x", state: "published") }
     func setBlocked(profileId: String, blocked: Bool) async throws {
-        lock.lock()
-        _blocked.append("\(profileId):\(blocked)")
-        lock.unlock()
+        lock.withLock { _blocked.append("\(profileId):\(blocked)") }
     }
 }
 

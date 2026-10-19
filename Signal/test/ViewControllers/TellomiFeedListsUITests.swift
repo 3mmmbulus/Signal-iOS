@@ -87,12 +87,12 @@ final class TellomiFeedListsUITests: XCTestCase {
         XCTAssertEqual(hub.contents.sections.map(\.itemCount), [5])
         hub.open(.followRequests)
         XCTAssertEqual((navigation.topViewController as? FeedPeopleViewController)?.mode, .followRequests)
-        navigation.popViewController(animated: false)
+        // `open` 是带动画的 push；测试窗口里紧接着 pop / 再 push 会被正在进行的转场吞掉（Mac 上实测：拿到的是 nil / 上一页）。
+        // 后面几项只看 `open` 建出来、交给导航的那一页对不对；导航本身上面第一步已经验过。
         hub.open(.blocked)
-        XCTAssertEqual((navigation.topViewController as? FeedPeopleViewController)?.mode, .blocked)
-        navigation.popViewController(animated: false)
+        XCTAssertEqual((hub.lastOpened as? FeedPeopleViewController)?.mode, .blocked)
         hub.open(.closePeople)
-        XCTAssertTrue(navigation.topViewController is FeedClosePeopleViewController)
+        XCTAssertTrue(hub.lastOpened is FeedClosePeopleViewController)
     }
 
     // MARK: - 四张名单

@@ -27,7 +27,11 @@ final class TellomiFeedEventsWiringUITests: XCTestCase {
         window.isHidden = false
         detail.loadViewIfNeeded()
         await detail.detailStore.waitForTasks()
+        // 打开页面时详情 store 会从 Card API 重新取这张卡片（样例里的 sample-1 不带 shareable），再按测试要的值改回来
+        store.updateCard(card.id) { $0.shareable = shareable }
         window.layoutIfNeeded()
+        // 在窗口里时 viewDidAppear 会自己报 open；这里先报掉，下面的计数都从这一条开始算（只报一次）
+        detail.openDetailEvent()
         return (detail, store, window)
     }
 
@@ -90,7 +94,7 @@ final class TellomiFeedEventsWiringUITests: XCTestCase {
         detail.share()
         detail.share()
         XCTAssertEqual(shared, [FeedShare.postLink(contentId: "sample-1"), FeedShare.postLink(contentId: "sample-1")])
-        XCTAssertEqual(store.pendingEventCount, 1, "第一次分享完成报 share，第二次取消不报")
+        XCTAssertEqual(store.pendingEventCount, 2, "open + 第一次分享完成报 share，第二次取消不报")
     }
 
     @MainActor
@@ -101,7 +105,7 @@ final class TellomiFeedEventsWiringUITests: XCTestCase {
         detail.copyToPasteboard = { copied = $0 }
         detail.copyLink()
         XCTAssertEqual(copied, FeedShare.postLink(contentId: "sample-1"))
-        XCTAssertEqual(store.pendingEventCount, 1)
+        XCTAssertEqual(store.pendingEventCount, 2, "open + share")
     }
 
     @MainActor
@@ -114,7 +118,7 @@ final class TellomiFeedEventsWiringUITests: XCTestCase {
         detail.share()
         detail.copyLink()
         XCTAssertFalse(presented)
-        XCTAssertEqual(store.pendingEventCount, 0)
+        XCTAssertEqual(store.pendingEventCount, 1, "只有 open，没有 share")
     }
 
     @MainActor

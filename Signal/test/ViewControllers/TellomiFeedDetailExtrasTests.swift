@@ -528,10 +528,10 @@ private final class PagedSource: FeedSource, @unchecked Sendable {
     func card(contentId: String) async throws -> FeedCard? { nil }
 
     func comments(postId: String, cursor: String?) async throws -> FeedCommentsPage {
-        lock.lock()
-        _cursors.append(cursor)
-        let page = _pages[cursor ?? ""]
-        lock.unlock()
+        let page = lock.withLock { () -> FeedCommentsPage? in
+            _cursors.append(cursor)
+            return _pages[cursor ?? ""]
+        }
         if cursor == nil, failFirst { throw VoiceBoom() }
         if let failCursor, cursor == failCursor { throw VoiceBoom() }
         return page ?? FeedCommentsPage()

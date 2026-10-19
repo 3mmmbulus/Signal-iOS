@@ -44,6 +44,10 @@ final class TellomiFeedFixes3UITests: XCTestCase {
         let report = try XCTUnwrap(detail.presentedReport)
         report.loadViewIfNeeded()
         await report.store.waitForTasks()
+        // 举报页是 present 出来的：等它进了窗口、有了高度再量（否则 formScroll 的 bounds 是 0）
+        for _ in 0..<100 where report.view.window == nil || report.formScroll.bounds.size.height == 0 {
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
         report.view.layoutIfNeeded()
         let reason = try XCTUnwrap(report.presentation.groups.flatMap(\.reasons).first { $0.code == "self_harm" })
         report.pick(reason)
@@ -56,12 +60,12 @@ final class TellomiFeedFixes3UITests: XCTestCase {
             let frame = target.convert(target.bounds, to: scroll)
             XCTAssertGreaterThanOrEqual(frame.minY, 0)
             XCTAssertLessThanOrEqual(frame.maxY, content + 0.5, "计数 / 12377 在可滚动的内容里")
-            XCTAssertLessThanOrEqual(frame.height, scroll.bounds.height, "一屏放得下它")
+            XCTAssertLessThanOrEqual(frame.size.height, scroll.bounds.size.height, "一屏放得下它")
         }
-        let maxOffset = max(0, content - scroll.bounds.height)
+        let maxOffset = max(0, content - scroll.bounds.size.height)
         scroll.contentOffset = CGPoint(x: 0, y: maxOffset)
         let hotline = report.hotlineLabel.convert(report.hotlineLabel.bounds, to: scroll)
-        XCTAssertLessThanOrEqual(hotline.maxY - scroll.contentOffset.y, scroll.bounds.height + 0.5, "滚到底：12377 那段整段在屏幕上")
+        XCTAssertLessThanOrEqual(hotline.maxY - scroll.contentOffset.y, scroll.bounds.size.height + 0.5, "滚到底：12377 那段整段在屏幕上")
     }
 
     // MARK: - 顶栏
@@ -177,8 +181,8 @@ final class TellomiFeedFixes3UITests: XCTestCase {
             XCTAssertEqual(note.numberOfLines, 0)
             XCTAssertEqual(note.lineBreakMode, .byWordWrapping)
             XCTAssertEqual(note.contentCompressionResistancePriority(for: .vertical), .required)
-            let needed = note.sizeThatFits(CGSize(width: note.bounds.width, height: .greatestFiniteMagnitude)).height
-            XCTAssertGreaterThanOrEqual(note.bounds.height + 0.5, needed.rounded(.down), "备注整段都显示出来，没被截")
+            let needed = note.sizeThatFits(CGSize(width: note.bounds.size.width, height: .greatestFiniteMagnitude)).height
+            XCTAssertGreaterThanOrEqual(note.bounds.size.height + 0.5, needed.rounded(.down), "备注整段都显示出来，没被截")
         }
         let accessibility = cell.traitCollection.preferredContentSizeCategory.isAccessibilityCategory
         XCTAssertEqual(cell.appealSpacingForTesting, FeedDynamicTypeLayout.appealSpacing(isAccessibilityCategory: accessibility))

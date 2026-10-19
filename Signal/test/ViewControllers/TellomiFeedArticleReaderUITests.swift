@@ -51,7 +51,7 @@ final class TellomiFeedArticleReaderUITests: XCTestCase {
         let presentation = try XCTUnwrap(cell.presentation)
         XCTAssertEqual(presentation.title, "My sample article 5")
         XCTAssertFalse(presentation.summaryOnly)
-        XCTAssertGreaterThan(cell.contentView.bounds.height, 400, "整篇正文都排出来了，比信息流里的卡片高得多")
+        XCTAssertGreaterThan(cell.contentView.bounds.size.height, 400, "整篇正文都排出来了，比信息流里的卡片高得多")
     }
 
     @MainActor
