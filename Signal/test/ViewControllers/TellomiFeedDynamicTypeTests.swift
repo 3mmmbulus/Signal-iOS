@@ -31,6 +31,11 @@ final class TellomiFeedDynamicTypeTests: XCTestCase {
         XCTAssertEqual(FeedDynamicTypeLayout.topBarFontScale(available: 150, natural: 160, current: 0.9), 0.84, "0.9 × 150/160 = 0.84375，向下取到 0.84")
     }
 
+    func testTopBarRoundsDownNotToNearestAndPullsAStrayScaleUpToTheFloor() {
+        XCTAssertEqual(FeedDynamicTypeLayout.topBarFontScale(available: 150, natural: 160.1, current: 1), 0.93, "0.9369… 向下取到 0.93（不是 0.94）：取整只能偏小，宁可小一点也不要还放不下")
+        XCTAssertEqual(FeedDynamicTypeLayout.topBarFontScale(available: 100, natural: 200, current: 0.5), 0.7, "传进来比下限还小的，拉回下限")
+    }
+
     func testTopBarScaleOnlyGoesDownSoItCannotFlipFlop() {
         // 缩小之后导航栏可能给更宽（自然宽度变小了）：已经缩过的不会再放大回去
         var scale: CGFloat = 1
