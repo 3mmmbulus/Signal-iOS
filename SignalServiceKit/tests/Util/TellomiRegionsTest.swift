@@ -136,8 +136,10 @@ class TellomiRegionsTest: XCTestCase {
         store.record(.cn, at: switchedAt)
         XCTAssertEqual(store.storedRegionId(), "cn")
         XCTAssertEqual(store.lastSwitchAt(), switchedAt)
-        // CN 关着：记住了也回落 global
-        XCTAssertEqual(TellomiRegions.current(store: store), global)
+        // CN 允许（REGION_PROFILE 第六节之二）：记住了 cn 就落在 cn
+        XCTAssertEqual(TellomiRegions.current(store: store), cn)
+        // 那个区关着时仍回落 global（契约第五节第 8 条）
+        XCTAssertEqual(TellomiRegions.resolve(storedId: store.storedRegionId(), profiles: cnOffTable), global)
 
         // 读不出来（suite 建不起来）：回落 global，写入也不崩
         let unavailable = TellomiRegionStore(userDefaults: { nil })
@@ -381,7 +383,17 @@ class TellomiRegionsTest: XCTestCase {
     }
 
     func testAFormPinnedToATurnedOffRegionIsNotReused() {
-        // 包里的 CN 关着：钉在 CN 的表单不能再用，上传管理器当它过期，重新取表单、从 0 开始、落到当前区
+        let net = makeTestNet()
+        // 包里的 CN 允许（REGION_PROFILE 第六节之二）：钉在 CN 的表单照常续传，仍连 CN
+        let cnAllowed = TellomiNetProvider(region: global, net: net, profiles: TellomiRegions.all)
+        let previous = TellomiNetProvider.installForTesting(cnAllowed)
+        defer { TellomiNetProvider.installForTesting(previous) }
+        XCTAssertEqual(makeForm(regionId: "cn").tellomiPinnedRegion, TellomiRegions.cn)
+        XCTAssertNil(makeForm(regionId: "unknown").tellomiPinnedRegion)
+        XCTAssertEqual(makeForm(regionId: "global").tellomiPinnedRegion, TellomiRegions.global)
+
+        // 那个区关着：钉在 CN 的表单不能再用，上传管理器当它过期，重新取表单、从 0 开始、落到当前区
+        TellomiNetProvider.installForTesting(TellomiNetProvider(region: global, net: net, profiles: cnOffTable))
         XCTAssertNil(makeForm(regionId: "cn").tellomiPinnedRegion)
         XCTAssertNil(makeForm(regionId: "unknown").tellomiPinnedRegion)
         XCTAssertEqual(makeForm(regionId: "global").tellomiPinnedRegion, TellomiRegions.global)
@@ -694,11 +706,31 @@ class TellomiRegionsTest: XCTestCase {
         XCTAssertEqual(TellomiRegions.testRegionProfiles(environment: [testPortKey: "18443"]), TellomiRegions.all)
     }
 
+    /// 起点要等线程「站稳」再数：tokio 的工作线程是新建运行时时才起的，线程名（`libsignal-tokio-worker`）由线程自己起来后
+    /// 才设上（Rust std 在 macOS 上只能在线程内 `pthread_setname_np`）。刚建完 `Net` 马上数，还没跑到设名那一步的线程
+    /// 数不进去，起点偏小；机器负载高时更明显（2026-10-19 Mac 复测：起点读到 9 / 11，切完读到 14，3 次挂 2 次；这个偶发 10-17、10-18 在没有切区改动的树上也出现过）。
+    /// 连续 1 秒读数不变才算站稳，最多等 10 秒，取站稳时的读数（不取最大值：前一个用例的运行时正在退出时，最大值会把起点抬高）。
+    /// 判据本身（切完回到起点）不放宽。
+    private func settledTokioThreadCount() -> Int {
+        var last = TellomiRegionDrill.tokioThreadCount()
+        var stableSince = Date()
+        let deadline = Date().addingTimeInterval(10)
+        while Date() < deadline, Date().timeIntervalSince(stableSince) < 1 {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            let count = TellomiRegionDrill.tokioThreadCount()
+            if count != last {
+                last = count
+                stableSince = Date()
+            }
+        }
+        return last
+    }
+
     func testSwitchingTenTimesLeavesNoTokioThreadsBehind() throws {
         // #1056 判据 2 的单测版：每个 Net 一个 tokio 运行时；切 10 次、退役期过后，线程数回到开始时
         let profiles = TellomiRegions.testRegionProfiles(environment: [testDomainKey: "tellomi.test"])
         let (provider, _) = makeSwitchableProvider(profiles: profiles, retireDelay: 0.1)
-        let before = TellomiRegionDrill.tokioThreadCount()
+        let before = settledTokioThreadCount()
         XCTAssertGreaterThan(before, 0, "provider 第一个 Net 的运行时要数得到，否则下面的比较是空的")
 
         for step in 1...10 {
