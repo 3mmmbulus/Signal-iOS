@@ -403,16 +403,19 @@ final class FeedPostDetailViewController: OWSViewController {
         }
     }
 
-    /// 分享帖子外链（系统分享面板）：面板里真的分享了才报 `share`，点开又取消不报。单测里换掉 `presentShareSheet`。
+    /// 分享帖子外链（系统分享面板）：选了分享目标就报 `share`（产品 2026-10-20），没选目标就关掉不报。单测里换掉 `presentShareSheet`
+    /// （它的 `Bool` = 选了目标）。
     func share() {
         guard let link = shareLink() else { return }
-        let finished: (Bool) -> Void = { [weak self] completed in self?.shareFinished(completed ? .completed : .cancelled) }
+        let finished: (Bool) -> Void = { [weak self] pickedTarget in self?.shareFinished(pickedTarget ? .completed : .cancelled) }
         if let presentShareSheet {
             presentShareSheet(link, finished)
             return
         }
         let controller = UIActivityViewController(activityItems: [link], applicationActivities: nil)
-        controller.completionWithItemsHandler = { _, completed, _, _ in finished(completed) }
+        controller.completionWithItemsHandler = { activityType, _, _, _ in
+            finished(FeedShareOutcome.fromShareSheet(activityType: activityType?.rawValue) == .completed)
+        }
         controller.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
         present(controller, animated: true)
     }
