@@ -56,6 +56,8 @@ final class FeedStore {
     var onChange: ((FeedTab?) -> Void)?
     var onTransientError: ((TransientError) -> Void)?
     var onNotice: ((Notice) -> Void)?
+    /// 有「我的收藏」的实现（卡片上才出收藏按钮，I-3）。
+    var canSave: Bool { savedMessages != nil }
 
     /// 「查看数据」弹窗；nil = 没开。变了会走 `onChange(nil)`。
     private(set) var insights: FeedInsightsState?

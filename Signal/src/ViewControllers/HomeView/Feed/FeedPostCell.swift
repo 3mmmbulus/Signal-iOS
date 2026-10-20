@@ -28,6 +28,22 @@ final class FeedPostCell: UITableViewCell {
     static let likedColor = UIColor(rgbHex: 0xE5484D)
 
     var onLike: ((FeedCard) -> Void)?
+    // I-3 卡片补全（`FeedCardExtras`）。三个开关要在 `configure` 之前设好；都关着时卡片和之前一样。
+    /// 卡片补全：投票、引用盒、「谁转发了」、收藏、分享菜单。默认关（列表页按 `TellomiFeed.isDetailExtrasEnabled` 设）。
+    var extrasEnabled = false
+    /// 分享菜单里的「分享 / 复制链接」（`TellomiFeed.isShareEnabled`，默认关）。
+    var shareEnabled = false
+    /// 有「我的收藏」的实现才出收藏按钮。
+    var saveAvailable = false
+    var onVote: ((FeedCard, [Int]) -> Void)?
+    var onRepost: ((FeedCard) -> Void)?
+    var onQuote: ((FeedQuoteTarget) -> Void)?
+    var onSave: ((FeedCard) -> Void)?
+    /// 系统分享面板 / 复制链接；由列表页处理（要报 `share` 事件）。
+    var onShare: ((FeedCard) -> Void)?
+    var onCopyLink: ((FeedCard) -> Void)?
+    /// 点引用盒：打开被引用的那条。
+    var onOpenQuoted: ((FeedCard) -> Void)?
     var onNotInterested: ((FeedCard) -> Void)?
     /// 「···」里的「举报」。nil = 默认在最前面的页面弹举报页（`FeedReportStore` + `FeedSources.current()`）。
     /// 举报入口任何模式都有（合规红线），不按 capabilities 藏、不看预览 / 样例。
@@ -62,6 +78,13 @@ final class FeedPostCell: UITableViewCell {
     let likeButton = UIButton(type: .system)
     private let commentView = UIStackView()
     private let commentCountLabel = UILabel()
+    private let repostedByLabel = UILabel()
+    private let repostedByRow = UIStackView()
+    let pollView = FeedCardPollView()
+    let quoteBox = FeedQuotedBoxView()
+    /// 单测 / 截图用。
+    let saveButton = UIButton(type: .system)
+    let shareButton = UIButton(type: .system)
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -162,10 +185,38 @@ final class FeedPostCell: UITableViewCell {
         headerRow.alignment = .top
         headerRow.spacing = 4
 
-        let textColumn = UIStackView(arrangedSubviews: [headerRow, titleLabel, bodyLabel, topicsLabel, aiLabel])
+        let textColumn = UIStackView(arrangedSubviews: [headerRow, titleLabel, bodyLabel, pollView, quoteBox, topicsLabel, aiLabel])
         textColumn.axis = .vertical
         textColumn.spacing = 4
         textColumn.setCustomSpacing(6, after: headerRow)
+        textColumn.setCustomSpacing(8, after: bodyLabel)
+        textColumn.setCustomSpacing(8, after: pollView)
+        textColumn.setCustomSpacing(8, after: quoteBox)
+        pollView.isHidden = true
+        pollView.onVote = { [weak self] options in
+            guard let self, let card = self.card else { return }
+            self.onVote?(card, options)
+        }
+        quoteBox.isHidden = true
+        quoteBox.addAction(UIAction { [weak self] _ in
+            guard let self, let inner = self.card?.quoted?.card else { return }
+            self.onOpenQuoted?(inner)
+        }, for: .touchUpInside)
+
+        // 「张三 转发了」：关注流里因为有人转发才出现的（第三节第 26 条），在作者行上面一行，和正文左对齐
+        let repostIcon = UIImageView(image: UIImage(systemName: "arrow.2.squarepath"))
+        repostIcon.tintColor = UIColor.Signal.secondaryLabel
+        repostIcon.contentMode = .scaleAspectFit
+        repostIcon.autoSetDimensions(to: CGSize(square: 14))
+        repostedByLabel.font = .dynamicTypeFootnoteClamped
+        repostedByLabel.textColor = UIColor.Signal.secondaryLabel
+        repostedByRow.addArrangedSubviews([repostIcon, repostedByLabel])
+        repostedByRow.axis = .horizontal
+        repostedByRow.alignment = .center
+        repostedByRow.spacing = 6
+        repostedByRow.isLayoutMarginsRelativeArrangement = true
+        repostedByRow.layoutMargins = UIEdgeInsets(top: 0, left: Self.contentStart - 20, bottom: 0, right: Self.horizontalMargin)
+        repostedByRow.isHidden = true
 
         let topRow = UIStackView(arrangedSubviews: [avatarView, textColumn])
         topRow.axis = .horizontal
@@ -200,7 +251,22 @@ final class FeedPostCell: UITableViewCell {
         commentView.spacing = 4
         commentView.isAccessibilityElement = true
 
-        let actionRow = UIStackView(arrangedSubviews: [likeButton, commentView, UIView.hStretchingSpacer()])
+        for button in [saveButton, shareButton] {
+            var config = UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+            config.baseForegroundColor = UIColor.Signal.secondaryLabel
+            button.configuration = config
+            button.isHidden = true
+        }
+        saveButton.addAction(UIAction { [weak self] _ in
+            guard let self, let card = self.card else { return }
+            self.onSave?(card)
+        }, for: .touchUpInside)
+        shareButton.configuration?.image = UIImage(systemName: "square.and.arrow.up")
+        shareButton.showsMenuAsPrimaryAction = true
+        shareButton.accessibilityLabel = OWSLocalizedString("TELLOMI_FEED_MENU_SHARE", comment: "Feed: ··· menu item that shares the link of a post with the system share sheet.")
+
+        let actionRow = UIStackView(arrangedSubviews: [likeButton, commentView, UIView.hStretchingSpacer(), saveButton, shareButton])
         actionRow.axis = .horizontal
         actionRow.alignment = .center
         actionRow.spacing = 12
@@ -208,7 +274,7 @@ final class FeedPostCell: UITableViewCell {
         // 心形和正文左对齐（按钮自己有 12 的内边距）
         actionRow.layoutMargins = UIEdgeInsets(top: 0, left: Self.contentStart - 12, bottom: 0, right: Self.horizontalMargin)
 
-        let root = UIStackView(arrangedSubviews: [topRow, mediaContainer, actionRow])
+        let root = UIStackView(arrangedSubviews: [repostedByRow, topRow, mediaContainer, actionRow])
         root.axis = .vertical
         root.spacing = 8
         root.setCustomSpacing(2, after: mediaContainer)
@@ -275,6 +341,78 @@ final class FeedPostCell: UITableViewCell {
 
         configureMedia(card.media)
         configureActions(card)
+        configureExtras(card, now: now)
+    }
+
+    // MARK: - I-3 卡片补全
+
+    private func configureExtras(_ card: FeedCard, now: Date) {
+        let extras = FeedCardExtras.make(
+            card: card,
+            extrasEnabled: extrasEnabled,
+            shareEnabled: shareEnabled,
+            saveAvailable: saveAvailable && onSave != nil,
+            postingAllowed: FeedEngineCapabilities.allows(FeedEngineCapabilities.composeFeatures),
+            pollsAllowed: FeedEngineCapabilities.allows(FeedEngineCapabilities.pollFeatures) && onVote != nil,
+            isReadOnly: isReadOnly,
+        )
+
+        repostedByLabel.text = extras.repostedByText
+        repostedByRow.isHidden = extras.repostedByText == nil
+
+        pollView.isHidden = !extras.showsPoll
+        if extras.showsPoll {
+            pollView.configure(card: card, interactive: extras.pollInteractive, now: now)
+        }
+
+        if extras.showsQuote, let quoted = card.quoted {
+            quoteBox.configure(FeedCardExtras.quote(quoted))
+            quoteBox.isHidden = false
+        } else {
+            quoteBox.isHidden = true
+        }
+
+        saveButton.isHidden = !extras.showsSave
+        saveButton.configuration?.image = UIImage(systemName: extras.saved ? "bookmark.fill" : "bookmark")
+        saveButton.configuration?.baseForegroundColor = extras.saved ? UIColor.Signal.accent : UIColor.Signal.secondaryLabel
+        saveButton.accessibilityLabel = FeedDetailActionsCell.saveTitle(saved: extras.saved)
+
+        shareButton.isHidden = extras.shareItems.isEmpty
+        shareButton.menu = extras.shareItems.isEmpty ? nil : UIMenu(children: extras.shareItems.map(shareAction))
+    }
+
+    private func shareAction(_ item: FeedCardExtras.ShareItem) -> UIAction {
+        switch item {
+        case .repost(let reposted):
+            return UIAction(title: FeedDetailActionsCell.repostTitle(reposted: reposted), image: UIImage(systemName: "arrow.2.squarepath")) { [weak self] _ in
+                guard let self, let card = self.card else { return }
+                self.onRepost?(card)
+            }
+        case .quote:
+            return UIAction(
+                title: OWSLocalizedString("TELLOMI_FEED_QUOTE", comment: "Feed: share menu item that opens the publish page quoting this post."),
+                image: UIImage(systemName: "quote.bubble"),
+            ) { [weak self] _ in
+                guard let self, let card = self.card, let target = FeedQuoteTarget.of(card) else { return }
+                self.onQuote?(target)
+            }
+        case .share:
+            return UIAction(
+                title: OWSLocalizedString("TELLOMI_FEED_MENU_SHARE", comment: "Feed: ··· menu item that shares the link of a post with the system share sheet."),
+                image: UIImage(systemName: "square.and.arrow.up"),
+            ) { [weak self] _ in
+                guard let self, let card = self.card else { return }
+                self.onShare?(card)
+            }
+        case .copyLink:
+            return UIAction(
+                title: OWSLocalizedString("TELLOMI_FEED_MENU_COPY_LINK", comment: "Feed: ··· menu item that copies the link of a post."),
+                image: UIImage(systemName: "link"),
+            ) { [weak self] _ in
+                guard let self, let card = self.card else { return }
+                self.onCopyLink?(card)
+            }
+        }
     }
 
     /// 信息流里别人帖子的「···」：不感兴趣、举报（和详情页 `FeedDetailMenu.items(forPost:)` 同一组）。纯函数，单测用。

@@ -11895,6 +11895,15 @@
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_UNFOLLOW_CONFIRM" = "取消关注这个人？";
 
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE" = "引用";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_DELETED" = "原动态已被作者删除";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_UNAVAILABLE" = "原动态已不可见";
+
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "推荐的动态会出现在这里。";
 
@@ -11996,6 +12005,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPOST" = "转发到动态";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY" = "%@ 转发了";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY_UNKNOWN" = "转发";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPOSTED_DONE" = "已转发到你的动态";

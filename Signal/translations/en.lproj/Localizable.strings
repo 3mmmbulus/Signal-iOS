@@ -12126,6 +12126,15 @@
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_UNFOLLOW_CONFIRM" = "Unfollow this person?";
 
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE" = "Quote";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_DELETED" = "The original post was deleted by its author";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_UNAVAILABLE" = "The original post is no longer available";
+
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "Recommended posts will show up here.";
 
@@ -12227,6 +12236,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPOST" = "Repost";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY" = "%@ reposted";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY_UNKNOWN" = "Reposted";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPOSTED_DONE" = "Reposted to your feed";
