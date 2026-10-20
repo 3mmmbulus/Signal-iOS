@@ -30,6 +30,8 @@ enum FeedEngineCapabilities {
     static let likeFeatures = [FeedFeature.reactions]
     /// 投票（详情页的投票行、发布页「加投票」）。
     static let pollFeatures = [FeedFeature.polls]
+    /// 发布页加图（I-2：tus 上传 `media_upload`）。没部署就不出「加图」按钮，免得选了图发不出去。
+    static let mediaUploadFeatures = [FeedFeature.mediaUpload]
     /// 语音评论（评论里的播放行）。
     static let voiceCommentFeatures = [FeedFeature.voiceComments]
     /// 动态页右下角的发布按钮。
