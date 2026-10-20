@@ -9,7 +9,9 @@ import SignalServiceKit
 /// 按内容引擎 `GET /v1/capabilities` 隐藏没部署的功能入口（产品 2026-10-20 定）。
 ///
 /// - 拿不到 capabilities（没问过、断网、超时、404、版本不认、解析不了）一律按「没部署」：入口隐藏。不拿旧的顶（和 `FeedCapabilitiesCache` 同口径）。
-/// - 只记在内存里，不落盘：每次启动先藏，问到了再放出来。
+/// - 上次成功的结果存本机（产品 2026-10-20 第二次定）：按账号 + 引擎地址分开存，退出登录时清掉（`clearOnLogout`）。
+///   冷启动先用它画底栏（`loadAtLaunch`，在第一次画底栏之前同步读，底栏不闪），后台再问，有变化才重画。
+///   存的结果超过 24 小时（或时钟被调回去）、从没成功过、没登录：按「拿不到就藏」。问失败时退回到存的结果（同样看 24 小时）。
 /// - 信息流用本机样例时（TestFlight 预览、内部「Force feed tab」+「Feed sample data」）不连引擎，这一层不管，照预览 / 内部开关原样。
 /// - 只在 `TellomiFeed.shouldAskEngine` 为真时才去问（预览不发任何请求）。不问引擎时（远程开关关、没有内部强制联调）这一层也不拦子入口：
 ///   那时动态标签本身就不出现（`isTabEnabled` 要远程开关 + 引擎可见 + `feed`），子入口到不了；这样单测和预览不受影响。
@@ -65,6 +67,50 @@ enum FeedEngineCapabilities {
 
     // MARK: - 当前进程
 
+    // MARK: - 存本机（纯函数 + 可换的 UserDefaults，单测用）
+
+    static let storageKey = "TellomiFeed.engineCapabilities"
+    static let maxStoredAge: TimeInterval = 24 * 60 * 60
+
+    struct Stored: Codable, Equatable {
+        var features: [String]
+        var fetchedAt: Date
+    }
+
+    /// 存的那一份按「账号 + 引擎地址」分开。
+    static func scope(account: String, engine: String) -> String {
+        return "\(account) \(engine)"
+    }
+
+    /// 存的结果还能不能用：0 ≤ 年龄 < 24 小时。
+    static func usable(_ stored: Stored?, now: Date, maxAge: TimeInterval = maxStoredAge) -> Set<String>? {
+        guard let stored else { return nil }
+        let age = now.timeIntervalSince(stored.fetchedAt)
+        guard age >= 0, age < maxAge else { return nil }
+        return Set(stored.features)
+    }
+
+    static func load(scope: String, defaults: UserDefaults) -> Stored? {
+        guard let all = defaults.dictionary(forKey: storageKey) as? [String: Data], let data = all[scope] else { return nil }
+        return try? JSONDecoder().decode(Stored.self, from: data)
+    }
+
+    static func save(_ stored: Stored, scope: String, defaults: UserDefaults) {
+        guard let data = try? JSONEncoder().encode(stored) else { return }
+        var all = defaults.dictionary(forKey: storageKey) as? [String: Data] ?? [:]
+        all[scope] = data
+        defaults.set(all, forKey: storageKey)
+    }
+
+    static func clearStored(defaults: UserDefaults) {
+        defaults.removeObject(forKey: storageKey)
+    }
+
+    /// 一次刷新之后该记成什么：问到了用新的；问失败了退回到存的（看 24 小时）。
+    static func next(after snapshot: FeedCapabilitiesSnapshot, stored: Stored?, now: Date) -> Set<String>? {
+        return features(from: snapshot) ?? usable(stored, now: now)
+    }
+
     private static let lock = NSLock()
     private static var storedFeatures: Set<String>?
     private static var cacheEntry: (key: String, cache: FeedCapabilitiesCache)?
@@ -82,6 +128,35 @@ enum FeedEngineCapabilities {
 
     static func allows(page: TellomiFeedPreview.Page) -> Bool {
         return allows(requiredFeatures(for: page))
+    }
+
+    /// 当前登录的账号（ACI）；没登录是 nil。
+    private static func currentAccount() -> String? {
+        return DependenciesBridge.shared.tsAccountManager.localIdentifiersWithMaybeSneakyTransaction?.aci.serviceIdString
+    }
+
+    /// 当前账号 + 当前区引擎地址；没登录或地址不是 https 时没有。
+    private static func currentScope() -> String? {
+        let region = TellomiRegions.active()
+        guard let account = currentAccount(), let baseURL = URL(string: region.feed), baseURL.scheme == "https" else { return nil }
+        return scope(account: account, engine: baseURL.absoluteString)
+    }
+
+    /// 冷启动、第一次画底栏之前调：用上次成功的结果（24 小时内）。只读本机，不走网络。
+    static func loadAtLaunch(now: Date = Date()) {
+        let restored = currentScope().flatMap { usable(load(scope: $0, defaults: .standard), now: now) }
+        lock.lock()
+        defer { lock.unlock() }
+        storedFeatures = restored
+    }
+
+    /// 退出登录：清掉本机存的和内存里的。
+    static func clearOnLogout() {
+        clearStored(defaults: .standard)
+        lock.lock()
+        defer { lock.unlock() }
+        storedFeatures = nil
+        cacheEntry = nil
     }
 
     /// 当前区的缓存（切区后地址变了就换一份）。地址不是 https 时没有。
@@ -102,7 +177,17 @@ enum FeedEngineCapabilities {
     static func refresh() async -> Bool {
         var next: Set<String>?
         if TellomiFeed.shouldAskEngine, let cache = cacheForActiveRegion() {
-            next = features(from: await cache.current())
+            let snapshot = await cache.current()
+            let now = Date()
+            if let scope = currentScope() {
+                if let fresh = features(from: snapshot) {
+                    save(Stored(features: fresh.sorted(), fetchedAt: now), scope: scope, defaults: .standard)
+                }
+                next = Self.next(after: snapshot, stored: load(scope: scope, defaults: .standard), now: now)
+            } else {
+                // 没登录：不存，也不认存的
+                next = features(from: snapshot)
+            }
         }
         lock.lock()
         defer { lock.unlock() }
