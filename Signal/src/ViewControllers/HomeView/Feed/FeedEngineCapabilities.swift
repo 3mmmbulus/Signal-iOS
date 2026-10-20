@@ -132,6 +132,8 @@ enum FeedEngineCapabilities {
 
     /// 当前登录的账号（ACI）；没登录是 nil。
     private static func currentAccount() -> String? {
+        // 单元测试 / 启动早期没有环境：当作没登录（不读也不写缓存），别崩。
+        guard SSKEnvironment.hasShared else { return nil }
         return DependenciesBridge.shared.tsAccountManager.localIdentifiersWithMaybeSneakyTransaction?.aci.serviceIdString
     }
 
@@ -189,10 +191,12 @@ enum FeedEngineCapabilities {
                 next = features(from: snapshot)
             }
         }
-        lock.lock()
-        defer { lock.unlock() }
-        let changed = next != storedFeatures
-        storedFeatures = next
-        return changed
+        // async 函数里不能直接 lock() / unlock()（Swift 6 + -warnings-as-errors）：用作用域锁
+        let resolved = next
+        return lock.withLock {
+            let changed = resolved != storedFeatures
+            storedFeatures = resolved
+            return changed
+        }
     }
 }

@@ -94,6 +94,7 @@ final class TellomiFeedCapabilitiesStoreTests: XCTestCase {
     }
 
     /// 样例数据（TestFlight 预览、内部强制 + 样例）下能看到内容：样例源也要能接举报（不会因为不连网就没有入口）。
+    @MainActor
     func testSampleSourceAcceptsReports() {
         let store = FeedReportStore(target: .content("sample-1"), source: SampleFeedSource.shared)
         XCTAssertNotNil(store)
