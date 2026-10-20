@@ -261,6 +261,10 @@ struct FeedCard: Decodable, Equatable {
     /// 被引用的帖子 id；引擎已把那条嵌在 Card API 外层的 `quoted`，由 `FeedCardResult.toCard()` 填进 `quoted`。
     var quoteOf: String?
     var sourceUrl: String?
+    /// 开放内容的来源（契约「卡片字段」`attribution`，形状还没定稿）：先只留字符串字段，形状不对就当没有，不让整张卡片失败。和 Android 一样暂不显示。
+    var attribution: [String: String]?
+    /// 非原生内容的版权依据 `rights{basis,license}`；缺字段、形状不对都当没有。
+    var rights: FeedRights?
     var ipRegionLabel: String?
     var aiGenerated = false
     /// 评论才有：所属的帖子。
@@ -349,6 +353,9 @@ struct FeedCard: Decodable, Equatable {
         poll = try? c.decodeIfPresent(FeedPoll.self, forKey: .poll)
         quoteOf = try c.decodeIfPresent(String.self, forKey: .quoteOf)
         sourceUrl = try c.decodeIfPresent(String.self, forKey: .sourceUrl)
+        let rawAttribution = (try? c.decodeIfPresent([String: Lossy<String>].self, forKey: .attribution)) ?? nil
+        attribution = rawAttribution?.compactMapValues(\.value)
+        rights = (try? c.decodeIfPresent(FeedRights.self, forKey: .rights)) ?? nil
         ipRegionLabel = try c.decodeIfPresent(String.self, forKey: .ipRegionLabel)
         aiGenerated = try c.decodeIfPresent(Bool.self, forKey: .aiGenerated) ?? false
         rootId = try c.decodeIfPresent(String.self, forKey: .rootId)
@@ -357,7 +364,7 @@ struct FeedCard: Decodable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case kind, version, edited, author, title, text, summary, media, topics, poll, stats, transcript
+        case kind, version, edited, author, title, text, summary, media, topics, poll, stats, transcript, attribution, rights
         case rootId = "root_id"
         case displayMode = "display_mode"
         case publishedAt = "published_at"
@@ -371,6 +378,27 @@ struct FeedCard: Decodable, Equatable {
     var publishedDate: Date? {
         guard let publishedAt else { return nil }
         return FeedDates.parse(publishedAt)
+    }
+}
+
+/// 卡片 `rights{basis,license}`（非原生内容）。两个都可以没有。
+struct FeedRights: Decodable, Equatable {
+    var basis: String?
+    var license: String?
+
+    init(basis: String? = nil, license: String? = nil) {
+        self.basis = basis
+        self.license = license
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        basis = try? c.decodeIfPresent(String.self, forKey: .basis)
+        license = try? c.decodeIfPresent(String.self, forKey: .license)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case basis, license
     }
 }
 
