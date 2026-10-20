@@ -106,4 +106,23 @@ final class TellomiFeedEngineModelsTests: XCTestCase {
             #"{"audience":{"audience_token":"jwt"},"client_nonce":"n-1","comments_closed":false,"kind":"post","media_keys":["m/1","m/2"],"text":"今天的云","visibility":"include"}"#,
         )
     }
+
+    /// 契约「卡片字段」的 `attribution`、`rights{basis,license}`：有就读，缺字段、形状不对都不让卡片失败。
+    func testAttributionAndRightsAreTolerant() throws {
+        let full = try decode(FeedCard.self, #"{"kind":"post","attribution":{"name":"Wikimedia","url":"https://w.org","n":3},"rights":{"basis":"license","license":"CC-BY-4.0"}}"#)
+        XCTAssertEqual(full.attribution, ["name": "Wikimedia", "url": "https://w.org"], "不是字符串的字段丢掉")
+        XCTAssertEqual(full.rights, FeedRights(basis: "license", license: "CC-BY-4.0"))
+
+        let missing = try decode(FeedCard.self, #"{"kind":"post"}"#)
+        XCTAssertNil(missing.attribution)
+        XCTAssertNil(missing.rights)
+
+        let wrongShape = try decode(FeedCard.self, #"{"kind":"post","text":"hi","attribution":"Wikimedia","rights":["x"]}"#)
+        XCTAssertNil(wrongShape.attribution)
+        XCTAssertNil(wrongShape.rights)
+        XCTAssertEqual(wrongShape.text, "hi")
+
+        let partial = try decode(FeedCard.self, #"{"kind":"post","rights":{"basis":7}}"#)
+        XCTAssertEqual(partial.rights, FeedRights())
+    }
 }
