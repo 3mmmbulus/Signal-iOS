@@ -20,6 +20,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
 
     /// 发布按钮只在右下角（第三节第 45 条），滑动时不动（第 46 条）。
     let composeButton = UIButton(type: .custom)
+    /// 发布按钮要引擎有 `posting`（`FeedEngineCapabilities`）。
+    static var composeAllowed: Bool { FeedEngineCapabilities.allows(FeedEngineCapabilities.composeFeatures) }
     static let composeButtonSize: CGFloat = 56
 
     private var feedSubscription: FeedSubscription?
@@ -213,6 +215,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         composeButton.autoSetDimensions(to: CGSize(square: Self.composeButtonSize))
         composeButton.autoPinEdge(toSuperviewSafeArea: .trailing, withInset: 16)
         composeButton.autoPinEdge(toSuperviewSafeArea: .bottom, withInset: 16)
+        // 引擎没部署发帖（或拿不到 capabilities）：不显示发布按钮
+        composeButton.isHidden = !Self.composeAllowed
 
         Task { await store.loadConfig() }
 
@@ -241,7 +245,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     func applyMinorLock(_ lock: FeedMinorTime.Lock?) {
         guard isViewLoaded else { return }
         let locked = lock != nil
-        composeButton.isHidden = locked
+        composeButton.isHidden = locked || !Self.composeAllowed
         topBar.isUserInteractionEnabled = !locked
         if locked {
             setFeedVisible(false)
