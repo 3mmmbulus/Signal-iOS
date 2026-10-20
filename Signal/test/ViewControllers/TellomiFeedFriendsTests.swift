@@ -470,3 +470,60 @@ private extension NSLock {
         return try body()
     }
 }
+
+// MARK: - I-11 本机好友 / 选人候选 / 同步开关
+
+final class TellomiFeedLocalFriendsTests: XCTestCase {
+    private func isFriend(isSelf: Bool = false, hasAci: Bool = true, registered: Bool = true, blocked: Bool = false, hidden: Bool = false, whitelisted: Bool = false, contact: Bool = false) -> Bool {
+        return FeedLocalFriends.isFriend(isSelf: isSelf, hasAci: hasAci, isRegistered: registered, isBlocked: blocked, isHidden: hidden, isProfileWhitelisted: whitelisted, isSystemContact: contact)
+    }
+
+    /// 和 Android `myFriendAcis` 同一组条件：通讯录里的 Signal 用户或接受过的人；屏蔽、隐藏、没注册、没 ACI、自己都不算。
+    func testFriendRule() {
+        XCTAssertTrue(isFriend(contact: true))
+        XCTAssertTrue(isFriend(whitelisted: true))
+        XCTAssertFalse(isFriend())
+        XCTAssertFalse(isFriend(isSelf: true, whitelisted: true, contact: true))
+        XCTAssertFalse(isFriend(hasAci: false, contact: true))
+        XCTAssertFalse(isFriend(registered: false, contact: true))
+        XCTAssertFalse(isFriend(blocked: true, whitelisted: true))
+        XCTAssertFalse(isFriend(hidden: true, contact: true))
+    }
+
+    func testSortedByNameThenAci() {
+        let list = [
+            FeedLocalFriends.Friend(recipientId: 1, aci: "b", displayName: "Zed"),
+            FeedLocalFriends.Friend(recipientId: 2, aci: "c", displayName: "amy"),
+            FeedLocalFriends.Friend(recipientId: 3, aci: "a", displayName: "amy"),
+        ]
+        XCTAssertEqual(FeedLocalFriends.sorted(list).map(\.recipientId), [3, 2, 1])
+    }
+
+    func testCandidatesMapFriends() async throws {
+        let source = LocalFeedAudienceCandidates(load: { [FeedLocalFriends.Friend(recipientId: 7, aci: "aci-7", displayName: "阿明")] })
+        let candidates = try await source.candidates()
+        XCTAssertEqual(candidates, [FeedAudienceCandidate(recipientId: 7, aci: "aci-7", displayName: "阿明")])
+        XCTAssertEqual(candidates.first?.member, FeedAudienceMember(recipientId: 7, aci: "aci-7"))
+    }
+
+    /// 同步只在：动态标签开着、不是样例、在问引擎、发布页补全开关开着（默认关）。
+    func testSyncSwitch() {
+        XCTAssertTrue(FeedFriendSyncRunner.isEnabled(tabEnabled: true, sampleData: false, asksEngine: true, extrasEnabled: true))
+        XCTAssertFalse(FeedFriendSyncRunner.isEnabled(tabEnabled: true, sampleData: false, asksEngine: true, extrasEnabled: false))
+        XCTAssertFalse(FeedFriendSyncRunner.isEnabled(tabEnabled: true, sampleData: true, asksEngine: true, extrasEnabled: true))
+        XCTAssertFalse(FeedFriendSyncRunner.isEnabled(tabEnabled: true, sampleData: false, asksEngine: false, extrasEnabled: true))
+        XCTAssertFalse(FeedFriendSyncRunner.isEnabled(tabEnabled: false, sampleData: false, asksEngine: true, extrasEnabled: true))
+    }
+
+    /// 选人页能用 = 有候选人来源 + 引擎有 `audience_tokens`；任一没有就「还不能选」。
+    func testComposeLayoutTiersNeedPickerAndCapability() {
+        var state = FeedComposeState(draft: FeedDraft())
+        state.audienceAvailable = true
+        let withPicker = FeedComposeLayout.make(state, pickerAvailable: true)
+        XCTAssertTrue(withPicker.visibilityOptions.filter { $0.visibility.needsAudience }.allSatisfy { $0.availability == .picksPeople(count: 0) })
+        let noPicker = FeedComposeLayout.make(state, pickerAvailable: false)
+        XCTAssertTrue(noPicker.visibilityOptions.filter { $0.visibility.needsAudience }.allSatisfy { $0.availability == .comingSoon })
+        state.audienceAvailable = false
+        XCTAssertTrue(FeedComposeLayout.make(state, pickerAvailable: true).visibilityOptions.filter { $0.visibility.needsAudience }.allSatisfy { $0.availability == .comingSoon })
+    }
+}

@@ -234,6 +234,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         super.viewDidAppear(animated)
         setFeedVisible(true)
         if notificationsEnabled { store.refreshNotificationUnread() }
+        FeedFriendSyncRunner.syncIfStale()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -264,6 +265,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         if viewIfLoaded?.window != nil {
             setFeedVisible(true)
             if notificationsEnabled { store.refreshNotificationUnread() }
+            FeedFriendSyncRunner.syncIfStale()
         }
     }
 
