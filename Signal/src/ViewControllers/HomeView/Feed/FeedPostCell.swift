@@ -50,7 +50,8 @@ final class FeedPostCell: UITableViewCell {
     private let subtitleLabel = UILabel()
     private let moreButton = UIButton(type: .system)
     private let titleLabel = UILabel()
-    private let bodyLabel = UILabel()
+    /// 正文里的网址可以点（短按打开、长按「打开 / 复制」，`FeedLinkLabel`）。
+    private let bodyLabel = FeedLinkLabel()
     private let topicsLabel = UILabel()
     private let aiLabel = UILabel()
     private let mediaContainer = UIView()
@@ -248,7 +249,7 @@ final class FeedPostCell: UITableViewCell {
 
         // 长文在信息流里是卡片（第三节第 25 条）：只露开头几行，点开是阅读页（阅读页在后面的 PR）
         let body = (card.isArticle ? (card.summary ?? card.text) : card.text)?.nilIfEmpty
-        bodyLabel.text = body
+        bodyLabel.setText(body, font: .dynamicTypeBody, color: UIColor.Signal.label)
         bodyLabel.isHidden = body == nil
         bodyLabel.numberOfLines = card.isArticle ? Self.articlePreviewLines : 0
 

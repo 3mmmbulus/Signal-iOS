@@ -118,6 +118,10 @@ final class FeedArticleCell: UITableViewCell {
         bodyView.textContainerInset = .zero
         bodyView.textContainer.lineFragmentPadding = 0
         bodyView.textColor = UIColor.Signal.label
+        // 长文里的网址：短按打开、长按「打开 / 复制」（`FeedTextLinks`），和帖子正文一样
+        bodyView.dataDetectorTypes = []
+        bodyView.linkTextAttributes = [.foregroundColor: UIColor.Signal.accent, .underlineStyle: NSUnderlineStyle.single.rawValue]
+        bodyView.delegate = self
 
         summaryNoteLabel.font = .dynamicTypeFootnoteClamped
         summaryNoteLabel.textColor = UIColor.Signal.secondaryLabel
@@ -215,7 +219,7 @@ final class FeedArticleCell: UITableViewCell {
 
     private func applyBody(_ presentation: FeedArticleReaderPresentation) {
         shownCategory = traitCollection.preferredContentSizeCategory
-        bodyView.attributedText = FeedArticleAttributedText.make(presentation.blocks)
+        bodyView.attributedText = FeedArticleAttributedText.withLinks(FeedArticleAttributedText.make(presentation.blocks))
         bodyView.isHidden = presentation.blocks.isEmpty
     }
 
@@ -253,7 +257,32 @@ final class FeedArticleCell: UITableViewCell {
 }
 
 /// 把排好的块变成带字体的文字（`FeedArticleBody` 只管块和粗斜体，这里管字号、缩进、段间距）。
+extension FeedArticleCell: UITextViewDelegate {
+    func textView(_ textView: UITextView, shouldInteractWith url: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        switch interaction {
+        case .invokeDefaultAction:
+            FeedTextLinks.open(url, from: nil)
+        case .presentActions:
+            FeedTextLinks.showMenu(for: url, from: nil)
+        case .preview:
+            return false
+        @unknown default:
+            return false
+        }
+        return false
+    }
+}
+
 enum FeedArticleAttributedText {
+    /// 认出排好的文字里的网址，标成链接（`.link` 由 UITextView 处理点击）。
+    static func withLinks(_ text: NSAttributedString) -> NSAttributedString {
+        let links = FeedTextLinks.detect(in: text.string)
+        guard !links.isEmpty else { return text }
+        let result = NSMutableAttributedString(attributedString: text)
+        FeedTextLinks.apply(links, to: result)
+        return result
+    }
+
     static func make(_ blocks: [FeedArticleBlock]) -> NSAttributedString {
         let result = NSMutableAttributedString()
         let color = UIColor.Signal.label
