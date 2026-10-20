@@ -11,13 +11,25 @@ import SignalServiceKit
 /// - 拿不到 capabilities（没问过、断网、超时、404、版本不认、解析不了）一律按「没部署」：入口隐藏。不拿旧的顶（和 `FeedCapabilitiesCache` 同口径）。
 /// - 只记在内存里，不落盘：每次启动先藏，问到了再放出来。
 /// - 信息流用本机样例时（TestFlight 预览、内部「Force feed tab」+「Feed sample data」）不连引擎，这一层不管，照预览 / 内部开关原样。
-/// - 只在 `TellomiFeed.shouldAskEngine` 为真时才去问（预览不发任何请求）。
+/// - 只在 `TellomiFeed.shouldAskEngine` 为真时才去问（预览不发任何请求）。不问引擎时（远程开关关、没有内部强制联调）这一层也不拦子入口：
+///   那时动态标签本身就不出现（`isTabEnabled` 要远程开关 + 引擎可见 + `feed`），子入口到不了；这样单测和预览不受影响。
+/// - 举报入口不藏（合规红线，产品 2026-10-20）：引擎没有 `reports` 时整个动态一起藏（`tabFeatures`）。
+/// - TestFlight 预览和内部「强制 + 样例」不受这一层影响；商店包里它们是关的：预览要 TestFlight 收据（`TellomiFeedPreview.isAvailable`），
+///   内部开关要 `DebugFlags.internalSettings`（商店包 `build == .production` 时是 false），见 `TellomiFeedEngineCapabilitiesGateTests`。
 enum FeedEngineCapabilities {
 
     // MARK: - 入口要哪些能力
 
-    /// 「动态」标签。
-    static let tabFeatures = [FeedFeature.feed]
+    /// 「动态」标签：要 `feed`，也要 `reports`——举报后端没部署就整个动态不出现（举报入口本身从不按能力藏）。
+    static let tabFeatures = [FeedFeature.feed, FeedFeature.reports]
+    /// 帖子详情页的评论输入框。
+    static let commentFeatures = [FeedFeature.comments]
+    /// 点赞（心形）。
+    static let likeFeatures = [FeedFeature.reactions]
+    /// 投票（详情页的投票行、发布页「加投票」）。
+    static let pollFeatures = [FeedFeature.polls]
+    /// 语音评论（评论里的播放行）。
+    static let voiceCommentFeatures = [FeedFeature.voiceComments]
     /// 动态页右下角的发布按钮。
     static let composeFeatures = [FeedFeature.posting]
 
@@ -38,8 +50,9 @@ enum FeedEngineCapabilities {
     // MARK: - 判断（纯函数，单测用）
 
     /// `features == nil` 是「没拿到」：按没部署处理。
-    static func allows(_ required: [String], features: Set<String>?, usesSampleData: Bool) -> Bool {
-        if usesSampleData { return true }
+    /// `asksEngine == false`：没在问引擎（标签本身不会出现），子入口不拦。
+    static func allows(_ required: [String], features: Set<String>?, usesSampleData: Bool, asksEngine: Bool = true) -> Bool {
+        if usesSampleData || !asksEngine { return true }
         guard let features else { return false }
         return required.allSatisfy { features.contains($0) }
     }
@@ -64,7 +77,7 @@ enum FeedEngineCapabilities {
     }
 
     static func allows(_ required: [String]) -> Bool {
-        return allows(required, features: currentFeatures, usesSampleData: TellomiFeed.isSampleDataEnabled)
+        return allows(required, features: currentFeatures, usesSampleData: TellomiFeed.isSampleDataEnabled, asksEngine: TellomiFeed.shouldAskEngine)
     }
 
     static func allows(page: TellomiFeedPreview.Page) -> Bool {
