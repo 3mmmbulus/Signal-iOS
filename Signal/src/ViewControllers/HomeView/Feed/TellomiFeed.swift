@@ -59,9 +59,10 @@ enum TellomiFeed {
     /// 要不要去问内容引擎能不能看：入口可能出现（远程开关开了），或者内部用户要连引擎联调。
     /// TestFlight 预览打开时永远不问（预览不发任何请求）。
     static var shouldAskEngine: Bool {
+        // 单元测试里没有环境（RemoteConfig 读不到）：当作远程开关关，别崩。
         return TellomiFeedPreview.shouldAskEngine(
             previewEnabled: isTestFlightPreviewEnabled,
-            remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
+            remoteEnabled: SSKEnvironment.hasShared && RemoteConfig.current.isTellomiFeedEnabled,
             internalForced: isForcedByInternalUser,
             internalUseSampleData: useSampleData,
         )
