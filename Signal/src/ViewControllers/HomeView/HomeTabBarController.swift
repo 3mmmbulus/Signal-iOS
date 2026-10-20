@@ -173,6 +173,13 @@ class HomeTabBarController: UITabBarController {
         let areStoriesEnabled = SSKEnvironment.shared.databaseStorageRef.read { StoryManager.areStoriesEnabled(transaction: $0) }
 
         updateTabBars(areStoriesEnabled: areStoriesEnabled)
+
+        // 启动时也问一次引擎有哪些功能（没问到之前动态入口是藏着的）
+        Task { @MainActor [weak self] in
+            if await FeedEngineCapabilities.refresh() {
+                self?.updateFeedTabIfNeeded()
+            }
+        }
         // 动态在最左，但打开 App 默认显示「聊天」（dynamic-feed.md 第三节第 17 条）
         selectedHomeTab = .chatList
 
@@ -191,7 +198,10 @@ class HomeTabBarController: UITabBarController {
         updateFeedTabIfNeeded()
         // 引擎说能不能看（`GET /v1/feed/status`，契约 3.1）：离上次问超过 15 分钟才问；变了就重画底栏
         Task { @MainActor [weak self] in
-            if await FeedEntryCheck.forCurrentProcess().refreshIfStale() {
+            let visibilityChanged = await FeedEntryCheck.forCurrentProcess().refreshIfStale()
+            // 引擎有哪些功能（`GET /v1/capabilities`，缓存 60 秒）：拿不到按没部署，入口藏起来
+            let capabilitiesChanged = await FeedEngineCapabilities.refresh()
+            if visibilityChanged || capabilitiesChanged {
                 self?.updateFeedTabIfNeeded()
             }
         }
