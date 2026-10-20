@@ -393,7 +393,7 @@ final class TellomiFeedClientTests: XCTestCase {
         let buttons = allViews(cell).compactMap { $0 as? UIButton }
         let more = buttons.first { $0.accessibilityLabel == OWSLocalizedString("TELLOMI_FEED_MORE", comment: "") }
         XCTAssertEqual(more?.isHidden, false)
-        XCTAssertEqual(more?.menu?.children.map(\.title), [OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: "")])
+        XCTAssertEqual(more?.menu?.children.map(\.title), [OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: ""), OWSLocalizedString("TELLOMI_FEED_MENU_REPORT", comment: "")])
         let like = buttons.first { $0.accessibilityLabel == OWSLocalizedString("TELLOMI_FEED_LIKE", comment: "") }
         XCTAssertNotNil(like)
         XCTAssertNil(like?.configuration?.title)

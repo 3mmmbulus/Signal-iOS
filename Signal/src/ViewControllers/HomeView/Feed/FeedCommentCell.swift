@@ -198,7 +198,8 @@ final class FeedCommentCell: UITableViewCell {
 
         contentView.backgroundColor = extras?.highlighted == true ? UIColor.Signal.accent.withAlphaComponent(0.12) : .clear
 
-        if extras?.voice != nil {
+        // 引擎没部署语音评论（`voice_comments`）：不画播放行
+        if extras?.voice != nil, FeedEngineCapabilities.allows(FeedEngineCapabilities.voiceCommentFeatures) {
             voiceRow.isHidden = false
             let transcript = FeedCommentExtras.transcript(of: comment)
             transcriptLabel.text = transcript

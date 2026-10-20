@@ -20,14 +20,16 @@ enum TellomiFeed {
         return isTabEnabled(
             remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
             engineVisible: engineVisible,
+            engineHasFeed: FeedEngineCapabilities.allows(FeedEngineCapabilities.tabFeatures, features: FeedEngineCapabilities.currentFeatures, usesSampleData: false),
             forcedByInternalUser: TellomiFeedPreview.tabForced(internalForced: isForcedByInternalUser, previewEnabled: isTestFlightPreviewEnabled),
         )
     }
 
     /// 纯函数版本，单测用。引擎说不能看（不在内测名单、紧急开关关了）时隐藏入口，不显示空列表（契约 1.1）。
     /// 对应 Android `TellomiFeed.isTabEnabled(remoteEnabled, engineVisible, forcedByInternalUser)`。
-    static func isTabEnabled(remoteEnabled: Bool, engineVisible: Bool, forcedByInternalUser: Bool) -> Bool {
-        return forcedByInternalUser || (remoteEnabled && engineVisible)
+    /// `engineHasFeed`：引擎 `GET /v1/capabilities` 里有 `feed` 和 `reports`（拿不到算没有，见 `FeedEngineCapabilities`）。
+    static func isTabEnabled(remoteEnabled: Bool, engineVisible: Bool, engineHasFeed: Bool = true, forcedByInternalUser: Bool) -> Bool {
+        return forcedByInternalUser || (remoteEnabled && engineVisible && engineHasFeed)
     }
 
     // MARK: - 引擎上一次说的「能不能看」（Android `TellomiFeedValues.engineVisible` 等；注意 iOS 的 UserDefaults 会进设备备份，和 Android 的「不进备份」不同，靠 15 分钟的过期检查兜底）
@@ -57,9 +59,10 @@ enum TellomiFeed {
     /// 要不要去问内容引擎能不能看：入口可能出现（远程开关开了），或者内部用户要连引擎联调。
     /// TestFlight 预览打开时永远不问（预览不发任何请求）。
     static var shouldAskEngine: Bool {
+        // 单元测试里没有环境（RemoteConfig 读不到）：当作远程开关关，别崩。
         return TellomiFeedPreview.shouldAskEngine(
             previewEnabled: isTestFlightPreviewEnabled,
-            remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
+            remoteEnabled: SSKEnvironment.hasShared && RemoteConfig.current.isTellomiFeedEnabled,
             internalForced: isForcedByInternalUser,
             internalUseSampleData: useSampleData,
         )
@@ -96,12 +99,14 @@ enum TellomiFeed {
 
     /// 页面开关：内部构建照旧看内部开关；别的构建只有预览打开时、跟着预览的页面才开（`TellomiFeedPreview.Page.followsPreview`）。
     private static func isPageEnabled(_ page: TellomiFeedPreview.Page, key: String) -> Bool {
-        return TellomiFeedPreview.isPageEnabled(
+        let switchedOn = TellomiFeedPreview.isPageEnabled(
             page,
             internalBuild: DebugFlags.internalSettings,
             internalValue: { UserDefaults.standard.bool(forKey: key) },
             previewEnabled: isTestFlightPreviewEnabled,
         )
+        // 引擎没部署这个功能（或拿不到 capabilities）：入口隐藏
+        return switchedOn && FeedEngineCapabilities.allows(page: page)
     }
 
     private static let forceTabKey = "TellomiFeed.forceFeedTab"

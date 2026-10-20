@@ -159,6 +159,8 @@ final class TellomiLogoutOptionsViewController: OWSTableViewController2 {
                 OWSActionSheets.showActionSheet(message: message, fromViewController: self)
                 return
             }
+            // 动态的 capabilities 是按账号存的：退出登录就清掉
+            FeedEngineCapabilities.clearOnLogout()
             SignalApp.shared.tellomiDidLogOut()
         }
     }
@@ -178,6 +180,7 @@ final class TellomiLogoutOptionsViewController: OWSTableViewController2 {
                     title: CommonStrings.deletingModal,
                 ) { _ in
                     await logout.signOffBestEffortBeforeDeletingLocalData(alsoUnlinkLinkedDevices: alsoUnlinkLinkedDevices)
+                    FeedEngineCapabilities.clearOnLogout()
                     SignalApp.shared.resetAppDataAndExit(keyFetcher: SSKEnvironment.shared.databaseStorageRef.keyFetcher)
                 }
             },
