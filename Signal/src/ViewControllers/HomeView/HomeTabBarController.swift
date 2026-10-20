@@ -172,6 +172,8 @@ class HomeTabBarController: UITabBarController {
         // small window where the tab bar is in the wrong state at app launch.
         let areStoriesEnabled = SSKEnvironment.shared.databaseStorageRef.read { StoryManager.areStoriesEnabled(transaction: $0) }
 
+        // 先用上次成功的 capabilities（24 小时内）画底栏，后台再刷新，有变化才重画：底栏不闪
+        FeedEngineCapabilities.loadAtLaunch()
         updateTabBars(areStoriesEnabled: areStoriesEnabled)
 
         // 启动时也问一次引擎有哪些功能（没问到之前动态入口是藏着的）

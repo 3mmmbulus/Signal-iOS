@@ -29,6 +29,9 @@ final class FeedPostCell: UITableViewCell {
 
     var onLike: ((FeedCard) -> Void)?
     var onNotInterested: ((FeedCard) -> Void)?
+    /// 「···」里的「举报」。nil = 默认在最前面的页面弹举报页（`FeedReportStore` + `FeedSources.current()`）。
+    /// 举报入口任何模式都有（合规红线），不按 capabilities 藏、不看预览 / 样例。
+    var onReport: ((FeedCard) -> Void)?
     /// 点头像 / 名字（作者主页入口）。nil = 不响应，也不拦截点击（整行照旧是「打开帖子」）。
     var onAuthorTap: ((FeedAuthor) -> Void)? {
         didSet { setAuthorTapEnabled(onAuthorTap != nil) }
@@ -233,15 +236,26 @@ final class FeedPostCell: UITableViewCell {
 
         // 自己的帖子「···」里是编辑 / 删除等（第三节第 26 条），随后面的 PR 做；现在只有别人的帖子有「不感兴趣」
         moreButton.isHidden = card.viewer.isAuthor || isReadOnly
-        moreButton.menu = UIMenu(children: [
-            UIAction(
-                title: OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: "Feed: ··· menu item that hides a post and tells the recommender to show fewer like it."),
-                image: UIImage(named: "x-circle"),
-            ) { [weak self] _ in
-                guard let self, let card = self.card else { return }
-                self.onNotInterested?(card)
-            },
-        ])
+        moreButton.menu = UIMenu(children: Self.menuItems(for: card).map { item in
+            switch item {
+            case .report:
+                return UIAction(
+                    title: OWSLocalizedString("TELLOMI_FEED_MENU_REPORT", comment: "Feed: ··· menu item that reports a post or a comment."),
+                    image: UIImage(systemName: "flag"),
+                ) { [weak self] _ in
+                    guard let self, let card = self.card else { return }
+                    self.report(card)
+                }
+            default:
+                return UIAction(
+                    title: OWSLocalizedString("TELLOMI_FEED_NOT_INTERESTED", comment: "Feed: ··· menu item that hides a post and tells the recommender to show fewer like it."),
+                    image: UIImage(named: "x-circle"),
+                ) { [weak self] _ in
+                    guard let self, let card = self.card else { return }
+                    self.onNotInterested?(card)
+                }
+            }
+        })
 
         let title = card.isArticle ? card.title?.nilIfEmpty : nil
         titleLabel.text = title
@@ -261,6 +275,27 @@ final class FeedPostCell: UITableViewCell {
 
         configureMedia(card.media)
         configureActions(card)
+    }
+
+    /// 信息流里别人帖子的「···」：不感兴趣、举报（和详情页 `FeedDetailMenu.items(forPost:)` 同一组）。纯函数，单测用。
+    /// 举报不看 capabilities、预览、样例：能看到内容就能举报。
+    static func menuItems(for card: FeedCard) -> [FeedDetailMenuItem] {
+        guard !card.viewer.isAuthor else { return [] }
+        return [.notInterested, .report]
+    }
+
+    private func report(_ card: FeedCard) {
+        if let onReport {
+            onReport(card)
+            return
+        }
+        guard let presenter = CurrentAppContext().frontmostViewController() else { return }
+        let store = FeedReportStore(target: .content(card.id), source: FeedSources.current())
+        store.start()
+        let report = FeedReportViewController(store: store) { [weak presenter] _ in
+            presenter?.dismiss(animated: true)
+        }
+        presenter.present(OWSNavigationController(rootViewController: report), animated: true)
     }
 
     private func configureActions(_ card: FeedCard) {
