@@ -94,6 +94,16 @@ final class TellomiFeedDetailEventsTests: XCTestCase {
         XCTAssertNil(FeedShareOutcome.cancelled.event(contentId: "a", surface: .recommend, shareable: true, at: t0))
     }
 
+    /// 产品 2026-10-20：选了分享目标就记（看 `activityType`，不看 `completed`）；没选目标关掉面板不记。
+    func testShareSheetCountsOnceATargetIsPicked() {
+        XCTAssertEqual(FeedShareOutcome.fromShareSheet(activityType: "com.apple.UIKit.activity.Message"), .completed)
+        XCTAssertEqual(FeedShareOutcome.fromShareSheet(activityType: "com.tencent.xin.sharetimeline"), .completed, "选了目标、在目标 App 里取消也记")
+        XCTAssertEqual(FeedShareOutcome.fromShareSheet(activityType: nil), .cancelled)
+        XCTAssertEqual(FeedShareOutcome.fromShareSheet(activityType: "x").event(contentId: "a", surface: .recommend, shareable: true, at: t0)?.type, "share")
+        XCTAssertNil(FeedShareOutcome.fromShareSheet(activityType: nil).event(contentId: "a", surface: .recommend, shareable: true, at: t0))
+        XCTAssertNil(FeedShareOutcome.fromShareSheet(activityType: "x").event(contentId: "a", surface: .recommend, shareable: false, at: t0))
+    }
+
     /// 卡片外层 `shareable == false`（私密账号 / 非公开）：没有分享入口，也不报 `share`（引擎不检查）。
     func testShareIsNotReportedForCardsThatAreNotShareable() {
         XCTAssertNil(FeedShareOutcome.completed.event(contentId: "a", surface: .profile, shareable: false, at: t0))

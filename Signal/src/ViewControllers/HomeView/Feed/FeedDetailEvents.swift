@@ -64,7 +64,8 @@ extension FeedEventPayload {
 }
 
 /// 分享动作的结果。只有 `.completed` 才报 `share`；`.cancelled`（关掉分享面板、没选目标）什么都不报。
-/// 调用方把 `UIActivityViewController.completionWithItemsHandler` 的 `completed` 和「复制链接」成功与否映射到这里。
+/// 口径（产品 2026-10-20 定）：**选了分享目标就记**——系统分享面板按 `completionWithItemsHandler` 的 `activityType != nil` 判断
+/// （`fromShareSheet`），不看 `completed`（选了目标又在目标 App 里取消也记）；「复制链接」放进剪贴板就记。
 ///
 /// `shareable` 是卡片外层的 `shareable`（公开动态、作者不是私密账号；`FeedCard.shareable`）：不能分享的卡片没有分享入口，
 /// 也就不该有 `share` 事件——引擎不检查这一点（交叉核对 G-3），所以在这里拦住。
@@ -72,6 +73,12 @@ extension FeedEventPayload {
 enum FeedShareOutcome {
     case completed
     case cancelled
+
+    /// 系统分享面板关掉时：选了目标（`activityType` 有值）就算分享，不管目标 App 里有没有真的发出去。
+    /// 传 `activityType?.rawValue`，这里不依赖 UIKit。
+    static func fromShareSheet(activityType: String?) -> FeedShareOutcome {
+        return activityType != nil ? .completed : .cancelled
+    }
 
     func event(contentId: String, surface: FeedEventSurface, shareable: Bool, at date: Date) -> FeedEventPayload? {
         guard shareable else { return nil }
