@@ -20,14 +20,14 @@ enum TellomiFeed {
         return isTabEnabled(
             remoteEnabled: RemoteConfig.current.isTellomiFeedEnabled,
             engineVisible: engineVisible,
-            engineHasFeed: FeedEngineCapabilities.allows(FeedEngineCapabilities.tabFeatures),
+            engineHasFeed: FeedEngineCapabilities.allows(FeedEngineCapabilities.tabFeatures, features: FeedEngineCapabilities.currentFeatures, usesSampleData: false),
             forcedByInternalUser: TellomiFeedPreview.tabForced(internalForced: isForcedByInternalUser, previewEnabled: isTestFlightPreviewEnabled),
         )
     }
 
     /// 纯函数版本，单测用。引擎说不能看（不在内测名单、紧急开关关了）时隐藏入口，不显示空列表（契约 1.1）。
     /// 对应 Android `TellomiFeed.isTabEnabled(remoteEnabled, engineVisible, forcedByInternalUser)`。
-    /// `engineHasFeed`：引擎 `GET /v1/capabilities` 里有 `feed`（拿不到算没有，见 `FeedEngineCapabilities`）。
+    /// `engineHasFeed`：引擎 `GET /v1/capabilities` 里有 `feed` 和 `reports`（拿不到算没有，见 `FeedEngineCapabilities`）。
     static func isTabEnabled(remoteEnabled: Bool, engineVisible: Bool, engineHasFeed: Bool = true, forcedByInternalUser: Bool) -> Bool {
         return forcedByInternalUser || (remoteEnabled && engineVisible && engineHasFeed)
     }

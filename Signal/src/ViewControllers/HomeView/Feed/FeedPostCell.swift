@@ -266,6 +266,8 @@ final class FeedPostCell: UITableViewCell {
         let liked = card.viewer.liked
         let showCount = !card.stats.likeCountHidden && card.stats.likes > 0
         likeButton.isUserInteractionEnabled = !isReadOnly || allowsLikeWhenReadOnly
+        // 引擎没部署点赞（`reactions`）：不显示心形
+        likeButton.isHidden = !FeedEngineCapabilities.allows(FeedEngineCapabilities.likeFeatures)
         likeButton.configuration?.image = UIImage(named: liked ? "heart-fill-compact" : "heart")
         likeButton.configuration?.baseForegroundColor = liked ? Self.likedColor : UIColor.Signal.secondaryLabel
         likeButton.configuration?.title = showCount ? OWSFormat.formatInt(card.stats.likes) : nil

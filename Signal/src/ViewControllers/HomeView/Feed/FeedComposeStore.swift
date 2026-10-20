@@ -84,7 +84,8 @@ struct FeedComposeState: Equatable {
     }
 
     var canAddPoll: Bool {
-        return editing == nil && draft.kind == .post && draft.poll == nil
+        // 引擎没部署投票（`polls`）：不给加
+        return editing == nil && draft.kind == .post && draft.poll == nil && FeedEngineCapabilities.allows(FeedEngineCapabilities.pollFeatures)
     }
 }
 

@@ -289,6 +289,10 @@ final class FeedPostDetailViewController: OWSViewController {
             goneView.isHidden = true
         }
         commentInput.apply(FeedCommentInputPresentation(state: state), draft: state.draft)
+        // 引擎没部署评论（`comments`）：评论输入框收起来
+        if !FeedEngineCapabilities.allows(FeedEngineCapabilities.commentFeatures) {
+            commentInput.isHidden = true
+        }
 
         post = state.post
         showIpRegion = state.showIpRegion || fallbackShowIpRegion
@@ -297,7 +301,10 @@ final class FeedPostDetailViewController: OWSViewController {
 
         var newRows: [Row] = [.post]
         if extras {
-            newRows += FeedPostDetailPresentation.extraRows(for: post, saveAvailable: savedMessages != nil).map { $0 == .poll ? Row.poll : Row.actions }
+            let pollsAllowed = FeedEngineCapabilities.allows(FeedEngineCapabilities.pollFeatures)
+            newRows += FeedPostDetailPresentation.extraRows(for: post, saveAvailable: savedMessages != nil)
+                .filter { $0 != .poll || pollsAllowed }
+                .map { $0 == .poll ? Row.poll : Row.actions }
         }
         let phase = FeedPostDetailPresentation.commentsPhase(for: state)
         if phase == .content {
