@@ -1577,6 +1577,9 @@ final class AppLifecycleManager: NSObject, UNUserNotificationCenterDelegate {
                 // Tellomi（tellomi/tellomi#1519 M-4）：补发到点的定时消息、挂前台定时器（同安卓启动时 `scheduleIfNecessary`）。
                 TellomiScheduledMessageSender.shared.applicationDidBecomeActive()
 
+                // Tellomi（REGION_PROFILE 第六节之二）：回到前台按远程配置的切区目标判一次（没下发就什么都不做）
+                TellomiRegionAutoSwitchRunner.evaluateAsync("foreground")
+
                 if !UIApplication.shared.isRegisteredForRemoteNotifications {
                     Logger.info("Retrying to register for remote notifications since user hasn't registered yet.")
                     // Push tokens don't normally change while the app is launched, so checking once during launch is

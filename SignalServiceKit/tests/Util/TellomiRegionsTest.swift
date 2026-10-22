@@ -11,6 +11,9 @@ import XCTest
 class TellomiRegionsTest: XCTestCase {
     private let global = TellomiRegions.global
     private let cn = TellomiRegions.cn
+    /// 关着的 CN（远程配置驱动切区之前包里的样子）：「关着的区不碰网络」这些判据仍要守住。
+    private var cnOff: TellomiRegionProfile { TellomiRegionProfile(copying: cn, enabled: false) }
+    private var cnOffTable: [TellomiRegionProfile] { [global, cnOff] }
 
     func testGlobalRegionIsExactlyTheContractTable() {
         XCTAssertEqual(global.id, .global)
@@ -52,7 +55,8 @@ class TellomiRegionsTest: XCTestCase {
 
     func testCnRegionOnlySwapsTheHostIntoTellomiCn() {
         XCTAssertEqual(cn.id, .cn)
-        XCTAssertFalse(cn.enabled)
+        // REGION_PROFILE 第六节之二：CN 可用（enabled = true），切不切由远程配置 global.tellomi.region.target 决定
+        XCTAssertTrue(cn.enabled)
         XCTAssertEqual(cn.chat, "https://chat.tellomi.cn")
         XCTAssertEqual(cn.grpcChatHost, "grpc.chat.tellomi.cn")
         XCTAssertEqual(cn.captchaRegistration, "https://chat.tellomi.cn/captcha-tellomi/registration/generate.html")
@@ -95,8 +99,9 @@ class TellomiRegionsTest: XCTestCase {
 
         XCTAssertFalse(TellomiRegions.problems([cn]).isEmpty)
 
-        let enabledCn = TellomiRegionProfile(copying: cn, enabled: true)
-        XCTAssertFalse(TellomiRegions.problems([global, enabledCn]).isEmpty)
+        // 开着的 CN 是合法的；关着的也合法
+        XCTAssertEqual(TellomiRegions.problems([global, cn]), [])
+        XCTAssertEqual(TellomiRegions.problems(cnOffTable), [])
 
         // CN 漏换一个主机
         let leakyCn = TellomiRegionProfile(copying: cn, uptimeHost: global.uptimeHost)
@@ -109,9 +114,11 @@ class TellomiRegionsTest: XCTestCase {
 
     func testCurrentRegionFallsBackToGlobalForAnythingUnusable() {
         // 契约第五节第 8 条：没有记录、不认识、那个区关着，一律回落 global
-        for storedId in [nil, "global", "cn", "unknown", "", "GLOBAL"] {
+        for storedId in [nil, "global", "unknown", "", "GLOBAL", "CN"] {
             XCTAssertEqual(TellomiRegions.resolve(storedId: storedId).id, .global, String(describing: storedId))
         }
+        XCTAssertEqual(TellomiRegions.resolve(storedId: "cn").id, .cn)
+        XCTAssertEqual(TellomiRegions.resolve(storedId: "cn", profiles: cnOffTable).id, .global)
         // CN 打开以后才认 "cn"
         let cnOn = TellomiRegionProfile(copying: cn, enabled: true)
         XCTAssertEqual(TellomiRegions.resolve(storedId: "cn", profiles: [global, cnOn]).id, .cn)
@@ -129,8 +136,10 @@ class TellomiRegionsTest: XCTestCase {
         store.record(.cn, at: switchedAt)
         XCTAssertEqual(store.storedRegionId(), "cn")
         XCTAssertEqual(store.lastSwitchAt(), switchedAt)
-        // CN 关着：记住了也回落 global
-        XCTAssertEqual(TellomiRegions.current(store: store), global)
+        // CN 允许（REGION_PROFILE 第六节之二）：记住了 cn 就落在 cn
+        XCTAssertEqual(TellomiRegions.current(store: store), cn)
+        // 那个区关着时仍回落 global（契约第五节第 8 条）
+        XCTAssertEqual(TellomiRegions.resolve(storedId: store.storedRegionId(), profiles: cnOffTable), global)
 
         // 读不出来（suite 建不起来）：回落 global，写入也不崩
         let unavailable = TellomiRegionStore(userDefaults: { nil })
@@ -374,7 +383,17 @@ class TellomiRegionsTest: XCTestCase {
     }
 
     func testAFormPinnedToATurnedOffRegionIsNotReused() {
-        // 包里的 CN 关着：钉在 CN 的表单不能再用，上传管理器当它过期，重新取表单、从 0 开始、落到当前区
+        let net = makeTestNet()
+        // 包里的 CN 允许（REGION_PROFILE 第六节之二）：钉在 CN 的表单照常续传，仍连 CN
+        let cnAllowed = TellomiNetProvider(region: global, net: net, profiles: TellomiRegions.all)
+        let previous = TellomiNetProvider.installForTesting(cnAllowed)
+        defer { TellomiNetProvider.installForTesting(previous) }
+        XCTAssertEqual(makeForm(regionId: "cn").tellomiPinnedRegion, TellomiRegions.cn)
+        XCTAssertNil(makeForm(regionId: "unknown").tellomiPinnedRegion)
+        XCTAssertEqual(makeForm(regionId: "global").tellomiPinnedRegion, TellomiRegions.global)
+
+        // 那个区关着：钉在 CN 的表单不能再用，上传管理器当它过期，重新取表单、从 0 开始、落到当前区
+        TellomiNetProvider.installForTesting(TellomiNetProvider(region: global, net: net, profiles: cnOffTable))
         XCTAssertNil(makeForm(regionId: "cn").tellomiPinnedRegion)
         XCTAssertNil(makeForm(regionId: "unknown").tellomiPinnedRegion)
         XCTAssertEqual(makeForm(regionId: "global").tellomiPinnedRegion, TellomiRegions.global)
@@ -435,8 +454,8 @@ class TellomiRegionsTest: XCTestCase {
     }
 
     func testSwitchingRefusesUnknownAndDisabledRegionsBeforeTouchingTheNetwork() {
-        // 包里的 CN 关着：直接报错
-        let (provider, recorder) = makeSwitchableProvider(profiles: TellomiRegions.all)
+        // 关着的 CN：直接报错
+        let (provider, recorder) = makeSwitchableProvider(profiles: cnOffTable)
         XCTAssertThrowsError(try provider.switchTo(.cn, store: nil)) { XCTAssertEqual($0 as? TellomiRegionSwitchError, .disabled) }
         // 不认识的区
         let (onlyGlobal, onlyGlobalRecorder) = makeSwitchableProvider(profiles: [global])
@@ -587,16 +606,16 @@ class TellomiRegionsTest: XCTestCase {
         XCTAssertEqual(testRegion.cdn3, "https://cdn3.tellomi.test")
         XCTAssertEqual(testRegion.captchaRegistration, "https://chat.tellomi.test/captcha-tellomi/registration/generate.html")
         XCTAssertEqual(testRegion.contentProxyPort, global.contentProxyPort)
-        // 包里的表不受影响：CN 仍关着，不变量照旧
-        XCTAssertFalse(TellomiRegions.cn.enabled)
+        // 包里的表不受影响：不变量照旧
+        XCTAssertEqual(TellomiRegions.cn.chat, "https://chat.tellomi.cn")
         XCTAssertEqual(TellomiRegions.problems(TellomiRegions.all), [])
     }
 
     func testAStoredTestRegionFallsBackToGlobalWithoutTheLaunchEnvironment() {
         let profiles = TellomiRegions.testRegionProfiles(environment: [testDomainKey: "tellomi.test"])
         XCTAssertEqual(TellomiRegions.resolve(storedId: "cn", profiles: profiles), profiles[1])
-        // 下次不带变量启动（NSE、分享扩展一直是这样）：记住的 cn 在包里的表里关着，回落 global
-        XCTAssertEqual(TellomiRegions.resolve(storedId: "cn", profiles: TellomiRegions.processProfiles), global)
+        // 下次不带变量启动（NSE、分享扩展一直是这样）：记住的 cn 回到包里的正式 CN（tellomi.cn），不再指向测试域名
+        XCTAssertEqual(TellomiRegions.resolve(storedId: "cn", profiles: TellomiRegions.all), TellomiRegions.cn)
     }
 
     func testTheRealCnDomainCanNotBeTheTestRegion() {
@@ -687,11 +706,31 @@ class TellomiRegionsTest: XCTestCase {
         XCTAssertEqual(TellomiRegions.testRegionProfiles(environment: [testPortKey: "18443"]), TellomiRegions.all)
     }
 
+    /// 起点要等线程「站稳」再数：tokio 的工作线程是新建运行时时才起的，线程名（`libsignal-tokio-worker`）由线程自己起来后
+    /// 才设上（Rust std 在 macOS 上只能在线程内 `pthread_setname_np`）。刚建完 `Net` 马上数，还没跑到设名那一步的线程
+    /// 数不进去，起点偏小；机器负载高时更明显（2026-10-19 Mac 复测：起点读到 9 / 11，切完读到 14，3 次挂 2 次；这个偶发 10-17、10-18 在没有切区改动的树上也出现过）。
+    /// 连续 1 秒读数不变才算站稳，最多等 10 秒，取站稳时的读数（不取最大值：前一个用例的运行时正在退出时，最大值会把起点抬高）。
+    /// 判据本身（切完回到起点）不放宽。
+    private func settledTokioThreadCount() -> Int {
+        var last = TellomiRegionDrill.tokioThreadCount()
+        var stableSince = Date()
+        let deadline = Date().addingTimeInterval(10)
+        while Date() < deadline, Date().timeIntervalSince(stableSince) < 1 {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            let count = TellomiRegionDrill.tokioThreadCount()
+            if count != last {
+                last = count
+                stableSince = Date()
+            }
+        }
+        return last
+    }
+
     func testSwitchingTenTimesLeavesNoTokioThreadsBehind() throws {
         // #1056 判据 2 的单测版：每个 Net 一个 tokio 运行时；切 10 次、退役期过后，线程数回到开始时
         let profiles = TellomiRegions.testRegionProfiles(environment: [testDomainKey: "tellomi.test"])
         let (provider, _) = makeSwitchableProvider(profiles: profiles, retireDelay: 0.1)
-        let before = TellomiRegionDrill.tokioThreadCount()
+        let before = settledTokioThreadCount()
         XCTAssertGreaterThan(before, 0, "provider 第一个 Net 的运行时要数得到，否则下面的比较是空的")
 
         for step in 1...10 {
@@ -755,8 +794,8 @@ class TellomiRegionsTest: XCTestCase {
     private var bothEnabled: [TellomiRegionProfile] { [global, TellomiRegionProfile(copying: cn, enabled: true)] }
 
     func testTheSelectorProbesOnlyEnabledRegions() async {
-        XCTAssertEqual(TellomiRegions.all.filter(\.enabled).map(\.id), [.global])
-        let (selector, log) = makeSelector(profiles: TellomiRegions.all, results: [.global: .ok(rtt: 0.040)])
+        XCTAssertEqual(cnOffTable.filter(\.enabled).map(\.id), [.global])
+        let (selector, log) = makeSelector(profiles: cnOffTable, results: [.global: .ok(rtt: 0.040)])
 
         let decision = await selector.probe()
 
@@ -767,7 +806,7 @@ class TellomiRegionsTest: XCTestCase {
 
     func testNoTellomiCnHostIsProbedWhileCnIsDisabled() async {
         // #1056 判据 4 在选路器这一层：CN 关着时，探测连 tellomi.cn 的主机名都碰不到
-        let (selector, log) = makeSelector(profiles: TellomiRegions.all, results: [.global: .failed("offline in tests")])
+        let (selector, log) = makeSelector(profiles: cnOffTable, results: [.global: .failed("offline in tests")])
 
         let decision = await selector.probe()
 
@@ -854,7 +893,7 @@ class TellomiRegionsTest: XCTestCase {
 
     func testADisabledRegionIsNeverRecommended() async {
         // 包里的 CN 关着：就算它会探得很快（假如探了的话），也不探、不推荐；当前区失败也只能 no-alternative
-        let (selector, log) = makeSelector(profiles: TellomiRegions.all, results: [.global: .failed("timeout"), .cn: .ok(rtt: 0.001)])
+        let (selector, log) = makeSelector(profiles: cnOffTable, results: [.global: .failed("timeout"), .cn: .ok(rtt: 0.001)])
 
         for _ in 0..<3 {
             let decision = await selector.probe()
@@ -1033,5 +1072,136 @@ private extension TellomiRegionProfile {
             debugLog: other.debugLog,
             feed: other.feed,
         )
+    }
+}
+
+// MARK: - 远程配置驱动的切区（REGION_PROFILE 第六节之二）
+
+/// 和 Android `TellomiRegionAutoSwitchTest`、Desktop `tellomiRegionTarget_test.node.ts` 逐条一致。
+final class TellomiRegionAutoSwitchTest: XCTestCase {
+    private let global = TellomiRegions.global
+    private let cn = TellomiRegions.cn
+
+    private final class World {
+        var stored: TellomiRegionId
+        var target: String?
+        var failures: Int
+        var up: [TellomiRegionId: Bool]
+        var probed = [TellomiRegionId]()
+        var probedHosts = [String]()
+        var switched = [TellomiRegionId]()
+
+        init(stored: TellomiRegionId = .global, target: String?, failures: Int = 0, up: [TellomiRegionId: Bool] = [:]) {
+            self.stored = stored
+            self.target = target
+            self.failures = failures
+            self.up = up
+        }
+    }
+
+    private func auto(_ w: World, table: [TellomiRegionProfile] = TellomiRegions.all) -> TellomiRegionAutoSwitch {
+        TellomiRegionAutoSwitch(
+            profiles: { table },
+            currentId: { w.stored },
+            targetValue: { w.target },
+            loadFailures: { w.failures },
+            storeFailures: { w.failures = $0 },
+            probe: { region in
+                w.probed.append(region.id)
+                w.probedHosts.append(TellomiRegions.hostOf(region.chat))
+                return w.up[region.id] ?? false
+            },
+            switchTo: { id in
+                w.switched.append(id)
+                w.stored = id
+            },
+        )
+    }
+
+    func testParsesTheKey() {
+        XCTAssertEqual(TellomiRegionAutoSwitch.parseTarget(nil), .init(id: .global, explicit: false))
+        XCTAssertEqual(TellomiRegionAutoSwitch.parseTarget(""), .init(id: .global, explicit: false))
+        XCTAssertEqual(TellomiRegionAutoSwitch.parseTarget("CN"), .init(id: .global, explicit: false))
+        XCTAssertEqual(TellomiRegionAutoSwitch.parseTarget("cn"), .init(id: .cn, explicit: true))
+        XCTAssertEqual(TellomiRegionAutoSwitch.parseTarget("global"), .init(id: .global, explicit: true))
+    }
+
+    func testOffWithoutTheKeyProbesNothing() async {
+        for target in [nil, "", "nonsense"] as [String?] {
+            let w = World(target: target)
+            let reason = await auto(w).evaluate()
+            XCTAssertEqual(reason, .off)
+            XCTAssertEqual(w.probed, [])
+            XCTAssertEqual(w.switched, [])
+        }
+        let explicitGlobal = World(target: "global", up: [.global: true])
+        let reason = await auto(explicitGlobal).evaluate()
+        XCTAssertEqual(reason, .stay)
+        XCTAssertFalse(explicitGlobal.probedHosts.contains { $0.hasSuffix("tellomi.cn") })
+    }
+
+    func testMovesOnlyAfterASuccessfulProbe() async {
+        let down = World(target: "cn", up: [.cn: false])
+        let downReason = await auto(down).evaluate()
+        XCTAssertEqual(downReason, .targetUnreachable)
+        XCTAssertEqual(down.switched, [])
+        XCTAssertEqual(down.probed, [.cn])
+
+        let up = World(target: "cn", up: [.cn: true])
+        let upReason = await auto(up).evaluate()
+        XCTAssertEqual(upReason, .switch)
+        XCTAssertEqual(up.stored, .cn)
+    }
+
+    func testRevertingTheKeyMovesBack() async {
+        for target in ["global", "", nil] as [String?] {
+            let w = World(stored: .cn, target: target, up: [.global: true])
+            let reason = await auto(w).evaluate()
+            XCTAssertEqual(reason, .switch)
+            XCTAssertEqual(w.stored, .global)
+            XCTAssertEqual(w.probed, [.global])
+        }
+    }
+
+    func testFailsOverAfterRepeatedFailuresAndReturns() async {
+        let w = World(stored: .cn, target: "cn", up: [.cn: false, .global: true])
+        let a = auto(w)
+        for i in 1..<TellomiRegionAutoSwitch.defaultFailureThreshold {
+            let reason = await a.evaluate()
+            XCTAssertEqual(reason, .currentFailing)
+            XCTAssertEqual(w.failures, i)
+        }
+        let failover = await a.evaluate()
+        XCTAssertEqual(failover, .failover)
+        XCTAssertEqual(w.stored, .global)
+        XCTAssertEqual(w.failures, 0)
+
+        w.up[.cn] = true
+        let back = await a.evaluate()
+        XCTAssertEqual(back, .switch)
+        XCTAssertEqual(w.stored, .cn)
+    }
+
+    func testNoAlternativeWhenBothAreDown() async {
+        let w = World(stored: .cn, target: "cn", failures: 2, up: [.cn: false, .global: false])
+        let reason = await auto(w).evaluate()
+        XCTAssertEqual(reason, .noAlternative)
+        XCTAssertEqual(w.stored, .cn)
+    }
+
+    func testADisabledCnIsNeverATarget() async {
+        let w = World(stored: .cn, target: "cn", up: [.global: true])
+        let reason = await auto(w, table: [global, TellomiRegionProfile(copying: cn, enabled: false)]).evaluate()
+        XCTAssertEqual(reason, .off)
+        XCTAssertFalse(w.probed.contains(.cn))
+    }
+
+    func testServerSuppliedHostsMustBeUnderTheCurrentRegionRoot() {
+        XCTAssertEqual(TellomiRegions.tellomiRoot(of: "CHAT.tellomi.cn."), "tellomi.cn")
+        XCTAssertNil(TellomiRegions.tellomiRoot(of: "nottellomi.cn"))
+        XCTAssertTrue(TellomiRegions.isHost("contentproxy.tellomi.cn", inRegion: cn))
+        XCTAssertFalse(TellomiRegions.isHost("contentproxy.tellomi.app", inRegion: cn))
+        XCTAssertTrue(TellomiRegions.isHost("contentproxy.tellomi.app", inRegion: global))
+        XCTAssertFalse(TellomiRegions.isHost("proxy.example.com", inRegion: global))
     }
 }

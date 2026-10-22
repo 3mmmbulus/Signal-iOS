@@ -328,6 +328,12 @@ public class RemoteConfig {
         return valueFlags[ValueFlag.gifProxyUrl.rawValue]
     }
 
+    /// Tellomi（REGION_PROFILE 第六节之二）：远程配置驱动的切区目标，`global` / `cn`；没下发 = 不切。
+    /// 判定在 `TellomiRegionAutoSwitch`：先探目标，探通了才切。Desktop / Android 读的是同一个键。
+    public var tellomiRegionTarget: String? {
+        return valueFlags[ValueFlag.tellomiRegionTarget.rawValue]
+    }
+
     /// Tellomi（#1078）：GIF 功能到底能不能用 = 上游开关 **且** provider 不是 `none`。
     ///
     /// 两个条件分开留着：`global.gifSearch` 是上游的（整体开关），`global.gif.provider`
@@ -832,6 +838,8 @@ private enum ValueFlag: String, FlagType {
     case gifApiKeyIos = "global.gif.apiKey.ios"
     /// Tellomi（#1110）：服务端下发的内容代理地址（只认 https）。
     case gifProxyUrl = "global.gif.proxyUrl"
+    /// Tellomi（REGION_PROFILE 第六节之二）：切区目标。
+    case tellomiRegionTarget = "global.tellomi.region.target"
     case idealEnabledRegions = "global.donations.idealEnabledRegions"
     case maxGroupCallRingSize = "global.calling.maxGroupCallRingSize"
     case maxGroupSizeHardLimit = "global.groupsv2.groupSizeHardLimit"
@@ -914,6 +922,8 @@ private enum ValueFlag: String, FlagType {
         case .gifProvider: true
         // 用内容代理的 URLSession（GiphyAPI / ProxiedContentDownloader）都只在创建时读一次，改了要重启才生效。
         case .gifProxyUrl: false
+        // 每次刷新完都要按新值判一次（撤回也靠它），所以可以热换
+        case .tellomiRegionTarget: true
         case .sepaEnabledRegions: true
         case .standardMediaQualityLevel: true
         case .videoAttachmentMaxEncryptedBytes: true
@@ -1234,6 +1244,9 @@ public class RemoteConfigManagerImpl: RemoteConfigManager {
         net.setRemoteConfig(mergedConfig.netConfig(), buildVariant: BuildFlags.netBuildVariant)
 
         mergedConfig.logFlags()
+
+        // Tellomi（REGION_PROFILE 第六节之二）：按新的 global.tellomi.region.target 判一次切区（先探后切，没下发就什么都不做）
+        TellomiRegionAutoSwitchRunner.evaluateAsync("remote config")
     }
 
     // MARK: -
