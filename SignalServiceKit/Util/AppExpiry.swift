@@ -213,9 +213,18 @@ public final class AppExpiry {
 
     /// 这个包是不是从 TestFlight 装的：TestFlight 装的包带沙盒收据（`sandboxReceipt`），App Store 正式包的收据叫 `receipt`，
     /// Xcode 直接装的开发包收据地址照样叫 `sandboxReceipt`，但文件不存在。扩展里 `Bundle.main` 是扩展自己，所以看主 App 的收据。
-    /// 主 App 是不是从 TestFlight 装的（`isTestFlightInstall()` 的公开版；Tellomi TestFlight 动态预览用）。
+    /// 主 App 是不是从 TestFlight 装的（Tellomi TestFlight 动态用）。每次调用时现算。
+    ///
+    /// 只看收据地址的文件名是不是 `sandboxReceipt`，**不要求文件存在**：TestFlight 真机安装后收据文件常常不在本地
+    /// （系统要等 StoreKit 刷新收据才写），要求文件存在会把 TestFlight 包当成「不是 TestFlight」（TF32 动态预览行不出现的原因）。
+    /// Xcode 装的开发包地址也叫 `sandboxReceipt`，App Review 的设备也是沙盒收据，这两种由 `TellomiFeedPreview.isCompiledIn`
+    /// （只有打 TestFlight 时显式设的 Info.plist 键）挡住。到期时长（`isTestFlightBuild`）照旧用下面要求文件存在的版本，不改。
     public static var isTestFlightInstallOfMainApp: Bool {
-        return isTestFlightInstall()
+        return hasSandboxReceiptURL(Bundle.main.app.appStoreReceiptURL)
+    }
+
+    static func hasSandboxReceiptURL(_ receiptURL: URL?) -> Bool {
+        return receiptURL?.lastPathComponent == "sandboxReceipt"
     }
 
     static func isTestFlightInstall(receiptURL: URL? = Bundle.main.app.appStoreReceiptURL, fileManager: FileManager = .default) -> Bool {

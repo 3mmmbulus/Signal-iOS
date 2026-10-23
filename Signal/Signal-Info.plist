@@ -157,5 +157,7 @@
 			<dict/>
 		</dict>
 	</dict>
+	<key>TellomiTestFlightFeed</key>
+	<string>$(TELLOMI_TESTFLIGHT_FEED)</string>
 </dict>
 </plist>
