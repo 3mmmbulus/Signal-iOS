@@ -22,7 +22,7 @@ struct FeedLinkCard: Equatable {
     /// 动态这边没有网络图片管线：图只认随包的本地图片（`imageName`），不为画卡去下载；没有图标横条。
     struct Preview: Equatable {
         var title: String?
-        /// 认领档（`TellomiLinkCard.isClaimedTier`）：没有图时右边不画指南针。
+        /// 认领档（`TellomiLinkCard.isClaimedTier`）。有标题的横条一律不画指南针（产品经理 2026-10-24），这一项不再影响指南针。
         var isClaimed: Bool = false
         /// 随包图片的名字（大图卡）。
         var imageName: String?

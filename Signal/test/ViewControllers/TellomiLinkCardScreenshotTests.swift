@@ -114,7 +114,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         /// 图的下半部分（底部约 30%）的颜色；nil = 整张图一个颜色。大图卡的染色取最下面一条，用来验证方向没有上下颠倒。
         var imageBottomHsb: (CGFloat, CGFloat, CGFloat)?
         /// 画法，按 cell 里的视图判（产品经理 2026-10-19 定稿）：`icon`（图标横条，右边 36 pt 图标）、`large`（整宽大图在上）、
-        /// `compass`（没有图的横条，右边指南针）、`text`（认领档没图标：只有标题 + 域名，右边什么都没有）、
+        /// `compass`（完全没信息：只有域名的横条，右边指南针）、`text`（没有图、有标题：标题 + 域名，右边什么都没有）、
         /// `avatar` / `firstparty`（第一方卡）；nil = 不断言。
         var expectedLayout: String?
         /// 染色的色相范围（HSB 的 H，0…1）；nil = 不染色。只有图标横条按图标主色染底色；大图卡、没有图的横条是中性灰。
@@ -165,14 +165,14 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             titleText: "Taobao",
         ),
         Fixture(
-            // 没有随包图标的品牌壳：平台名 + 域名，右边指南针，中性灰。
+            // 没有随包图标的品牌壳：平台名 + 域名，右边什么都没有（指南针只给完全没信息的卡），中性灰。
             name: "meituan-brand-no-icon",
             url: "https://www.meituan.com/",
             previewTitle: "美团",
             rich: .init(kind: "web", provider: "meituan", level: 1, attrs: []),
             expectedLevel: "brand",
             cardTexts: ["Meituan", "meituan.com"],
-            expectedLayout: "compass",
+            expectedLayout: "text",
             absentTexts: ["Web page"],
         ),
         Fixture(
@@ -183,12 +183,12 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
             rich: .init(kind: "web", provider: "alipay", level: 1, attrs: []),
             expectedLevel: "brand",
             cardTexts: ["Alipay", "alipay.com"],
-            expectedLayout: "compass",
+            expectedLayout: "text",
             absentTexts: ["Web page"],
         ),
         Fixture(name: "tellomi-user", url: "https://tell.cc/hk881qb", previewTitle: "Tellomi", expectedLevel: "first_party", cardTexts: ["@hk881qb", "Tellomi user", "Message"], expectedLayout: "firstparty", absentTexts: ["tell.cc"]),
         Fixture(name: "tellomi-official", url: "https://tellomi.app/download", previewTitle: "Tellomi", expectedLevel: "first_party", cardTexts: ["Tellomi website", "/download", "Open"], expectedLayout: "firstparty", absentTexts: ["tellomi.app"]),
-        Fixture(name: "generic", url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", previewDescription: "Wikipedia is a free online encyclopedia, created and edited by volunteers.", expectedLevel: "generic", cardTexts: ["Wikipedia", "wikipedia.org"], expectedLayout: "compass"),
+        Fixture(name: "generic", url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", previewDescription: "Wikipedia is a free online encyclopedia, created and edited by volunteers.", expectedLevel: "generic", cardTexts: ["Wikipedia", "wikipedia.org"], expectedLayout: "text"),
         Fixture(
             name: "with-text",
             body: "看看这个 https://www.bilibili.com/video/BV1YDhJ6ZEL6",
@@ -1085,12 +1085,13 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
         return nil
     }
 
-    /// 2026-10-19 定稿：没有图的卡（generic 无图、没有随包图标的品牌壳、支付壳、纯链接）都是横条，右边一个指南针（「信息」App 的样子），
-    /// 贴右（离右 10）、垂直居中；以前的通用链接图标不再画。有图的卡（图标横条、大图卡）和第一方卡没有指南针。
+    /// 产品经理 2026-10-24（TF31 起的规则）：指南针只给完全没信息的卡（纯链接，只有域名的横条），贴右（离右 10）、垂直居中；
+    /// 没有图、有标题（或平台名）的横条（generic 无图、没有随包图标的品牌壳、支付壳）右边什么都没有，认领档与否都一样。
+    /// 有图的卡（图标横条、大图卡）和第一方卡也没有指南针；以前的通用链接图标不再画。
     @MainActor
-    func testEveryCardWithoutAnImageShowsTheCompassOnTheRight() async throws {
-        let withCompass = ["generic", "meituan-brand-no-icon", "alipay-payment", "no-preview"]
-        let without = ["taobao-brand", "icon-yellow", "large-orange", "tellomi-user", "tellomi-official"]
+    func testOnlyACardWithNothingShowsTheCompassOnTheRight() async throws {
+        let withCompass = ["no-preview"]
+        let without = ["generic", "meituan-brand-no-icon", "alipay-payment", "taobao-brand", "icon-yellow", "large-orange", "tellomi-user", "tellomi-official"]
         var shots = [UIImage]()
         defer {
             if shooting {
@@ -1113,7 +1114,7 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
                 XCTAssertEqual(frame.maxX, cardView.bounds.size.width - 10, accuracy: 1, "\(name)：指南针贴右边（离右 10），实际 \(frame) / 卡宽 \(cardView.bounds.size.width)")
                 XCTAssertEqual(frame.midY, cardView.bounds.size.height / 2, accuracy: 1.5, "\(name)：指南针垂直居中，实际 \(frame) / 卡高 \(cardView.bounds.size.height)")
             } else {
-                XCTAssertNil(compass, "\(name)：有图 / 第一方卡没有指南针")
+                XCTAssertNil(compass, "\(name)：有图、有标题的横条、第一方卡都没有指南针")
             }
         }
     }
@@ -1253,8 +1254,8 @@ final class TellomiLinkCardScreenshotTests: XCTestCase {
                     XCTFail("\(fixture.name)：没有图的横条右边应该有指南针")
                 }
             case "text":
-                XCTAssertNil(imageView, "\(fixture.name)：认领档没图标的横条没有图")
-                XCTAssertNil(Self.findCompass(in: cardView), "\(fixture.name)：认领档有标题（或平台名），右边不画指南针")
+                XCTAssertNil(imageView, "\(fixture.name)：没有图的文字横条没有图")
+                XCTAssertNil(Self.findCompass(in: cardView), "\(fixture.name)：有标题（或平台名），右边不画指南针")
                 XCTAssertNil(Self.findLinkIcon(in: cardView), "\(fixture.name)：通用链接图标不再画")
             case "avatar":
                 if let imageView {

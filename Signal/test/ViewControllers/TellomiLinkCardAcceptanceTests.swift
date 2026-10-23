@@ -97,7 +97,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
 
     /// 卡的画法，按 cell 里的视图判（产品经理 2026-10-19 定稿，参照 iOS「信息」App）。
     private enum ImageLayout: String {
-        /// 横条，右边是指南针（SF Symbol `safari`，26 pt）：没有图的卡——文字横条（标题 + 域名）、只有域名的横条。
+        /// 横条，右边是指南针（SF Symbol `safari`，26 pt）：只给完全没信息的卡——只有域名的横条（产品经理 2026-10-24，TF31 起）。
         case compass
         /// 横条，右边是 36 pt 的站点图标（圆角 8）：图标横条。
         case icon
@@ -105,7 +105,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
         case large
         /// 第一方卡左侧 56 pt 的头像 / 封面 / 图标（§5.2）。
         case avatar
-        /// 横条，右边什么都没有：认领档的卡没有图标时，只有标题（或平台名）+ 域名（产品经理 2026-10-19 晚）。
+        /// 横条，右边什么都没有：没有图、有标题（或平台名）的文字横条，认领档与否都一样（产品经理 2026-10-24）。
         case text
     }
 
@@ -274,7 +274,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             layout: .large,
             absent: ["free online encyclopedia"],
         ),
-        minimal: Card(url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", level: "generic", title: "Wikipedia", domain: "wikipedia.org", layout: .compass),
+        minimal: Card(url: "https://www.wikipedia.org/", previewTitle: "Wikipedia", level: "generic", title: "Wikipedia", domain: "wikipedia.org", layout: .text),
     )
 
     // 品牌壳（旧客户端发来的 level 1 rich；认领平台抓不到标题时发送端也退回它）：平台名 + 域名，不再有类型文字；
@@ -316,7 +316,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "brand",
             title: "Meituan",
             domain: "meituan.com",
-            layout: .compass,
+            layout: .text,
             absent: ["双人套餐", "Deal"],
         ),
         minimal: Card(
@@ -326,7 +326,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "brand",
             title: "Meituan",
             domain: "meituan.com",
-            layout: .compass,
+            layout: .text,
             absent: ["美团", "Web page"],
         ),
     )
@@ -340,7 +340,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "brand",
             title: "Alipay",
             domain: "alipay.com",
-            layout: .compass,
+            layout: .text,
             absent: ["支付宝", "Web page"],
         )
         return Row(id: "brand-payment", name: "品牌壳·支付", full: card, minimal: card)
@@ -396,7 +396,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Tellomi Studio",
             domain: "youtube.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -422,7 +422,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Blue Hour",
             domain: "spotify.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -447,7 +447,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Night Drive",
             domain: "spotify.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -473,7 +473,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Focus Mix",
             domain: "spotify.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -488,7 +488,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "Lakeside Coffee",
             domain: "amap.com",
-            layout: .compass,
+            layout: .text,
             absent: ["88 West Lake Rd"],
         ),
         minimal: Card(
@@ -498,7 +498,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "高德地图",
             domain: "amap.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -551,7 +551,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "structured",
             title: "tellomi/signal-ios: Tellomi for iOS",
             domain: "github.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -677,7 +677,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "generic",
             title: videoTitle,
             domain: "bilibili.com",
-            layout: .compass,
+            layout: .text,
         ),
     )
 
@@ -774,7 +774,7 @@ final class TellomiLinkCardAcceptanceTests: XCTestCase {
             level: "generic",
             title: "百度一下，你就知道",
             domain: "baidu.com",
-            layout: .compass,
+            layout: .text,
             showsBody: true,
         ),
     )

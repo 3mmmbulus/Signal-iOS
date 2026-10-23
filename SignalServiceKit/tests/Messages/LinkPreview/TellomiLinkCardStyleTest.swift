@@ -15,14 +15,13 @@ final class TellomiLinkCardStyleTest: XCTestCase {
 
     // MARK: - 四种样式
 
-    // MARK: - 指南针只给完全没信息的卡（产品经理 2026-10-19 晚）
+    // MARK: - 指南针只给完全没信息的卡（产品经理 2026-10-24，TF31 起）
 
-    func testTheCompassIsOnlyForACardWithNothingAndNeverForAClaimedCardWithATitle() {
-        // 认领档：抓到网站图标是图标横条（右边图标）；什么都没抓到是标题 + 域名，右边不画指南针。
+    func testTheCompassIsOnlyForACardWithNothingAndNeverForATitleStrip() {
+        // 有标题的文字横条：认领档与否都不画指南针。
         XCTAssertFalse(Style.showsCompass(kind: .iconStrip, isClaimed: true))
         XCTAssertFalse(Style.showsCompass(kind: .textStrip, isClaimed: true))
-        // 其余卡照 2026-10-19 定稿。
-        XCTAssertTrue(Style.showsCompass(kind: .textStrip, isClaimed: false))
+        XCTAssertFalse(Style.showsCompass(kind: .textStrip, isClaimed: false))
         XCTAssertTrue(Style.showsCompass(kind: .domainStrip, isClaimed: false))
         XCTAssertTrue(Style.showsCompass(kind: .domainStrip, isClaimed: true), "连标题都没有：完全没信息")
         XCTAssertFalse(Style.showsCompass(kind: .iconStrip, isClaimed: false))
