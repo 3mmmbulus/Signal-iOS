@@ -67,12 +67,21 @@ public struct TextCheckingDataItem: Equatable {
             return []
         }
         return detector.matches(in: text, options: [], range: text.entireRange).compactMap { match in
-            guard let snippet = (text as NSString).substring(with: match.range).strippedOrNil else {
+            // Tellomi（产品 2026-10-24）：链接在第一个全角中文标点 / 右括号前结束（`TellomiLinkPunctuation`）。
+            var matchRange = match.range
+            var matchUrl = match.url
+            if match.resultType.contains(.link) {
+                guard let trimmed = TellomiLinkPunctuation.trimmedLink(range: matchRange, url: matchUrl, in: text, detector: detector) else {
+                    return nil
+                }
+                matchRange = trimmed.range
+                matchUrl = trimmed.url
+            }
+
+            guard let snippet = (text as NSString).substring(with: matchRange).strippedOrNil else {
                 owsFailDebug("Invalid snippet.")
                 return nil
             }
-
-            let matchUrl = match.url
 
             let dataType: DataType
             var customUrl: URL?
@@ -188,7 +197,7 @@ public struct TextCheckingDataItem: Equatable {
 
             return TextCheckingDataItem(
                 dataType: dataType,
-                range: match.range,
+                range: matchRange,
                 snippet: snippet,
                 url: url,
             )
