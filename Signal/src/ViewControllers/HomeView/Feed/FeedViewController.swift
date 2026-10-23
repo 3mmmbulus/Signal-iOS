@@ -88,6 +88,7 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         pages = tabs.map { FeedTimelineViewController(tab: $0, store: store) }
         for page in pages {
             page.onOpenPost = { [weak self] card in self?.openPost(card) }
+            page.onQuote = { [weak self] target in self?.showCompose(quoting: target) }
             if profilePageEnabled {
                 page.onOpenAuthor = { [weak self] author in self?.openAuthor(author) }
             }
@@ -107,6 +108,18 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
                 self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_NETWORK_ERROR", comment: "Feed: toast when refreshing the feed failed but older posts are still shown."))
             case .actionFailed:
                 self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_ACTION_FAILED", comment: "Feed: toast when liking or another action on a post failed."))
+            }
+        }
+        // I-3：卡片上收藏 / 转发成功的提示（文案和详情页同一组）
+        store.onNotice = { [weak self] notice in
+            guard let self, self.viewIfLoaded?.window != nil else { return }
+            switch notice {
+            case .saved:
+                self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_SAVED_DONE", comment: "Feed: toast after a post was saved to Saved Messages."))
+            case .reposted:
+                self.presentToast(text: OWSLocalizedString("TELLOMI_FEED_REPOSTED_DONE", comment: "Feed: toast after a post was reposted to the user's own feed."))
+            default:
+                break
             }
         }
     }
@@ -298,8 +311,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     }
 
     /// 打开发布页（全屏）。发出去之后提示「已发布」或「审核中」（R-2.2），两栏刷新。
-    func showCompose() {
-        let compose = FeedComposeViewController.make(source: source) { [weak self] state in
+    func showCompose(quoting quoteTarget: FeedQuoteTarget? = nil) {
+        let compose = FeedComposeViewController.make(source: source, quoteTarget: quoteTarget) { [weak self] state in
             guard let self else { return }
             let text = state == FeedCreatePostResponse.statePending
                 ? OWSLocalizedString("TELLOMI_FEED_COMPOSE_PENDING", comment: "Feed: toast after publishing when the post waits for review before others can see it.")

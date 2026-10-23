@@ -629,3 +629,97 @@ final class TellomiFeedCardActionsStoreTests: XCTestCase {
         }
     }
 }
+
+// MARK: - I-3 信息流卡片补全（`FeedCardExtras`）
+
+final class TellomiFeedCardExtrasTests: XCTestCase {
+    private func card(shareable: Bool = true, kind: String = FeedCard.kindPost) -> FeedCard {
+        var card = FeedCard(id: "p1", author: FeedAuthor(profileId: "u", displayName: "山风"), text: "今天去爬山")
+        card.kind = kind
+        card.shareable = shareable
+        return card
+    }
+
+    private func extras(_ card: FeedCard, extras: Bool = true, share: Bool = false, save: Bool = false, posting: Bool = true, polls: Bool = true, readOnly: Bool = false) -> FeedCardExtras {
+        return FeedCardExtras.make(card: card, extrasEnabled: extras, shareEnabled: share, saveAvailable: save, postingAllowed: posting, pollsAllowed: polls, isReadOnly: readOnly)
+    }
+
+    /// 开关关着（默认）：卡片和之前一样，什么都不多画。
+    func testSwitchOffShowsNothingNew() {
+        var c = card()
+        c.poll = FeedPoll(options: ["a", "b"], closesAt: nil, multi: false)
+        c.quoted = FeedQuotedCard(id: "q", card: nil)
+        c.repostedBy = FeedRepostedBy(profileId: "r", displayName: "阿明")
+        let result = extras(c, extras: false, share: true, save: true)
+        XCTAssertNil(result.repostedByText)
+        XCTAssertFalse(result.showsPoll)
+        XCTAssertFalse(result.showsQuote)
+        XCTAssertFalse(result.showsSave)
+        XCTAssertEqual(result.shareItems, [])
+    }
+
+    /// 分享菜单：能分享的帖子才有；转发 / 引用跟 `posting`；分享 / 复制链接跟分享开关。
+    func testShareMenuItems() {
+        XCTAssertEqual(extras(card()).shareItems, [.repost(reposted: false), .quote])
+        XCTAssertEqual(extras(card(), share: true).shareItems, [.repost(reposted: false), .quote, .share, .copyLink])
+        XCTAssertEqual(extras(card(), share: true, posting: false).shareItems, [.share, .copyLink])
+        XCTAssertEqual(extras(card(shareable: false), share: true).shareItems, [], "私密 / 非公开没有外链，也不能转发引用")
+        XCTAssertEqual(extras(card(), share: true, readOnly: true).shareItems, [])
+        var reposted = card()
+        reposted.viewer.reposted = true
+        XCTAssertEqual(extras(reposted).shareItems.first, .repost(reposted: true))
+    }
+
+    func testCommentsGetNothing() {
+        XCTAssertEqual(extras(card(kind: FeedCard.kindComment), share: true, save: true).shareItems, [])
+        XCTAssertFalse(extras(card(kind: FeedCard.kindComment), save: true).showsSave)
+    }
+
+    /// 投票：有选项就画；没部署 `polls` 或只读时只看不能点。
+    func testPollInteractiveFollowsCapability() {
+        var c = card()
+        c.poll = FeedPoll(options: ["a", "b"], closesAt: nil, multi: true)
+        XCTAssertTrue(extras(c).showsPoll)
+        XCTAssertTrue(extras(c).pollInteractive)
+        XCTAssertFalse(extras(c, polls: false).pollInteractive)
+        XCTAssertFalse(extras(c, readOnly: true).pollInteractive)
+        c.poll = FeedPoll(options: [], closesAt: nil, multi: false)
+        XCTAssertFalse(extras(c).showsPoll)
+    }
+
+    func testSaveNeedsSavedMessages() {
+        XCTAssertFalse(extras(card()).showsSave)
+        var saved = card()
+        saved.viewer.saved = true
+        let result = extras(saved, save: true)
+        XCTAssertTrue(result.showsSave)
+        XCTAssertTrue(result.saved)
+    }
+
+    /// 引用盒：标题优先、否则正文；删了 / 看不到了是灰字（第 41 条）。
+    func testQuoteText() {
+        var inner = card()
+        inner.title = "  "
+        let ok = FeedCardExtras.quote(FeedQuotedCard(id: "q", card: inner))
+        XCTAssertEqual(ok.authorName, "山风")
+        XCTAssertEqual(ok.text, "今天去爬山")
+        XCTAssertNil(ok.goneText)
+        inner.title = "标题"
+        XCTAssertEqual(FeedCardExtras.quote(FeedQuotedCard(id: "q", card: inner)).text, "标题")
+        XCTAssertNotNil(FeedCardExtras.quote(FeedQuotedCard(id: "q", card: nil, deleted: true)).goneText)
+        XCTAssertNotEqual(
+            FeedCardExtras.quote(FeedQuotedCard(id: "q", card: nil, deleted: true)).goneText,
+            FeedCardExtras.quote(FeedQuotedCard(id: "q", card: nil, deleted: false)).goneText,
+        )
+    }
+
+    func testRepostedByLine() {
+        var c = card()
+        c.repostedBy = FeedRepostedBy(profileId: "r", displayName: "阿明")
+        XCTAssertNotNil(extras(c).repostedByText)
+        XCTAssertTrue(extras(c).repostedByText?.contains("阿明") ?? false)
+        c.repostedBy = FeedRepostedBy(profileId: "r", displayName: " ")
+        XCTAssertEqual(extras(c).repostedByText, FeedCardExtras.repostedByText(nil))
+        XCTAssertNil(extras(card()).repostedByText)
+    }
+}

@@ -12012,6 +12012,15 @@
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_PROFILE_UNFOLLOW_CONFIRM" = "要取消追蹤這個人嗎？";
 
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE" = "引用";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_DELETED" = "原動態已被作者刪除";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_UNAVAILABLE" = "原動態已不可見";
+
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_RECOMMEND_EMPTY_BODY" = "推薦的動態會出現在這裡。";
 
@@ -12113,6 +12122,12 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPOST" = "轉發到動態";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY" = "%@ 轉發了";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY_UNKNOWN" = "轉發";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_REPOSTED_DONE" = "已轉發到你的動態";

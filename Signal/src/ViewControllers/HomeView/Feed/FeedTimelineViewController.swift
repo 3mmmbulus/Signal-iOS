@@ -37,6 +37,11 @@ final class FeedTimelineViewController: OWSViewController {
     var onOpenAuthor: ((FeedAuthor) -> Void)?
     /// 点了帖子上的 `#话题`。nil（默认）= 不响应。要在页面出现前设好。
     var onOpenTopic: ((FeedTopic) -> Void)?
+    /// 卡片「分享」菜单里点了「引用」：由 `FeedViewController` 打开带引用的发布页。nil = 菜单里没有「引用」。
+    var onQuote: ((FeedQuoteTarget) -> Void)?
+    /// I-3 卡片补全开关（默认关，沿用 `TellomiFeed.isDetailExtrasEnabled`）；分享 / 复制链接另看 `isShareEnabled`。
+    var cardExtrasEnabled = TellomiFeed.isDetailExtrasEnabled
+    var cardShareEnabled = TellomiFeed.isShareEnabled
 
     private lazy var emptyStateView = FeedEmptyStateView(title: feedTab.emptyTitle, body: feedTab.emptyBody)
     private lazy var errorStateView = FeedErrorStateView { [weak self] in
@@ -189,6 +194,16 @@ extension FeedTimelineViewController: UITableViewDataSource, UITableViewDelegate
             return cell
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: FeedPostCell.reuseIdentifier, for: indexPath) as! FeedPostCell
+        cell.extrasEnabled = cardExtrasEnabled
+        cell.shareEnabled = cardShareEnabled
+        cell.saveAvailable = store.canSave
+        cell.onVote = { [weak self] card, options in self?.store.vote(card, options: options) }
+        cell.onRepost = { [weak self] card in self?.store.toggleRepost(card) }
+        cell.onSave = { [weak self] card in self?.store.toggleSave(card) }
+        cell.onQuote = onQuote
+        cell.onShare = { [weak self] card in self?.shareCard(card) }
+        cell.onCopyLink = { [weak self] card in self?.copyLink(of: card) }
+        cell.onOpenQuoted = { [weak self] inner in self?.onOpenPost?(inner) }
         cell.configure(card: row.card, showIpRegion: store.showsIpRegion)
         cell.onLike = { [weak self] card in self?.store.toggleLike(card) }
         cell.onNotInterested = { [weak self] card in self?.store.notInterested(card) }
@@ -288,5 +303,34 @@ final class FeedErrorStateView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+}
+
+// MARK: - I-3 卡片上的分享
+
+extension FeedTimelineViewController {
+    /// 系统分享面板：选了分享目标才报 `share`（I-13 两端口径）；取消不报。
+    fileprivate func shareCard(_ card: FeedCard) {
+        guard card.shareable else { return }
+        let link = FeedShare.link(for: card)
+        let controller = UIActivityViewController(activityItems: [link], applicationActivities: nil)
+        controller.completionWithItemsHandler = { [weak self] activityType, _, _, _ in
+            self?.shareFinished(card, FeedShareOutcome.fromShareSheet(activityType: activityType?.rawValue))
+        }
+        controller.popoverPresentationController?.sourceView = view
+        controller.popoverPresentationController?.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+        present(controller, animated: true)
+    }
+
+    /// 复制链接：放进剪贴板就算分享完成（和详情页一样）。
+    fileprivate func copyLink(of card: FeedCard) {
+        guard card.shareable else { return }
+        UIPasteboard.general.string = FeedShare.link(for: card)
+        presentToast(text: OWSLocalizedString("TELLOMI_FEED_LINK_COPIED", comment: "Feed: toast after the link of a post was copied."))
+        shareFinished(card, .completed)
+    }
+
+    private func shareFinished(_ card: FeedCard, _ outcome: FeedShareOutcome) {
+        store.onShareFinished(contentId: card.id, surface: FeedEventSurface(tab: feedTab), shareable: card.shareable, outcome: outcome)
     }
 }

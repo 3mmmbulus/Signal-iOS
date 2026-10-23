@@ -56,6 +56,7 @@ final class FeedComposeViewController: OWSViewController {
     private let textView = UITextView()
     private let placeholderLabel = UILabel()
     private let imagesScrollView = UIScrollView()
+    private let quoteBox = FeedQuotedBoxView()
     private let imagesRow = UIStackView()
     private let photoButton = UIButton(type: .system)
     private let visibilityButton = UIButton(type: .system)
@@ -70,6 +71,7 @@ final class FeedComposeViewController: OWSViewController {
     init(
         source: FeedSource,
         editTarget: FeedEditTarget? = nil,
+        quoteTarget: FeedQuoteTarget? = nil,
         articleDrafts: FeedArticleDrafts? = nil,
         features: FeedFeatureGate? = nil,
         audienceCandidates: FeedAudienceCandidateSource? = nil,
@@ -90,7 +92,7 @@ final class FeedComposeViewController: OWSViewController {
         } else {
             drafts = InMemoryFeedArticleDrafts()
         }
-        store = FeedComposeStore(editTarget: editTarget, source: source, articleDrafts: drafts)
+        store = FeedComposeStore(editTarget: editTarget, quoteTarget: editTarget == nil ? quoteTarget : nil, source: source, articleDrafts: drafts)
         self.minorSession = minorSession
         super.init()
         store.onChange = { [weak self] state in self?.stateChanged(state) }
@@ -102,12 +104,13 @@ final class FeedComposeViewController: OWSViewController {
 
     /// 动态页和「我的动态」页打开发布页的统一入口：样例数据下（内部开发）接上样例的好友和 `audience_tokens`，
     /// 其余情况两档选人照旧「还不能选」（好友来源还没定，见报告「需要 erel 决定」）。
-    static func make(source: FeedSource, editTarget: FeedEditTarget? = nil, onPublished: @escaping (String) -> Void) -> FeedComposeViewController {
+    static func make(source: FeedSource, editTarget: FeedEditTarget? = nil, quoteTarget: FeedQuoteTarget? = nil, onPublished: @escaping (String) -> Void) -> FeedComposeViewController {
         let extras = TellomiFeed.isComposeExtrasEnabled
         let sample = extras && TellomiFeed.isSampleDataEnabled && editTarget == nil
         return FeedComposeViewController(
             source: source,
             editTarget: editTarget,
+            quoteTarget: quoteTarget,
             features: sample ? StaticFeedFeatureGate([FeedFeature.audienceTokens]) : nil,
             audienceCandidates: sample ? StaticFeedAudienceCandidates(FeedAudienceSamples.candidates()) : nil,
             extrasEnabled: extras,
@@ -193,7 +196,14 @@ final class FeedComposeViewController: OWSViewController {
         imagesRow.autoMatch(.height, to: .height, of: imagesScrollView)
         imagesScrollView.autoSetDimension(.height, toSize: Self.thumbnailSize)
 
-        let column = UIStackView(arrangedSubviews: [titleField, textView, imagesScrollView])
+        // 引用别人的帖子时（I-3「引用」），正文下面压一个引用盒（只看，不能点）
+        quoteBox.isHidden = draft.quote == nil
+        quoteBox.isUserInteractionEnabled = false
+        if let quote = draft.quote {
+            quoteBox.configure(FeedCardExtras.Quote(authorName: quote.authorName.isEmpty ? nil : quote.authorName, text: quote.snippet.isEmpty ? nil : quote.snippet, goneText: nil))
+        }
+
+        let column = UIStackView(arrangedSubviews: [titleField, textView, quoteBox, imagesScrollView])
         column.axis = .vertical
         column.spacing = 12
         scrollView.keyboardDismissMode = .interactive

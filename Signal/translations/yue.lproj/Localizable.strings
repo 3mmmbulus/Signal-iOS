@@ -10492,6 +10492,21 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "撳一下替換另一個表情符號";
 
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE" = "引用";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_DELETED" = "原動態已被作者刪除";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_QUOTE_UNAVAILABLE" = "原動態已不可見";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY" = "%@ 轉發了";
+
+/* Tellomi feed I-3 card (2026-10-20) */
+"TELLOMI_FEED_REPOSTED_BY_UNKNOWN" = "轉發";
+
 /* Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it. */
 "TELLOMI_JUMP_TO_DATE" = "跳去日期";
 
