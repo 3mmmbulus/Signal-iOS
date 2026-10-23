@@ -99,8 +99,6 @@
 	<string>$(SIGNAL_MERCHANTID)</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
-	<key>TellomiTestFlightFeed</key>
-	<string>$(TELLOMI_TESTFLIGHT_FEED)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -159,5 +157,7 @@
 			<dict/>
 		</dict>
 	</dict>
+	<key>TellomiTestFlightFeed</key>
+	<string>$(TELLOMI_TESTFLIGHT_FEED)</string>
 </dict>
 </plist>
