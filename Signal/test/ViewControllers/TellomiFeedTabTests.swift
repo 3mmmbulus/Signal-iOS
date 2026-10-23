@@ -46,7 +46,7 @@ final class TellomiFeedTabTests: XCTestCase {
         )
     }
 
-    /// 底栏顺序：动态、聊天、通话、好友、我；快拍开着时排最后；默认选「聊天」（TF34）。
+    /// 底栏顺序：动态、聊天、通话、好友、我；有好友/我时快拍开着也不显示（正好 5 个）；默认选「聊天」（TF34）。
     func testFriendsAndMeTabOrderAndDefaultTab() {
         XCTAssertEqual(
             HomeTabBarController.tabsToShow(areStoriesEnabled: false, isFeedEnabled: true, showsFriendsAndMe: true),
@@ -54,11 +54,23 @@ final class TellomiFeedTabTests: XCTestCase {
         )
         XCTAssertEqual(
             HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: true, showsFriendsAndMe: true),
-            [.feed, .chatList, .calls, .friends, .me, .stories],
+            [.feed, .chatList, .calls, .friends, .me],
         )
-        // 商店版（没有好友/我）底栏不变
+        XCTAssertEqual(
+            HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: true, showsFriendsAndMe: true).count,
+            5,
+        )
+        // 商店版（没有好友/我）底栏不变：快拍照旧排最后
         XCTAssertEqual(
             HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: false, showsFriendsAndMe: false),
+            [.chatList, .calls, .stories],
+        )
+        XCTAssertEqual(
+            HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: true, showsFriendsAndMe: false),
+            [.feed, .chatList, .calls, .stories],
+        )
+        XCTAssertEqual(
+            HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: false),
             [.chatList, .calls, .stories],
         )
         XCTAssertEqual(HomeTabBarController.defaultTab, .chatList)

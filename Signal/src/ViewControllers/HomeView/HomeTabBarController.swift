@@ -326,7 +326,8 @@ class HomeTabBarController: UITabBarController {
     }
 
     /// 底栏顺序：动态、聊天、通话、好友、我（产品 2026-10-24）。打开 App 默认选「聊天」。
-    /// 快拍保持原样（开着才有），有好友/我时排在最后；iPhone 底栏超过 5 个时系统会把它收进「更多」。
+    /// 有好友/我时底栏正好 5 个，不显示快拍（产品 2026-10-24：不要「更多」）；
+    /// 没有好友/我时（商店版）快拍保持原样，开着才有。
     static func tabsToShow(areStoriesEnabled: Bool, isFeedEnabled: Bool, showsFriendsAndMe: Bool = false) -> [Tabs] {
         var tabs = [Tabs]()
         if isFeedEnabled {
@@ -336,7 +337,7 @@ class HomeTabBarController: UITabBarController {
         if showsFriendsAndMe {
             tabs += [Tabs.friends, Tabs.me]
         }
-        if areStoriesEnabled {
+        if areStoriesEnabled, !showsFriendsAndMe {
             tabs.append(Tabs.stories)
         }
         return tabs

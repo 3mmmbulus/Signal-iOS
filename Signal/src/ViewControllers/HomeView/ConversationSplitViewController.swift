@@ -274,6 +274,9 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
     func showMyStoriesController(animated: Bool) {
         AssertIsOnMainThread()
 
+        // Tellomi：底栏有「好友」「我」时不显示快拍（正好 5 个标签），没有快拍页可切，什么都不做。
+        guard homeVC.visibleTabs.contains(.stories) else { return }
+
         // On iOS 13, there is a bug with UISplitViewController that causes the `isCollapsed` state to
         // get out of sync while the app isn't active and the orientation has changed while backgrounded.
         // This results in conversations opening up in the wrong pane when you were in portrait and then

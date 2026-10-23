@@ -713,18 +713,40 @@ extension AppSettingsViewController: UsernameChangeDelegate {
 }
 
 extension AppSettingsViewController: UsernameLinkScanDelegate {
-    func usernameLinkScanned(_ usernameLink: Usernames.UsernameLink) {
+    /// 扫码结果出来后：先关掉扫码/二维码弹窗，再从 `anchor` 上查用户名、打开会话。
+    /// 设置是弹窗打开时（原来的入口）`anchor` 是弹出设置的页面，整个设置一起关；
+    /// 设置是底栏「我」的根页面时（Tellomi）没有 `presentingViewController`，只关掉设置上面弹出的页面，`anchor` 用自己。
+    private func dismissForScanResult(_ then: @escaping (UIViewController) -> Void) {
+        if isTabRoot {
+            // 弹窗实际挂在最外层的底栏控制器上（它提供 presentation context），从那里关、从那里查
+            let anchor: UIViewController = tabBarController ?? navigationController ?? self
+            if anchor.presentedViewController != nil {
+                anchor.dismiss(animated: true) {
+                    then(anchor)
+                }
+            } else {
+                // 扫码页是 push 进「我」这个导航栈的：回到根页面再打开会话
+                navigationController?.popToRootViewController(animated: false)
+                then(anchor)
+            }
+            return
+        }
         guard let presentingViewController else {
             owsFailDebug("Missing presenting view controller!")
             return
         }
-
         presentingViewController.dismiss(animated: true) {
+            then(presentingViewController)
+        }
+    }
+
+    func usernameLinkScanned(_ usernameLink: Usernames.UsernameLink) {
+        dismissForScanResult { anchor in
             Task {
                 guard
                     let (_, aci) = await UsernameQuerier().queryForUsernameLink(
                         link: usernameLink,
-                        fromViewController: presentingViewController,
+                        fromViewController: anchor,
                     )
                 else {
                     return
@@ -740,17 +762,12 @@ extension AppSettingsViewController: UsernameLinkScanDelegate {
 
     /// Tellomi（tellomi/tellomi#947）：扫到裸用户名码，与扫到用户名链接同一个结果（打开会话）。
     func plainUsernameScanned(_ username: String) {
-        guard let presentingViewController else {
-            owsFailDebug("Missing presenting view controller!")
-            return
-        }
-
-        presentingViewController.dismiss(animated: true) {
+        dismissForScanResult { anchor in
             Task {
                 guard
                     let aci = await UsernameQuerier().queryForUsername(
                         username: username,
-                        fromViewController: presentingViewController,
+                        fromViewController: anchor,
                     )
                 else {
                     return
