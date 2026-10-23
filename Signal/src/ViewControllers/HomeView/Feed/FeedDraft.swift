@@ -26,8 +26,8 @@ enum FeedDraftKind: String, CaseIterable {
 
 /// 帖子可见范围五档（第三节第 39 条；契约 7.2 `visibility`）。
 ///
-/// 「部分可见」「不给谁看」要选人（`needsAudience`），选人复用快拍「选定的人」组件；对方的假名怎么拿到还没定
-/// （契约第十一节第 2 条），在那之前这两档显示但不能选，不让用户发出一条没有名单的帖子。
+/// 「部分可见」「不给谁看」要选人（`needsAudience`）：选人页是 `FeedAudiencePickerViewController`，候选人是本机好友（I-11），
+/// 名单由 Signal-Server 签成 `audience_token`（客户端不接触别人的假名）。没有候选人来源或引擎没有 `audience_tokens` 时这两档显示但不能选。
 enum FeedVisibility: String, CaseIterable {
     case `public`
     case friends

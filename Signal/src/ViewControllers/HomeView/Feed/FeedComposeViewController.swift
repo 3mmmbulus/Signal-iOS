@@ -102,17 +102,23 @@ final class FeedComposeViewController: OWSViewController {
         }
     }
 
-    /// 动态页和「我的动态」页打开发布页的统一入口：样例数据下（内部开发）接上样例的好友和 `audience_tokens`，
-    /// 其余情况两档选人照旧「还不能选」（好友来源还没定，见报告「需要 erel 决定」）。
+    /// 动态页和「我的动态」页打开发布页的统一入口：样例数据下（内部开发）接上样例的好友和 `audience_tokens`；
+    /// 连真引擎时（I-11）接上本机好友（`LocalFeedAudienceCandidates`，口径同 Android `FeedFriends.myFriendAcis`），
+    /// 引擎有 `audience_tokens` 才能选。都要发布页补全开关（`isComposeExtrasEnabled`，默认关）；关着时两档照旧「还不能选」。
     static func make(source: FeedSource, editTarget: FeedEditTarget? = nil, quoteTarget: FeedQuoteTarget? = nil, onPublished: @escaping (String) -> Void) -> FeedComposeViewController {
         let extras = TellomiFeed.isComposeExtrasEnabled
         let sample = extras && TellomiFeed.isSampleDataEnabled && editTarget == nil
+        let engine = extras && !TellomiFeed.isSampleDataEnabled && TellomiFeed.shouldAskEngine && editTarget == nil
+        let features: FeedFeatureGate? = sample ? StaticFeedFeatureGate([FeedFeature.audienceTokens]) : (engine ? CurrentEngineFeatureGate() : nil)
+        let candidates: FeedAudienceCandidateSource? = sample
+            ? StaticFeedAudienceCandidates(FeedAudienceSamples.candidates())
+            : (engine ? LocalFeedAudienceCandidates() : nil)
         return FeedComposeViewController(
             source: source,
             editTarget: editTarget,
             quoteTarget: quoteTarget,
-            features: sample ? StaticFeedFeatureGate([FeedFeature.audienceTokens]) : nil,
-            audienceCandidates: sample ? StaticFeedAudienceCandidates(FeedAudienceSamples.candidates()) : nil,
+            features: features,
+            audienceCandidates: candidates,
             extrasEnabled: extras,
             onPublished: onPublished,
         )

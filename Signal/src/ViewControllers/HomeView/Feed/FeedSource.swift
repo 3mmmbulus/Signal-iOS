@@ -284,6 +284,11 @@ final class RemoteFeedSource: FeedSource {
         try await api.deletePost(contentId: contentId)
     }
 
+    /// I-11：把 Signal-Server 签的好友声明交给这个引擎（`POST /v1/feed/friends`）。两边都报了才 `confirmed`。
+    func reportFriendAssertion(_ assertion: String) async throws {
+        _ = try await api.reportFriend(assertion: assertion)
+    }
+
     func uploadImage(_ image: UIImage) async throws -> String {
         guard let imageEncoder else { throw FeedPublishError.mediaUploadNotAvailable }
         return try await FeedImageUploader(api: api).upload(try await imageEncoder.jpegData(for: image))
