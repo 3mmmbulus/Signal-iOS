@@ -281,6 +281,8 @@ struct FeedCard: Decodable, Equatable {
     var quoted: FeedQuotedCard?
     /// 关注流里因为有人转发才出现的（`reason == "repost"`）：卡片顶上写「谁 转发了」。由来源按 `FeedItemRef.repostedBy` 填。
     var repostedBy: FeedRepostedBy?
+    /// 正文第一条网址的预览（链接卡片用）。引擎的卡片里还没有这个字段，`init(from:)` 不读：现在只有 TestFlight 的本机示例数据填。
+    var linkPreview: FeedLinkCard.Preview?
 
     static let kindPost = "post"
     static let kindArticle = "article"
