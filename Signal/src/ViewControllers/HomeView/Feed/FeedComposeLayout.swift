@@ -68,7 +68,7 @@ struct FeedComposeLayout: Equatable {
             title: title,
             showsKindSwitch: !editing,
             showsTitleField: draft.kind == .article,
-            showsPhotoButton: !editing && draft.kind == .post,
+            showsPhotoButton: !editing && draft.kind == .post && FeedEngineCapabilities.allows(FeedEngineCapabilities.mediaUploadFeatures),
             showsVisibilityButton: !editing,
             publishButton: editing ? .save : .publish,
             showsDiscardDraft: state.autosavesArticle && !draft.isEmpty,

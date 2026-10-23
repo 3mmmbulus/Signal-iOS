@@ -72,6 +72,15 @@ final class TellomiFeedEngineCapabilitiesGateTests: XCTestCase {
         XCTAssertFalse(FeedEngineCapabilities.allows(FeedEngineCapabilities.voiceCommentFeatures, features: features, usesSampleData: false))
     }
 
+    /// I-2：发布页加图按 `media_upload` 藏；样例数据不拦。
+    func testComposeImagesFollowMediaUpload() {
+        XCTAssertEqual(FeedEngineCapabilities.mediaUploadFeatures, [FeedFeature.mediaUpload])
+        let posting: Set<String> = [FeedFeature.feed, FeedFeature.reports, FeedFeature.posting]
+        XCTAssertFalse(FeedEngineCapabilities.allows(FeedEngineCapabilities.mediaUploadFeatures, features: posting, usesSampleData: false))
+        XCTAssertTrue(FeedEngineCapabilities.allows(FeedEngineCapabilities.mediaUploadFeatures, features: posting.union([FeedFeature.mediaUpload]), usesSampleData: false))
+        XCTAssertTrue(FeedEngineCapabilities.allows(FeedEngineCapabilities.mediaUploadFeatures, features: nil, usesSampleData: true))
+    }
+
     /// 没在问引擎时（标签本身不出现）子入口不拦；在问引擎但没拿到时一律藏。
     func testNotAskingTheEngineDoesNotRestrictSubEntries() {
         XCTAssertTrue(FeedEngineCapabilities.allows(FeedEngineCapabilities.likeFeatures, features: nil, usesSampleData: false, asksEngine: false))

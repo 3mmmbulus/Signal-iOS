@@ -80,7 +80,9 @@ struct FeedComposeState: Equatable {
     var textLimit: Int { draft.textLimit(limits) }
 
     var canAddImages: Bool {
+        // 引擎没部署图片上传（`media_upload`）：不给加（I-2）
         return editing == nil && draft.kind == .post && draft.images.count < limits.postImages
+            && FeedEngineCapabilities.allows(FeedEngineCapabilities.mediaUploadFeatures)
     }
 
     var canAddPoll: Bool {
