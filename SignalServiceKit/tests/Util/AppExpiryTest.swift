@@ -71,6 +71,14 @@ final class AppExpiryTest: XCTestCase {
         XCTAssertFalse(AppExpiry.isTestFlightInstall(receiptURL: nil))
     }
 
+    /// TestFlight 动态用的判断：只看文件名，不要求文件存在（TestFlight 真机上收据文件常常还没写到本地）。
+    func testFeedTestFlightCheckOnlyLooksAtTheReceiptName() {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        XCTAssertTrue(AppExpiry.hasSandboxReceiptURL(directory.appendingPathComponent("missing/sandboxReceipt")))
+        XCTAssertFalse(AppExpiry.hasSandboxReceiptURL(directory.appendingPathComponent("receipt")))
+        XCTAssertFalse(AppExpiry.hasSandboxReceiptURL(nil))
+    }
+
     func testWarmCachesWithInvalidDataInDatabase() throws {
         let data = Data([1, 2, 3])
         db.write { tx in

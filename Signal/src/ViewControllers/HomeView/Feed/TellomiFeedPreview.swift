@@ -7,6 +7,10 @@ import Foundation
 
 /// TestFlight 动态预览（erel 2026-10-19：TestFlight 31 里要能看到动态页面）。
 ///
+/// 2026-10-24 产品改定（TF32 真机上「关于 Tellomi」里没有开关之后）：TestFlight 构建**默认**就显示底栏「动态」（动态在最左，
+/// 打开 App 仍默认选「聊天」），用本机样例，跟着预览的页面全开，分享 / 复制链接照旧关；商店版全关、没有入口。
+/// 「关于 Tellomi」里的开关保留，只在 TestFlight 构建出现，默认开，可以手动关掉（关掉后底栏没有「动态」）。
+///
 /// 内容引擎还没部署、`global.feed.enabled` 也没下发，而「Internal → Force feed tab」只在 `DebugFlags.internalSettings`
 /// （`build <= .internal`）里有，TestFlight 包（`FeatureBuild.production`，和 App Store 是同一个二进制）用不了。
 /// 所以加一个只有 **TestFlight 装的包** 认的开关：在「设置 → 关于 Tellomi」里手动打开（默认关），打开后底栏出现「动态」，
@@ -16,12 +20,30 @@ import Foundation
 /// 1. 是不是 TestFlight 只看收据（`AppExpiry.isTestFlightInstall`）：TestFlight 装的包带 `sandboxReceipt`，
 ///    App Store 装的包收据叫 `receipt`，Xcode 直接装的开发包没有收据文件。不看 `FeatureBuild`（TestFlight 和 App Store 是同一个包，分不出来）。
 /// 2. 不是 TestFlight 时：开关行不出现，读永远是 false，写什么都不存（即使备份里带着以前存的 true 也不认）。
-/// 3. `isCompiledIn`：总闸。第一次提交 App Store 审核之前改成 false（App Review 的设备也是沙盒收据，见报告）。
+/// 3. `isCompiledIn`：总闸，跟构建走、不再手改：只有 Info.plist 里 `TellomiTestFlightFeed` 是 `YES` 才开。
+///    这个键在 `Signal/Signal-Info.plist` 里写的是 `$(TELLOMI_TESTFLIGHT_FEED)`，没设这个 build setting 时展开成空 = 关；
+///    打 TestFlight 时在 `xcodebuild archive` 命令行上加 `TELLOMI_TESTFLIGHT_FEED=YES`。
+///    提交 App Store 审核的构建**不要**加（App Review 的设备也是沙盒收据，只能靠这个闸挡）。
 /// 不认任何账号：谁装了 TestFlight 包、自己去打开，谁就能看到样例；样例里没有真实的人和内容。
 enum TellomiFeedPreview {
 
-    /// 总闸。提交 App Store 审核的那个构建要改成 false（或者整段删掉）。
-    static let isCompiledIn = true
+    /// Info.plist 键名（值来自 build setting `TELLOMI_TESTFLIGHT_FEED`）。
+    static let infoPlistKey = "TellomiTestFlightFeed"
+
+    /// 总闸：只有这个构建显式标了 TestFlight（Info.plist `TellomiTestFlightFeed` = `YES`）才开；没标、空、别的值都是关。
+    static var isCompiledIn: Bool {
+        return isCompiledIn(infoPlistValue: Bundle.main.object(forInfoDictionaryKey: infoPlistKey))
+    }
+
+    static func isCompiledIn(infoPlistValue: Any?) -> Bool {
+        if let value = infoPlistValue as? String {
+            return value == "YES"
+        }
+        if let value = infoPlistValue as? Bool {
+            return value
+        }
+        return false
+    }
 
     /// 存在本机 UserDefaults（只是测试开关，和其他 `TellomiFeed.*` 开关一样）。
     static let storageKey = "TellomiFeed.testFlightPreview"
@@ -31,10 +53,10 @@ enum TellomiFeedPreview {
         return compiledIn && isTestFlightInstall
     }
 
-    /// 读：不可用时永远 false，不管存了什么；没存过是 false（默认关）。
+    /// 读：不可用时永远 false，不管存了什么；没存过是 true（TestFlight 构建默认开，2026-10-24 产品决定）。
     static func isEnabled(isAvailable: Bool, defaults: UserDefaults) -> Bool {
         guard isAvailable else { return false }
-        return defaults.object(forKey: storageKey) as? Bool ?? false
+        return defaults.object(forKey: storageKey) as? Bool ?? true
     }
 
     /// 写：不可用时什么都不存，返回 false；存了返回 true（调用方据此通知底栏重画）。

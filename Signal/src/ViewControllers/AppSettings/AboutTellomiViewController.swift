@@ -230,7 +230,7 @@ final class AboutTellomiViewController: OWSTableViewController2 {
         self.contents = contents
     }
 
-    /// 一行开关，默认关。打开后底栏马上出现「动态」（`tellomiFeedTabStateDidChange`），里面全是本机样例；关掉「动态」就消失。
+    /// 一行开关，TestFlight 构建默认开（2026-10-24）。开着时底栏有「动态」（`tellomiFeedTabStateDidChange`），里面全是本机样例；关掉「动态」就消失。
     private func feedPreviewSection() -> OWSTableSection {
         let section = OWSTableSection()
         section.headerTitle = OWSLocalizedString(

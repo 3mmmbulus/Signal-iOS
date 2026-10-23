@@ -12,7 +12,7 @@ import UIKit
 /// 客户端不做任何区域判断（ADR-0071 §十五）：显不显示入口看服务端下发的 `global.feed.enabled`，
 /// 再加上内容引擎说的能不能看（内测名单、紧急开关，`GET /v1/feed/status`，契约 3.1，见 `FeedEntryCheck`）。
 /// 内部用户可以在「Internal → Tellomi Feed → Force feed tab」里先打开，方便在服务端下发之前开发和内测。
-/// TestFlight 装的包可以在「关于 Tellomi → 动态预览」里打开样例预览（`TellomiFeedPreview`，默认关，App Store 包里不生效）。
+/// TestFlight 构建默认显示动态（本机样例，`TellomiFeedPreview`，可在「关于 Tellomi」里关掉；App Store 包里不生效）。
 /// 和 Android 的 `TellomiFeed`（tellomi/Signal-Android#180）同口径。
 enum TellomiFeed {
 
@@ -70,15 +70,15 @@ enum TellomiFeed {
 
     // MARK: - TestFlight 动态预览（`TellomiFeedPreview`）
 
-    /// 收据只看一次：同一次运行里不会从 TestFlight 变成 App Store。
-    private static let isTestFlightInstall: Bool = AppExpiry.isTestFlightInstallOfMainApp
+    /// 每次现算（只是读一个 URL 的文件名，很便宜）。
+    private static var isTestFlightInstall: Bool { AppExpiry.isTestFlightInstallOfMainApp }
 
     /// 「关于 Tellomi」里的「动态预览」行出不出现：只有 TestFlight 装的包（App Store 包、Xcode 装的开发包都没有）。
     static var isTestFlightPreviewAvailable: Bool {
         return TellomiFeedPreview.isAvailable(isTestFlightInstall: isTestFlightInstall)
     }
 
-    /// 「动态预览」开关。默认关；不是 TestFlight 包时读永远是 false、写不进去。
+    /// 「动态预览」开关。TestFlight 构建默认开（可在「关于 Tellomi」里关）；不是 TestFlight 构建时读永远是 false、写不进去。
     static var isTestFlightPreviewEnabled: Bool {
         get { TellomiFeedPreview.isEnabled(isAvailable: isTestFlightPreviewAvailable, defaults: .standard) }
         set {
