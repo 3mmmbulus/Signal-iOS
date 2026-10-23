@@ -71,6 +71,10 @@ final class FeedPostCell: UITableViewCell {
     private let titleLabel = UILabel()
     /// 正文里的网址可以点（短按打开、长按「打开 / 复制」，`FeedLinkLabel`）。
     private let bodyLabel = FeedLinkLabel()
+    /// 正文第一条网址的链接卡片（和聊天同一套样式，`FeedLinkCard`）；没有网址、长文时隐藏。
+    private let linkCardView = FeedLinkCardView()
+    /// 单测用：正文下面的链接卡片。
+    var linkCardViewForTesting: FeedLinkCardView { linkCardView }
     private let topicsLabel = UILabel()
     private let aiLabel = UILabel()
     private let mediaContainer = UIView()
@@ -185,11 +189,13 @@ final class FeedPostCell: UITableViewCell {
         headerRow.alignment = .top
         headerRow.spacing = 4
 
-        let textColumn = UIStackView(arrangedSubviews: [headerRow, titleLabel, bodyLabel, pollView, quoteBox, topicsLabel, aiLabel])
+        let textColumn = UIStackView(arrangedSubviews: [headerRow, titleLabel, bodyLabel, linkCardView, pollView, quoteBox, topicsLabel, aiLabel])
         textColumn.axis = .vertical
         textColumn.spacing = 4
         textColumn.setCustomSpacing(6, after: headerRow)
         textColumn.setCustomSpacing(8, after: bodyLabel)
+        textColumn.setCustomSpacing(8, after: linkCardView)
+        linkCardView.isHidden = true
         textColumn.setCustomSpacing(8, after: pollView)
         textColumn.setCustomSpacing(8, after: quoteBox)
         pollView.isHidden = true
@@ -332,6 +338,7 @@ final class FeedPostCell: UITableViewCell {
         bodyLabel.setText(body, font: .dynamicTypeBody, color: UIColor.Signal.label)
         bodyLabel.isHidden = body == nil
         bodyLabel.numberOfLines = card.isArticle ? Self.articlePreviewLines : 0
+        linkCardView.configure(FeedLinkCard.make(body: body, isArticle: card.isArticle))
 
         let topics = FeedTopicChips.text(for: card.topics)
         topicsLabel.text = topics
