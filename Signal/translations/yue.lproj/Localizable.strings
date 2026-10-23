@@ -10507,6 +10507,12 @@
 /* Tellomi feed I-3 card (2026-10-20) */
 "TELLOMI_FEED_REPOSTED_BY_UNKNOWN" = "轉發";
 
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_FRIENDS" = "好友";
+
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_ME" = "我";
+
 /* Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it. */
 "TELLOMI_JUMP_TO_DATE" = "跳去日期";
 
