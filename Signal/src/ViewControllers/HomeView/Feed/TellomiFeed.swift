@@ -79,6 +79,12 @@ enum TellomiFeed {
     }
 
     /// 「动态预览」开关。TestFlight 构建默认开（可在「关于 Tellomi」里关）；不是 TestFlight 构建时读永远是 false、写不进去。
+    /// 底栏「好友」「我」：暂时和 TestFlight 动态预览同一个条件（商店版不显示，底栏和以前一样；
+    /// 「关于 Tellomi」里关掉预览，这两个也一起收起）。以后要给商店版开，只改这里。
+    static var isFriendsAndMeTabsEnabled: Bool {
+        return isTestFlightPreviewEnabled
+    }
+
     static var isTestFlightPreviewEnabled: Bool {
         get { TellomiFeedPreview.isEnabled(isAvailable: isTestFlightPreviewAvailable, defaults: .standard) }
         set {

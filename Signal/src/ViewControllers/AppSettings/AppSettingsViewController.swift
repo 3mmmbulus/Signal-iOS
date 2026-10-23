@@ -12,6 +12,14 @@ class AppSettingsViewController: OWSTableViewController2 {
         OWSNavigationController(rootViewController: AppSettingsViewController())
     }
 
+    /// Tellomi：作为底栏「我」的根页面时为 true：没有「完成」按钮，需要先关掉弹窗的入口直接打开。
+    private let isTabRoot: Bool
+
+    init(isTabRoot: Bool = false) {
+        self.isTabRoot = isTabRoot
+        super.init()
+    }
+
     private var localUsernameState: Usernames.LocalUsernameState!
     private var localUserProfile: OWSUserProfile?
 
@@ -29,7 +37,9 @@ class AppSettingsViewController: OWSTableViewController2 {
         }
 
         title = OWSLocalizedString("SETTINGS_NAV_BAR_TITLE", comment: "Title for settings activity")
-        navigationItem.rightBarButtonItem = .doneButton(dismissingFrom: self)
+        if !isTabRoot {
+            navigationItem.rightBarButtonItem = .doneButton(dismissingFrom: self)
+        }
 
         defaultSeparatorInsetLeading = Self.cellHInnerMargin + 24 + OWSTableItem.iconSpacing
 
@@ -241,7 +251,13 @@ class AppSettingsViewController: OWSTableViewController2 {
                 let thread = SSKEnvironment.shared.databaseStorageRef.write { tx in
                     TellomiSavedMessages.list(tx: tx)
                 }
-                guard let thread, let presentingViewController = self?.presentingViewController else {
+                guard let thread, let self else {
+                    return
+                }
+                guard let presentingViewController = self.presentingViewController else {
+                    if self.isTabRoot {
+                        SignalApp.shared.presentConversationForThread(threadUniqueId: thread.uniqueId, animated: true)
+                    }
                     return
                 }
                 presentingViewController.dismiss(animated: true) {
