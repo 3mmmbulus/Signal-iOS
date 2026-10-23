@@ -7,7 +7,7 @@ import XCTest
 
 @testable import Signal
 
-/// TestFlight 动态预览（`TellomiFeedPreview`）：只有 TestFlight 装的包认、默认关、正式包里读写都没用、页面开关跟不跟着预览。
+/// TestFlight 动态预览（`TellomiFeedPreview`）：只有 TestFlight 装的包认、TestFlight 里默认开、正式包里读写都没用、页面开关跟不跟着预览。
 final class TellomiFeedPreviewTests: XCTestCase {
     private var suiteName: String!
     private var defaults: UserDefaults!
@@ -51,16 +51,24 @@ final class TellomiFeedPreviewTests: XCTestCase {
         XCTAssertFalse(TellomiFeedPreview.isEnabled(isAvailable: false, defaults: defaults))
     }
 
-    /// App Store 包：写不进去。
+    /// App Store 包：写不进去、读永远关；TestFlight 里没存过照默认开（2026-10-24）。
     func testCannotTurnOnOutsideTestFlight() {
         XCTAssertFalse(TellomiFeedPreview.setEnabled(true, isAvailable: false, defaults: defaults))
         XCTAssertNil(defaults.object(forKey: TellomiFeedPreview.storageKey))
-        XCTAssertFalse(TellomiFeedPreview.isEnabled(isAvailable: true, defaults: defaults))
+        XCTAssertFalse(TellomiFeedPreview.isEnabled(isAvailable: false, defaults: defaults))
+        XCTAssertTrue(TellomiFeedPreview.isEnabled(isAvailable: true, defaults: defaults))
     }
 
+    /// 存了不认识的值（不是布尔）一律算关。
     func testGarbageStoredValueIsOff() {
         defaults.set("yes", forKey: TellomiFeedPreview.storageKey)
         XCTAssertFalse(TellomiFeedPreview.isEnabled(isAvailable: true, defaults: defaults))
+        defaults.set("true", forKey: TellomiFeedPreview.storageKey)
+        XCTAssertFalse(TellomiFeedPreview.isEnabled(isAvailable: true, defaults: defaults))
+        defaults.set(Data([1]), forKey: TellomiFeedPreview.storageKey)
+        XCTAssertFalse(TellomiFeedPreview.isEnabled(isAvailable: true, defaults: defaults))
+        defaults.set(true, forKey: TellomiFeedPreview.storageKey)
+        XCTAssertTrue(TellomiFeedPreview.isEnabled(isAvailable: true, defaults: defaults))
     }
 
     /// 总闸跟构建走：只有 Info.plist `TellomiTestFlightFeed` 显式是 YES 才开；没设（build setting 展开成空）、别的值都关。

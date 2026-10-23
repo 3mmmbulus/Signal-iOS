@@ -13,7 +13,7 @@ import Foundation
 ///
 /// 内容引擎还没部署、`global.feed.enabled` 也没下发，而「Internal → Force feed tab」只在 `DebugFlags.internalSettings`
 /// （`build <= .internal`）里有，TestFlight 包（`FeatureBuild.production`，和 App Store 是同一个二进制）用不了。
-/// 所以加一个只有 **TestFlight 装的包** 认的开关：在「设置 → 关于 Tellomi」里手动打开（默认关），打开后底栏出现「动态」，
+/// 所以加一个只有 **TestFlight 装的包** 认的开关：在「设置 → 关于 Tellomi」里（TestFlight 默认开，可手动关），开着时底栏出现「动态」，
 /// 所有动态页面都用本机样例（`SampleFeedSource`），不连内容引擎、不向 Signal-Server 取凭证，页面顶上写着「预览·样例数据」。
 ///
 /// 怎么保证正式包里永远不生效：
@@ -53,10 +53,12 @@ enum TellomiFeedPreview {
         return compiledIn && isTestFlightInstall
     }
 
-    /// 读：不可用时永远 false，不管存了什么；没存过是 true（TestFlight 构建默认开，2026-10-24 产品决定）。
+    /// 读：不可用时永远 false，不管存了什么；没存过是 true（TestFlight 构建默认开，2026-10-24 产品决定）；
+    /// 存了但不是布尔值（比如字符串 "yes"）一律算关。
     static func isEnabled(isAvailable: Bool, defaults: UserDefaults) -> Bool {
         guard isAvailable else { return false }
-        return defaults.object(forKey: storageKey) as? Bool ?? true
+        guard let stored = defaults.object(forKey: storageKey) else { return true }
+        return (stored as? Bool) ?? false
     }
 
     /// 写：不可用时什么都不存，返回 false；存了返回 true（调用方据此通知底栏重画）。
