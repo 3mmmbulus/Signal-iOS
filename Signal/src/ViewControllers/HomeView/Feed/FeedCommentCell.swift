@@ -20,7 +20,8 @@ final class FeedCommentCell: UITableViewCell {
     private let nameLabel = UILabel()
     private let timeLabel = UILabel()
     private let replyLabel = UILabel()
-    private let bodyLabel = UILabel()
+    /// 评论里的网址可以点，和帖子正文一样（`FeedLinkLabel`）。
+    private let bodyLabel = FeedLinkLabel()
     private var leadingConstraint: NSLayoutConstraint?
     private var author: FeedAuthor?
 
@@ -193,7 +194,7 @@ final class FeedCommentCell: UITableViewCell {
         } else {
             text = FeedPostDetailPresentation.displayText(of: comment)
         }
-        bodyLabel.text = text
+        bodyLabel.setText(text, font: .dynamicTypeBody, color: UIColor.Signal.label)
         bodyLabel.isHidden = text == nil
 
         contentView.backgroundColor = extras?.highlighted == true ? UIColor.Signal.accent.withAlphaComponent(0.12) : .clear
@@ -250,4 +251,5 @@ final class FeedCommentCell: UITableViewCell {
     var isModerationVisible: Bool { !moderationRow.isHidden }
     var voiceTimeText: String? { voiceTimeLabel.text }
     var isVoiceFailedVisible: Bool { !voiceFailedLabel.isHidden }
+    var bodyLabelForTesting: FeedLinkLabel { bodyLabel }
 }

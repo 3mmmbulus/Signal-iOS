@@ -102,7 +102,8 @@ final class FeedQuotedBoxView: UIControl {
     static let textLines = 3
 
     private let authorLabel = UILabel()
-    private let bodyLabel = UILabel()
+    /// 被引用那条里的网址可以点（`FeedLinkLabel`）；点别的地方照旧打开那条的详情。
+    private let bodyLabel = FeedLinkLabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -121,6 +122,7 @@ final class FeedQuotedBoxView: UIControl {
         column.axis = .vertical
         column.spacing = 2
         column.isUserInteractionEnabled = false
+        // 外层不接触摸，链接的手势靠 `hitTest` 把点中链接的触摸交给正文
         addSubview(column)
         column.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12))
         isAccessibilityElement = true
@@ -134,8 +136,9 @@ final class FeedQuotedBoxView: UIControl {
     func configure(_ quote: FeedCardExtras.Quote) {
         if let gone = quote.goneText {
             authorLabel.isHidden = true
-            bodyLabel.text = gone
-            bodyLabel.textColor = UIColor.Signal.secondaryLabel
+            bodyLabel.setText(gone, font: .dynamicTypeSubheadlineClamped, color: UIColor.Signal.secondaryLabel)
+            // 提示语不是用户写的字：不认网址
+            bodyLabel.isUserInteractionEnabled = false
             isEnabled = false
             accessibilityLabel = gone
             accessibilityTraits = .staticText
@@ -143,18 +146,32 @@ final class FeedQuotedBoxView: UIControl {
         }
         authorLabel.text = quote.authorName
         authorLabel.isHidden = quote.authorName == nil
-        bodyLabel.text = quote.text
+        bodyLabel.setText(quote.text, font: .dynamicTypeSubheadlineClamped, color: UIColor.Signal.label)
         bodyLabel.isHidden = quote.text == nil
-        bodyLabel.textColor = UIColor.Signal.label
         isEnabled = true
         accessibilityLabel = [quote.authorName, quote.text].compactMap { $0 }.joined(separator: ", ")
         accessibilityTraits = .button
+    }
+
+    /// 点中正文里的链接时交给正文（打开 / 长按菜单），别的地方还是整个框（打开那条的详情）。
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard let hit = super.hitTest(point, with: event) else { return nil }
+        if isEnabled, bodyLabel.isUserInteractionEnabled, !bodyLabel.isHidden {
+            let local = convert(point, to: bodyLabel)
+            if bodyLabel.bounds.contains(local), bodyLabel.link(at: local) != nil {
+                return bodyLabel
+            }
+        }
+        return hit
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         layer.borderColor = UIColor.Signal.opaqueSeparator.cgColor
     }
+
+    /// 单测用。
+    var bodyLabelForTesting: FeedLinkLabel { bodyLabel }
 }
 
 // MARK: - 卡片里的投票
