@@ -52,7 +52,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>32</string>
+	<string>33</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
@@ -99,6 +99,8 @@
 	<string>$(SIGNAL_MERCHANTID)</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
+	<key>TellomiTestFlightFeed</key>
+	<string>$(TELLOMI_TESTFLIGHT_FEED)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -157,7 +159,5 @@
 			<dict/>
 		</dict>
 	</dict>
-	<key>TellomiTestFlightFeed</key>
-	<string>$(TELLOMI_TESTFLIGHT_FEED)</string>
 </dict>
 </plist>
