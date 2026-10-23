@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "tellomi-feed-sample-link.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

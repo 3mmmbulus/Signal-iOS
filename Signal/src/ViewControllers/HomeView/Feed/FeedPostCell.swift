@@ -338,7 +338,7 @@ final class FeedPostCell: UITableViewCell {
         bodyLabel.setText(body, font: .dynamicTypeBody, color: UIColor.Signal.label)
         bodyLabel.isHidden = body == nil
         bodyLabel.numberOfLines = card.isArticle ? Self.articlePreviewLines : 0
-        linkCardView.configure(FeedLinkCard.make(body: body, isArticle: card.isArticle))
+        linkCardView.configure(FeedLinkCard.make(body: body, isArticle: card.isArticle, preview: card.linkPreview))
 
         let topics = FeedTopicChips.text(for: card.topics)
         topicsLabel.text = topics

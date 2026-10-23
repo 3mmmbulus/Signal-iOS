@@ -11,23 +11,46 @@ import UIKit
 /// 动态帖子里的链接卡片：和聊天里的第三方链接卡同一套样式（`TellomiLinkCardStyle`，参照 Apple「信息」，DESIGN.md §9）。
 ///
 /// 抓取规则跟聊天一致：预览只由发送方抓，收到的一方从不为了画卡去访问对方贴的网址（ADR-0063 §4.4）。
-/// 动态的帖子现在不带预览数据（TestFlight 里是本机示例数据），所以卡片只用网址本身画：
+/// 引擎还不带预览数据，所以真实帖子的卡片只用网址本身画：
 /// 只有域名的中性灰横条，右边指南针——正是「完全没信息」的那一种（产品经理 2026-10-19 晚：指南针只给这种卡）。
-/// 以后引擎带上预览（标题 / 认领档）时传 `Preview`，样式照 `TellomiLinkCardStyle.kind` 自动换成文字横条。
+/// 带 `Preview`（现在只有 TestFlight 的本机示例数据带，见 `SampleFeedSource.samplePreview`）时样式照 `TellomiLinkCardStyle.kind` 换：
+/// 有图是大图卡（图在上，标题 + 域名在下，同聊天的 `CVLinkPreviewViewAdapterTellomiLarge`），只有标题是文字横条。
 /// 交互参考 Telegram 的行为（不用它的代码）：点卡片直接打开，长按是「打开链接 / 复制 / 取消」。
 struct FeedLinkCard: Equatable {
 
-    /// 引擎给的预览（现在没有来源，预留）。动态这边没有图片管线，不画图标横条 / 大图卡。
+    /// 预览数据。现在只有 TestFlight 的本机示例数据带（引擎接上后由引擎给）。
+    /// 动态这边没有网络图片管线：图只认随包的本地图片（`imageName`），不为画卡去下载；没有图标横条。
     struct Preview: Equatable {
         var title: String?
         /// 认领档（`TellomiLinkCard.isClaimedTier`）：没有图时右边不画指南针。
         var isClaimed: Bool = false
+        /// 随包图片的名字（大图卡）。
+        var imageName: String?
+        /// 图的像素尺寸，定大图的高（同聊天：宽 / 1.91 到 宽 之间）。
+        var imagePixelSize: CGSize = .zero
+
+        init(title: String?, isClaimed: Bool = false, imageName: String? = nil, imagePixelSize: CGSize = .zero) {
+            self.title = title
+            self.isClaimed = isClaimed
+            self.imageName = imageName
+            self.imagePixelSize = imagePixelSize
+        }
     }
 
     let url: URL
     let kind: TellomiLinkCardStyle.Kind
     let text: TellomiLinkCardStyle.Text
     let showsCompass: Bool
+    /// 大图卡才有。
+    var imageName: String?
+    var imagePixelSize: CGSize = .zero
+
+    /// 大图的高宽比（同聊天 `heroImageSize`）：没有尺寸时 1 / 1.91，否则夹在 1 / 1.91 和 1 之间。
+    var imageAspectRatio: CGFloat {
+        let fallback = 1 / 1.91
+        guard imagePixelSize.width > 0, imagePixelSize.height > 0 else { return fallback }
+        return min(1, max(fallback, imagePixelSize.height / imagePixelSize.width))
+    }
 
     /// 帖子正文里的第一条网址做卡片（聊天同样只给第一条链接画卡）；没有网址、长文（点开是阅读页）、取不到域名时是 nil。
     static func make(body: String?, isArticle: Bool, preview: Preview? = nil) -> FeedLinkCard? {
@@ -47,8 +70,8 @@ struct FeedLinkCard: Equatable {
             return nil
         }
         let kind = TellomiLinkCardStyle.kind(
-            layout: isPlainLink ? nil : .noImage,
-            hasImage: false,
+            layout: isPlainLink ? nil : (preview?.imageName != nil ? .largeImage : .noImage),
+            hasImage: preview?.imageName != nil,
             hasTitle: text.title != nil,
             isPlainLink: isPlainLink,
         )
@@ -57,6 +80,8 @@ struct FeedLinkCard: Equatable {
             kind: kind,
             text: text,
             showsCompass: TellomiLinkCardStyle.showsCompass(kind: kind, isClaimed: preview?.isClaimed ?? false),
+            imageName: kind == .largeImage ? preview?.imageName : nil,
+            imagePixelSize: kind == .largeImage ? (preview?.imagePixelSize ?? .zero) : .zero,
         )
     }
 
@@ -68,6 +93,7 @@ struct FeedLinkCard: Equatable {
 
 /// 卡片视图：数值和聊天的横条一致（`CVLinkPreviewViewAdapterTellomiStrip`）：内边距 9 / 14 / 9 / 10、间距 10、
 /// 指南针 26 pt、圆角 18（单独一块的卡片和气泡一样大）、中性灰底（`TellomiLinkCardColors`）。
+/// 大图卡同聊天的 `CVLinkPreviewViewAdapterTellomiLarge`：图铺满卡宽在上，下面字的内边距 9 / 14 / 10 / 14。
 final class FeedLinkCardView: UIControl {
     static let cornerRadius: CGFloat = 18
     static let compassSize: CGFloat = 26
@@ -81,6 +107,9 @@ final class FeedLinkCardView: UIControl {
     private let titleLabel = UILabel()
     private let domainLabel = UILabel()
     private let compassView = UIImageView()
+    private let imageView = UIImageView()
+    private var imageAspectConstraint: NSLayoutConstraint?
+    private var rowInsetConstraints = [NSLayoutConstraint]()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -113,10 +142,31 @@ final class FeedLinkCardView: UIControl {
         row.alignment = .center
         row.spacing = 10
         row.isUserInteractionEnabled = false
-        addSubview(row)
-        row.autoPinEdgesToSuperviewEdges(with: UIEdgeInsets(top: 9, left: 14, bottom: 9, right: 10))
+
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.isHidden = true
+        imageView.isUserInteractionEnabled = false
+        let rowContainer = UIView()
+        rowContainer.isUserInteractionEnabled = false
+        rowContainer.addSubview(row)
+        row.translatesAutoresizingMaskIntoConstraints = false
+        // 顺序固定：上、左、下、右（下 / 右是负值），`configure` 按这个顺序改。
+        rowInsetConstraints = [
+            row.topAnchor.constraint(equalTo: rowContainer.topAnchor, constant: Self.stripInsets.top),
+            row.leftAnchor.constraint(equalTo: rowContainer.leftAnchor, constant: Self.stripInsets.left),
+            row.bottomAnchor.constraint(equalTo: rowContainer.bottomAnchor, constant: -Self.stripInsets.bottom),
+            row.rightAnchor.constraint(equalTo: rowContainer.rightAnchor, constant: -Self.stripInsets.right),
+        ]
+        NSLayoutConstraint.activate(rowInsetConstraints)
+        let column = UIStackView(arrangedSubviews: [imageView, rowContainer])
+        column.axis = .vertical
+        column.spacing = 0
+        column.isUserInteractionEnabled = false
+        addSubview(column)
+        column.autoPinEdgesToSuperviewEdges()
         // 横条至少和指南针一样高（上下各留 9），没有指南针时高度也一样。
-        autoSetDimension(.height, toSize: Self.compassSize + 18, relation: .greaterThanOrEqual)
+        rowContainer.autoSetDimension(.height, toSize: Self.compassSize + 18, relation: .greaterThanOrEqual)
 
         addTarget(self, action: #selector(didTap), for: .touchUpInside)
         addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(didLongPress(_:))))
@@ -140,7 +190,26 @@ final class FeedLinkCardView: UIControl {
         domainLabel.text = card.text.domain
         compassView.isHidden = !card.showsCompass
         accessibilityLabel = card.accessibilityLabel
+
+        let image = card.kind == .largeImage ? card.imageName.flatMap { UIImage(named: $0) } : nil
+        imageView.image = image
+        imageView.isHidden = image == nil
+        imageAspectConstraint?.isActive = false
+        imageAspectConstraint = nil
+        if image != nil {
+            let constraint = imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor, multiplier: card.imageAspectRatio)
+            constraint.isActive = true
+            imageAspectConstraint = constraint
+        }
+        let insets = image != nil ? Self.largeImageTextInsets : Self.stripInsets
+        let values = [insets.top, insets.left, -insets.bottom, -insets.right]
+        for (constraint, value) in zip(rowInsetConstraints, values) {
+            constraint.constant = value
+        }
     }
+
+    static let stripInsets = UIEdgeInsets(top: 9, left: 14, bottom: 9, right: 10)
+    static let largeImageTextInsets = UIEdgeInsets(top: 9, left: 14, bottom: 10, right: 14)
 
     override var isHighlighted: Bool {
         didSet { alpha = isHighlighted ? 0.6 : 1 }
@@ -168,5 +237,8 @@ final class FeedLinkCardView: UIControl {
     var titleTextForTesting: String? { titleLabel.isHidden ? nil : titleLabel.text }
     var domainTextForTesting: String? { domainLabel.text }
     var isCompassVisibleForTesting: Bool { !compassView.isHidden }
+    var imageForTesting: UIImage? { imageView.isHidden ? nil : imageView.image }
+    var imageAspectMultiplierForTesting: CGFloat? { imageAspectConstraint?.multiplier }
+    var textInsetsForTesting: [CGFloat] { rowInsetConstraints.map(\.constant) }
     func simulateTapForTesting() { didTap() }
 }
