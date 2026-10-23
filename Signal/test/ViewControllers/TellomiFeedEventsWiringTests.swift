@@ -160,6 +160,32 @@ final class TellomiFeedEventsWiringTests: XCTestCase {
         XCTAssertEqual(source.batches[0][0].surface, "profile")
         XCTAssertNil(source.batches[0][0].value)
     }
+
+    // MARK: - 列表卡片上直接分享（产品 2026-10-23）
+
+    func testListShareIsNotReportedWhenDetailEventsAreOff() async throws {
+        let source = WiringSource()
+        let store = make(source) { self.t0 }
+        store.onListShareFinished(contentId: "a", surface: .recommend, shareable: true, outcome: .completed, eventsEnabled: false)
+        XCTAssertEqual(store.pendingEventCount, 0)
+    }
+
+    func testListShareUsesTheSameRuleAndTheTabSurface() async throws {
+        let source = WiringSource()
+        let store = make(source) { self.t0 }
+        store.onListShareFinished(contentId: "a", surface: .following, shareable: true, outcome: .cancelled, eventsEnabled: true)
+        store.onListShareFinished(contentId: "a", surface: .following, shareable: false, outcome: .completed, eventsEnabled: true)
+        XCTAssertEqual(store.pendingEventCount, 0)
+        store.onListShareFinished(contentId: "a", surface: .following, shareable: true, outcome: .completed, eventsEnabled: true)
+        store.onListShareFinished(contentId: "b", surface: FeedEventSurface(tab: .recommend), shareable: true, outcome: FeedShareOutcome.fromShareSheet(activityType: "com.apple.UIKit.activity.Message"), eventsEnabled: true)
+        store.onListShareFinished(contentId: "c", surface: .hot, shareable: true, outcome: FeedShareOutcome.fromShareSheet(activityType: nil), eventsEnabled: true)
+        XCTAssertEqual(store.pendingEventCount, 2)
+        store.onFeedHidden()
+        await store.waitForEventFlushes()
+        XCTAssertEqual(source.batches[0].map(\.type), ["share", "share"])
+        XCTAssertEqual(source.batches[0].map(\.surface), ["following", "recommend"])
+        XCTAssertEqual(source.batches[0].map(\.contentId), ["a", "b"])
+    }
 }
 
 @MainActor

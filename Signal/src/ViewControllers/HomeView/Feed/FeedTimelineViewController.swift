@@ -331,6 +331,7 @@ extension FeedTimelineViewController {
     }
 
     private func shareFinished(_ card: FeedCard, _ outcome: FeedShareOutcome) {
-        store.onShareFinished(contentId: card.id, surface: FeedEventSurface(tab: feedTab), shareable: card.shareable, outcome: outcome)
+        // 列表分享也要过详情事件的开关（内部开关 + 引擎 events），关着不报
+        store.onListShareFinished(contentId: card.id, surface: FeedEventSurface(tab: feedTab), shareable: card.shareable, outcome: outcome)
     }
 }

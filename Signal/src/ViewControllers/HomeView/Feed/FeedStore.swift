@@ -298,6 +298,20 @@ final class FeedStore {
         enqueue([event])
     }
 
+    /// 列表卡片上直接分享（产品 2026-10-23）：口径同详情页（系统分享面板选了目标、复制链接才算完成），`surface` 是卡片所在的那一栏。
+    /// 开关和详情事件同一条：内部开关「detail events」（默认关）并且引擎部署了 `events`（`TellomiFeed.isDetailEventsEnabled` 已含能力判断）。
+    /// 引擎的 `surface` 只有五个值、没有「列表 / 详情」之分，所以同一栏里列表分享和详情分享在引擎那边分不开。
+    func onListShareFinished(
+        contentId: String,
+        surface: FeedEventSurface,
+        shareable: Bool,
+        outcome: FeedShareOutcome,
+        eventsEnabled: Bool = TellomiFeed.isDetailEventsEnabled
+    ) {
+        guard eventsEnabled else { return }
+        onShareFinished(contentId: contentId, surface: surface, shareable: shareable, outcome: outcome)
+    }
+
     private func enqueue(_ payloads: [FeedEventPayload]) {
         guard !payloads.isEmpty else { return }
         var full = false
