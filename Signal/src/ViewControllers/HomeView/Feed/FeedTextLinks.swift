@@ -30,10 +30,14 @@ enum FeedTextLinks {
         guard let detector, !text.isEmpty else { return [] }
         let whole = NSRange(location: 0, length: (text as NSString).length)
         return detector.matches(in: text, options: [], range: whole).compactMap { match in
-            guard let found = match.url else { return nil }
-            let original = (text as NSString).substring(with: match.range)
+            // 链接在第一个全角中文标点 / 右括号前结束（产品 2026-10-24，和聊天同一个 `TellomiLinkPunctuation`）。
+            guard
+                let trimmed = TellomiLinkPunctuation.trimmedLink(range: match.range, url: match.url, in: text, detector: detector),
+                let found = trimmed.url
+            else { return nil }
+            let original = (text as NSString).substring(with: trimmed.range)
             guard let url = normalized(found, original: original) else { return nil }
-            return Link(range: match.range, url: url)
+            return Link(range: trimmed.range, url: url)
         }
     }
 

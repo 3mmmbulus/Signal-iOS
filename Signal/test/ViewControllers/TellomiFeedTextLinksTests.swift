@@ -81,4 +81,15 @@ final class TellomiFeedTextLinksTests: XCTestCase {
         XCTAssertNil(label.link(at: CGPoint(x: 310, y: 20)), "行尾空白不算")
         XCTAssertNil(label.link(at: CGPoint(x: 10, y: 38)), "字下面（居中后留的空白）不算")
     }
+
+    /// 产品 2026-10-24：全角中文标点 / 右括号不算进链接（`TellomiLinkPunctuation`，和聊天一样）。
+    func testChinesePunctuationEndsTheLink() {
+        let text = "看 https://x.com/abc，后面「https://y.com/b」。"
+        let links = FeedTextLinks.detect(in: text)
+        XCTAssertEqual(links.map { (text as NSString).substring(with: $0.range) }, ["https://x.com/abc", "https://y.com/b"])
+        XCTAssertEqual(links.map(\.url.absoluteString), ["https://x.com/abc", "https://y.com/b"])
+        XCTAssertEqual(urls("去 example.com/path。"), ["https://example.com/path"])
+        XCTAssertEqual(urls("（https://x.com/abc）"), ["https://x.com/abc"])
+        XCTAssertEqual(urls("https://x.com/a,b"), ["https://x.com/a,b"])
+    }
 }
