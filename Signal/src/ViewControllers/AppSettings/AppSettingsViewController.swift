@@ -12,6 +12,14 @@ class AppSettingsViewController: OWSTableViewController2 {
         OWSNavigationController(rootViewController: AppSettingsViewController())
     }
 
+    /// Tellomi：作为底栏「我」的根页面时为 true：没有「完成」按钮，需要先关掉弹窗的入口直接打开。
+    private let isTabRoot: Bool
+
+    init(isTabRoot: Bool = false) {
+        self.isTabRoot = isTabRoot
+        super.init()
+    }
+
     private var localUsernameState: Usernames.LocalUsernameState!
     private var localUserProfile: OWSUserProfile?
 
@@ -29,7 +37,9 @@ class AppSettingsViewController: OWSTableViewController2 {
         }
 
         title = OWSLocalizedString("SETTINGS_NAV_BAR_TITLE", comment: "Title for settings activity")
-        navigationItem.rightBarButtonItem = .doneButton(dismissingFrom: self)
+        if !isTabRoot {
+            navigationItem.rightBarButtonItem = .doneButton(dismissingFrom: self)
+        }
 
         defaultSeparatorInsetLeading = Self.cellHInnerMargin + 24 + OWSTableItem.iconSpacing
 
@@ -241,7 +251,13 @@ class AppSettingsViewController: OWSTableViewController2 {
                 let thread = SSKEnvironment.shared.databaseStorageRef.write { tx in
                     TellomiSavedMessages.list(tx: tx)
                 }
-                guard let thread, let presentingViewController = self?.presentingViewController else {
+                guard let thread, let self else {
+                    return
+                }
+                guard let presentingViewController = self.presentingViewController else {
+                    if self.isTabRoot {
+                        SignalApp.shared.presentConversationForThread(threadUniqueId: thread.uniqueId, animated: true)
+                    }
                     return
                 }
                 presentingViewController.dismiss(animated: true) {
@@ -697,18 +713,40 @@ extension AppSettingsViewController: UsernameChangeDelegate {
 }
 
 extension AppSettingsViewController: UsernameLinkScanDelegate {
-    func usernameLinkScanned(_ usernameLink: Usernames.UsernameLink) {
+    /// 扫码结果出来后：先关掉扫码/二维码弹窗，再从 `anchor` 上查用户名、打开会话。
+    /// 设置是弹窗打开时（原来的入口）`anchor` 是弹出设置的页面，整个设置一起关；
+    /// 设置是底栏「我」的根页面时（Tellomi）没有 `presentingViewController`，只关掉设置上面弹出的页面，`anchor` 用自己。
+    private func dismissForScanResult(_ then: @escaping (UIViewController) -> Void) {
+        if isTabRoot {
+            // 弹窗实际挂在最外层的底栏控制器上（它提供 presentation context），从那里关、从那里查
+            let anchor: UIViewController = tabBarController ?? navigationController ?? self
+            if anchor.presentedViewController != nil {
+                anchor.dismiss(animated: true) {
+                    then(anchor)
+                }
+            } else {
+                // 扫码页是 push 进「我」这个导航栈的：回到根页面再打开会话
+                navigationController?.popToRootViewController(animated: false)
+                then(anchor)
+            }
+            return
+        }
         guard let presentingViewController else {
             owsFailDebug("Missing presenting view controller!")
             return
         }
-
         presentingViewController.dismiss(animated: true) {
+            then(presentingViewController)
+        }
+    }
+
+    func usernameLinkScanned(_ usernameLink: Usernames.UsernameLink) {
+        dismissForScanResult { anchor in
             Task {
                 guard
                     let (_, aci) = await UsernameQuerier().queryForUsernameLink(
                         link: usernameLink,
-                        fromViewController: presentingViewController,
+                        fromViewController: anchor,
                     )
                 else {
                     return
@@ -724,17 +762,12 @@ extension AppSettingsViewController: UsernameLinkScanDelegate {
 
     /// Tellomi（tellomi/tellomi#947）：扫到裸用户名码，与扫到用户名链接同一个结果（打开会话）。
     func plainUsernameScanned(_ username: String) {
-        guard let presentingViewController else {
-            owsFailDebug("Missing presenting view controller!")
-            return
-        }
-
-        presentingViewController.dismiss(animated: true) {
+        dismissForScanResult { anchor in
             Task {
                 guard
                     let aci = await UsernameQuerier().queryForUsername(
                         username: username,
-                        fromViewController: presentingViewController,
+                        fromViewController: anchor,
                     )
                 else {
                     return

@@ -56,6 +56,10 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
             callsListNavController
         case .stories:
             storiesNavController
+        case .friends:
+            homeVC.friendsNavController
+        case .me:
+            homeVC.meNavController
         }
 
         if isCollapsed {
@@ -153,6 +157,10 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
             chatListNavController.popToRootViewController(animated: animated)
         case .stories:
             storiesNavController.popToRootViewController(animated: animated)
+        case .friends:
+            homeVC.friendsNavController.popToRootViewController(animated: animated)
+        case .me:
+            homeVC.meNavController.popToRootViewController(animated: animated)
         }
     }
 
@@ -265,6 +273,9 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
 
     func showMyStoriesController(animated: Bool) {
         AssertIsOnMainThread()
+
+        // Tellomi：底栏有「好友」「我」时不显示快拍（正好 5 个标签），没有快拍页可切，什么都不做。
+        guard homeVC.visibleTabs.contains(.stories) else { return }
 
         // On iOS 13, there is a bug with UISplitViewController that causes the `isCollapsed` state to
         // get out of sync while the app isn't active and the orientation has changed while backgrounded.

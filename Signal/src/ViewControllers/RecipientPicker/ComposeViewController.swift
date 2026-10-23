@@ -132,3 +132,16 @@ extension ComposeViewController: RecipientPickerDelegate, UsernameLinkScanDelega
         showNewGroupUI()
     }
 }
+
+/// Tellomi：底栏「好友」的根页面。复用新建会话的联系人列表（同样的搜索、新建群、邀请），
+/// 只是作为标签页常驻：标题叫「好友」，没有「取消」按钮。点某个人打开会话（`newConversation`
+/// 没有弹窗可关时直接打开会话）。放在这个文件里，免得改 Xcode 工程文件。
+final class TellomiFriendsViewController: ComposeViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        title = HomeTabBarController.Tabs.friends.title
+        navigationItem.rightBarButtonItem = nil
+    }
+}

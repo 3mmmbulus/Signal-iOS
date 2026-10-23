@@ -26,6 +26,11 @@ class HomeTabBarController: UITabBarController {
         case stories = 2
         /// Tellomi（M11）：动态。`TellomiFeed.isTabEnabled` 为真时放在最左（`dynamic-feed.md` 第三节第 17 条）。
         case feed = 3
+        /// Tellomi：好友（复用新建会话里的联系人列表，`TellomiFriendsViewController`）。
+        /// 现在只在 TestFlight 动态预览开着时显示（`TellomiFeed.isFriendsAndMeTabsEnabled`），商店版底栏不变。
+        case friends = 4
+        /// Tellomi：我（复用设置页 `AppSettingsViewController`）。显示条件同「好友」。
+        case me = 5
 
         var title: String {
             switch self {
@@ -49,6 +54,16 @@ class HomeTabBarController: UITabBarController {
                     "STORIES_TITLE",
                     comment: "Title for the stories view.",
                 )
+            case .friends:
+                return OWSLocalizedString(
+                    "TELLOMI_HOME_TAB_FRIENDS",
+                    comment: "Title for the friends (contact list) tab in the home tab bar.",
+                )
+            case .me:
+                return OWSLocalizedString(
+                    "TELLOMI_HOME_TAB_ME",
+                    comment: "Title for the me (settings) tab in the home tab bar.",
+                )
             }
         }
 
@@ -62,6 +77,10 @@ class HomeTabBarController: UITabBarController {
                 return UIImage(named: "tab-calls")
             case .stories:
                 return UIImage(named: "tab-stories")
+            case .friends:
+                return UIImage(systemName: "person.2")
+            case .me:
+                return UIImage(systemName: "person.crop.circle")
             }
         }
 
@@ -75,6 +94,10 @@ class HomeTabBarController: UITabBarController {
                 return UIImage(named: "tab-calls")
             case .stories:
                 return UIImage(named: "tab-stories")
+            case .friends:
+                return UIImage(systemName: "person.2.fill")
+            case .me:
+                return UIImage(systemName: "person.crop.circle.fill")
             }
         }
 
@@ -96,6 +119,10 @@ class HomeTabBarController: UITabBarController {
                 return "calls"
             case .stories:
                 return "stories"
+            case .friends:
+                return "friends"
+            case .me:
+                return "me"
             }
         }
     }
@@ -116,6 +143,14 @@ class HomeTabBarController: UITabBarController {
     lazy var callsListViewController = CallsListViewController()
     lazy var callsListNavController = OWSNavigationController(rootViewController: callsListViewController)
     lazy var callsListTabBarItem = Tabs.calls.tabBarItem
+
+    lazy var friendsViewController = TellomiFriendsViewController()
+    lazy var friendsNavController = OWSNavigationController(rootViewController: friendsViewController)
+    lazy var friendsTabBarItem = Tabs.friends.tabBarItem
+
+    lazy var meViewController = AppSettingsViewController(isTabRoot: true)
+    lazy var meNavController = OWSNavigationController(rootViewController: meViewController)
+    lazy var meTabBarItem = Tabs.me.tabBarItem
 
     // There are two things going on here that require this code. The first is a stored property can't
     // conditionally include itself with an @available property, so some type erasing hoops need to be
@@ -183,7 +218,7 @@ class HomeTabBarController: UITabBarController {
             }
         }
         // 动态在最左，但打开 App 默认显示「聊天」（dynamic-feed.md 第三节第 17 条）
-        selectedHomeTab = .chatList
+        selectedHomeTab = Self.defaultTab
 
         AppEnvironment.shared.badgeManager.addObserver(self)
         storyBadgeCountManager.beginObserving(observer: self)
@@ -215,8 +250,13 @@ class HomeTabBarController: UITabBarController {
     }
 
     private func updateFeedTabIfNeeded() {
-        let isFeedVisible = visibleTabs.contains(.feed)
-        guard TellomiFeed.isTabEnabled != isFeedVisible else { return }
+        // 动态、好友、我 都跟着这条通知变：底栏标签有变化才重画
+        let wantedTabs = Self.tabsToShow(
+            areStoriesEnabled: StoryManager.areStoriesEnabled,
+            isFeedEnabled: TellomiFeed.isTabEnabled,
+            showsFriendsAndMe: TellomiFeed.isFriendsAndMeTabsEnabled,
+        )
+        guard wantedTabs != visibleTabs else { return }
 
         let previouslySelected = selectedHomeTab
         updateTabBars(areStoriesEnabled: StoryManager.areStoriesEnabled)
@@ -224,6 +264,8 @@ class HomeTabBarController: UITabBarController {
             selectedHomeTab = previouslySelected
         } else {
             feedNavController.popToRootViewController(animated: false)
+            friendsNavController.popToRootViewController(animated: false)
+            meNavController.popToRootViewController(animated: false)
             selectedHomeTab = .chatList
         }
     }
@@ -234,7 +276,11 @@ class HomeTabBarController: UITabBarController {
     }
 
     private func updateTabBars(areStoriesEnabled: Bool) {
-        let newTabs = Self.tabsToShow(areStoriesEnabled: areStoriesEnabled, isFeedEnabled: TellomiFeed.isTabEnabled)
+        let newTabs = Self.tabsToShow(
+            areStoriesEnabled: areStoriesEnabled,
+            isFeedEnabled: TellomiFeed.isTabEnabled,
+            showsFriendsAndMe: TellomiFeed.isFriendsAndMeTabsEnabled,
+        )
         visibleTabs = newTabs
         if #available(iOS 18, *), UIDevice.current.isIPad {
             self.tabs = newTabs.map(uiTab(for:))
@@ -272,20 +318,33 @@ class HomeTabBarController: UITabBarController {
             return (callsListNavController, callsListTabBarItem)
         case .stories:
             return (storiesNavController, storiesTabBarItem)
+        case .friends:
+            return (friendsNavController, friendsTabBarItem)
+        case .me:
+            return (meNavController, meTabBarItem)
         }
     }
 
-    static func tabsToShow(areStoriesEnabled: Bool, isFeedEnabled: Bool) -> [Tabs] {
+    /// 底栏顺序：动态、聊天、通话、好友、我（产品 2026-10-24）。打开 App 默认选「聊天」。
+    /// 有好友/我时底栏正好 5 个，不显示快拍（产品 2026-10-24：不要「更多」）；
+    /// 没有好友/我时（商店版）快拍保持原样，开着才有。
+    static func tabsToShow(areStoriesEnabled: Bool, isFeedEnabled: Bool, showsFriendsAndMe: Bool = false) -> [Tabs] {
         var tabs = [Tabs]()
         if isFeedEnabled {
             tabs.append(Tabs.feed)
         }
         tabs += [Tabs.chatList, Tabs.calls]
-        if areStoriesEnabled {
+        if showsFriendsAndMe {
+            tabs += [Tabs.friends, Tabs.me]
+        }
+        if areStoriesEnabled, !showsFriendsAndMe {
             tabs.append(Tabs.stories)
         }
         return tabs
     }
+
+    /// 打开 App 时默认选中的标签。
+    static let defaultTab: Tabs = .chatList
 
     @objc
     private func storiesEnabledStateDidChange() {
@@ -434,6 +493,8 @@ extension HomeTabBarController: UITabBarControllerDelegate {
                 tableView = storiesViewController.tableView
             case .calls:
                 tableView = callsListViewController.tableView
+            case .friends, .me:
+                return true
             }
 
             tableView.setContentOffset(CGPoint(x: 0, y: -tableView.safeAreaInsets.top), animated: true)
