@@ -87,7 +87,8 @@ final class TellomiFeedSamplePreviewTests: XCTestCase {
         XCTAssertNil(view.imageAspectMultiplierForTesting)
         XCTAssertEqual(view.titleTextForTesting, "家常酸面包：从养酵种到出炉")
         XCTAssertFalse(view.isCompassVisibleForTesting)
-        XCTAssertEqual(view.textInsetsForTesting, [9, 14, -9, -10])
+        // 右边什么都没有：DESIGN.md §9 的 9 / 14 / 10 / 14（上 / 左 / 下 / 右）
+        XCTAssertEqual(view.textInsetsForTesting, [9, 14, -10, -14])
 
         cell.configure(card: try await samplePost("sample-6"), showIpRegion: false)
         XCTAssertNil(view.imageForTesting)

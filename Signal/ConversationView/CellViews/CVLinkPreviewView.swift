@@ -1402,7 +1402,10 @@ private class CVLinkPreviewViewAdapterTellomiStrip: CVLinkPreviewViewAdapterTell
             axis: .horizontal,
             alignment: .center,
             spacing: 10,
-            layoutMargins: UIEdgeInsets(top: 9, leading: 14, bottom: 9, trailing: 10),
+            // DESIGN.md §9（上 / 左 / 下 / 右）：右边有图标或指南针时 9 / 14 / 9 / 10；右边什么都没有（有标题的文字横条）时 9 / 14 / 10 / 14。
+            layoutMargins: hasTrailing
+                ? UIEdgeInsets(top: 9, leading: 14, bottom: 9, trailing: 10)
+                : UIEdgeInsets(top: 9, leading: 14, bottom: 10, trailing: 14),
         )
     }
 

@@ -201,7 +201,7 @@ final class FeedLinkCardView: UIControl {
             constraint.isActive = true
             imageAspectConstraint = constraint
         }
-        let insets = image != nil ? Self.largeImageTextInsets : Self.stripInsets
+        let insets = image != nil ? Self.largeImageTextInsets : (card.showsCompass ? Self.stripInsets : Self.stripNoTrailingInsets)
         let values = [insets.top, insets.left, -insets.bottom, -insets.right]
         for (constraint, value) in zip(rowInsetConstraints, values) {
             constraint.constant = value
@@ -209,6 +209,8 @@ final class FeedLinkCardView: UIControl {
     }
 
     static let stripInsets = UIEdgeInsets(top: 9, left: 14, bottom: 9, right: 10)
+    /// 右边什么都没有（有标题、没有图的横条）：DESIGN.md §9 的 9 / 14 / 10 / 14（上 / 左 / 下 / 右）。
+    static let stripNoTrailingInsets = UIEdgeInsets(top: 9, left: 14, bottom: 10, right: 14)
     static let largeImageTextInsets = UIEdgeInsets(top: 9, left: 14, bottom: 10, right: 14)
 
     override var isHighlighted: Bool {
