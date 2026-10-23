@@ -127,6 +127,8 @@ enum FeedFriendSyncRunner {
 
     /// 不等结果；同一时间只跑一个。
     static func syncIfStale() {
+        // 单元测试宿主没有 SSKEnvironment：开关判断会读 RemoteConfig，直接跳过（同 FeedEngineCapabilities 的做法）
+        guard SSKEnvironment.hasShared else { return }
         guard running.tryToSetFlag() else { return }
         Task.detached(priority: .utility) {
             let outcome = await sync.syncIfStale()
