@@ -12660,6 +12660,12 @@
 /* Title of the privacy notice shown the first time the app is opened. */
 "TELLOMI_FIRST_LAUNCH_TITLE" = "Welcome to Tellomi";
 
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_FRIENDS" = "Friends";
+
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_ME" = "Me";
+
 /* One-time card about the new attachment panel, line 1: photos and files are pages of the same panel. */
 "TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_1" = "Photos and files: switch between them in one panel without leaving the chat";
 

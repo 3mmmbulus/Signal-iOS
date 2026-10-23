@@ -46,6 +46,28 @@ final class TellomiFeedTabTests: XCTestCase {
         )
     }
 
+    /// 底栏顺序：动态、聊天、通话、好友、我；快拍开着时排最后；默认选「聊天」（TF34）。
+    func testFriendsAndMeTabOrderAndDefaultTab() {
+        XCTAssertEqual(
+            HomeTabBarController.tabsToShow(areStoriesEnabled: false, isFeedEnabled: true, showsFriendsAndMe: true),
+            [.feed, .chatList, .calls, .friends, .me],
+        )
+        XCTAssertEqual(
+            HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: true, showsFriendsAndMe: true),
+            [.feed, .chatList, .calls, .friends, .me, .stories],
+        )
+        // 商店版（没有好友/我）底栏不变
+        XCTAssertEqual(
+            HomeTabBarController.tabsToShow(areStoriesEnabled: true, isFeedEnabled: false, showsFriendsAndMe: false),
+            [.chatList, .calls, .stories],
+        )
+        XCTAssertEqual(HomeTabBarController.defaultTab, .chatList)
+        XCTAssertEqual(HomeTabBarController.Tabs.friends.tabIdentifier, "friends")
+        XCTAssertEqual(HomeTabBarController.Tabs.me.tabIdentifier, "me")
+        XCTAssertNotNil(HomeTabBarController.Tabs.friends.image)
+        XCTAssertNotNil(HomeTabBarController.Tabs.me.image)
+    }
+
     /// 只有「推荐 / 关注」两栏；服务端给的顺序照用，不认识的跳过，一个都不认识时两栏都显示。
     func testTabsFromServerNames() {
         XCTAssertEqual(FeedTab.allCases, [.recommend, .following])

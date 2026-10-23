@@ -12417,6 +12417,12 @@
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_VOICE_PLAY_FAILED" = "语音评论播放失败。";
 
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_FRIENDS" = "好友";
+
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_ME" = "我";
+
 /* One-time card about the new attachment panel, line 1: photos and files are pages of the same panel. */
 "TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_1" = "相册与文件：在同一个面板里随手切换，不用离开聊天";
 

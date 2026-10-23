@@ -12546,6 +12546,12 @@
 /* Title of the privacy notice shown the first time the app is opened. */
 "TELLOMI_FIRST_LAUNCH_TITLE" = "歡迎使用 Tellomi";
 
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_FRIENDS" = "好友";
+
+/* Tellomi: home tab bar friends/me tabs (TF34) */
+"TELLOMI_HOME_TAB_ME" = "我";
+
 /* One-time card about the new attachment panel, line 1: photos and files are pages of the same panel. */
 "TELLOMI_INTRO_ATTACHMENT_SHEET_V2_ITEM_1" = "相簿與檔案：在同一個面板裡隨手切換，不用離開聊天";
 
