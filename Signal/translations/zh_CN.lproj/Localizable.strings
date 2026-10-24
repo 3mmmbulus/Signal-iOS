@@ -11597,6 +11597,7 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_POST_GONE" = "这条动态已经看不到了";
+"TELLOMI_FEED_POST_LINK_GONE" = "这条动态已不可见";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_REPLY" = "%1$@ 回复了你的评论";

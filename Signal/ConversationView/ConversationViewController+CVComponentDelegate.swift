@@ -642,6 +642,9 @@ extension ConversationViewController: CVComponentDelegate {
         case .plainUsername(let username):
             didTapTellomiPlainUsername(username)
             return
+        case .feedPost(let contentId):
+            FeedPostLinkViewController.present(link: FeedPostLink.postLink(contentId: contentId), from: self)
+            return
         case .url(let routedUrl):
             url = routedUrl
         }
@@ -690,6 +693,8 @@ extension ConversationViewController: CVComponentDelegate {
     enum TellomiInAppRoute: Equatable {
         /// `tell.cc/<用户名>`、`tell.cc/u#u/<用户名>`：上游没有等价物，直接查人
         case plainUsername(String)
+        /// `tell.cc/m#<content id>`（I-16）：打开这条动态（取不到就写「已不可见」），不经浏览器
+        case feedPost(contentId: String)
         /// 其余交给上游的解析器：Tellomi 新形状（`tell.cc/{u,g,s,call}`、`tellomi://`）已换算成旧形状，别的链接原样
         case url(URL)
     }
@@ -698,6 +703,9 @@ extension ConversationViewController: CVComponentDelegate {
     static func tellomiInAppRoute(for url: URL) -> TellomiInAppRoute {
         if let username = TellomiLinks.plainUsername(in: url) {
             return .plainUsername(username)
+        }
+        if let contentId = FeedPostLink.parsePostId(url.absoluteString) {
+            return .feedPost(contentId: contentId)
         }
         return .url(TellomiLinks.legacyEquivalent(of: url))
     }
