@@ -12550,6 +12550,12 @@
 /* Tellomi: home tab bar friends/me tabs (TF34) */
 "TELLOMI_HOME_TAB_FRIENDS" = "好友";
 
+/* Tellomi: shown in the Friends tab when the user has no friends on Tellomi yet. */
+"TELLOMI_FRIENDS_EMPTY" = "還沒有 Tellomi 好友。";
+
+/* Tellomi: row at the top of the Friends tab that shares the app download link. */
+"TELLOMI_FRIENDS_INVITE_ROW" = "邀請好友";
+
 /* Tellomi: home tab bar friends/me tabs (TF34) */
 "TELLOMI_HOME_TAB_ME" = "我";
 
