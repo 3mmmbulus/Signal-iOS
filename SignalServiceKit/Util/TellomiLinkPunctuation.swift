@@ -5,13 +5,15 @@
 
 import Foundation
 
-/// Tellomi（产品 2026-10-24）：全角中文标点和右括号 / 右引号不算进链接，在链接末尾或中间都一样
-/// （「https://x.com/abc，后面」只认「https://x.com/abc」），聊天和动态点到的范围都不带它们。
+/// Tellomi（产品 2026-10-24 / 2026-10-25）：全角中文／日文标点、右括号／右引号，以及省略号、破折号、
+/// 全角句点／连字符不算进链接，在链接末尾或中间都一样（「https://x.com/abc，后面」只认「https://x.com/abc」），
+/// 聊天和动态点到的范围都不带它们。
 /// 表和 Android `Linkifier.CJK_SENTENCE_PUNCTUATION`、`LinkUtil.CJK_URL_TERMINATORS` 相同。
-/// 只改 NSDataDetector 认出来的范围：系统没把这些字算进链接时什么都不变；ASCII 标点照旧交给系统。
+/// 只改 NSDataDetector 认出来的范围：系统没把这些字算进链接时什么都不变；半角 ASCII 标点照旧交给系统。
 public enum TellomiLinkPunctuation {
 
-    public static let terminators: Set<UInt16> = Set("，。！？；：、）」』】》〉”’".utf16)
+    /// ，。！？；：、  右括号／右引号 ）」』】》〉”’  以及 …—－．
+    public static let terminators: Set<UInt16> = Set("，。！？；：、）」』】》〉”’…—－．".utf16)
 
     /// 链接文字里第一个全角标点前的长度（UTF-16）；没有这类标点时 nil。
     public static func cutLength(of linkText: NSString) -> Int? {
