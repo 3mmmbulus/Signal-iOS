@@ -31,6 +31,12 @@ final class FeedTimelineViewController: OWSViewController {
         didSet { reportVisibleCards() }
     }
 
+    /// 当前这一栏的列表滚了（I-14）：`offsetFromTop` = `contentOffset.y + adjustedContentInset.top`（0 = 在最顶）。
+    /// 由 `FeedViewController` 交给 `FeedChromeCoordinator`；只有露出的这一栏会报。
+    var onListScrolled: ((Double) -> Void)?
+    /// 列表整表重载了（换了内容）：位置跳变不算滚动。
+    var onContentReplaced: (() -> Void)?
+
     /// 点了一条帖子：由 `FeedViewController` 推帖子详情页（这里拿不到 `FeedSource`，也不管导航）。
     var onOpenPost: ((FeedCard) -> Void)?
     /// 点了帖子上的头像 / 名字。nil（默认）= 不响应，帖子行为不变。要在页面出现前设好。
@@ -115,6 +121,7 @@ final class FeedTimelineViewController: OWSViewController {
         } else {
             renderedRows = rows
             tableView.reloadData()
+            if isCurrentPage { onContentReplaced?() }
         }
 
         if state.cards.isEmpty, state.loading || !state.loadedOnce {
@@ -221,6 +228,9 @@ extension FeedTimelineViewController: UITableViewDataSource, UITableViewDelegate
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         reportVisibleCards()
+        if isCurrentPage {
+            onListScrolled?(Double(scrollView.contentOffset.y + scrollView.adjustedContentInset.top))
+        }
     }
 
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

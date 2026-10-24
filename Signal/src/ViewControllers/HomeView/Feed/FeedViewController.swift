@@ -27,6 +27,12 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     private var feedSubscription: FeedSubscription?
 
     private lazy var topBar = FeedTopBarView(tabs: tabs)
+
+    /// I-14：滚动时顶栏（导航栏）和主底栏同帧收起 / 出现（Android `FeedChromeState`）。发布按钮不动。
+    private(set) lazy var chrome = FeedChromeCoordinator(
+        setTopBarHidden: { [weak self] hidden, duration in self?.setTopBarHidden(hidden, duration: duration) },
+        setBottomBarHidden: { [weak self] hidden, duration in self?.setBottomBarHidden(hidden, duration: duration) },
+    )
     private let pagingScrollView = UIScrollView()
 
     /// 作者主页入口开着没有（`TellomiFeed.isProfilePageEnabled`，默认关）。单测 / 截图可以直接传 true。
@@ -208,6 +214,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         pagingScrollView.autoPinEdgesToSuperviewEdges()
 
         for page in pages {
+            page.onListScrolled = { [weak self] offset in self?.chrome.onListScrolled(offsetFromTop: offset) }
+            page.onContentReplaced = { [weak self] in self?.chrome.onContentReplaced() }
             addChild(page)
             pagingScrollView.addSubview(page.view)
             page.didMove(toParent: self)
@@ -253,6 +261,33 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         setFeedVisible(false)
+        // 推进二级页、App 盖上别的页面：两条栏马上回来（二级页自己决定要不要底栏）
+        chrome.reset()
+    }
+
+    // MARK: - I-14 两条栏
+
+    private func setTopBarHidden(_ hidden: Bool, duration: TimeInterval) {
+        guard let navigationController else { return }
+        // 收起只在动态页自己在最上面时；放回来任何时候都要（推进二级页时也不能让它的导航栏是收着的）
+        guard !hidden || navigationController.topViewController === self else { return }
+        guard duration > 0, view.window != nil else {
+            navigationController.setNavigationBarHidden(hidden, animated: false)
+            return
+        }
+        // 和底栏（`HomeTabBarController.setTabBarHidden`，easeOut）同一个曲线、同一个时长，在同一次回调里开始
+        let animator = UIViewPropertyAnimator(duration: duration, curve: .easeOut) {
+            navigationController.setNavigationBarHidden(hidden, animated: false)
+            navigationController.view.layoutIfNeeded()
+        }
+        animator.startAnimation()
+    }
+
+    private func setBottomBarHidden(_ hidden: Bool, duration: TimeInterval) {
+        guard let tabController = tabBarController as? HomeTabBarController else { return }
+        // 只在动态标签是当前标签时动它（`setTabBarHidden` 改的是当前标签的安全区）；切走前 `HomeTabBarController` 先 `reset`
+        guard tabController.selectedViewController === navigationController else { return }
+        tabController.setTabBarHidden(hidden, animated: duration > 0 && view.window != nil, duration: duration)
     }
 
     /// 锁上（提示页由 `FeedMinorLockController` 盖、导航栏按钮也由它禁用）：再藏掉发布按钮、顶栏不能切、停掉曝光；解锁后恢复。
@@ -431,6 +466,8 @@ final class FeedViewController: OWSViewController, HomeTabViewController {
         for (index, page) in pages.enumerated() {
             page.isCurrentPage = index == selected
         }
+        // 换栏：两条栏回来，计数清零（Android `FeedChromeState.reset`）
+        chrome.reset()
         if let tab = tabs[safe: selected] {
             store.onTabShown(tab)
         }
