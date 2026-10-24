@@ -33,7 +33,12 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
         // In order to not show selected when collapsed during an interactive dismissal,
         // we verify the conversation is still in the nav stack when collapsed. There is
         // no interactive dismissal when expanded, so we don't have to do any special check.
-        guard !isCollapsed || chatListNavController.viewControllers.contains(selectedConversationViewController) else { return nil }
+        // Tellomi：从「好友」里打开的会话在好友的导航栈里，也算当前打开的会话（通知横幅据此不重复提醒）
+        guard
+            !isCollapsed
+            || chatListNavController.viewControllers.contains(selectedConversationViewController)
+            || homeVC.friendsNavController.viewControllers.contains(selectedConversationViewController)
+        else { return nil }
 
         return selectedConversationViewController.thread
     }
@@ -213,6 +218,17 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
             homeVC.selectedHomeTab = .chatList
         }
 
+        // Tellomi：通知、分享、深链接等一律走这里，切到「聊天」压在聊天栈上。同一个会话正开在「好友」栈上时，
+        // 先把好友栈收回根页面，在聊天里重新打开，不让同一个会话在两个栈上各开一份。
+        if
+            isCollapsed,
+            let selectedConversationViewController,
+            homeVC.friendsNavController.viewControllers.contains(selectedConversationViewController)
+        {
+            homeVC.friendsNavController.popToRootViewController(animated: false)
+            self.selectedConversationViewController = nil
+        }
+
         if
             let selectedThreadUniqueId = selectedThread?.uniqueId,
             selectedThreadUniqueId == threadUniqueId
@@ -268,6 +284,46 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
 
         showDetailViewController(viewController: detailVC, animated: animated)
 
+        conversationViewController.threadActionProviderDelegate = homeVC.chatListViewController
+    }
+
+    /// Tellomi：「好友」里点一个人（含按用户名查找、扫码）。只有这条路不切到「聊天」：
+    /// - iPhone（收起的分屏）：会话压在好友自己的导航栈上，返回回到好友。
+    /// - iPad 等展开的分屏：会话在右边打开，左边仍停在「好友」。
+    /// 别的入口（通知、分享、深链接）都走 `presentThread`，一律切到「聊天」。
+    func presentThreadFromFriendsTab(threadUniqueId: String, animated: Bool) {
+        AssertIsOnMainThread()
+
+        guard homeVC.selectedHomeTab == .friends else {
+            presentThread(threadUniqueId: threadUniqueId, action: .compose, focusMessageId: nil, animated: animated)
+            return
+        }
+
+        if !isCollapsed, selectedThread?.uniqueId == threadUniqueId, let selectedConversationViewController {
+            detailNavController.popToViewController(selectedConversationViewController, animated: animated)
+            return
+        }
+
+        let conversationViewController = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            return ConversationViewController.load(
+                threadViewModel: ThreadViewModel(
+                    threadUniqueId: threadUniqueId,
+                    forChatList: false,
+                    transaction: tx,
+                ),
+                action: .compose,
+                focusMessageId: nil,
+                tx: tx,
+            )
+        }
+
+        selectedConversationViewController = conversationViewController
+        if isCollapsed {
+            homeVC.friendsNavController.pushViewController(conversationViewController, animated: animated)
+        } else {
+            detailNavController.viewControllers = [conversationViewController]
+            showDetailViewController(viewController: detailNavController, animated: animated)
+        }
         conversationViewController.threadActionProviderDelegate = homeVC.chatListViewController
     }
 
