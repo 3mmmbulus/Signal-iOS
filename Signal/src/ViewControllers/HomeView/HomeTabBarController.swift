@@ -480,6 +480,12 @@ extension HomeTabBarController: StoryBadgeCountObserver {
 
 extension HomeTabBarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        // Tellomi（I-14）：动态页滚动时会收起底栏。从动态切走之前（还没换 selectedViewController）先放回来，
+        // 这样 setTabBarHidden 调整的是动态的安全区，不会加到新标签上。
+        if selectedHomeTab == .feed, selectedViewController != viewController {
+            feedViewController.chrome.reset()
+        }
+
         // If we re-select the active tab, scroll to the top.
         if selectedViewController == viewController {
             let tableView: UITableView
