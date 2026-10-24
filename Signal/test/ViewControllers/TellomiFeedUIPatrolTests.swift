@@ -24,7 +24,8 @@ final class TellomiFeedUIPatrolTests: XCTestCase {
     @MainActor
     func testGoneStateHasBackButton() async throws {
         let source = SampleFeedSource(now: { Date(timeIntervalSince1970: 1_790_000_000) }, commentsLatencyNanos: 0)
-        let card = try XCTUnwrap(try await source.card(contentId: "sample-1"))
+        let fetched = try await source.card(contentId: "sample-1")
+        let card = try XCTUnwrap(fetched)
         let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: false)
         detail.loadViewIfNeeded()
         XCTAssertEqual(detail.goneStateView.actionButton?.title(for: .normal), CommonStrings.backButton)
@@ -46,12 +47,12 @@ final class TellomiFeedUIPatrolTests: XCTestCase {
         container.addSubview(content)
         FeedReadableWidth.pin(content, in: container)
         container.layoutIfNeeded()
-        XCTAssertEqual(content.frame.width, FeedReadableWidth.maxWidth, accuracy: 0.5)
+        XCTAssertEqual(content.frame.size.width, FeedReadableWidth.maxWidth, accuracy: 0.5)
         XCTAssertEqual(content.frame.midX, 512, accuracy: 0.5)
 
         container.frame.size.width = 375
         container.layoutIfNeeded()
-        XCTAssertEqual(content.frame.width, 375, accuracy: 0.5)
+        XCTAssertEqual(content.frame.size.width, 375, accuracy: 0.5)
     }
 
     // MARK: P2a 发布页话题 / 回复
@@ -122,7 +123,8 @@ final class TellomiFeedUIPatrolTests: XCTestCase {
 
     func testSampleHasIconStrip() async throws {
         let source = SampleFeedSource(now: { Date(timeIntervalSince1970: 1_790_000_000) }, commentsLatencyNanos: 0)
-        let post = try XCTUnwrap(try await source.card(contentId: "sample-8"))
+        let fetched = try await source.card(contentId: "sample-8")
+        let post = try XCTUnwrap(fetched)
         let card = try XCTUnwrap(FeedLinkCard.make(body: post.text, isArticle: post.isArticle, preview: post.linkPreview))
         XCTAssertEqual(card.kind, .iconStrip)
     }
