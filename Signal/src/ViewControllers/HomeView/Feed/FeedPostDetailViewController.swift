@@ -39,6 +39,11 @@ final class FeedPostDetailViewController: OWSViewController {
     private lazy var goneView = FeedEmptyStateView(
         title: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_TITLE", comment: "Feed: title of the post page when the post was deleted or can no longer be seen."),
         body: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_BODY", comment: "Feed: explanation under the title when the post can no longer be seen."),
+        actionTitle: CommonStrings.backButton,
+        action: { [weak self] in
+            guard let self else { return }
+            FeedSheetChrome.leave(self)
+        },
     )
 
     /// 举报页接上之后设置（参数是被举报的评论，nil = 举报帖子）；nil 时菜单里不显示「举报」（免得点了没反应）。
@@ -154,9 +159,8 @@ final class FeedPostDetailViewController: OWSViewController {
         let contentStack = UIStackView(arrangedSubviews: [tableView, commentInput])
         contentStack.axis = .vertical
         view.addSubview(contentStack)
-        contentStack.autoPinEdge(toSuperviewEdge: .top)
-        contentStack.autoPinEdge(toSuperviewEdge: .leading)
-        contentStack.autoPinEdge(toSuperviewEdge: .trailing)
+        // iPad：内容列限制在可读宽度里居中（评论输入框跟着这一列）
+        FeedReadableWidth.pin(contentStack, in: view, bottom: false)
         contentStack.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor).isActive = true
 
         commentInput.onEdit = { [weak self] range, text, composing in
@@ -194,6 +198,16 @@ final class FeedPostDetailViewController: OWSViewController {
         super.appDidEnterBackground()
         if extras { voicePlayer.pause() }
         closeDetailEvent(flush: true)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        FeedSheetChrome.ensureCloseButton(on: self)
+    }
+
+    /// 单测用：「已删除」页。
+    var goneStateView: FeedEmptyStateView {
+        return goneView
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -283,6 +297,7 @@ final class FeedPostDetailViewController: OWSViewController {
             commentInput.isHidden = true
             goneView.isHidden = false
             updateNavigationMenu(items: [])
+            FeedSheetChrome.ensureCloseButton(on: self)
             return
         case .post:
             tableView.isHidden = false

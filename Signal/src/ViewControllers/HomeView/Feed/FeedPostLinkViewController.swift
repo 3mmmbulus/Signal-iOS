@@ -95,3 +95,34 @@ final class FeedPostLinkViewController: OWSViewController {
         navigationController.setViewControllers(stack, animated: false)
     }
 }
+
+/// 动态里以弹出方式（sheet）出现的页面：保证左上角一定有路可走。
+/// 根页面 + 被弹出 + 左上没东西 → 补一个关闭（X）；推进来的页面系统自带返回，不动。
+enum FeedSheetChrome {
+
+    /// 纯判断（单测钉住）。
+    static func needsCloseButton(isRootOfNavigation: Bool, isPresented: Bool, hasLeftItem: Bool) -> Bool {
+        return isRootOfNavigation && isPresented && !hasLeftItem
+    }
+
+    /// 需要就补关闭按钮。在 `viewWillAppear` 和换成「已删除」状态时都调一次。
+    @MainActor
+    static func ensureCloseButton(on viewController: UIViewController) {
+        let isRoot = viewController.navigationController.map { $0.viewControllers.first === viewController } ?? true
+        let isPresented = (viewController.navigationController ?? viewController).presentingViewController != nil
+        guard needsCloseButton(isRootOfNavigation: isRoot, isPresented: isPresented, hasLeftItem: viewController.navigationItem.leftBarButtonItem != nil) else { return }
+        viewController.navigationItem.leftBarButtonItem = .closeButton { [weak viewController] in
+            viewController?.dismiss(animated: true)
+        }
+    }
+
+    /// 「已删除」页上的按钮：推进来的就返回上一页，弹出来的就关掉。
+    @MainActor
+    static func leave(_ viewController: UIViewController) {
+        if let navigation = viewController.navigationController, navigation.viewControllers.first !== viewController {
+            navigation.popViewController(animated: true)
+        } else {
+            viewController.dismiss(animated: true)
+        }
+    }
+}

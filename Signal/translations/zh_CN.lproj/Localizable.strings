@@ -13571,3 +13571,33 @@
 "TELLOMI_RESTRICTION_APPEAL_CASE" = "如有异议，请发邮件到 %1$@ 申诉，并附上处置编号 %2$@。";
 "TELLOMI_RESTRICTION_STRANGER" = "你的账号因违反《Tellomi 社区规范与平台公约》，暂时不能给还不是你联系人的人发消息，%@ 恢复。已经互相加过的联系人不受影响。";
 "TELLOMI_RESTRICTION_SUSPENDED_REGISTRATION" = "这个号码的 Tellomi 账号因违反《Tellomi 社区规范与平台公约》已被暂停，%@ 之前不能重新注册。";
+
+/* Feed publish page: bottom-bar button that opens reply settings, when they are the default. */
+"TELLOMI_FEED_COMPOSE_REPLIES" = "回复";
+
+/* Feed publish page: reply option that turns off comments on this post. */
+"TELLOMI_FEED_COMPOSE_REPLIES_CLOSED" = "关闭评论";
+
+/* Feed publish page: title of the reply settings menu. */
+"TELLOMI_FEED_COMPOSE_REPLIES_MENU_TITLE" = "谁可以回复";
+
+/* Feed publish page: reply option, replies show only after the author approves them. */
+"TELLOMI_FEED_COMPOSE_REPLIES_MODERATION" = "回复需我批准";
+
+/* Feed publish page: reply option, everyone can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_EVERYONE" = "所有人";
+
+/* Feed publish page: reply option, only people the author follows can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_FOLLOWING" = "你关注的人";
+
+/* Feed publish page: reply option, only friends can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_FRIENDS" = "好友";
+
+/* Feed publish page: bottom-bar button that opens the topic picker (no topic picked yet). */
+"TELLOMI_FEED_COMPOSE_TOPICS" = "话题";
+
+/* Feed publish page: topic button after picking more than one topic. Embeds {{number of topics}}. */
+"TELLOMI_FEED_COMPOSE_TOPICS_COUNT_FORMAT" = "话题 · %@";
+
+/* Feed publish page: title of the topic menu. */
+"TELLOMI_FEED_COMPOSE_TOPICS_MENU_TITLE" = "最多选 3 个话题";

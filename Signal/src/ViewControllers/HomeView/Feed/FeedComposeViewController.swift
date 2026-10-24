@@ -60,6 +60,8 @@ final class FeedComposeViewController: OWSViewController {
     private let imagesRow = UIStackView()
     private let photoButton = UIButton(type: .system)
     private let visibilityButton = UIButton(type: .system)
+    private let topicButton = UIButton(type: .system)
+    private let replyButton = UIButton(type: .system)
     let counterLabel = UILabel()
     private var bottomBarBottom: NSLayoutConstraint?
 
@@ -235,10 +237,40 @@ final class FeedComposeViewController: OWSViewController {
         visibilityButton.configuration = visibilityConfig
         visibilityButton.showsMenuAsPrimaryAction = true
 
+        // 话题 / 回复设置：和可见范围一样是底栏上的菜单按钮（以前只有 store，没有入口）
+        var topicConfig = visibilityConfig
+        topicConfig.image = UIImage(systemName: "number")
+        topicButton.configuration = topicConfig
+        topicButton.showsMenuAsPrimaryAction = true
+        topicButton.accessibilityIdentifier = "feed.compose.topics"
+        var replyConfig = visibilityConfig
+        replyConfig.image = UIImage(systemName: "bubble.left")
+        replyButton.configuration = replyConfig
+        replyButton.showsMenuAsPrimaryAction = true
+        replyButton.accessibilityIdentifier = "feed.compose.replies"
+
         counterLabel.font = .dynamicTypeSubheadlineClamped.monospaced()
         counterLabel.textAlignment = .right
 
-        let bottomBar = UIStackView(arrangedSubviews: [photoButton, visibilityButton, UIView.hStretchingSpacer(), counterLabel])
+        // 按钮多了，窄屏放不下：按钮那一段可横向滑动，计数贴右
+        let buttonsRow = UIStackView(arrangedSubviews: [photoButton, visibilityButton, topicButton, replyButton])
+        buttonsRow.axis = .horizontal
+        buttonsRow.alignment = .center
+        buttonsRow.spacing = 4
+        let buttonsScroll = UIScrollView()
+        buttonsScroll.showsHorizontalScrollIndicator = false
+        buttonsScroll.addSubview(buttonsRow)
+        buttonsRow.autoPinEdgesToSuperviewEdges()
+        buttonsRow.autoMatch(.height, to: .height, of: buttonsScroll)
+        let fitWidth = buttonsScroll.widthAnchor.constraint(equalTo: buttonsRow.widthAnchor)
+        fitWidth.priority = .defaultLow
+        fitWidth.isActive = true
+        buttonsScroll.autoSetDimension(.height, toSize: 44)
+        buttonsScroll.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        counterLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        counterLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+        let bottomBar = UIStackView(arrangedSubviews: [buttonsScroll, UIView.hStretchingSpacer(), counterLabel])
         bottomBar.axis = .horizontal
         bottomBar.alignment = .center
         bottomBar.spacing = 4
@@ -322,6 +354,13 @@ final class FeedComposeViewController: OWSViewController {
         visibilityButton.isHidden = !layout.showsVisibilityButton
         visibilityButton.configuration?.title = visibilityButtonTitle(layout)
         visibilityButton.menu = visibilityMenu(layout)
+
+        topicButton.isHidden = !layout.showsTopicButton
+        topicButton.configuration?.title = Self.topicButtonTitle(draft.topics)
+        topicButton.menu = topicMenu()
+        replyButton.isHidden = !layout.showsReplyButton
+        replyButton.configuration?.title = Self.replyButtonTitle(draft.replies)
+        replyButton.menu = replyMenu()
 
         let remaining = draft.textLimit(limits) - draft.textLength
         counterLabel.isHidden = remaining > Self.counterVisibleRemaining
@@ -446,6 +485,93 @@ final class FeedComposeViewController: OWSViewController {
             : OWSLocalizedString("TELLOMI_FEED_COMPOSE_VISIBILITY_TITLE", comment: "Feed publish page: title of the visibility menu.")
         return UIMenu(title: title, options: .singleSelection, children: actions)
     }
+
+    // MARK: - 话题 / 回复设置
+
+    /// 话题按钮上的字：没选写「话题」，选了一个写 `#名字`，多个写「话题 · N」。
+    static func topicButtonTitle(_ topics: [String]) -> String {
+        switch topics.count {
+        case 0:
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_TOPICS", comment: "Feed publish page: bottom-bar button that opens the topic picker (no topic picked yet).")
+        case 1:
+            return "#" + topicName(topics[0])
+        default:
+            return String(format: OWSLocalizedString("TELLOMI_FEED_COMPOSE_TOPICS_COUNT_FORMAT", comment: "Feed publish page: topic button after picking more than one topic. Embeds {{number of topics}}."), OWSFormat.formatInt(topics.count))
+        }
+    }
+
+    static func topicName(_ slug: String) -> String {
+        guard let known = FeedTopicSlug(rawValue: slug) else { return slug }
+        return FeedRecommendationSettingsViewController.topicName(known)
+    }
+
+    static func replyPolicyName(_ policy: FeedReplyPolicy) -> String {
+        switch policy {
+        case .everyone:
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLY_EVERYONE", comment: "Feed publish page: reply option, everyone can reply.")
+        case .friends:
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLY_FRIENDS", comment: "Feed publish page: reply option, only friends can reply.")
+        case .following:
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLY_FOLLOWING", comment: "Feed publish page: reply option, only people the author follows can reply.")
+        }
+    }
+
+    /// 回复按钮上的字：默认写「回复」；关了评论写「关闭评论」；否则写谁能回复。
+    static func replyButtonTitle(_ settings: FeedReplySettings) -> String {
+        if settings.commentsClosed {
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLIES_CLOSED", comment: "Feed publish page: reply option that turns off comments on this post.")
+        }
+        if settings.policy == .everyone && !settings.moderation {
+            return OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLIES", comment: "Feed publish page: bottom-bar button that opens reply settings, when they are the default.")
+        }
+        return replyPolicyName(settings.policy)
+    }
+
+    private func topicMenu() -> UIMenu {
+        let picked = draft.topics
+        let full = picked.count >= FeedDraft.maxTopics
+        let actions = FeedTopicCatalog.slugs.map { slug -> UIAction in
+            let on = picked.contains(slug)
+            var attributes: UIMenuElement.Attributes = (full && !on) ? [.disabled] : []
+            if #available(iOS 16, *) { attributes.insert(.keepsMenuPresented) }
+            return UIAction(title: "#" + Self.topicName(slug), attributes: attributes, state: on ? .on : .off) { [weak self] _ in
+                self?.store.onTopicToggled(slug)
+            }
+        }
+        return UIMenu(title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_TOPICS_MENU_TITLE", comment: "Feed publish page: title of the topic menu."), children: actions)
+    }
+
+    private func replyMenu() -> UIMenu {
+        let current = draft.replies
+        let policies = FeedReplyPolicy.allCases.map { policy -> UIAction in
+            UIAction(title: Self.replyPolicyName(policy), attributes: current.commentsClosed ? [.disabled] : [], state: current.policy == policy ? .on : .off) { [weak self] _ in
+                guard let self else { return }
+                var settings = self.draft.replies
+                settings.policy = policy
+                self.store.onReplySettingsChanged(settings)
+            }
+        }
+        let closed = UIAction(title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLIES_CLOSED", comment: "Feed publish page: reply option that turns off comments on this post."), state: current.commentsClosed ? .on : .off) { [weak self] _ in
+            guard let self else { return }
+            var settings = self.draft.replies
+            settings.commentsClosed.toggle()
+            self.store.onReplySettingsChanged(settings)
+        }
+        let moderation = UIAction(title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLIES_MODERATION", comment: "Feed publish page: reply option, replies show only after the author approves them."), attributes: current.commentsClosed ? [.disabled] : [], state: current.moderation ? .on : .off) { [weak self] _ in
+            guard let self else { return }
+            var settings = self.draft.replies
+            settings.moderation.toggle()
+            self.store.onReplySettingsChanged(settings)
+        }
+        return UIMenu(title: OWSLocalizedString("TELLOMI_FEED_COMPOSE_REPLIES_MENU_TITLE", comment: "Feed publish page: title of the reply settings menu."), children: [
+            UIMenu(options: .displayInline, children: policies),
+            UIMenu(options: .displayInline, children: [closed, moderation]),
+        ])
+    }
+
+    /// 单测用。
+    var topicButtonForTesting: UIButton { topicButton }
+    var replyButtonForTesting: UIButton { replyButton }
 
     private func presentAudiencePicker(for visibility: FeedVisibility) {
         guard let audienceCandidates, !isEditingPost, visibility.needsAudience else { return }

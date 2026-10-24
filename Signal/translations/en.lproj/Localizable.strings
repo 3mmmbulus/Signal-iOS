@@ -13680,3 +13680,33 @@
 
 /* Info Message when you update disappearing messages duration. Embeds a {{time amount}} before messages disappear. see the *_TIME_AMOUNT strings for context. */
 "YOU_UPDATED_DISAPPEARING_MESSAGES_CONFIGURATION" = "You set disappearing message time to %@.";
+
+/* Feed publish page: bottom-bar button that opens reply settings, when they are the default. */
+"TELLOMI_FEED_COMPOSE_REPLIES" = "Replies";
+
+/* Feed publish page: reply option that turns off comments on this post. */
+"TELLOMI_FEED_COMPOSE_REPLIES_CLOSED" = "Turn off comments";
+
+/* Feed publish page: title of the reply settings menu. */
+"TELLOMI_FEED_COMPOSE_REPLIES_MENU_TITLE" = "Who can reply";
+
+/* Feed publish page: reply option, replies show only after the author approves them. */
+"TELLOMI_FEED_COMPOSE_REPLIES_MODERATION" = "Approve replies first";
+
+/* Feed publish page: reply option, everyone can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_EVERYONE" = "Everyone";
+
+/* Feed publish page: reply option, only people the author follows can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_FOLLOWING" = "People you follow";
+
+/* Feed publish page: reply option, only friends can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_FRIENDS" = "Friends";
+
+/* Feed publish page: bottom-bar button that opens the topic picker (no topic picked yet). */
+"TELLOMI_FEED_COMPOSE_TOPICS" = "Topics";
+
+/* Feed publish page: topic button after picking more than one topic. Embeds {{number of topics}}. */
+"TELLOMI_FEED_COMPOSE_TOPICS_COUNT_FORMAT" = "Topics · %@";
+
+/* Feed publish page: title of the topic menu. */
+"TELLOMI_FEED_COMPOSE_TOPICS_MENU_TITLE" = "Pick up to 3 topics";

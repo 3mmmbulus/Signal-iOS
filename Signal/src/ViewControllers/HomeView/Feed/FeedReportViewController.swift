@@ -59,6 +59,9 @@ final class FeedReportViewController: OWSViewController {
         title = OWSLocalizedString("TELLOMI_FEED_REPORT_TITLE", comment: "Feed report page: title.")
     }
 
+    /// 左上关闭 / 返回的颜色（单测钉住：亮暗都用正文色）。
+    static var barItemTint: UIColor { UIColor.Signal.label }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         tellomiApplyFeedPreviewPrompt()
@@ -191,6 +194,8 @@ final class FeedReportViewController: OWSViewController {
             navigationItem.leftBarButtonItem = .cancelButton { [weak self] in self?.finish(.cancelled) }
             navigationItem.rightBarButtonItem = nil
         }
+        // 暗色下系统默认色（品牌蓝）压在深色分组底上对比度不够：左上关闭 / 返回用正文色（label 对 groupedBackground 远超 4.5:1）
+        navigationItem.leftBarButtonItem?.tintColor = Self.barItemTint
         submitButton.isEnabled = presentation.canSubmit
         if presentation.isSending {
             spinner.startAnimating()
