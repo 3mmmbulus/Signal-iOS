@@ -91,5 +91,8 @@ final class TellomiFeedTextLinksTests: XCTestCase {
         XCTAssertEqual(urls("去 example.com/path。"), ["https://example.com/path"])
         XCTAssertEqual(urls("（https://x.com/abc）"), ["https://x.com/abc"])
         XCTAssertEqual(urls("https://x.com/a,b"), ["https://x.com/a,b"])
+        XCTAssertEqual(urls("看 https://x.com/abc…"), ["https://x.com/abc"])
+        XCTAssertEqual(urls("看 https://x.com/abc—后面"), ["https://x.com/abc"])
+        XCTAssertEqual(urls("看 https://x.com/abc－．"), ["https://x.com/abc"])
     }
 }

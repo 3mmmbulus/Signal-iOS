@@ -64,17 +64,32 @@ public enum LinkValidator {
             range: entireMessage.text.entireRange,
         ) { match, _, stop in
             guard let match else { return }
-            guard let parsedUrl = match.url else { return }
-            guard let matchedRange = Range(match.range, in: entireMessage.text) else { return }
+            // Tellomi（产品 2026-10-25）：预览 URL 与可点范围同一套全角标点截断（`TellomiLinkPunctuation`）。
+            var matchRange = match.range
+            var matchUrl = match.url
+            if match.resultType.contains(.link) {
+                guard let trimmed = TellomiLinkPunctuation.trimmedLink(
+                    range: matchRange,
+                    url: matchUrl,
+                    in: entireMessage.text,
+                    detector: detector,
+                ) else {
+                    return
+                }
+                matchRange = trimmed.range
+                matchUrl = trimmed.url
+            }
+            guard let parsedUrl = matchUrl else { return }
+            guard let matchedRange = Range(matchRange, in: entireMessage.text) else { return }
             for style in entireMessage.ranges.collapsedStyles {
                 if
                     style.value.style.contains(style: .spoiler),
-                    style.range.intersection(match.range)?.location ?? NSNotFound != NSNotFound
+                    style.range.intersection(matchRange)?.location ?? NSNotFound != NSNotFound
                 {
                     return
                 }
                 // Styles are ordered; no need to search past the matched range.
-                if style.range.lowerBound >= match.range.upperBound {
+                if style.range.lowerBound >= matchRange.upperBound {
                     break
                 }
             }
@@ -155,6 +170,13 @@ public enum LinkValidator {
         }
         guard !rest.isEmpty else {
             return nil
+        }
+        // 上游用例「https.signal.org」不出卡片：裸域名首段是 http / https 的多半是少打了「://」，不补成 https://https.signal.org
+        if isSchemeless {
+            let firstLabel = rest.prefix(while: { $0 != "." && $0 != "/" && $0 != ":" && $0 != "?" && $0 != "#" }).lowercased()
+            if firstLabel == "http" || firstLabel == "https" {
+                return nil
+            }
         }
         let text = "https://" + rest
         let url: URL

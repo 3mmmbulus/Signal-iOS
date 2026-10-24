@@ -20,6 +20,9 @@ class LinkValidatorTest: XCTestCase {
             ("signal.org", "https://signal.org"),
             ("www.signal.org", "https://www.signal.org"),
             ("https.signal.org", nil),
+            ("http.signal.org", nil),
+            ("HTTPS.signal.org/path", nil),
+            ("httpsignal.org", "https://httpsignal.org"),
 
             // Invalid: Scheme must be https
             ("http://www.signal.org", nil),
@@ -120,6 +123,9 @@ class LinkValidatorTest: XCTestCase {
             ("看这个https://b23.tv/abc。", "https://b23.tv/abc"),
             ("（https://b23.tv/abc）", "https://b23.tv/abc"),
             ("「https://b23.tv/abc」", "https://b23.tv/abc"),
+            ("看这个https://b23.tv/abc…", "https://b23.tv/abc"),
+            ("看这个https://b23.tv/abc—后面", "https://b23.tv/abc"),
+            ("看这个https://b23.tv/abc．", "https://b23.tv/abc"),
             // Tellomi: a cut right after a URL delimiter would point at another page, so no preview (as upstream)
             ("https://zh.wikipedia.org/wiki/中国", nil),
             ("https://v.douyin.com/iABC/复制此链接", nil),

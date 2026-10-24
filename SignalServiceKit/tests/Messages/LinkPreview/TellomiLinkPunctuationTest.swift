@@ -22,7 +22,7 @@ final class TellomiLinkPunctuationTest: XCTestCase {
         XCTAssertNil(TellomiLinkPunctuation.cutLength(of: "https://x.com/a,b"))
         XCTAssertEqual(TellomiLinkPunctuation.cutLength(of: "https://x.com/abc，后面"), 17)
         XCTAssertEqual(TellomiLinkPunctuation.cutLength(of: "。"), 0)
-        for mark in ["。", "，", "、", "！", "？", "；", "：", "」", "）", "】", "』", "》", "〉", "”", "’"] {
+        for mark in ["。", "，", "、", "！", "？", "；", "：", "」", "）", "】", "』", "》", "〉", "”", "’", "…", "—", "－", "．"] {
             XCTAssertEqual(TellomiLinkPunctuation.cutLength(of: ("ab" + mark) as NSString), 2, mark)
         }
     }
@@ -53,6 +53,16 @@ final class TellomiLinkPunctuationTest: XCTestCase {
         XCTAssertEqual(items.map(\.url.absoluteString), ["https://x.com/abc"])
         let bare = TextCheckingDataItem.detectedItems(in: "打开 signal.org，然后", using: detector)
         XCTAssertEqual(bare.map { (("打开 signal.org，然后") as NSString).substring(with: $0.range) }, ["signal.org"])
+    }
+
+    func testEllipsisDashAndFullwidthFormsAreNotPartOfTheLink() {
+        XCTAssertEqual(links("看 https://x.com/abc…"), ["https://x.com/abc"])
+        XCTAssertEqual(links("看 https://x.com/abc—后面"), ["https://x.com/abc"])
+        XCTAssertEqual(links("看 https://x.com/abc－"), ["https://x.com/abc"])
+        XCTAssertEqual(links("看 https://x.com/abc．后面"), ["https://x.com/abc"])
+        // Mixed ASCII trailing + CJK: system drops ".", then CJK table drops "。".
+        XCTAssertEqual(links("Visit https://signal.org.。"), ["https://signal.org"])
+        XCTAssertEqual(links("https://x.com/a,b…"), ["https://x.com/a,b"])
     }
 
     func testAsciiBehaviourUnchanged() {
