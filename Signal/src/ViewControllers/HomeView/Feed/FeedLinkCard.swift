@@ -14,12 +14,13 @@ import UIKit
 /// 引擎还不带预览数据，所以真实帖子的卡片只用网址本身画：
 /// 只有域名的中性灰横条，右边指南针——正是「完全没信息」的那一种（产品经理 2026-10-19 晚：指南针只给这种卡）。
 /// 带 `Preview`（现在只有 TestFlight 的本机示例数据带，见 `SampleFeedSource.samplePreview`）时样式照 `TellomiLinkCardStyle.kind` 换：
-/// 有图是大图卡（图在上，标题 + 域名在下，同聊天的 `CVLinkPreviewViewAdapterTellomiLarge`），只有标题是文字横条。
+/// 有图是大图卡（图在上，标题 + 域名在下，同聊天的 `CVLinkPreviewViewAdapterTellomiLarge`），有站点图标是图标横条
+/// （右边图标 36、圆角 8，底色取图标主色），只有标题是文字横条（右边不画指南针）。
 /// 交互参考 Telegram 的行为（不用它的代码）：点卡片直接打开，长按是「打开链接 / 复制 / 取消」。
 struct FeedLinkCard: Equatable {
 
     /// 预览数据。现在只有 TestFlight 的本机示例数据带（引擎接上后由引擎给）。
-    /// 动态这边没有网络图片管线：图只认随包的本地图片（`imageName`），不为画卡去下载；没有图标横条。
+    /// 动态这边没有网络图片管线：图只认随包的本地图片（`imageName` / `iconName`），不为画卡去下载。
     struct Preview: Equatable {
         var title: String?
         /// 认领档（`TellomiLinkCard.isClaimedTier`）。有标题的横条一律不画指南针（产品经理 2026-10-24），这一项不再影响指南针。
@@ -28,12 +29,15 @@ struct FeedLinkCard: Equatable {
         var imageName: String?
         /// 图的像素尺寸，定大图的高（同聊天：宽 / 1.91 到 宽 之间）。
         var imagePixelSize: CGSize = .zero
+        /// 随包站点图标 / 小图的名字（图标横条 `iconStrip`，DESIGN.md §9）。有大图时以大图为准。
+        var iconName: String?
 
-        init(title: String?, isClaimed: Bool = false, imageName: String? = nil, imagePixelSize: CGSize = .zero) {
+        init(title: String?, isClaimed: Bool = false, imageName: String? = nil, imagePixelSize: CGSize = .zero, iconName: String? = nil) {
             self.title = title
             self.isClaimed = isClaimed
             self.imageName = imageName
             self.imagePixelSize = imagePixelSize
+            self.iconName = iconName
         }
     }
 
@@ -44,6 +48,8 @@ struct FeedLinkCard: Equatable {
     /// 大图卡才有。
     var imageName: String?
     var imagePixelSize: CGSize = .zero
+    /// 图标横条才有。
+    var iconName: String?
 
     /// 大图的高宽比（同聊天 `heroImageSize`）：没有尺寸时 1 / 1.91，否则夹在 1 / 1.91 和 1 之间。
     var imageAspectRatio: CGFloat {
@@ -69,9 +75,11 @@ struct FeedLinkCard: Equatable {
         ) else {
             return nil
         }
+        let hasLarge = preview?.imageName != nil
+        let hasIcon = !hasLarge && preview?.iconName != nil
         let kind = TellomiLinkCardStyle.kind(
-            layout: isPlainLink ? nil : (preview?.imageName != nil ? .largeImage : .noImage),
-            hasImage: preview?.imageName != nil,
+            layout: isPlainLink ? nil : (hasLarge ? .largeImage : (hasIcon ? .icon : .noImage)),
+            hasImage: hasLarge || hasIcon,
             hasTitle: text.title != nil,
             isPlainLink: isPlainLink,
         )
@@ -82,6 +90,7 @@ struct FeedLinkCard: Equatable {
             showsCompass: TellomiLinkCardStyle.showsCompass(kind: kind, isClaimed: preview?.isClaimed ?? false),
             imageName: kind == .largeImage ? preview?.imageName : nil,
             imagePixelSize: kind == .largeImage ? (preview?.imagePixelSize ?? .zero) : .zero,
+            iconName: kind == .iconStrip ? preview?.iconName : nil,
         )
     }
 
@@ -97,6 +106,9 @@ struct FeedLinkCard: Equatable {
 final class FeedLinkCardView: UIControl {
     static let cornerRadius: CGFloat = 18
     static let compassSize: CGFloat = 26
+    /// 图标横条右边的站点图标：36、圆角 8（同聊天 `CVLinkPreviewViewAdapterTellomiStrip`）。
+    static let iconSize: CGFloat = 36
+    static let iconCornerRadius: CGFloat = 8
 
     private(set) var card: FeedLinkCard?
     weak var presenter: UIViewController?
@@ -107,6 +119,8 @@ final class FeedLinkCardView: UIControl {
     private let titleLabel = UILabel()
     private let domainLabel = UILabel()
     private let compassView = UIImageView()
+    private let iconView = UIImageView()
+    private var stripColor: TellomiLinkCardStyle.RGB?
     private let imageView = UIImageView()
     private var imageAspectConstraint: NSLayoutConstraint?
     private var rowInsetConstraints = [NSLayoutConstraint]()
@@ -133,11 +147,19 @@ final class FeedLinkCardView: UIControl {
         compassView.setContentHuggingPriority(.required, for: .horizontal)
         compassView.setContentCompressionResistancePriority(.required, for: .horizontal)
 
+        iconView.contentMode = .scaleAspectFill
+        iconView.clipsToBounds = true
+        iconView.layer.cornerRadius = Self.iconCornerRadius
+        iconView.isHidden = true
+        iconView.autoSetDimensions(to: CGSize(square: Self.iconSize))
+        iconView.setContentHuggingPriority(.required, for: .horizontal)
+        iconView.setContentCompressionResistancePriority(.required, for: .horizontal)
+
         let textStack = UIStackView(arrangedSubviews: [titleLabel, domainLabel])
         textStack.axis = .vertical
         textStack.alignment = .leading
         textStack.spacing = 2
-        let row = UIStackView(arrangedSubviews: [textStack, compassView])
+        let row = UIStackView(arrangedSubviews: [textStack, iconView, compassView])
         row.axis = .horizontal
         row.alignment = .center
         row.spacing = 10
@@ -191,6 +213,16 @@ final class FeedLinkCardView: UIControl {
         compassView.isHidden = !card.showsCompass
         accessibilityLabel = card.accessibilityLabel
 
+        // 图标横条：右边站点图标，底色取图标主色、字用黑白里对比度高的；取不到颜色用中性灰（DESIGN.md §9）
+        let icon = card.kind == .iconStrip ? card.iconName.flatMap { UIImage(named: $0) } : nil
+        iconView.image = icon
+        iconView.isHidden = icon == nil
+        stripColor = icon.flatMap(Self.dominantColor(of:))
+        let colors = TellomiLinkCardColors.strip(color: stripColor)
+        backgroundColor = colors.background
+        titleLabel.textColor = colors.title
+        domainLabel.textColor = colors.secondary
+
         let image = card.kind == .largeImage ? card.imageName.flatMap { UIImage(named: $0) } : nil
         imageView.image = image
         imageView.isHidden = image == nil
@@ -201,7 +233,8 @@ final class FeedLinkCardView: UIControl {
             constraint.isActive = true
             imageAspectConstraint = constraint
         }
-        let insets = image != nil ? Self.largeImageTextInsets : (card.showsCompass ? Self.stripInsets : Self.stripNoTrailingInsets)
+        let hasTrailing = card.showsCompass || icon != nil
+        let insets = image != nil ? Self.largeImageTextInsets : (hasTrailing ? Self.stripInsets : Self.stripNoTrailingInsets)
         let values = [insets.top, insets.left, -insets.bottom, -insets.right]
         for (constraint, value) in zip(rowInsetConstraints, values) {
             constraint.constant = value
@@ -212,6 +245,28 @@ final class FeedLinkCardView: UIControl {
     /// 右边什么都没有（有标题、没有图的横条）：DESIGN.md §9 的 9 / 14 / 10 / 14（上 / 左 / 下 / 右）。
     static let stripNoTrailingInsets = UIEdgeInsets(top: 9, left: 14, bottom: 10, right: 14)
     static let largeImageTextInsets = UIEdgeInsets(top: 9, left: 14, bottom: 10, right: 14)
+
+    /// 缩成 32×32 取主色（同聊天 `TellomiLinkVisualReader.stripColor`，算法在 `TellomiLinkCardStyle.dominantColor`）。
+    static func dominantColor(of image: UIImage) -> TellomiLinkCardStyle.RGB? {
+        guard let cgImage = image.cgImage else { return nil }
+        let size = 32
+        var pixels = [UInt8](repeating: 0, count: size * size * 4)
+        let drew: Bool = pixels.withUnsafeMutableBytes { buffer in
+            guard let context = CGContext(
+                data: buffer.baseAddress,
+                width: size,
+                height: size,
+                bitsPerComponent: 8,
+                bytesPerRow: size * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+            ) else { return false }
+            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size, height: size))
+            return true
+        }
+        guard drew else { return nil }
+        return TellomiLinkCardStyle.dominantColor(rgba: pixels, width: size, height: size)
+    }
 
     override var isHighlighted: Bool {
         didSet { alpha = isHighlighted ? 0.6 : 1 }
@@ -239,6 +294,8 @@ final class FeedLinkCardView: UIControl {
     var titleTextForTesting: String? { titleLabel.isHidden ? nil : titleLabel.text }
     var domainTextForTesting: String? { domainLabel.text }
     var isCompassVisibleForTesting: Bool { !compassView.isHidden }
+    var iconForTesting: UIImage? { iconView.isHidden ? nil : iconView.image }
+    var stripColorForTesting: TellomiLinkCardStyle.RGB? { stripColor }
     var imageForTesting: UIImage? { imageView.isHidden ? nil : imageView.image }
     var imageAspectMultiplierForTesting: CGFloat? { imageAspectConstraint?.multiplier }
     var textInsetsForTesting: [CGFloat] { rowInsetConstraints.map(\.constant) }

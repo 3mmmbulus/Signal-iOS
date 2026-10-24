@@ -12059,3 +12059,33 @@
 "TELLOMI_RESTRICTION_APPEAL_CASE" = "If you think this is a mistake, email %1$@ and include case number %2$@.";
 "TELLOMI_RESTRICTION_STRANGER" = "Your account can't message people who aren't your contacts until %@ because it broke the Tellomi Community Guidelines. Contacts you've already connected with aren't affected.";
 "TELLOMI_RESTRICTION_SUSPENDED_REGISTRATION" = "The Tellomi account for this number is suspended until %@ for breaking the Tellomi Community Guidelines, so it can't be registered again before then.";
+
+/* Feed publish page: bottom-bar button that opens reply settings, when they are the default. */
+"TELLOMI_FEED_COMPOSE_REPLIES" = "回覆";
+
+/* Feed publish page: reply option that turns off comments on this post. */
+"TELLOMI_FEED_COMPOSE_REPLIES_CLOSED" = "閂咗留言";
+
+/* Feed publish page: title of the reply settings menu. */
+"TELLOMI_FEED_COMPOSE_REPLIES_MENU_TITLE" = "邊個可以回覆";
+
+/* Feed publish page: reply option, replies show only after the author approves them. */
+"TELLOMI_FEED_COMPOSE_REPLIES_MODERATION" = "回覆要我批准先";
+
+/* Feed publish page: reply option, everyone can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_EVERYONE" = "所有人";
+
+/* Feed publish page: reply option, only people the author follows can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_FOLLOWING" = "你關注嘅人";
+
+/* Feed publish page: reply option, only friends can reply. */
+"TELLOMI_FEED_COMPOSE_REPLY_FRIENDS" = "朋友";
+
+/* Feed publish page: bottom-bar button that opens the topic picker (no topic picked yet). */
+"TELLOMI_FEED_COMPOSE_TOPICS" = "話題";
+
+/* Feed publish page: topic button after picking more than one topic. Embeds {{number of topics}}. */
+"TELLOMI_FEED_COMPOSE_TOPICS_COUNT_FORMAT" = "話題 · %@";
+
+/* Feed publish page: title of the topic menu. */
+"TELLOMI_FEED_COMPOSE_TOPICS_MENU_TITLE" = "最多揀 3 個話題";

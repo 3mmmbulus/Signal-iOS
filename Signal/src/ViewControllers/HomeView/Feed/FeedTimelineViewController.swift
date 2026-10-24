@@ -89,7 +89,7 @@ final class FeedTimelineViewController: OWSViewController {
         // 右下角的发布按钮不挡最后一条
         tableView.contentInset.bottom = FeedViewController.composeButtonSize + 24
         view.addSubview(tableView)
-        tableView.autoPinEdgesToSuperviewEdges()
+        FeedReadableWidth.pin(tableView, in: view)
 
         refreshControl.addAction(UIAction { [weak self] _ in
             guard let self else { return }
@@ -243,7 +243,11 @@ extension FeedTimelineViewController: UITableViewDataSource, UITableViewDelegate
 /// 一栏没有内容时的提示：图标、标题、一句说明，居中。
 final class FeedEmptyStateView: UIView {
 
-    init(title: String, body: String) {
+    /// 单测用：可选按钮。
+    private(set) var actionButton: UIButton?
+
+    /// `actionTitle` + `action`：可选的一个按钮（比如「已删除」页上的返回）。
+    init(title: String, body: String, actionTitle: String? = nil, action: (() -> Void)? = nil) {
         super.init(frame: .zero)
 
         let imageView = UIImageView(image: UIImage(named: "tab-feed"))
@@ -270,6 +274,15 @@ final class FeedEmptyStateView: UIView {
         stack.alignment = .center
         stack.spacing = 8
         stack.setCustomSpacing(16, after: imageView)
+        if let actionTitle, let action {
+            let button = UIButton(type: .system, primaryAction: UIAction(title: actionTitle) { _ in action() })
+            button.titleLabel?.font = .dynamicTypeHeadline
+            button.titleLabel?.adjustsFontForContentSizeCategory = true
+            button.accessibilityIdentifier = "feed.emptyState.action"
+            stack.setCustomSpacing(20, after: bodyLabel)
+            stack.addArrangedSubview(button)
+            self.actionButton = button
+        }
         addSubview(stack)
         stack.autoVCenterInSuperview()
         stack.autoPinEdge(toSuperviewEdge: .leading, withInset: 40)
@@ -343,5 +356,34 @@ extension FeedTimelineViewController {
     private func shareFinished(_ card: FeedCard, _ outcome: FeedShareOutcome) {
         // 列表分享也要过详情事件的开关（内部开关 + 引擎 events），关着不报
         store.onListShareFinished(contentId: card.id, surface: FeedEventSurface(tab: feedTab), shareable: card.shareable, outcome: outcome)
+    }
+}
+
+/// iPad / 横屏：动态列表和详情的内容限制在可读宽度里居中（两边留空，图片按这一列的宽度排），
+/// 不再铺满整屏把图片拉成大块。手机竖屏比这个窄，等于没限制。
+enum FeedReadableWidth {
+    /// 内容列最宽多少点。
+    static let maxWidth: CGFloat = 640
+
+    /// 纯计算（单测钉住）：给定容器宽度，内容列有多宽。
+    static func contentWidth(forContainerWidth width: CGFloat) -> CGFloat {
+        return min(max(width, 0), maxWidth)
+    }
+
+    /// 代替 `autoPinEdgesToSuperviewEdges()`：上下贴边，左右居中，宽度 ≤ `maxWidth`，窄屏时贴满。
+    @MainActor
+    static func pin(_ content: UIView, in container: UIView, top: Bool = true, bottom: Bool = true) {
+        content.translatesAutoresizingMaskIntoConstraints = false
+        var constraints = [
+            content.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            content.widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth),
+            content.widthAnchor.constraint(lessThanOrEqualTo: container.widthAnchor),
+        ]
+        let fill = content.widthAnchor.constraint(equalTo: container.widthAnchor)
+        fill.priority = .defaultHigh
+        constraints.append(fill)
+        if top { constraints.append(content.topAnchor.constraint(equalTo: container.topAnchor)) }
+        if bottom { constraints.append(content.bottomAnchor.constraint(equalTo: container.bottomAnchor)) }
+        NSLayoutConstraint.activate(constraints)
     }
 }

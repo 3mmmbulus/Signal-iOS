@@ -229,6 +229,7 @@
 		17DB3027DF36D4CA95C960E1 /* TellomiFeedTextLinksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211E0A9CE3C35093BE3CB510 /* TellomiFeedTextLinksTests.swift */; };
 		B038909F816F85A6123B46A3 /* TellomiFeedLinkCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AFEF3422374C6BFA1BC1D67 /* TellomiFeedLinkCardTests.swift */; };
 		6577E9028B9AD4274CC66D41 /* TellomiFeedSamplePreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F099D72E5CD134DBC967E02A /* TellomiFeedSamplePreviewTests.swift */; };
+		7A1C0E5B2D4F6A8B9C0D1E2F /* TellomiFeedUIPatrolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2D1F6C3E5A7B9C0D1E2F30 /* TellomiFeedUIPatrolTests.swift */; };
 		25E95FC0D34407E49DB580E9 /* TellomiFeedCapabilitiesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4258D5A0B4A26C619344F7F4 /* TellomiFeedCapabilitiesStoreTests.swift */; };
 		18059366DDE8521E8D4FF4CF /* TellomiFeedEngineCapabilitiesGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4669B6F371251050025541F0 /* TellomiFeedEngineCapabilitiesGateTests.swift */; };
 		4C44644C192B739D54907643 /* TellomiFeedProfileEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E14787FADBCDB51DEDA10B2 /* TellomiFeedProfileEditTests.swift */; };
@@ -4967,6 +4968,7 @@
 		211E0A9CE3C35093BE3CB510 /* TellomiFeedTextLinksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedTextLinksTests.swift; sourceTree = "<group>"; };
 		6AFEF3422374C6BFA1BC1D67 /* TellomiFeedLinkCardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedLinkCardTests.swift; sourceTree = "<group>"; };
 		F099D72E5CD134DBC967E02A /* TellomiFeedSamplePreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedSamplePreviewTests.swift; sourceTree = "<group>"; };
+		8B2D1F6C3E5A7B9C0D1E2F30 /* TellomiFeedUIPatrolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedUIPatrolTests.swift; sourceTree = "<group>"; };
 		4258D5A0B4A26C619344F7F4 /* TellomiFeedCapabilitiesStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedCapabilitiesStoreTests.swift; sourceTree = "<group>"; };
 		4669B6F371251050025541F0 /* TellomiFeedEngineCapabilitiesGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedEngineCapabilitiesGateTests.swift; sourceTree = "<group>"; };
 		1E14787FADBCDB51DEDA10B2 /* TellomiFeedProfileEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiFeedProfileEditTests.swift; sourceTree = "<group>"; };
@@ -10874,6 +10876,7 @@
 				211E0A9CE3C35093BE3CB510 /* TellomiFeedTextLinksTests.swift */,
 				6AFEF3422374C6BFA1BC1D67 /* TellomiFeedLinkCardTests.swift */,
 				F099D72E5CD134DBC967E02A /* TellomiFeedSamplePreviewTests.swift */,
+				8B2D1F6C3E5A7B9C0D1E2F30 /* TellomiFeedUIPatrolTests.swift */,
 				4258D5A0B4A26C619344F7F4 /* TellomiFeedCapabilitiesStoreTests.swift */,
 				4669B6F371251050025541F0 /* TellomiFeedEngineCapabilitiesGateTests.swift */,
 				1E14787FADBCDB51DEDA10B2 /* TellomiFeedProfileEditTests.swift */,
@@ -21018,6 +21021,7 @@
 				17DB3027DF36D4CA95C960E1 /* TellomiFeedTextLinksTests.swift in Sources */,
 				B038909F816F85A6123B46A3 /* TellomiFeedLinkCardTests.swift in Sources */,
 				6577E9028B9AD4274CC66D41 /* TellomiFeedSamplePreviewTests.swift in Sources */,
+				7A1C0E5B2D4F6A8B9C0D1E2F /* TellomiFeedUIPatrolTests.swift in Sources */,
 				25E95FC0D34407E49DB580E9 /* TellomiFeedCapabilitiesStoreTests.swift in Sources */,
 				18059366DDE8521E8D4FF4CF /* TellomiFeedEngineCapabilitiesGateTests.swift in Sources */,
 				4C44644C192B739D54907643 /* TellomiFeedProfileEditTests.swift in Sources */,

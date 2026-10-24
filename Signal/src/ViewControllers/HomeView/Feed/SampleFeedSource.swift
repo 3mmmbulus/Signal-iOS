@@ -537,10 +537,12 @@ final class SampleFeedSource: FeedSource {
         }
     }
 
-    /// 带链接的三条样例（都在没有配图的位置），在 TestFlight 里看得到链接卡片的三种样子：
-    /// 大图卡（随包的示例图，我们自己画的，不是别人的品牌图）、只有标题的横条、什么预览都没有的灰色指南针横条。
+    /// 带链接的四条样例（都在没有配图的位置），在 TestFlight 里看得到链接卡片的三种样子：
+    /// 大图卡（随包的示例图，我们自己画的，不是别人的品牌图）、图标横条、只有标题的横条、什么预览都没有的灰色指南针横条。
     /// 网址都用保留给示例的 example.* 域名。只在本机示例数据里：商店版不开动态，不会走到这里。
     static let sampleLinkImageName = "tellomi-feed-sample-link"
+    /// 图标横条的随包示例图标（我们自己画的蓝底白圈，不是别人的品牌图）。
+    static let sampleSiteIconName = "tellomi-feed-sample-site-icon"
     static let sampleLinks: [Int: (text: String, preview: FeedLinkCard.Preview?)] = [
         2: (
             "周末路线整理好了，日落那段最值得走：https://example.com/trail/sunset",
@@ -551,6 +553,10 @@ final class SampleFeedSource: FeedSource {
             FeedLinkCard.Preview(title: "家常酸面包：从养酵种到出炉"),
         ),
         6: ("有人去过这里吗？example.net/place/42", nil),
+        8: (
+            "收藏一个排版工具站 https://example.edu/tools/type",
+            FeedLinkCard.Preview(title: "排版小工具：中英文间距一键整理", iconName: sampleSiteIconName),
+        ),
     ]
 
     private func sampleCard(_ index: Int) -> FeedCard {

@@ -38,6 +38,10 @@ struct FeedComposeLayout: Equatable {
     var showsTitleField: Bool
     var showsPhotoButton: Bool
     var showsVisibilityButton: Bool
+    /// 底栏「话题」入口（新建时显示；编辑时引擎只收正文和标题，不显示）。
+    var showsTopicButton: Bool
+    /// 底栏「回复」入口（谁能回复 / 关闭评论 / 审核回复；新建时显示）。
+    var showsReplyButton: Bool
     var publishButton: PublishButton
     /// 新写的长文会自动存在本机：有东西时导航栏给一个「放弃草稿」。
     var showsDiscardDraft: Bool
@@ -70,6 +74,8 @@ struct FeedComposeLayout: Equatable {
             showsTitleField: draft.kind == .article,
             showsPhotoButton: !editing && draft.kind == .post && FeedEngineCapabilities.allows(FeedEngineCapabilities.mediaUploadFeatures),
             showsVisibilityButton: !editing,
+            showsTopicButton: !editing,
+            showsReplyButton: !editing,
             publishButton: editing ? .save : .publish,
             showsDiscardDraft: state.autosavesArticle && !draft.isEmpty,
             visibilityOptions: options,
