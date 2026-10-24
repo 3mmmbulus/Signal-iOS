@@ -32,17 +32,20 @@ public class MessageRecipientStatusUtils {
             outgoingMessage: outgoingMessage,
             recipientState: recipientState,
             hasBodyAttachments: hasBodyAttachments,
+            showsReadStates: OWSReceiptManager.areReadReceiptsEnabled(transaction: transaction),
         )
     }
 
     // This method is per-recipient.
+    /// Tellomi（#1184）：`showsReadStates` 为 false（我关着已读回执）时，已读 / 已查看按已送达显示（对等规则）。
     public class func recipientStatusAndStatusMessage(
         outgoingMessage: TSOutgoingMessage,
         recipientState: TSOutgoingMessageRecipientState,
         hasBodyAttachments: Bool,
+        showsReadStates: Bool = true,
     ) -> (status: MessageReceiptStatus, shortStatusMessage: String, longStatusMessage: String) {
 
-        switch recipientState.status {
+        switch tellomiStatusForDisplay(recipientState.status, showsReadStates: showsReadStates) {
         case .failed:
             let shortStatusMessage = OWSLocalizedString("MESSAGE_STATUS_FAILED_SHORT", comment: "status message for failed messages")
             let longStatusMessage = OWSLocalizedString("MESSAGE_STATUS_FAILED", comment: "status message for failed messages")
@@ -110,12 +113,19 @@ public class MessageRecipientStatusUtils {
         transaction: DBReadTransaction,
     ) -> (status: MessageReceiptStatus, message: String) {
         let hasBodyAttachments = outgoingMessage.hasBodyAttachments(transaction: transaction)
-        return receiptStatusAndMessage(outgoingMessage: outgoingMessage, hasBodyAttachments: hasBodyAttachments)
+        return receiptStatusAndMessage(
+            outgoingMessage: outgoingMessage,
+            hasBodyAttachments: hasBodyAttachments,
+            showsReadStates: OWSReceiptManager.areReadReceiptsEnabled(transaction: transaction),
+        )
     }
 
+    /// Tellomi（#1184）：气泡与聊天列表只有两档勾——已送达并入已发出（一个勾），送达只在「信息」里看；
+    /// `showsReadStates` 为 false（我关着已读回执）时，已读 / 已查看也不显示（对等规则，连关之前收到的也藏）。
     public class func receiptStatusAndMessage(
         outgoingMessage: TSOutgoingMessage,
         hasBodyAttachments: Bool,
+        showsReadStates: Bool = true,
     ) -> (status: MessageReceiptStatus, message: String) {
         switch outgoingMessage.messageState {
         case .failed:
@@ -136,17 +146,11 @@ public class MessageRecipientStatusUtils {
                 ))
             }
         case .sent:
-            if outgoingMessage.viewedRecipientAddresses().count > 0 {
+            if showsReadStates, outgoingMessage.viewedRecipientAddresses().count > 0 {
                 return (.viewed, OWSLocalizedString("MESSAGE_STATUS_VIEWED", comment: "status message for viewed messages"))
             }
-            if outgoingMessage.readRecipientAddresses().count > 0 {
+            if showsReadStates, outgoingMessage.readRecipientAddresses().count > 0 {
                 return (.read, OWSLocalizedString("MESSAGE_STATUS_READ", comment: "status message for read messages"))
-            }
-            if outgoingMessage.wasDeliveredToAnyRecipient {
-                return (.delivered, OWSLocalizedString(
-                    "MESSAGE_STATUS_DELIVERED",
-                    comment: "message status for message delivered to their recipient.",
-                ))
             }
             return (.sent, OWSLocalizedString(
                 "MESSAGE_STATUS_SENT",
@@ -261,6 +265,44 @@ public class MessageRecipientStatusUtils {
         case .pending:
             return "pending"
         }
+    }
+}
+
+// MARK: - Tellomi（tellomi/tellomi#1184，需求 message-status-and-read-receipts §3.1–3.2）
+
+extension MessageRecipientStatusUtils {
+
+    /// 文字消息发送中的转圈要等这么久才露出来（owner 2026-09-24 定）。
+    public static let tellomiTextSendingIndicatorDelayMs: UInt64 = 2000
+
+    /// 「信息」页逐人状态：我关着已读回执时，已读 / 已查看按已送达显示。
+    static func tellomiStatusForDisplay(_ status: OWSOutgoingMessageRecipientStatus, showsReadStates: Bool) -> OWSOutgoingMessageRecipientStatus {
+        if !showsReadStates, status == .read || status == .viewed {
+            return .delivered
+        }
+        return status
+    }
+
+    /// 按有没有真正的附件判断「是不是文字」：正文附件（图片 / 视频 / 文件 / 语音 / GIF）和贴纸算附件；
+    /// 长文字（oversize text）、引用缩略图、链接预览图、联系人头像都不算（上游 hasBodyAttachments 把长文字也算进去了）。
+    public static func tellomiIsTextOnly(outgoingMessage: TSOutgoingMessage, transaction: DBReadTransaction) -> Bool {
+        return outgoingMessage.messageSticker == nil && !outgoingMessage.hasMediaAttachments(transaction: transaction)
+    }
+
+    /// 发送中的转圈什么时候（毫秒时间戳）才露出来；nil = 立即（有附件）。
+    public static func tellomiSendingIndicatorRevealTimestamp(outgoingMessage: TSOutgoingMessage, transaction: DBReadTransaction) -> UInt64? {
+        guard tellomiIsTextOnly(outgoingMessage: outgoingMessage, transaction: transaction) else {
+            return nil
+        }
+        return outgoingMessage.timestamp + tellomiTextSendingIndicatorDelayMs
+    }
+
+    /// 离露出还剩多少秒；0 = 立即。本机时钟往回拨时最多等 2 秒。
+    public static func tellomiSendingIndicatorDelay(revealAtMs: UInt64?, nowMs: UInt64) -> TimeInterval {
+        guard let revealAtMs, revealAtMs > nowMs else {
+            return 0
+        }
+        return TimeInterval(min(revealAtMs - nowMs, tellomiTextSendingIndicatorDelayMs)) / 1000
     }
 }
 
