@@ -19,6 +19,8 @@ private enum OpenableUrl {
     case quickRestore(URL)
     /// Tellomi：`tell.cc/u#u/<明文用户名>`（t.me 式），上游没有的形状。
     case plainUsername(String)
+    /// Tellomi（I-16）：`tell.cc/m#<content id>`，一条动态。
+    case feedPost(contentId: String)
 }
 
 class UrlOpener {
@@ -66,6 +68,9 @@ class UrlOpener {
         // 只有 tell.cc/u#u/<username> 上游没有等价物，单独接。
         if let username = TellomiLinks.plainUsername(in: originalUrl) {
             return .plainUsername(username)
+        }
+        if let contentId = FeedPostLink.parsePostId(originalUrl.absoluteString) {
+            return .feedPost(contentId: contentId)
         }
         let url = TellomiLinks.legacyEquivalent(of: originalUrl)
         if SignalDotMePhoneNumberLink.isPossibleUrl(url) {
@@ -153,7 +158,7 @@ class UrlOpener {
     private func shouldDismiss(for url: OpenableUrl) -> Bool {
         switch url {
         case .completeIDEALDonation: return false
-        case .groupInvite, .linkDevice, .phoneNumberLink, .signalProxy, .stickerPack, .usernameLink, .callLink, .quickRestore, .plainUsername: return true
+        case .groupInvite, .linkDevice, .phoneNumberLink, .signalProxy, .stickerPack, .usernameLink, .callLink, .quickRestore, .plainUsername, .feedPost: return true
         }
     }
 
@@ -190,6 +195,10 @@ class UrlOpener {
                     animated: true,
                 )
             }
+
+        case .feedPost(let contentId):
+            _ = try tsAccountManager.registeredStateWithMaybeSneakyTransaction()
+            FeedPostLinkViewController.present(link: FeedPostLink.postLink(contentId: contentId), from: rootViewController)
 
         case .plainUsername(let username):
             _ = try tsAccountManager.registeredStateWithMaybeSneakyTransaction()

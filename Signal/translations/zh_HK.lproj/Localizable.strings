@@ -11714,6 +11714,7 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_POST_GONE" = "這則動態已經看不到了";
+"TELLOMI_FEED_POST_LINK_GONE" = "這則動態已不可見";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_REPLY" = "%1$@ 回覆了你的留言";

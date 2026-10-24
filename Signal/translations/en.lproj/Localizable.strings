@@ -11828,6 +11828,7 @@
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_POST_GONE" = "This post isn't available anymore";
+"TELLOMI_FEED_POST_LINK_GONE" = "This post is no longer visible";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_NOTIF_REPLY" = "%1$@ replied to your comment";

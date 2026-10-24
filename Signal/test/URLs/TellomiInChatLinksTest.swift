@@ -39,6 +39,19 @@ class TellomiInChatLinksTest: XCTestCase {
         XCTAssertEqual(routedUrl("https://tell.cc/call#key=abcd"), URL(string: "https://signal.link/call/#key=abcd"))
     }
 
+    /// I-16：动态外链在 App 里打开这条动态（取不到就写「已不可见」），不交给浏览器。
+    func testFeedPostLinksOpenThePost() {
+        let id = "0a1b2c3d-0000-4000-8000-000000000001"
+        XCTAssertEqual(route("https://tell.cc/m#\(id)"), .feedPost(contentId: id))
+        XCTAssertEqual(route("https://tell.cc/m#\(id.uppercased())"), .feedPost(contentId: id), "id 一律小写")
+        XCTAssertEqual(route("tellomi://tell.cc/m#\(id)"), .feedPost(contentId: id))
+        XCTAssertEqual(route("https://tell.cc/m/#\(id)"), .feedPost(contentId: id))
+        // 不是 UUID 的、http 的：不当成动态，按原来的规则走
+        XCTAssertNotEqual(route("https://tell.cc/m#not-a-uuid"), .feedPost(contentId: "not-a-uuid"))
+        if case .feedPost = route("http://tell.cc/m#\(id)") { XCTFail("http 不认") }
+        if case .feedPost = route("https://tell.cc/m") { XCTFail("没有 id 不认") }
+    }
+
     func testOrdinaryLinksAreLeftAlone() {
         XCTAssertEqual(route("https://example.com/a?b=c"), .url(URL(string: "https://example.com/a?b=c")!))
     }
