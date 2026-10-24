@@ -438,7 +438,9 @@ final class FeedPostCell: UITableViewCell {
         let store = FeedReportStore(target: .content(card.id), source: FeedSources.current())
         store.start()
         let report = FeedReportViewController(store: store) { [weak presenter] _ in
-            presenter?.dismiss(animated: true)
+            // 下滑收起时举报页已经不在了，不要再 dismiss（会把 presenter 自己收掉）
+            guard let presenter, presenter.presentedViewController != nil else { return }
+            presenter.dismiss(animated: true)
         }
         presenter.present(OWSNavigationController(rootViewController: report), animated: true)
     }

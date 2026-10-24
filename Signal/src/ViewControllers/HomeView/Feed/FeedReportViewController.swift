@@ -197,6 +197,8 @@ final class FeedReportViewController: OWSViewController {
         // 暗色下系统默认色（品牌蓝）压在深色分组底上对比度不够：左上关闭 / 返回用正文色（label 对 groupedBackground 远超 4.5:1）
         navigationItem.leftBarButtonItem?.tintColor = Self.barItemTint
         submitButton.isEnabled = presentation.canSubmit
+        // 正在提交时不能下滑收起（结果回来要处理成功 / feed_hidden）
+        isModalInPresentation = presentation.isSending
         if presentation.isSending {
             spinner.startAnimating()
             navigationItem.rightBarButtonItem = UIBarButtonItem(customView: spinner)
@@ -234,6 +236,12 @@ final class FeedReportViewController: OWSViewController {
         if detailHeightConstraint?.constant != box.height {
             detailHeightConstraint?.constant = box.height
         }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 下滑收起举报页也要告诉打开它的页面（当作取消），不然对方以为举报页还开着，「举报」再点没反应
+        (navigationController ?? self).presentationController?.delegate = self
     }
 
     override func viewDidLayoutSubviews() {
@@ -387,6 +395,13 @@ extension FeedReportViewController: UITableViewDataSource, UITableViewDelegate {
 
     private static func localized(_ key: String) -> String {
         return OWSLocalizedString(key, value: key, comment: "Feed report page: a reason or group name; the key is built from the reason code in FeedReportReasons.")
+    }
+}
+
+extension FeedReportViewController: UIAdaptivePresentationControllerDelegate {
+    /// 用户下滑把举报页收起了：和点「取消」一样结束（`finish` 只结束一次）。
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        finish(.cancelled)
     }
 }
 
