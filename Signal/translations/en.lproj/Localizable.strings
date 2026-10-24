@@ -9841,7 +9841,7 @@
 "SETTINGS_MESSAGE_SENT_SOUND" = "Message Sent Sound";
 
 /* Explanation for the 'messaging' privacy settings. */
-"SETTINGS_MESSAGING_FOOTER" = "See and share when messages are being read and typed. If disabled, you won’t see read receipts or typing indicators from others.";
+"SETTINGS_MESSAGING_FOOTER" = "With read receipts on, people see two checks on messages you’ve read. With them off, people can’t see whether you’ve read their messages and you can’t see whether anyone has read yours; messages received while they’re off won’t show as read, even if you turn them on later. If typing indicators are off, you won’t see others typing.";
 
 /* Title for settings activity */
 "SETTINGS_NAV_BAR_TITLE" = "Settings";

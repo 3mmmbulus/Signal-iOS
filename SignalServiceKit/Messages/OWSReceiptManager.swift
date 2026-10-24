@@ -126,7 +126,7 @@ public class OWSReceiptManager: NSObject {
         case .onLinkedDevice:
             break
         case .onLinkedDeviceWhilePendingMessageRequest:
-            if Self.areReadReceiptsEnabled(transaction: transaction) {
+            if Self.areReadReceiptsEnabled(transaction: transaction), TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: transaction) {
                 pendingReceiptRecorder.recordPendingReadReceipt(for: message, thread: thread, transaction: transaction)
             }
         case .onThisDevice:
@@ -140,12 +140,12 @@ public class OWSReceiptManager: NSObject {
                 Logger.warn("Dropping receipt for message without an Aci.")
                 return
             }
-            if Self.areReadReceiptsEnabled(transaction: transaction) {
+            if Self.areReadReceiptsEnabled(transaction: transaction), TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: transaction) {
                 receiptSender.enqueueReadReceipt(for: authorAci, timestamp: message.timestamp, messageUniqueId: message.uniqueId, tx: transaction)
             }
         case .onThisDeviceWhilePendingMessageRequest:
             enqueueLinkedDeviceReadReceipt(forMessage: message, transaction: transaction)
-            if Self.areReadReceiptsEnabled(transaction: transaction) {
+            if Self.areReadReceiptsEnabled(transaction: transaction), TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: transaction) {
                 pendingReceiptRecorder.recordPendingReadReceipt(for: message, thread: thread, transaction: transaction)
             }
         }
@@ -157,7 +157,7 @@ public class OWSReceiptManager: NSObject {
         case .onLinkedDevice:
             break
         case .onLinkedDeviceWhilePendingMessageRequest:
-            if Self.areReadReceiptsEnabled(transaction: transaction) {
+            if Self.areReadReceiptsEnabled(transaction: transaction), TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: transaction) {
                 pendingReceiptRecorder.recordPendingViewedReceipt(for: message, thread: thread, transaction: transaction)
             }
         case .onThisDevice:
@@ -171,12 +171,12 @@ public class OWSReceiptManager: NSObject {
                 Logger.warn("Dropping receipt for message without an Aci.")
                 return
             }
-            if Self.areReadReceiptsEnabled(transaction: transaction) {
+            if Self.areReadReceiptsEnabled(transaction: transaction), TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: transaction) {
                 receiptSender.enqueueViewedReceipt(for: authorAci, timestamp: message.timestamp, messageUniqueId: message.uniqueId, tx: transaction)
             }
         case .onThisDeviceWhilePendingMessageRequest:
             enqueueLinkedDeviceViewedReceipt(forIncomingMessage: message, transaction: transaction)
-            if Self.areReadReceiptsEnabled(transaction: transaction) {
+            if Self.areReadReceiptsEnabled(transaction: transaction), TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: transaction) {
                 pendingReceiptRecorder.recordPendingViewedReceipt(for: message, thread: thread, transaction: transaction)
             }
         }
@@ -251,6 +251,14 @@ public class OWSReceiptManager: NSObject {
     }
 
     public func setAreReadReceiptsEnabled(_ value: Bool, transaction: DBWriteTransaction) {
+        // Tellomi（#1184）：记下开关切换的时间，已读回执按消息到达时的开关判断。
+        TellomiReadReceiptHistory.recordSettingWrite(
+            hadValue: Self.keyValueStore.hasValue(Self.kOwsReceiptManagerAreReadReceiptsEnabled, transaction: transaction),
+            previous: Self.areReadReceiptsEnabled(transaction: transaction),
+            enabled: value,
+            nowMs: Date.ows_millisecondTimestamp(),
+            tx: transaction,
+        )
         Self.keyValueStore.setBool(value, key: Self.kOwsReceiptManagerAreReadReceiptsEnabled, transaction: transaction)
     }
 
@@ -1143,5 +1151,89 @@ public class OWSReceiptManager: NSObject {
             }
             return false
         }
+    }
+}
+
+// MARK: - Tellomi（tellomi/tellomi#1184，需求 message-status-and-read-receipts §3.4 第 3 条）
+
+/// 已读回执按「消息到达时」的开关判断：到达时我关着已读回执的消息，永远不发已读 / 已查看回执，
+/// 即使之后打开开关再读（等消息请求通过后补发的也一样）。
+///
+/// 不给消息加字段（改表每次合上游都要跟着迁移），改成记「开关什么时候切换过」，
+/// 用消息的本地到达时间（receivedAtTimestamp）查当时开没开。拿不准的一律当关着（宁可不发）：
+/// - 升级到这一版之前没有记录：开关现在开着 → 都当开着；现在关着 → 打开时记下一笔，之前到达的都当关着；
+/// - 只留最近 ``maxEvents`` 笔，更早的丢掉后，早于最老一笔的消息当关着；
+/// - 设置从别的设备同步过来时，按本机收到同步的时间记。
+public enum TellomiReadReceiptHistory {
+
+    struct Event: Codable, Equatable {
+        let atMs: UInt64
+        let enabled: Bool
+    }
+
+    struct History: Codable, Equatable {
+        var events: [Event]
+        var truncated: Bool
+
+        static let empty = History(events: [], truncated: false)
+    }
+
+    static let maxEvents = 64
+
+    private static let store = KeyValueStore(collection: "TellomiReadReceiptHistory")
+    private static let historyKey = "history"
+
+    static func history(tx: DBReadTransaction) -> History {
+        do {
+            return try store.getCodableValue(forKey: historyKey, failDebugOnParseError: false, transaction: tx) ?? .empty
+        } catch {
+            Logger.warn("Unreadable read receipt history, falling back to the current setting: \(error)")
+            return .empty
+        }
+    }
+
+    /// 开关写进去之前调用；`hadValue` 为 false（首次写入）或值没变时不记。
+    static func recordSettingWrite(hadValue: Bool, previous: Bool, enabled: Bool, nowMs: UInt64, tx: DBWriteTransaction) {
+        guard hadValue, previous != enabled else {
+            return
+        }
+        let updated = appending(Event(atMs: nowMs, enabled: enabled), to: history(tx: tx))
+        do {
+            try store.setCodable(updated, key: historyKey, transaction: tx)
+        } catch {
+            owsFailDebug("Couldn't save read receipt history: \(error)")
+        }
+    }
+
+    static func appending(_ event: Event, to history: History) -> History {
+        var events = history.events + [event]
+        guard events.count > maxEvents else {
+            return History(events: events, truncated: history.truncated)
+        }
+        events.removeFirst(events.count - maxEvents)
+        return History(events: events, truncated: true)
+    }
+
+    static func wasEnabled(atArrival arrivedAtMs: UInt64, history: History, currentlyEnabled: Bool) -> Bool {
+        guard !history.events.isEmpty else {
+            return currentlyEnabled
+        }
+        // 按时间取：本机时钟往回拨过时，记下的先后不一定是时间的先后
+        let events = history.events.enumerated()
+            .sorted { ($0.element.atMs, $0.offset) < ($1.element.atMs, $1.offset) }
+            .map(\.element)
+        if let last = events.last(where: { $0.atMs <= arrivedAtMs }) {
+            return last.enabled
+        }
+        return history.truncated ? false : !events[0].enabled
+    }
+
+    /// 这条消息到达时我开着已读回执吗？开关现在是否开着由调用方另外判断。
+    public static func arrivedWhileEnabled(_ message: TSIncomingMessage, tx: DBReadTransaction) -> Bool {
+        return wasEnabled(
+            atArrival: message.receivedAtTimestamp,
+            history: history(tx: tx),
+            currentlyEnabled: OWSReceiptManager.areReadReceiptsEnabled(transaction: tx),
+        )
     }
 }
