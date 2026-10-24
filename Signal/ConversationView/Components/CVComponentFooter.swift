@@ -18,6 +18,8 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
     struct StatusIndicator: Equatable {
         let imageName: String
         let isAnimated: Bool
+        /// Tellomi（#1184）：文字消息发送中的转圈到这个时间（毫秒）才露出来；nil = 立即。
+        var tellomiRevealAtMs: UInt64? = nil
 
         static var size: CGSize { .init(width: 18, height: 12) }
     }
@@ -259,6 +261,12 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                 if statusIndicator.isAnimated {
                     componentView.animateSpinningIcon()
                 }
+                componentView.tellomiRevealStatusIndicator(
+                    after: MessageRecipientStatusUtils.tellomiSendingIndicatorDelay(
+                        revealAtMs: statusIndicator.tellomiRevealAtMs,
+                        nowMs: Date.ows_millisecondTimestamp(),
+                    ),
+                )
             } else {
                 owsFailDebug("Missing statusIndicatorImage.")
             }
@@ -319,9 +327,11 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                     comment: "Label indicating that a message was only sent to some recipients.",
                 )
             } else {
+                // Tellomi（#1184）：失败提示带上「点击重发」（点失败的消息就是重发提示）。
+                // 借用故事的同义串：新加键在没翻译的语言里会直接显示键名。
                 return OWSLocalizedString(
-                    "MESSAGE_STATUS_SEND_FAILED",
-                    comment: "Label indicating that a message failed to send.",
+                    "STORY_SEND_FAILED_TAP_FOR_DETAILS",
+                    comment: "Text indicating that the story send has failed",
                 )
             }
         } else {
@@ -402,8 +412,9 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                     isAnimated: false,
                 )
             case .delivered:
+                // Tellomi（#1184）：两档勾，已送达画成一个勾（送达只在「信息」里看）。
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_delivered",
+                    imageName: "message_status_sent",
                     isAnimated: false,
                 )
             case .read, .viewed:
@@ -538,6 +549,7 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                 statusIndicator = StatusIndicator(
                     imageName: "message_status_sending",
                     isAnimated: true,
+                    tellomiRevealAtMs: MessageRecipientStatusUtils.tellomiSendingIndicatorRevealTimestamp(outgoingMessage: outgoingMessage, transaction: tx),
                 )
             case .pending:
                 statusIndicator = StatusIndicator(
@@ -550,8 +562,9 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                     isAnimated: false,
                 )
             case .delivered:
+                // Tellomi（#1184）：两档勾，已送达画成一个勾（送达只在「信息」里看）。
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_delivered",
+                    imageName: "message_status_sent",
                     isAnimated: false,
                 )
             case .read, .viewed:
@@ -917,6 +930,7 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
             statusIndicatorImageView.image = nil
 
             statusIndicatorImageView.layer.removeAllAnimations()
+            tellomiRevealStatusIndicator(after: 0)
 
             messageTimerView.prepareForReuse()
             messageTimerView.removeFromSuperview()
@@ -928,6 +942,26 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
             chatColorView.removeFromSuperview()
 
             wallpaperBlurView?.removeFromSuperview()
+        }
+
+        private var tellomiRevealWorkItem: DispatchWorkItem?
+
+        /// Tellomi（#1184）：文字消息发送中，前 2 秒转圈占着位置但看不见（变一个勾时时间不跳）。
+        fileprivate func tellomiRevealStatusIndicator(after delay: TimeInterval) {
+            tellomiRevealWorkItem?.cancel()
+            tellomiRevealWorkItem = nil
+
+            guard delay > 0 else {
+                statusIndicatorImageView.alpha = 1
+                return
+            }
+
+            statusIndicatorImageView.alpha = 0
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.statusIndicatorImageView.alpha = 1
+            }
+            tellomiRevealWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
         }
 
         fileprivate func animateSpinningIcon() {

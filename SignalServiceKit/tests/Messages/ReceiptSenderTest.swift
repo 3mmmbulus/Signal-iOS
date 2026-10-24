@@ -54,3 +54,78 @@ class ReceiptSenderTest: XCTestCase {
         XCTAssertEqual(receiptSets[1].receiptSet.timestamps, [1234])
     }
 }
+
+// MARK: - Tellomi（tellomi/tellomi#1184）
+
+/// 已读回执按「消息到达时」的开关判断（需求 message-status-and-read-receipts §3.4 第 3 条、判据 6）。
+class TellomiReadReceiptHistoryTest: SSKBaseTest {
+
+    private typealias History = TellomiReadReceiptHistory.History
+    private typealias Event = TellomiReadReceiptHistory.Event
+
+    private var receiptManager: OWSReceiptManager { SSKEnvironment.shared.receiptManagerRef }
+
+    func testTheFirstWriteAndWritesThatChangeNothingAreNotSwitches() {
+        write { tx in
+            receiptManager.setAreReadReceiptsEnabled(true, transaction: tx)
+            receiptManager.setAreReadReceiptsEnabled(true, transaction: tx)
+            XCTAssertEqual(TellomiReadReceiptHistory.history(tx: tx).events, [])
+
+            receiptManager.setAreReadReceiptsEnabled(false, transaction: tx)
+            receiptManager.setAreReadReceiptsEnabled(true, transaction: tx)
+            XCTAssertEqual(TellomiReadReceiptHistory.history(tx: tx).events.map(\.enabled), [false, true])
+        }
+    }
+
+    func testMessagesThatArrivedWhileReadReceiptsWereOffNeverGetAReceipt() {
+        write { tx in
+            receiptManager.setAreReadReceiptsEnabled(true, transaction: tx)
+            TellomiReadReceiptHistory.recordSettingWrite(hadValue: true, previous: true, enabled: false, nowMs: 2000, tx: tx)
+            TellomiReadReceiptHistory.recordSettingWrite(hadValue: true, previous: false, enabled: true, nowMs: 3000, tx: tx)
+
+            let thread = TSContactThread.getOrCreateThread(withContactAddress: SignalServiceAddress(phoneNumber: "+12223334444"), transaction: tx)
+            func arrivedWhileEnabled(_ arrivedAtMs: UInt64) -> Bool {
+                let message = TSIncomingMessageBuilder.withDefaultValues(thread: thread, receivedAtTimestamp: arrivedAtMs).build()
+                return TellomiReadReceiptHistory.arrivedWhileEnabled(message, tx: tx)
+            }
+
+            XCTAssertTrue(arrivedWhileEnabled(1500))
+            XCTAssertFalse(arrivedWhileEnabled(2100))
+            XCTAssertFalse(arrivedWhileEnabled(2200))
+            XCTAssertFalse(arrivedWhileEnabled(2300))
+            XCTAssertTrue(arrivedWhileEnabled(3500))
+        }
+    }
+
+    func testAfterUpgradingWithReadReceiptsOffEverythingBeforeTheFirstSwitchOnCountsAsOff() {
+        let history = History(events: [Event(atMs: 2000, enabled: true)], truncated: false)
+        XCTAssertFalse(TellomiReadReceiptHistory.wasEnabled(atArrival: 1000, history: history, currentlyEnabled: true))
+        XCTAssertTrue(TellomiReadReceiptHistory.wasEnabled(atArrival: 2500, history: history, currentlyEnabled: true))
+    }
+
+    func testSwitchesAreReadByTimeNotByTheOrderTheyWereRecordedInWhenTheClockWasMovedBack() {
+        let history = History(events: [Event(atMs: 5000, enabled: false), Event(atMs: 3000, enabled: true)], truncated: false)
+        XCTAssertTrue(TellomiReadReceiptHistory.wasEnabled(atArrival: 4000, history: history, currentlyEnabled: true))
+        XCTAssertFalse(TellomiReadReceiptHistory.wasEnabled(atArrival: 6000, history: history, currentlyEnabled: true))
+        XCTAssertFalse(TellomiReadReceiptHistory.wasEnabled(atArrival: 2000, history: history, currentlyEnabled: true))
+    }
+
+    func testWithoutAnyRecordedSwitchTheCurrentSettingApplies() {
+        XCTAssertTrue(TellomiReadReceiptHistory.wasEnabled(atArrival: 1000, history: .empty, currentlyEnabled: true))
+        XCTAssertFalse(TellomiReadReceiptHistory.wasEnabled(atArrival: 1000, history: .empty, currentlyEnabled: false))
+    }
+
+    func testOnceOlderSwitchesAreDroppedMessagesFromBeforeTheOldestKeptSwitchCountAsOff() {
+        var history = History.empty
+        for i in 1...(TellomiReadReceiptHistory.maxEvents + 2) {
+            history = TellomiReadReceiptHistory.appending(Event(atMs: UInt64(i) * 1000, enabled: i % 2 == 0), to: history)
+        }
+        XCTAssertTrue(history.truncated)
+        XCTAssertEqual(history.events.count, TellomiReadReceiptHistory.maxEvents)
+        XCTAssertFalse(TellomiReadReceiptHistory.wasEnabled(atArrival: 500, history: history, currentlyEnabled: true))
+        XCTAssertEqual(
+            TellomiReadReceiptHistory.wasEnabled(atArrival: history.events.last!.atMs + 1, history: history, currentlyEnabled: true),
+            history.events.last!.enabled,
+        )
+    }
+}

@@ -978,9 +978,11 @@ extension MessageDetailViewController: DatabaseChangeDelegate {
             guard let self else { return }
 
             let messageRecipientAddressesUnsorted = outgoingMessage.recipientAddresses()
-            let (hasBodyAttachments, messageRecipientAddressesSorted) = SSKEnvironment.shared.databaseStorageRef.read { transaction in
+            let (hasBodyAttachments, showsReadStates, messageRecipientAddressesSorted) = SSKEnvironment.shared.databaseStorageRef.read { transaction in
                 return (
                     outgoingMessage.hasBodyAttachments(transaction: transaction),
+                    // Tellomi（#1184）：我关着已读回执时，这里也不显示别人的已读时间。
+                    OWSReceiptManager.areReadReceiptsEnabled(transaction: transaction),
                     SSKEnvironment.shared.contactManagerImplRef.sortSignalServiceAddresses(
                         messageRecipientAddressesUnsorted,
                         transaction: transaction,
@@ -998,6 +1000,7 @@ extension MessageDetailViewController: DatabaseChangeDelegate {
                     outgoingMessage: outgoingMessage,
                     recipientState: recipientState,
                     hasBodyAttachments: hasBodyAttachments,
+                    showsReadStates: showsReadStates,
                 )
                 var bucket = result[status] ?? []
 
