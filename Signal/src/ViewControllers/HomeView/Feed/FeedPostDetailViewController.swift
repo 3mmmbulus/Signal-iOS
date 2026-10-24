@@ -564,7 +564,10 @@ final class FeedPostDetailViewController: OWSViewController {
     /// 举报页关了：收起举报页；提交成功提示「已提交」，`feed_hidden` 让详情页跟着收起。
     func presentedReportFinished(_ outcome: FeedReportViewController.Outcome) {
         presentedReport = nil
-        dismiss(animated: true)
+        // 下滑收起时举报页已经不在了：这时再 dismiss 会把详情页自己（若是弹出的）收掉
+        if presentedViewController != nil {
+            dismiss(animated: true)
+        }
         switch outcome {
         case .sent: store.onReported()
         case .feedHidden: store.onFeedHidden()

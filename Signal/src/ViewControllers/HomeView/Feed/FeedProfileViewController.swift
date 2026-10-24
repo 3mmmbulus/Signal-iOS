@@ -187,7 +187,10 @@ final class FeedProfileViewController: OWSViewController {
     func presentedReportFinished(_ outcome: FeedReportViewController.Outcome) {
         presentedReport = nil
         // feed_hidden：主页马上要收起，举报页不做收起动画——否则主页的 pop 要等举报页的转场结束（约 0.8 秒）才开始
-        dismiss(animated: outcome != .feedHidden)
+        // 下滑收起时举报页已经不在了：这时再 dismiss 会把主页自己（若是弹出的）收掉
+        if presentedViewController != nil {
+            dismiss(animated: outcome != .feedHidden)
+        }
         switch outcome {
         case .sent: store.onReported()
         case .feedHidden: store.onFeedHidden()

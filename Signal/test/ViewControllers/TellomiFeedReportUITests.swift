@@ -316,6 +316,61 @@ final class TellomiFeedReportUITests: XCTestCase {
         _ = report
         harness.window.isHidden = true
     }
+
+    // MARK: - 下滑收起
+
+    /// 下滑把举报页收起 = 取消：详情页清掉引用，「举报」再点能重新打开（以前引用一直留着，再点没反应）。
+    @MainActor
+    func testSwipingTheReportAwayCountsAsCancelAndTheReportCanBeOpenedAgain() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let detail = try await harness.openDetail(of: "sample-1")
+        let report = try await openReport(on: detail)
+        let sheet = try XCTUnwrap(report.navigationController?.presentationController)
+        for _ in 0..<100 where sheet.delegate !== report {
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        XCTAssertTrue(sheet.delegate === report, "举报页出现后接管弹出层的 delegate")
+
+        report.presentationControllerDidDismiss(sheet)
+        XCTAssertEqual(report.finishedOutcome, .cancelled)
+        XCTAssertNil(detail.presentedReport)
+        XCTAssertTrue(harness.source.reports.isEmpty)
+        XCTAssertNil(detail.lastToastText)
+
+        // 再下滑一次（系统重复回调）也只结束一次
+        report.presentationControllerDidDismiss(sheet)
+        XCTAssertEqual(report.finishedOutcome, .cancelled)
+
+        detail.dismiss(animated: false)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let again = try await openReport(on: detail)
+        XCTAssertFalse(again === report, "能重新打开一个新的举报页")
+        XCTAssertNil(again.finishedOutcome)
+    }
+
+    /// 提交中不能下滑收起；结果回来后恢复。
+    @MainActor
+    func testTheReportCannotBeSwipedAwayWhileSending() async throws {
+        let harness = await makeHarness()
+        defer { harness.window.isHidden = true }
+        let detail = try await harness.openDetail(of: "sample-1")
+        let report = try await openReport(on: detail)
+        report.pick(try reason("spam", in: report))
+        XCTAssertFalse(report.isModalInPresentation, "没在提交：能下滑")
+
+        harness.source.simulation.reportLatencyNanos = 400_000_000
+        report.submit()
+        for _ in 0..<50 where !report.presentation.isSending {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertTrue(report.presentation.isSending)
+        XCTAssertTrue(report.isModalInPresentation, "提交中：不能下滑")
+
+        await report.store.waitForTasks()
+        XCTAssertEqual(report.finishedOutcome, .sent)
+        XCTAssertFalse(report.isModalInPresentation)
+    }
 }
 
 /// 动态颜色（`UIColor.Signal.red` 每次取都是新对象）不能直接 `==`：比解出来的 RGBA。
