@@ -55,6 +55,53 @@ final class TellomiFeedUIPatrolTests: XCTestCase {
         XCTAssertEqual(content.frame.size.width, 375, accuracy: 0.5)
     }
 
+    // MARK: iPad 两侧留白也能滚
+
+    @MainActor
+    func testScrollAreaSpansFullWidthWhileTableStaysClamped() {
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 1024, height: 800))
+        let table = UITableView(frame: .zero, style: .plain)
+        let area = FeedReadableWidth.pinScrolling(table, in: container, forwardsMarginPans: true)
+        container.layoutIfNeeded()
+        XCTAssertEqual(area.frame.size.width, container.frame.size.width, accuracy: 0.5, "滚动区域铺满整屏宽度")
+        XCTAssertEqual(table.frame.size.width, FeedReadableWidth.maxWidth, accuracy: 0.5, "内容列仍限宽")
+        XCTAssertEqual(area.convert(table.frame, to: container).midX, 512, accuracy: 0.5)
+        XCTAssertTrue(table.panGestureRecognizer.view === area, "拖动手势挂在整屏宽的区域上")
+        XCTAssertTrue(area.point(inside: CGPoint(x: 20, y: 400), with: nil), "左侧留白能接住触摸")
+        XCTAssertTrue(area.point(inside: CGPoint(x: 1004, y: 400), with: nil), "右侧留白能接住触摸")
+
+        container.frame.size.width = 375
+        container.layoutIfNeeded()
+        XCTAssertEqual(area.frame.size.width, 375, accuracy: 0.5)
+        XCTAssertEqual(table.frame.size.width, 375, accuracy: 0.5, "手机宽度贴满")
+    }
+
+    @MainActor
+    func testPhoneKeepsPanOnScrollView() {
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 390, height: 800))
+        let table = UITableView(frame: .zero, style: .plain)
+        FeedReadableWidth.pinScrolling(table, in: container, forwardsMarginPans: false)
+        XCTAssertTrue(table.panGestureRecognizer.view === table, "手机上不挪手势")
+    }
+
+    @MainActor
+    func testDetailScrollAreaFullWidthCommentInputClamped() async throws {
+        let source = SampleFeedSource(now: { Date(timeIntervalSince1970: 1_790_000_000) }, commentsLatencyNanos: 0)
+        let fetched = try await source.card(contentId: "sample-1")
+        let card = try XCTUnwrap(fetched)
+        let detail = FeedPostDetailViewController(post: card, source: source, showIpRegion: false)
+        detail.loadViewIfNeeded()
+        detail.view.frame = CGRect(x: 0, y: 0, width: 1024, height: 768)
+        detail.view.layoutIfNeeded()
+        let area = try XCTUnwrap(detail.detailScrollArea)
+        XCTAssertEqual(area.frame.size.width, detail.view.frame.size.width, accuracy: 0.5)
+        XCTAssertEqual(detail.detailTableView.frame.size.width, FeedReadableWidth.maxWidth, accuracy: 0.5)
+        if !detail.commentInput.isHidden {
+            XCTAssertEqual(detail.commentInput.frame.size.width, FeedReadableWidth.maxWidth, accuracy: 0.5)
+            XCTAssertEqual(detail.commentInput.frame.midX, 512, accuracy: 0.5)
+        }
+    }
+
     // MARK: P2a 发布页话题 / 回复
 
     @MainActor

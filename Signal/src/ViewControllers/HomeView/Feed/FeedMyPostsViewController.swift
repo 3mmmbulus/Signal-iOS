@@ -94,8 +94,7 @@ final class FeedMyPostsViewController: OWSViewController {
         postsTableView.delegate = self
         postsTableView.register(FeedMyPostCell.self, forCellReuseIdentifier: FeedMyPostCell.reuseIdentifier)
         postsTableView.register(FeedStatusRowCell.self, forCellReuseIdentifier: FeedStatusRowCell.reuseIdentifier)
-        view.addSubview(postsTableView)
-        FeedReadableWidth.pin(postsTableView, in: view)
+        FeedReadableWidth.pinScrolling(postsTableView, in: view)
 
         refreshControl.addAction(UIAction { [weak self] _ in self?.store.refresh() }, for: .valueChanged)
         postsTableView.refreshControl = refreshControl

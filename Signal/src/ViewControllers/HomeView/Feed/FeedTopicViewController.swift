@@ -63,8 +63,7 @@ final class FeedTopicViewController: OWSViewController {
         topicTableView.register(FeedTopicHeaderCell.self, forCellReuseIdentifier: FeedTopicHeaderCell.reuseIdentifier)
         topicTableView.register(FeedStatusRowCell.self, forCellReuseIdentifier: FeedStatusRowCell.reuseIdentifier)
         topicTableView.register(FeedPostCell.self, forCellReuseIdentifier: FeedPostCell.reuseIdentifier)
-        view.addSubview(topicTableView)
-        FeedReadableWidth.pin(topicTableView, in: view)
+        FeedReadableWidth.pinScrolling(topicTableView, in: view)
 
         refreshControl.addAction(UIAction { [weak self] _ in self?.store.refresh() }, for: .valueChanged)
         topicTableView.refreshControl = refreshControl
