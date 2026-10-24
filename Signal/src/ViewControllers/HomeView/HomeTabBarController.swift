@@ -67,38 +67,35 @@ class HomeTabBarController: UITabBarController {
             }
         }
 
-        var image: UIImage? {
+        /// Tellomi：五个标签（动态 / 聊天 / 通话 / 好友 / 我）统一用 SF Symbols，未选中描边、选中实心（同 Telegram），
+        /// 同一套粗细和大小。快拍仍用原来的资源图。
+        static let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 22, weight: .regular, scale: .medium)
+
+        /// 未选中的符号名；`nil` 表示用资源图（快拍）。
+        var symbolName: String? {
             switch self {
-            case .feed:
-                return UIImage(named: "tab-feed")
-            case .chatList:
-                return UIImage(imageLiteralResourceName: "tab-chats")
-            case .calls:
-                return UIImage(named: "tab-calls")
-            case .stories:
-                return UIImage(named: "tab-stories")
-            case .friends:
-                return UIImage(systemName: "person.2")
-            case .me:
-                return UIImage(systemName: "person.crop.circle")
+            case .feed: return "newspaper"
+            case .chatList: return "bubble.left"
+            case .calls: return "phone"
+            case .friends: return "person.2"
+            case .me: return "person.crop.circle"
+            case .stories: return nil
             }
         }
 
+        /// 选中的符号名：未选中的加 `.fill`。
+        var selectedSymbolName: String? {
+            symbolName.map { $0 + ".fill" }
+        }
+
+        var image: UIImage? {
+            guard let symbolName else { return UIImage(named: "tab-stories") }
+            return UIImage(systemName: symbolName, withConfiguration: Self.symbolConfiguration)
+        }
+
         var selectedImage: UIImage? {
-            switch self {
-            case .feed:
-                return UIImage(named: "tab-feed")
-            case .chatList:
-                return UIImage(named: "tab-chats")
-            case .calls:
-                return UIImage(named: "tab-calls")
-            case .stories:
-                return UIImage(named: "tab-stories")
-            case .friends:
-                return UIImage(systemName: "person.2.fill")
-            case .me:
-                return UIImage(systemName: "person.crop.circle.fill")
-            }
+            guard let selectedSymbolName else { return UIImage(named: "tab-stories") }
+            return UIImage(systemName: selectedSymbolName, withConfiguration: Self.symbolConfiguration)
         }
 
         var tabBarItem: UITabBarItem {
@@ -174,6 +171,16 @@ class HomeTabBarController: UITabBarController {
         return uiTab as! UITab
     }
 
+    /// Tellomi：`UITab` 没有 selectedImage，选中的那个换成实心图，其余换回描边图。
+    /// 选中变化时（点击、代码里改 `selectedHomeTab`、换一组标签）都要调。
+    private func updateTabImagesForSelection() {
+        guard #available(iOS 18, *), UIDevice.current.isIPad else { return }
+        let selected = selectedHomeTab
+        for tab in visibleTabs {
+            uiTab(for: tab).image = tab == selected ? tab.selectedImage : tab.image
+        }
+    }
+
     /// 现在底栏上有哪些标签，按显示顺序。
     private(set) var visibleTabs = [Tabs]()
 
@@ -182,6 +189,7 @@ class HomeTabBarController: UITabBarController {
         set {
             guard let index = visibleTabs.firstIndex(of: newValue) else { return }
             selectedIndex = index
+            updateTabImagesForSelection()
         }
     }
 
@@ -284,6 +292,7 @@ class HomeTabBarController: UITabBarController {
         visibleTabs = newTabs
         if #available(iOS 18, *), UIDevice.current.isIPad {
             self.tabs = newTabs.map(uiTab(for:))
+            updateTabImagesForSelection()
         } else {
             initializeCustomTabBar(tabs: newTabs)
         }
@@ -509,7 +518,13 @@ extension HomeTabBarController: UITabBarControllerDelegate {
         return true
     }
 
+    @available(iOS 18, *)
+    func tabBarController(_ tabBarController: UITabBarController, didSelectTab selectedTab: UITab, previousTab: UITab?) {
+        updateTabImagesForSelection()
+    }
+
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        updateTabImagesForSelection()
         if isStoriesTabActive {
             storyBadgeCountManager.markAllStoriesRead()
         }
