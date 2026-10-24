@@ -72,8 +72,7 @@ final class FeedProfileViewController: OWSViewController {
         profileTableView.register(FeedProfileHeaderCell.self, forCellReuseIdentifier: FeedProfileHeaderCell.reuseIdentifier)
         profileTableView.register(FeedProfileStatusCell.self, forCellReuseIdentifier: FeedProfileStatusCell.reuseIdentifier)
         profileTableView.register(FeedPostCell.self, forCellReuseIdentifier: FeedPostCell.reuseIdentifier)
-        view.addSubview(profileTableView)
-        FeedReadableWidth.pin(profileTableView, in: view)
+        FeedReadableWidth.pinScrolling(profileTableView, in: view)
 
         refreshControl.addAction(UIAction { [weak self] _ in self?.store.refresh() }, for: .valueChanged)
         profileTableView.refreshControl = refreshControl

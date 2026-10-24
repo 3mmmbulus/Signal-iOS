@@ -88,8 +88,7 @@ final class FeedTimelineViewController: OWSViewController {
         tableView.register(FeedHiddenCell.self, forCellReuseIdentifier: FeedHiddenCell.reuseIdentifier)
         // 右下角的发布按钮不挡最后一条
         tableView.contentInset.bottom = FeedViewController.composeButtonSize + 24
-        view.addSubview(tableView)
-        FeedReadableWidth.pin(tableView, in: view)
+        FeedReadableWidth.pinScrolling(tableView, in: view)
 
         refreshControl.addAction(UIAction { [weak self] _ in
             guard let self else { return }
@@ -374,16 +373,76 @@ enum FeedReadableWidth {
     @MainActor
     static func pin(_ content: UIView, in container: UIView, top: Bool = true, bottom: Bool = true) {
         content.translatesAutoresizingMaskIntoConstraints = false
-        var constraints = [
-            content.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            content.widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth),
-            content.widthAnchor.constraint(lessThanOrEqualTo: container.widthAnchor),
-        ]
-        let fill = content.widthAnchor.constraint(equalTo: container.widthAnchor)
-        fill.priority = .defaultHigh
-        constraints.append(fill)
+        var constraints = [content.centerXAnchor.constraint(equalTo: container.centerXAnchor)]
+        constraints.append(contentsOf: widthConstraints(content, container: container))
         if top { constraints.append(content.topAnchor.constraint(equalTo: container.topAnchor)) }
         if bottom { constraints.append(content.bottomAnchor.constraint(equalTo: container.bottomAnchor)) }
         NSLayoutConstraint.activate(constraints)
+    }
+
+    /// 只限宽度（≤ `maxWidth`，窄屏贴满），不管位置；放在 `alignment = .center` 的竖排里用。
+    @MainActor
+    static func constrainWidth(_ content: UIView, to container: UIView) {
+        content.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate(widthConstraints(content, container: container))
+    }
+
+    @MainActor
+    private static func widthConstraints(_ content: UIView, container: UIView) -> [NSLayoutConstraint] {
+        let fill = content.widthAnchor.constraint(equalTo: container.widthAnchor)
+        fill.priority = .defaultHigh
+        return [
+            content.widthAnchor.constraint(lessThanOrEqualToConstant: maxWidth),
+            content.widthAnchor.constraint(lessThanOrEqualTo: container.widthAnchor),
+            fill,
+        ]
+    }
+
+    /// 可滚动的内容列：滚动视图本身仍在居中的内容列里（单元格、图片、自适应行高都不变），
+    /// 外面套一层铺满容器宽度的 `FeedReadableScrollArea`，并把滚动视图的拖动手势挂到这层上，
+    /// 这样 iPad 两侧留白里拖动也能滚（跟 Telegram 一样）。手机上内容列本来就贴满，默认不挪手势，行为不变。
+    @MainActor
+    @discardableResult
+    static func pinScrolling(
+        _ scrollView: UIScrollView,
+        in container: UIView,
+        top: Bool = true,
+        bottom: Bool = true,
+        forwardsMarginPans: Bool = UIDevice.current.userInterfaceIdiom == .pad
+    ) -> FeedReadableScrollArea {
+        let area = FeedReadableScrollArea()
+        area.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(area)
+        var constraints = [
+            area.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            area.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+        ]
+        if top { constraints.append(area.topAnchor.constraint(equalTo: container.topAnchor)) }
+        if bottom { constraints.append(area.bottomAnchor.constraint(equalTo: container.bottomAnchor)) }
+        NSLayoutConstraint.activate(constraints)
+        area.embed(scrollView, forwardsMarginPans: forwardsMarginPans)
+        return area
+    }
+}
+
+/// 铺满整屏宽度的滚动区域：里面是居中限宽的滚动视图，两侧留白里的拖动也交给它的拖动手势。
+final class FeedReadableScrollArea: UIView {
+    private(set) weak var scrollView: UIScrollView?
+
+    @MainActor
+    func embed(_ scrollView: UIScrollView, forwardsMarginPans: Bool) {
+        self.scrollView = scrollView
+        addSubview(scrollView)
+        FeedReadableWidth.pin(scrollView, in: self)
+        if forwardsMarginPans {
+            // 苹果推荐的做法：把 UIScrollView 的 panGestureRecognizer 挂到更大的父视图上，
+            // 滚动逻辑仍由滚动视图自己处理，只是触摸范围扩大到整个区域。
+            addGestureRecognizer(scrollView.panGestureRecognizer)
+        }
+    }
+
+    /// 两侧留白也要接住触摸（背景透明时 UIKit 默认也会接，这里显式写明）。
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        return bounds.contains(point)
     }
 }

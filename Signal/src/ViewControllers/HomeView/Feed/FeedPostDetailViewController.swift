@@ -36,6 +36,8 @@ final class FeedPostDetailViewController: OWSViewController {
     private let footerSpinner = UIActivityIndicatorView(style: .medium)
     /// 底部的评论输入框（评论关了就收起）。
     let commentInput = FeedCommentInputView()
+    /// iPad：铺满整屏宽度的滚动区域（单测用）。
+    private(set) var detailScrollArea: FeedReadableScrollArea?
     private lazy var goneView = FeedEmptyStateView(
         title: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_TITLE", comment: "Feed: title of the post page when the post was deleted or can no longer be seen."),
         body: OWSLocalizedString("TELLOMI_FEED_DETAIL_GONE_BODY", comment: "Feed: explanation under the title when the post can no longer be seen."),
@@ -155,12 +157,24 @@ final class FeedPostDetailViewController: OWSViewController {
         tableView.keyboardDismissMode = .interactive
         tableView.setContentHuggingPriority(.defaultLow, for: .vertical)
 
-        // 表格在上、评论输入框在下，整体贴着键盘（评论输入框收起时不占位）
-        let contentStack = UIStackView(arrangedSubviews: [tableView, commentInput])
+        // 表格在上、评论输入框在下，整体贴着键盘（评论输入框收起时不占位）。
+        // 外层这条竖排铺满整屏宽度：表格那层滚动区域也铺满（iPad 两侧留白里拖动也能滚），
+        // 表格本身和评论输入框仍限制在居中的可读宽度里。评论输入框不在滚动区域里，拖它不会带动表格。
+        let tableArea = FeedReadableScrollArea()
+        tableArea.embed(tableView, forwardsMarginPans: UIDevice.current.userInterfaceIdiom == .pad)
+        let contentStack = UIStackView(arrangedSubviews: [tableArea, commentInput])
         contentStack.axis = .vertical
+        contentStack.alignment = .center
         view.addSubview(contentStack)
-        // iPad：内容列限制在可读宽度里居中（评论输入框跟着这一列）
-        FeedReadableWidth.pin(contentStack, in: view, bottom: false)
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            contentStack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentStack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentStack.topAnchor.constraint(equalTo: view.topAnchor),
+            tableArea.widthAnchor.constraint(equalTo: contentStack.widthAnchor),
+        ])
+        FeedReadableWidth.constrainWidth(commentInput, to: contentStack)
+        detailScrollArea = tableArea
         contentStack.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor).isActive = true
 
         commentInput.onEdit = { [weak self] range, text, composing in
