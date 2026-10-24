@@ -20,6 +20,9 @@ class LinkValidatorTest: XCTestCase {
             ("signal.org", "https://signal.org"),
             ("www.signal.org", "https://www.signal.org"),
             ("https.signal.org", nil),
+            ("http.signal.org", nil),
+            ("HTTPS.signal.org/path", nil),
+            ("httpsignal.org", "https://httpsignal.org"),
 
             // Invalid: Scheme must be https
             ("http://www.signal.org", nil),

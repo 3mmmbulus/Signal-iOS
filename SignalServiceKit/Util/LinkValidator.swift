@@ -171,6 +171,13 @@ public enum LinkValidator {
         guard !rest.isEmpty else {
             return nil
         }
+        // 上游用例「https.signal.org」不出卡片：裸域名首段是 http / https 的多半是少打了「://」，不补成 https://https.signal.org
+        if isSchemeless {
+            let firstLabel = rest.prefix(while: { $0 != "." && $0 != "/" && $0 != ":" && $0 != "?" && $0 != "#" }).lowercased()
+            if firstLabel == "http" || firstLabel == "https" {
+                return nil
+            }
+        }
         let text = "https://" + rest
         let url: URL
         if let candidate = URL(string: text), candidate.host?.isEmpty == false, LinkPreviewHelper.isPermittedLinkPreviewUrl(candidate, parsedFrom: text) {
