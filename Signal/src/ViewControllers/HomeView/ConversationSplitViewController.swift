@@ -33,7 +33,12 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
         // In order to not show selected when collapsed during an interactive dismissal,
         // we verify the conversation is still in the nav stack when collapsed. There is
         // no interactive dismissal when expanded, so we don't have to do any special check.
-        guard !isCollapsed || chatListNavController.viewControllers.contains(selectedConversationViewController) else { return nil }
+        // Tellomi：从「好友」里打开的会话在好友的导航栈里，也算当前打开的会话（通知横幅据此不重复提醒）
+        guard
+            !isCollapsed
+            || chatListNavController.viewControllers.contains(selectedConversationViewController)
+            || homeVC.friendsNavController.viewControllers.contains(selectedConversationViewController)
+        else { return nil }
 
         return selectedConversationViewController.thread
     }
@@ -268,6 +273,34 @@ class ConversationSplitViewController: UISplitViewController, ConversationSplit 
 
         showDetailViewController(viewController: detailVC, animated: animated)
 
+        conversationViewController.threadActionProviderDelegate = homeVC.chatListViewController
+    }
+
+    /// Tellomi：「好友」里点一个人。iPhone（收起的分屏）上在好友自己的导航栈里打开会话，返回回到好友，
+    /// 不像 `presentThread` 那样先切到「聊天」。iPad 等展开的分屏照常在右边打开。
+    func presentThreadFromFriendsTab(threadUniqueId: String, animated: Bool) {
+        AssertIsOnMainThread()
+
+        guard isCollapsed, homeVC.selectedHomeTab == .friends else {
+            presentThread(threadUniqueId: threadUniqueId, action: .compose, focusMessageId: nil, animated: animated)
+            return
+        }
+
+        let conversationViewController = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            return ConversationViewController.load(
+                threadViewModel: ThreadViewModel(
+                    threadUniqueId: threadUniqueId,
+                    forChatList: false,
+                    transaction: tx,
+                ),
+                action: .compose,
+                focusMessageId: nil,
+                tx: tx,
+            )
+        }
+
+        selectedConversationViewController = conversationViewController
+        homeVC.friendsNavController.pushViewController(conversationViewController, animated: animated)
         conversationViewController.threadActionProviderDelegate = homeVC.chatListViewController
     }
 
