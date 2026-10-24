@@ -19,12 +19,16 @@ class ComposeViewController: RecipientPickerContainerViewController {
         recipientPicker.shouldShowNewGroup = true
         recipientPicker.groupsToShow = .groupsThatUserIsMemberOfWhenSearching
         recipientPicker.shouldHideLocalRecipient = false
+        configureRecipientPicker()
         recipientPicker.delegate = self
 
         addRecipientPicker()
 
         navigationItem.rightBarButtonItem = .cancelButton(dismissingFrom: self)
     }
+
+    /// Tellomi：子类（底栏「好友」）在选人控件加进来之前改它的配置。新建会话本身什么都不改。
+    func configureRecipientPicker() {}
 
     /// Presents the conversation for the given address and dismisses this
     /// controller such that the conversation is visible.
@@ -133,15 +137,79 @@ extension ComposeViewController: RecipientPickerDelegate, UsernameLinkScanDelega
     }
 }
 
-/// Tellomi：底栏「好友」的根页面。复用新建会话的联系人列表（同样的搜索、新建群、邀请），
-/// 只是作为标签页常驻：标题叫「好友」，没有「取消」按钮。点某个人打开会话（`newConversation`
-/// 没有弹窗可关时直接打开会话）。放在这个文件里，免得改 Xcode 工程文件。
+/// Tellomi：底栏「好友」的根页面（tellomi/tellomi#1355、#1360；补 #1108 的页面细节）。
+/// 复用新建会话的选人控件，作为标签页常驻：标题叫「好友」，没有「取消」按钮。
+/// - 列表只列个人：不列群、不列自己，没有「新建群组」；保留「按用户名查找」。
+/// - 顶部（不在搜索时）：扫描二维码、邀请好友（系统分享面板发下载链接，不走要读通讯录的上游邀请流程）。
+/// - 没有 CDSI 的构建里不提通讯录权限；一个好友都没有时只说一句，不换整页大图。
+/// - iPhone 上点一个人，会话压在「好友」自己的导航栈上，返回回到「好友」。
+/// 放在这个文件里，免得改 Xcode 工程文件。
 final class TellomiFriendsViewController: ComposeViewController {
+
+    /// 和邀请短信里的链接一样。
+    static let installUrl = "https://tellomi.app/download/"
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         title = HomeTabBarController.Tabs.friends.title
         navigationItem.rightBarButtonItem = nil
+    }
+
+    override func configureRecipientPicker() {
+        Self.configure(recipientPicker)
+        recipientPicker.tellomiExtraStaticItems = [
+            OWSTableItem.disclosureItem(
+                icon: .qrCode,
+                withText: CommonStrings.scanQRCodeTitle,
+                actionBlock: { [weak self] in
+                    self?.presentUsernameQRCodeScanner()
+                },
+            ),
+            OWSTableItem.disclosureItem(
+                icon: .settingsInvite,
+                withText: OWSLocalizedString(
+                    "TELLOMI_FRIENDS_INVITE_ROW",
+                    comment: "Tellomi: row at the top of the Friends tab that shares the app download link.",
+                ),
+                actionBlock: { [weak self] in
+                    self?.shareInvite()
+                },
+            ),
+        ]
+    }
+
+    static func configure(_ recipientPicker: RecipientPickerViewController) {
+        recipientPicker.shouldShowInvites = false
+        recipientPicker.shouldShowNewGroup = false
+        recipientPicker.groupsToShow = .noGroups
+        recipientPicker.shouldHideLocalRecipient = true
+        recipientPicker.allowsAddByAddress = true
+        recipientPicker.tellomiSkipsNoContactsView = true
+        recipientPicker.tellomiNoContactsText = OWSLocalizedString(
+            "TELLOMI_FRIENDS_EMPTY",
+            comment: "Tellomi: shown in the Friends tab when the user has no friends on Tellomi yet.",
+        )
+        // 通讯录权限只在有 CDSI 时才提（#1240 的用途说明照旧）；没有 CDSI 时整块提醒都不放
+        recipientPicker.tellomiHidesContactAccessReminder = !TSConstants.cdsiAvailable
+    }
+
+    static func inviteText() -> String {
+        return OWSLocalizedString("SMS_INVITE_BODY", comment: "body sent to contacts when inviting to Install Signal") + " " + installUrl
+    }
+
+    private func shareInvite() {
+        let activityViewController = UIActivityViewController(activityItems: [Self.inviteText()], applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = view
+        present(activityViewController, animated: true)
+    }
+
+    /// 不像新建会话那样关弹窗、切到「聊天」：在「好友」里打开，返回回到「好友」。
+    override func newConversation(thread: TSThread) {
+        guard let splitViewController = SignalApp.shared.conversationSplitViewController else {
+            SignalApp.shared.presentConversationForThread(threadUniqueId: thread.uniqueId, action: .compose, animated: true)
+            return
+        }
+        splitViewController.presentThreadFromFriendsTab(threadUniqueId: thread.uniqueId, animated: true)
     }
 }
