@@ -44,7 +44,7 @@ final class TellomiFeedSamplePreviewTests: XCTestCase {
         XCTAssertNil(card.imageName)
         XCTAssertEqual(card.text.title, "家常酸面包：从养酵种到出炉")
         XCTAssertEqual(card.text.domain, "example.org")
-        XCTAssertTrue(card.showsCompass)
+        XCTAssertFalse(card.showsCompass, "有标题的横条不画指南针（产品经理 2026-10-24）")
     }
 
     func testNoInfoSample() async throws {
@@ -86,8 +86,9 @@ final class TellomiFeedSamplePreviewTests: XCTestCase {
         XCTAssertNil(view.imageForTesting)
         XCTAssertNil(view.imageAspectMultiplierForTesting)
         XCTAssertEqual(view.titleTextForTesting, "家常酸面包：从养酵种到出炉")
-        XCTAssertTrue(view.isCompassVisibleForTesting)
-        XCTAssertEqual(view.textInsetsForTesting, [9, 14, -9, -10])
+        XCTAssertFalse(view.isCompassVisibleForTesting)
+        // 右边什么都没有：DESIGN.md §9 的 9 / 14 / 10 / 14（上 / 左 / 下 / 右）
+        XCTAssertEqual(view.textInsetsForTesting, [9, 14, -10, -14])
 
         cell.configure(card: try await samplePost("sample-6"), showIpRegion: false)
         XCTAssertNil(view.imageForTesting)

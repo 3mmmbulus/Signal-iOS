@@ -40,7 +40,7 @@ public final class TellomiLinkPreviewCardState: LinkPreviewState {
     /// nil：没有图、取不到颜色（白底图标、透明图）——横条用中性灰。只对 `iconStrip` 有意义（产品经理 2026-10-19 定稿）。
     public let stripColor: TellomiLinkCardStyle.RGB?
 
-    /// 认领档（`claimed`）的卡（`TellomiLinkCard.isClaimedTier`）：没有图时横条右边不画指南针（产品经理 2026-10-19 晚）。
+    /// 认领档（`claimed`）的卡（`TellomiLinkCard.isClaimedTier`）。指南针只给只有域名的横条（产品经理 2026-10-24），这一项不再影响它。
     public let isClaimed: Bool
 
     public init(

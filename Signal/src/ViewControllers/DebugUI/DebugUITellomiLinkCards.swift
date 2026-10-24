@@ -61,7 +61,7 @@ class DebugUITellomiLinkCards: DebugUIPage {
             previewTitle: "淘宝",
         ),
         Fixture(
-            title: "文字横条（没有图：标题 + 域名 + 指南针）",
+            title: "文字横条（没有图：标题 + 域名，没有指南针）",
             url: "https://www.wikipedia.org/wiki/Tellomi",
             previewTitle: "Tellomi - Wikipedia",
         ),

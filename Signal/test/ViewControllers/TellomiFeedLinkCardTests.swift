@@ -46,7 +46,7 @@ final class TellomiFeedLinkCardTests: XCTestCase {
         let card = try XCTUnwrap(FeedLinkCard.make(url: url, preview: .init(title: "  标题\n 两段 ")))
         XCTAssertEqual(card.kind, .textStrip)
         XCTAssertEqual(card.text.title, "标题 两段")
-        XCTAssertTrue(card.showsCompass)
+        XCTAssertFalse(card.showsCompass, "有标题的横条不画指南针（产品经理 2026-10-24）")
         XCTAssertEqual(card.accessibilityLabel, "标题 两段, example.com")
     }
 
