@@ -4078,7 +4078,9 @@
 		F93461B0291EB5E300366682 /* DonationPaymentDetailsViewController+FormState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93461AF291EB5E300366682 /* DonationPaymentDetailsViewController+FormState.swift */; };
 		F93461B3291EB8C700366682 /* DonationPaymentDetailsViewController+OneTimeDonation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93461B2291EB8C700366682 /* DonationPaymentDetailsViewController+OneTimeDonation.swift */; };
 		F93461B9291ED28A00366682 /* PaymentDetailsValidity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93461B8291ED28900366682 /* PaymentDetailsValidity.swift */; };
+		6B7DDE2F4048433BCA225B29 /* TellomiPartialTextSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6773E480B922A8C6D70339 /* TellomiPartialTextSelection.swift */; };
 		F93461BB291ED2B000366682 /* PaymentDetailsValidityTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93461BA291ED2B000366682 /* PaymentDetailsValidityTest.swift */; };
+		E82038750AD2B1676B4CEFB2 /* TellomiPartialTextSelectionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47348EB0F47A8087555FEC2 /* TellomiPartialTextSelectionTest.swift */; };
 		F9349CE62901866800F9A93A /* DonationHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9349CE52901866800F9A93A /* DonationHeroView.swift */; };
 		F937EDA429746DA20003AF3F /* OWSFail.swift in Sources */ = {isa = PBXBuildFile; fileRef = F937EDA329746DA20003AF3F /* OWSFail.swift */; };
 		F93999F628C81F2100E34899 /* DataMessagePaddingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93999F528C81F2100E34899 /* DataMessagePaddingTests.swift */; };
@@ -8981,7 +8983,9 @@
 		F93461AF291EB5E300366682 /* DonationPaymentDetailsViewController+FormState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DonationPaymentDetailsViewController+FormState.swift"; sourceTree = "<group>"; };
 		F93461B2291EB8C700366682 /* DonationPaymentDetailsViewController+OneTimeDonation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DonationPaymentDetailsViewController+OneTimeDonation.swift"; sourceTree = "<group>"; };
 		F93461B8291ED28900366682 /* PaymentDetailsValidity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaymentDetailsValidity.swift; sourceTree = "<group>"; };
+		FA6773E480B922A8C6D70339 /* TellomiPartialTextSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPartialTextSelection.swift; sourceTree = "<group>"; };
 		F93461BA291ED2B000366682 /* PaymentDetailsValidityTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaymentDetailsValidityTest.swift; sourceTree = "<group>"; };
+		B47348EB0F47A8087555FEC2 /* TellomiPartialTextSelectionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiPartialTextSelectionTest.swift; sourceTree = "<group>"; };
 		F9349CE52901866800F9A93A /* DonationHeroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonationHeroView.swift; sourceTree = "<group>"; };
 		F937EDA329746DA20003AF3F /* OWSFail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OWSFail.swift; sourceTree = "<group>"; };
 		F93999EB28C80A6C00E34899 /* DeviceProvisioningURLTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceProvisioningURLTest.swift; sourceTree = "<group>"; };
@@ -12801,6 +12805,7 @@
 				BA4D46714F10DCCCB936CDC3 /* TellomiSingleEmojiAnimation.swift */,
 				45CB2FA71CB7146C00E1B343 /* Launch Screen.storyboard */,
 				F93461B8291ED28900366682 /* PaymentDetailsValidity.swift */,
+				FA6773E480B922A8C6D70339 /* TellomiPartialTextSelection.swift */,
 				F9FAABD729DB55940004B383 /* Progress+Signal.swift */,
 				888CC15828E3CE8100A13493 /* ProxyConnectionChecker.swift */,
 				66A22C0828A18D49007CD4F5 /* RingerSwitch.swift */,
@@ -13410,6 +13415,7 @@
 				345AE2B52317048200DB6225 /* GRDBFinderTest.swift */,
 				8A00F5A7E71AAAD3AE9CAD69 /* TellomiGetStartedTest.swift */,
 				F93461BA291ED2B000366682 /* PaymentDetailsValidityTest.swift */,
+				B47348EB0F47A8087555FEC2 /* TellomiPartialTextSelectionTest.swift */,
 				349D21E7268E044700D98870 /* QRCodeParserTest.swift */,
 				F963164A291AE06C00218FB7 /* ScrubbingLogFormatterTest.swift */,
 				4B91481F2467077322FF39DD /* TellomiLogoutWordingTest.swift */,
@@ -20712,6 +20718,7 @@
 				D9C667232FFB24F40085EE9D /* PasswordManagerManager.swift in Sources */,
 				50EA76E52EEA1C6000DA8CD0 /* PasteboardAttachment.swift in Sources */,
 				F93461B9291ED28A00366682 /* PaymentDetailsValidity.swift in Sources */,
+				6B7DDE2F4048433BCA225B29 /* TellomiPartialTextSelection.swift in Sources */,
 				C1661A1E2C3D942300AB887F /* PaymentHistoryItem.swift in Sources */,
 				34FB6A5525D2E17200E599B1 /* PaymentModelCell.swift in Sources */,
 				66FA2B1D28CB0DE1006845CD /* PaymentsBiometryLockPromptViewController.swift in Sources */,
@@ -21188,6 +21195,7 @@
 				B6A2F4D2C9E3A0875D2B9F01 /* TellomiOfficialBadgeContrastTests.swift in Sources */,
 				45D062F527D7F49800BD505E /* OWSContactsManagerTest.swift in Sources */,
 				F93461BB291ED2B000366682 /* PaymentDetailsValidityTest.swift in Sources */,
+				E82038750AD2B1676B4CEFB2 /* TellomiPartialTextSelectionTest.swift in Sources */,
 				3471211025ED5F910037CD1F /* PaymentsReconciliationTest.swift in Sources */,
 				346EFC3225FD051400F493C7 /* PaymentsTest.swift in Sources */,
 				50791B1D2D037A9800D747F8 /* PhoneNumberCountryTest.swift in Sources */,
