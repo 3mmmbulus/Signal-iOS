@@ -247,6 +247,8 @@ public struct CVComponentState: Equatable {
         let notification: TSPaymentNotification
         let model: TSPaymentModel?
         let otherUserShortName: String
+        /// Tellomi（#1184）：建 state 时读的本机已读回执开关；视图层没有事务，靠它守关回执规则。
+        let showsReadStates: Bool
 
         var status: TSPaymentState? { model?.paymentState }
     }
@@ -259,9 +261,12 @@ public struct CVComponentState: Equatable {
         let note: String?
         let otherUserShortName: String
         let archivedPayment: ArchivedPayment?
+        /// Tellomi（#1184）：同 PaymentAttachment.showsReadStates。
+        let showsReadStates: Bool
 
         public static func ==(lhs: Self, rhs: Self) -> Bool {
-            lhs.amount == rhs.amount
+            lhs.showsReadStates == rhs.showsReadStates
+                && lhs.amount == rhs.amount
                 && lhs.fee == rhs.fee
                 && lhs.note == rhs.note
                 && lhs.otherUserShortName == rhs.otherUserShortName
@@ -1403,6 +1408,7 @@ private extension CVComponentState.Builder {
                 messageStatus = MessageRecipientStatusUtils.recipientStatus(
                     outgoingMessage: outgoingMessage,
                     paymentModel: model,
+                    transaction: transaction,
                 )
             } else {
                 messageStatus = MessageRecipientStatusUtils.recipientStatus(
@@ -2082,6 +2088,7 @@ private extension CVComponentState.Builder {
             model: paymentModel,
             // Only used for 1:1 threads, but not enforced.
             otherUserShortName: threadViewModel.shortName ?? threadViewModel.name,
+            showsReadStates: OWSReceiptManager.areReadReceiptsEnabled(transaction: itemBuildingContext.transaction),
         )
 
         return build()
@@ -2099,6 +2106,7 @@ private extension CVComponentState.Builder {
             // Only used for 1:1 threads, but not enforced.
             otherUserShortName: threadViewModel.shortName ?? threadViewModel.name,
             archivedPayment: archivedPayment,
+            showsReadStates: OWSReceiptManager.areReadReceiptsEnabled(transaction: itemBuildingContext.transaction),
         )
 
         return build()

@@ -412,13 +412,17 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
         var accessibilityLabel: String?
         if let outgoingMessage = interaction as? TSOutgoingMessage {
 
+            // Tellomi（#1184）：付款消息也守关回执规则。
+            let showsReadStates = OWSReceiptManager.areReadReceiptsEnabled(transaction: transaction)
             let messageStatus = MessageRecipientStatusUtils.recipientStatus(
                 outgoingMessage: outgoingMessage,
                 paymentModel: paymentModel,
+                showsReadStates: showsReadStates,
             )
             accessibilityLabel = MessageRecipientStatusUtils.receiptMessage(
                 outgoingMessage: outgoingMessage,
                 paymentModel: paymentModel,
+                showsReadStates: showsReadStates,
             )
 
             switch messageStatus {
