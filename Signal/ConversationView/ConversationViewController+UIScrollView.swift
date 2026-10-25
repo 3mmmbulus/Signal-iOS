@@ -264,6 +264,8 @@ extension ConversationViewController: UIScrollViewDelegate {
         self.userHasScrolled = true
         self.isUserScrolling = true
         scrollingAnimationDidStart()
+        // Tellomi（审计 4.4）：滚动就退出「选择文字」
+        tellomiEndTextSelection()
     }
 
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool) {

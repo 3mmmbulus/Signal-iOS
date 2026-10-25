@@ -19,6 +19,7 @@ protocol MessageActionsDelegate: AnyObject {
     func messageActionsEndPoll(_ itemViewModel: CVItemViewModelImpl)
     func messageActionsChangePinStatus(_ itemViewModel: CVItemViewModelImpl, pin: Bool)
     func messageActionsTellomiSaveToSavedMessages(_ itemViewModel: CVItemViewModelImpl)
+    func messageActionsTellomiSelectText(_ itemViewModel: CVItemViewModelImpl)
 }
 
 // MARK: -
@@ -47,6 +48,20 @@ enum MessageActionBuilder {
             contextMenuAttributes: [],
             block: { _ in
                 itemViewModel.copyTextAction()
+            },
+        )
+    }
+
+    /// Tellomi（审计 4.4）：「选择文字」，用系统手柄选一段再拷贝
+    static func tellomiSelectText(itemViewModel: CVItemViewModelImpl, delegate: MessageActionsDelegate) -> MessageAction {
+        return MessageAction(
+            .tellomiSelectText,
+            accessibilityLabel: OWSLocalizedString("CONTEXT_MENU_TELLOMI_SELECT_TEXT", comment: "Tellomi: context menu button that lets the user select part of a message's text and copy it"),
+            accessibilityIdentifier: UIView.accessibilityIdentifier(containerName: "message_action", name: "tellomi_select_text"),
+            contextMenuTitle: OWSLocalizedString("CONTEXT_MENU_TELLOMI_SELECT_TEXT", comment: "Tellomi: context menu button that lets the user select part of a message's text and copy it"),
+            contextMenuAttributes: [],
+            block: { [weak delegate] _ in
+                delegate?.messageActionsTellomiSelectText(itemViewModel)
             },
         )
     }
@@ -286,6 +301,9 @@ class MessageActions {
         if itemViewModel.canCopyOrShareOrSpeakText {
             let copyTextAction = MessageActionBuilder.copyText(itemViewModel: itemViewModel, delegate: delegate)
             actions.append(copyTextAction)
+            if !itemViewModel.isViewOnce {
+                actions.append(MessageActionBuilder.tellomiSelectText(itemViewModel: itemViewModel, delegate: delegate))
+            }
         }
 
         if shouldAllowMessageSendActions {
@@ -408,6 +426,9 @@ class MessageActions {
         if itemViewModel.canCopyOrShareOrSpeakText {
             let copyTextAction = MessageActionBuilder.copyText(itemViewModel: itemViewModel, delegate: delegate)
             actions.append(copyTextAction)
+            if !itemViewModel.isViewOnce {
+                actions.append(MessageActionBuilder.tellomiSelectText(itemViewModel: itemViewModel, delegate: delegate))
+            }
         }
 
         if shouldAllowMessageSendActions {
