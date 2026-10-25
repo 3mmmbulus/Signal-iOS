@@ -46,7 +46,7 @@ public final class TellomiSingleEmojiAnimationPlayer {
         )
     }
 
-    public static func makeAnimation() -> CAKeyframeAnimation {
+    static func makeAnimation() -> CAKeyframeAnimation {
         let animation = CAKeyframeAnimation(keyPath: "transform.scale")
         animation.values = TellomiSingleEmojiAnimation.keyframes.map { NSNumber(value: $0.scale) }
         animation.keyTimes = TellomiSingleEmojiAnimation.keyframes.map { NSNumber(value: $0.relativeTime) }
@@ -56,7 +56,7 @@ public final class TellomiSingleEmojiAnimationPlayer {
         return animation
     }
 
-    public static func play(on view: UIView) {
+    static func play(on view: UIView) {
         view.layer.removeAnimation(forKey: animationKey)
         view.layer.add(makeAnimation(), forKey: animationKey)
     }
