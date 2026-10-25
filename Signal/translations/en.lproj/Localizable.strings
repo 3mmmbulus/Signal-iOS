@@ -2644,6 +2644,9 @@
 /* Tellomi: group context menu item for own message, shows read count / recipient count. Embeds {{read}}, {{total}}. */
 "CONTEXT_MENU_TELLOMI_READ_BY_FORMAT" = "Read %1$@/%2$@";
 
+/* Tellomi: context menu button that lets the user select part of a message's text and copy it */
+"CONTEXT_MENU_TELLOMI_SELECT_TEXT" = "Select Text";
+
 /* Context menu edit button title */
 "CONTEXT_MENU_EDIT_MESSAGE" = "Edit";
 

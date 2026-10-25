@@ -236,5 +236,6 @@ final class TellomiPinNoticeCellTests: XCTestCase {
         func messageActionsEndPoll(_ itemViewModel: CVItemViewModelImpl) {}
         func messageActionsChangePinStatus(_ itemViewModel: CVItemViewModelImpl, pin: Bool) {}
         func messageActionsTellomiSaveToSavedMessages(_ itemViewModel: CVItemViewModelImpl) {}
+        func messageActionsTellomiSelectText(_ itemViewModel: CVItemViewModelImpl) {}
     }
 }

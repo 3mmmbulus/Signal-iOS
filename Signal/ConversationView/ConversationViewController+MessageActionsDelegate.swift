@@ -10,6 +10,10 @@ import SignalUI
 public import UIKit
 
 extension ConversationViewController: MessageActionsDelegate {
+    func messageActionsTellomiSelectText(_ itemViewModel: CVItemViewModelImpl) {
+        tellomiBeginTextSelection(itemViewModel)
+    }
+
     func messageActionsEditItem(_ itemViewModel: CVItemViewModelImpl) {
         let hasUnsavedDraft: Bool
 

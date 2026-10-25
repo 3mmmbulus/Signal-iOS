@@ -1000,6 +1000,7 @@
 		45DDD06729C1365100FD9670 /* MediaGalleryAccessoriesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DDD06629C1365100FD9670 /* MediaGalleryAccessoriesHelper.swift */; };
 		45E5A6991F61E6DE001E4A8A /* MarqueeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E5A6981F61E6DD001E4A8A /* MarqueeLabel.swift */; };
 		45E7A6A81E71CA7E00D44FB5 /* DisplayableTextFilterTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E7A6A61E71CA7E00D44FB5 /* DisplayableTextFilterTest.swift */; };
+		8986599B22555F3ADEA42FBF /* TellomiTextSelectionModelTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B14D2F777E371E6624542BA /* TellomiTextSelectionModelTest.swift */; };
 		45F32C232057297A00A300D5 /* MediaPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F32C1D205718B000A300D5 /* MediaPageViewController.swift */; };
 		45F32C242057297A00A300D5 /* MessageDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CA1C261F7156F300E51C51 /* MessageDetailViewController.swift */; };
 		46B99B83D9513F2B8641EAB1 /* Pods_SignalNSE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F965533D71CA51BE6704CC4 /* Pods_SignalNSE.framework */; };
@@ -1032,6 +1033,7 @@
 		4CA485BB2232339F004B9E7D /* PhotoCaptureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA485BA2232339F004B9E7D /* PhotoCaptureViewController.swift */; };
 		4CB5F26720F6E1E2004D1B42 /* MessageActionsToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFF4C0920F55BBA005DA313 /* MessageActionsToolbar.swift */; };
 		4CB5F26920F7D060004D1B42 /* MessageActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB5F26820F7D060004D1B42 /* MessageActions.swift */; };
+		15C84F597F5BA6C92A76EA66 /* TellomiTextSelectionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5A4E95B6A2DBEA45AABB08 /* TellomiTextSelectionOverlay.swift */; };
 		4CC1ECF9211A47CE00CC13BE /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CC1ECF8211A47CD00CC13BE /* StoreKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		4CD675BE22E7BE35008010D2 /* MediaDismissAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD675BD22E7BE35008010D2 /* MediaDismissAnimationController.swift */; };
 		4CD675C522E7CF22008010D2 /* ConversationViewController+OWS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD675C422E7CF22008010D2 /* ConversationViewController+OWS.swift */; };
@@ -5824,6 +5826,7 @@
 		45E282DF1D08E6CC00ADD4C8 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = translations/id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		45E5A6981F61E6DD001E4A8A /* MarqueeLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MarqueeLabel.swift; sourceTree = "<group>"; };
 		45E7A6A61E71CA7E00D44FB5 /* DisplayableTextFilterTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayableTextFilterTest.swift; sourceTree = "<group>"; };
+		9B14D2F777E371E6624542BA /* TellomiTextSelectionModelTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTextSelectionModelTest.swift; sourceTree = "<group>"; };
 		45F32C1D205718B000A300D5 /* MediaPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MediaPageViewController.swift; path = Signal/src/ViewControllers/MediaGallery/MediaPageViewController.swift; sourceTree = SOURCE_ROOT; };
 		46A35218397D9FD1709A675C /* Pods-SignalUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SignalUITests.debug.xcconfig"; path = "Target Support Files/Pods-SignalUITests/Pods-SignalUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		4C090A1A210FD9C7001FD7F9 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
@@ -5868,6 +5871,7 @@
 		4CA46F4B219CCC630038ABDE /* MediaCaptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCaptionView.swift; sourceTree = "<group>"; };
 		4CA485BA2232339F004B9E7D /* PhotoCaptureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCaptureViewController.swift; sourceTree = "<group>"; };
 		4CB5F26820F7D060004D1B42 /* MessageActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageActions.swift; sourceTree = "<group>"; };
+		BD5A4E95B6A2DBEA45AABB08 /* TellomiTextSelectionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTextSelectionOverlay.swift; sourceTree = "<group>"; };
 		4CB93DC12180FF07004B9764 /* ProximityMonitoringManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityMonitoringManager.swift; sourceTree = "<group>"; };
 		4CC1ECF8211A47CD00CC13BE /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4CD675BD22E7BE35008010D2 /* MediaDismissAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDismissAnimationController.swift; sourceTree = "<group>"; };
@@ -10255,6 +10259,7 @@
 				34A95517271B510400B05242 /* LinkPreviewGroupLink.swift */,
 				346EAA13250199A300E8AB6F /* MemberRequestView.swift */,
 				4CB5F26820F7D060004D1B42 /* MessageActions.swift */,
+				BD5A4E95B6A2DBEA45AABB08 /* TellomiTextSelectionOverlay.swift */,
 				50D839502F916A3700EE009A /* MessageRequestDecliner.swift */,
 				88D1D40122EBB5A100F472C5 /* MessageRequestView.swift */,
 				50BD86AE2A3CFF89005B6AC1 /* ResendMessagePromptBuilder.swift */,
@@ -13429,6 +13434,7 @@
 				3494BBDF26E66FC30079B11B /* DateUtilTest.swift */,
 				D900E12F30784B398D34ABF7 /* TellomiBrandAssetsTest.swift */,
 				45E7A6A61E71CA7E00D44FB5 /* DisplayableTextFilterTest.swift */,
+				9B14D2F777E371E6624542BA /* TellomiTextSelectionModelTest.swift */,
 				3485434426BC598800FB9C38 /* EmojiTests.swift */,
 				F9952B3029F2D99500EA989E /* ExpirationNagViewTest.swift */,
 				345AE2B52317048200DB6225 /* GRDBFinderTest.swift */,
@@ -20688,6 +20694,7 @@
 				04441DEF2F194B800095E1F4 /* MemberLabelViewController.swift in Sources */,
 				346EAA14250199A400E8AB6F /* MemberRequestView.swift in Sources */,
 				4CB5F26920F7D060004D1B42 /* MessageActions.swift in Sources */,
+				15C84F597F5BA6C92A76EA66 /* TellomiTextSelectionOverlay.swift in Sources */,
 				4CB5F26720F6E1E2004D1B42 /* MessageActionsToolbar.swift in Sources */,
 				45F32C242057297A00A300D5 /* MessageDetailViewController.swift in Sources */,
 				66CDB7522AF9D117009A36EC /* MessageFetchBGRefreshTask.swift in Sources */,
@@ -21163,6 +21170,7 @@
 				D92812E22FA95C1400667DCF /* DisplayableAccountEntropyPoolTest.swift in Sources */,
 				C070EC9493C948E10A88C2C7 /* TellomiRemoteBackupsTest.swift in Sources */,
 				45E7A6A81E71CA7E00D44FB5 /* DisplayableTextFilterTest.swift in Sources */,
+				8986599B22555F3ADEA42FBF /* TellomiTextSelectionModelTest.swift in Sources */,
 				F90B7BC12912B90100F50A59 /* DonateViewControllerTest.swift in Sources */,
 				F99D2C8B2926F0DD00748CCB /* DonationPaymentDetailsViewControllerTest.swift in Sources */,
 				F90B7BC02912B8E000F50A59 /* DonationUtilitiesTest.swift in Sources */,
