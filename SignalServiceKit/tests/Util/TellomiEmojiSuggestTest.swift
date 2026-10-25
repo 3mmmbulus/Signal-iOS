@@ -61,7 +61,7 @@ class TellomiEmojiSuggestTest: XCTestCase {
     }
 
     func testResultsDedupedAndCapped() {
-        let r = s(":l")  // too short
+        let r = s(":l") // too short
         XCTAssertNil(r)
         let many = s(":c")
         XCTAssertNil(many)

@@ -80,9 +80,10 @@ public enum TellomiEmojiSuggest {
 
     public static func suggestion(text: String, selectedRange: NSRange) -> TellomiEmojiSuggestion? {
         let ns = text as NSString
-        guard selectedRange.length == 0,
-              selectedRange.location != NSNotFound,
-              selectedRange.location <= ns.length else { return nil }
+        guard
+            selectedRange.length == 0,
+            selectedRange.location != NSNotFound,
+            selectedRange.location <= ns.length else { return nil }
         let cursor = selectedRange.location
         // 光标后紧跟字母/数字/汉字 = 在词中间，不出。
         if cursor < ns.length, let next = Unicode.Scalar(ns.character(at: cursor)), isWordScalar(next) || isHan(next) {
@@ -107,7 +108,7 @@ public enum TellomiEmojiSuggest {
                 return TellomiEmojiSuggestion(
                     replacementRange: NSRange(location: cursor - utf16Len - 1, length: utf16Len + 1),
                     query: word,
-                    emoji: emoji
+                    emoji: emoji,
                 )
             }
             // 2) 完整英文词
@@ -117,7 +118,7 @@ public enum TellomiEmojiSuggest {
             return TellomiEmojiSuggestion(
                 replacementRange: NSRange(location: cursor - utf16Len, length: utf16Len),
                 query: word,
-                emoji: emoji
+                emoji: emoji,
             )
         }
 
@@ -133,7 +134,7 @@ public enum TellomiEmojiSuggest {
                 return TellomiEmojiSuggestion(
                     replacementRange: NSRange(location: cursor - len, length: len),
                     query: candidate,
-                    emoji: emoji
+                    emoji: emoji,
                 )
             }
         }
