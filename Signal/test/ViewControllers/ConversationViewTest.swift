@@ -291,4 +291,27 @@ class TellomiMessageStatusTest: SignalBaseTest {
         write { tx in TellomiChecksHint.markShown(tx: tx) }
         read { tx in XCTAssertTrue(TellomiChecksHint.hasShown(tx: tx)) }
     }
+
+    func testMessageDetailSectionIconsUseTellomiChecks() {
+        typealias V = MessageDetailViewController
+        typealias U = MessageRecipientStatusUtils
+        XCTAssertEqual(V.tellomiSectionIconName(for: .sent), U.tellomiOneCheckImageName)
+        XCTAssertEqual(V.tellomiSectionIconName(for: .delivered), U.tellomiOneCheckImageName)
+        XCTAssertEqual(V.tellomiSectionIconName(for: .read), U.tellomiTwoChecksImageName)
+        XCTAssertEqual(V.tellomiSectionIconName(for: .viewed), U.tellomiTwoChecksImageName)
+        XCTAssertEqual(V.tellomiSectionIconName(for: .sending), "message_status_sending")
+        XCTAssertNil(V.tellomiSectionIconName(for: .failed))
+        XCTAssertNil(V.tellomiSectionIconName(for: .skipped))
+
+        let fallback = UIColor.ows_gray90
+        let light = UITraitCollection(userInterfaceStyle: .light)
+        func assertSameColor(_ a: UIColor, _ b: UIColor, line: UInt = #line) {
+            XCTAssertEqual(a.resolvedColor(with: light), b.resolvedColor(with: light), line: line)
+        }
+        assertSameColor(V.tellomiSectionIconTintColor(for: .sent, defaultColor: fallback), UIColor.Signal.secondaryLabel)
+        assertSameColor(V.tellomiSectionIconTintColor(for: .delivered, defaultColor: fallback), UIColor.Signal.secondaryLabel)
+        assertSameColor(V.tellomiSectionIconTintColor(for: .read, defaultColor: fallback), UIColor.Signal.accent)
+        assertSameColor(V.tellomiSectionIconTintColor(for: .viewed, defaultColor: fallback), UIColor.Signal.accent)
+        assertSameColor(V.tellomiSectionIconTintColor(for: .sending, defaultColor: fallback), fallback)
+    }
 }

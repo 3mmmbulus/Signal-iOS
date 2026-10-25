@@ -483,7 +483,10 @@ class MessageDetailViewController: OWSTableViewController2 {
                 iconView.contentMode = .scaleAspectFit
                 iconView.setTemplateImageName(
                     iconName,
-                    tintColor: Theme.isDarkThemeEnabled ? UIColor.ows_gray05 : UIColor.ows_gray90,
+                    tintColor: Self.tellomiSectionIconTintColor(
+                        for: statusGroup,
+                        defaultColor: Theme.isDarkThemeEnabled ? UIColor.ows_gray05 : UIColor.ows_gray90,
+                    ),
                 )
                 headerView.addSubview(iconView)
                 iconView.autoAlignAxis(.horizontal, toSameAxisOf: label)
@@ -610,17 +613,33 @@ class MessageDetailViewController: OWSTableViewController2 {
     // MARK: - Actions
 
     private func sectionIconName(for messageReceiptStatus: MessageReceiptStatus) -> String? {
+        Self.tellomiSectionIconName(for: messageReceiptStatus)
+    }
+
+    /// Tellomi（#1186，同电脑端 #99）：「信息」页分组标题旁的勾换成品牌勾。
+    /// 已发出 / 已送达：一勾；已读 / 已查看：两勾。关回执时别人的已读按 #358 已归到「已送达」（showsReadStates），所以是一勾。
+    static func tellomiSectionIconName(for messageReceiptStatus: MessageReceiptStatus) -> String? {
         switch messageReceiptStatus {
         case .uploading, .sending, .pending:
             return "message_status_sending"
-        case .sent:
-            return "message_status_sent"
-        case .delivered:
-            return "message_status_delivered"
+        case .sent, .delivered:
+            return MessageRecipientStatusUtils.tellomiOneCheckImageName
         case .read, .viewed:
-            return "message_status_read"
+            return MessageRecipientStatusUtils.tellomiTwoChecksImageName
         case .failed, .skipped:
             return nil
+        }
+    }
+
+    /// Tellomi（#1186，同电脑端 #99）：一勾灰色，两勾强调色；发送中沿用标题颜色。不加动画。
+    static func tellomiSectionIconTintColor(for messageReceiptStatus: MessageReceiptStatus, defaultColor: UIColor) -> UIColor {
+        switch messageReceiptStatus {
+        case .sent, .delivered:
+            return UIColor.Signal.secondaryLabel
+        case .read, .viewed:
+            return UIColor.Signal.accent
+        case .uploading, .sending, .pending, .failed, .skipped:
+            return defaultColor
         }
     }
 
