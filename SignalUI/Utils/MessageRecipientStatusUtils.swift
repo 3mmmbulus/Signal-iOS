@@ -312,6 +312,109 @@ extension MessageRecipientStatusUtils {
     }
 }
 
+// MARK: - Tellomi（tellomi/tellomi#1186，需求 message-status-and-read-receipts §3.1：品牌勾、动画、新手提示）
+
+/// 气泡上画哪一种勾（三端同一套 Tellomi 自己的图标，没有圆圈）。
+public enum TellomiCheckDisplay: Equatable {
+    /// 发送中（转圈）。
+    case sending
+    /// 一个勾：已发出（已送达也画成一个勾，#1184）。
+    case oneCheck
+    /// 两个勾：已读 / 已查看 / 已播放。
+    case twoChecks
+}
+
+/// 屏上看到状态变化时放的动画。
+public enum TellomiCheckAnimation: Equatable {
+    /// 发送中 → 一个勾：淡入 150 ms。
+    case fadeInOneCheck
+    /// 变已读：第二个勾从第一个勾处长出 220 ms。
+    case growSecondCheck
+
+    public var duration: TimeInterval {
+        switch self {
+        case .fadeInOneCheck: return 0.15
+        case .growSecondCheck: return 0.22
+        }
+    }
+}
+
+/// 会话页记着「屏上每条消息上次画的是哪种勾」：同一条消息再画时拿上次的比，决定动不动。
+/// 消息离开屏幕就忘掉（[forget]），所以打开会话、回翻历史时第一次画出来的勾不动。
+public struct TellomiShownChecks {
+    private var checks: [String: TellomiCheckDisplay] = [:]
+
+    public init() {}
+
+    /// 记下这次画的勾（nil = 没画勾，比如失败），返回上次画的。
+    public mutating func record(_ check: TellomiCheckDisplay?, for interactionId: String) -> TellomiCheckDisplay? {
+        let previous = checks[interactionId]
+        checks[interactionId] = check
+        return previous
+    }
+
+    public mutating func forget(_ interactionId: String) {
+        checks[interactionId] = nil
+    }
+
+    public mutating func forgetAll() {
+        checks.removeAll()
+    }
+
+    public var count: Int { checks.count }
+}
+
+extension MessageRecipientStatusUtils {
+
+    public static let tellomiOneCheckImageName = "tellomi_check"
+    public static let tellomiTwoChecksImageName = "tellomi_double_check"
+
+    /// 长出动画开始时露出的宽度比例（只露第一个勾），和电脑端 clip-path inset 38% 一致。
+    public static let tellomiGrowStartVisibleFraction: CGFloat = 0.62
+
+    /// 新手提示停留的秒数。
+    public static let tellomiChecksHintSeconds: Int = 8
+
+    /// 同一条消息、同一个还在屏上的气泡，从 [previous] 变到 [next] 放什么动画。
+    /// [previous] 为 nil = 这个气泡刚画出来（打开会话、回翻历史、换了一条消息）：不动。减少动态时不动。
+    public static func tellomiCheckAnimation(
+        previous: TellomiCheckDisplay?,
+        next: TellomiCheckDisplay?,
+        reduceMotion: Bool,
+    ) -> TellomiCheckAnimation? {
+        guard !reduceMotion, let previous, let next, previous != next else {
+            return nil
+        }
+        switch (previous, next) {
+        case (.sending, .oneCheck):
+            return .fadeInOneCheck
+        case (.sending, .twoChecks), (.oneCheck, .twoChecks):
+            return .growSecondCheck
+        default:
+            return nil
+        }
+    }
+
+    /// 屏上看到一条消息被服务器收下（发送中 → 一个勾 / 两个勾）。新手提示用它触发，和减少动态无关。
+    public static func tellomiIsSeenSent(previous: TellomiCheckDisplay?, next: TellomiCheckDisplay?) -> Bool {
+        guard previous == .sending else {
+            return false
+        }
+        return next == .oneCheck || next == .twoChecks
+    }
+
+    /// 本机第一次发出消息后一次性提示「一个勾：已发出；两个勾：对方已读」。
+    /// 笔记（自己给自己）、编辑、故事回复不触发：那里的勾意思不一样。
+    public static func tellomiShouldShowChecksHint(
+        alreadyShown: Bool,
+        isNoteToSelf: Bool,
+        isEdit: Bool,
+        isStoryReply: Bool,
+    ) -> Bool {
+        return !alreadyShown && !isNoteToSelf && !isEdit && !isStoryReply
+    }
+}
+
 extension TSPaymentState {
     public var messageReceiptStatus: MessageReceiptStatus {
         switch self {

@@ -11037,6 +11037,9 @@
 /* Button on the 'chat archived' toast that moves the chat back out of the archive. */
 "TELLOMI_CHAT_LIST_ARCHIVED_UNDO" = "復原";
 
+/* Tellomi (M7 message-status spec 3.1, #1186): one-time toast after the first message this device sends, explaining one check vs two checks. */
+"TELLOMI_CHECKS_HINT" = "一個勾：已發出；兩個勾：對方已讀";
+
 /* Button in the registration consent dialog: agree to the Terms of Service and Privacy Policy and continue. */
 "TELLOMI_CONSENT_AGREE_AND_CONTINUE" = "同意並繼續";
 

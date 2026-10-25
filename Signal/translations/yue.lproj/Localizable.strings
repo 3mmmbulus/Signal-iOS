@@ -10492,6 +10492,9 @@
 /* Tap to Replace Emoji string for reaction configuration */
 "TAP_REPLACE_EMOJI" = "撳一下替換另一個表情符號";
 
+/* Tellomi (M7 message-status spec 3.1, #1186): one-time toast after the first message this device sends, explaining one check vs two checks. */
+"TELLOMI_CHECKS_HINT" = "一個剔：已發出；兩個剔：對方已讀";
+
 /* Tellomi feed I-3 card (2026-10-20) */
 "TELLOMI_FEED_QUOTE" = "引用";
 

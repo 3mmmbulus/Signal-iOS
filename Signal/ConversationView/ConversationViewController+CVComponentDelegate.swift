@@ -1558,6 +1558,62 @@ extension ConversationViewController: OWSNavigationChildController {
     }
 }
 
+// MARK: - Tellomi（#1186）：勾的新手提示
+
+/// 本机第一次发出消息后一次性提示「一个勾：已发出；两个勾：对方已读」（8 秒）。记在本机 `KeyValueStore`，
+/// 换机、重新注册后会再提示一次（和电脑端解绑重连一样）。
+enum TellomiChecksHint {
+    private static let store = KeyValueStore(collection: "TellomiChecksHint")
+    private static let shownKey = "shown"
+
+    static func hasShown(tx: DBReadTransaction) -> Bool {
+        store.getBool(shownKey, defaultValue: false, transaction: tx)
+    }
+
+    static func markShown(tx: DBWriteTransaction) {
+        store.setBool(true, key: shownKey, transaction: tx)
+    }
+}
+
+extension ConversationViewController {
+    public func tellomiRecordShownCheck(_ check: TellomiCheckDisplay?, interactionId: String) -> TellomiCheckDisplay? {
+        viewState.tellomiShownChecks.record(check, for: interactionId)
+    }
+
+    public func tellomiForgetShownCheck(interactionId: String) {
+        viewState.tellomiShownChecks.forget(interactionId)
+    }
+
+    public func tellomiDidSeeOutgoingMessageSent(_ interaction: TSInteraction, isEdit: Bool) {
+        let databaseStorage = SSKEnvironment.shared.databaseStorageRef
+        let alreadyShown = databaseStorage.read { tx in TellomiChecksHint.hasShown(tx: tx) }
+        // 故事回复不在会话页里画，这里恒为 false。
+        guard
+            MessageRecipientStatusUtils.tellomiShouldShowChecksHint(
+                alreadyShown: alreadyShown,
+                isNoteToSelf: thread.isNoteToSelf,
+                isEdit: isEdit,
+                isStoryReply: false,
+            )
+        else {
+            return
+        }
+        databaseStorage.write { tx in TellomiChecksHint.markShown(tx: tx) }
+
+        let toast = ToastController(text: OWSLocalizedString(
+            "TELLOMI_CHECKS_HINT",
+            comment: "Tellomi (M7 message-status spec 3.1, #1186): one-time toast after the first message this device sends, explaining one check vs two checks.",
+        ))
+        let bottomInset = 10 + collectionView.contentInset.bottom + view.layoutMargins.bottom
+        toast.presentToastView(
+            from: .bottom,
+            of: view,
+            inset: bottomInset,
+            dismissAfter: .seconds(MessageRecipientStatusUtils.tellomiChecksHintSeconds),
+        )
+    }
+}
+
 // MARK: - PollDetailsViewControllerDelegate
 
 extension ConversationViewController: PollDetailsViewControllerDelegate {

@@ -162,6 +162,8 @@ public class CVViewState: NSObject {
     var tellomiForcedPinUniqueId: String?
     var tellomiPinnedBarNewestVisible: UInt64 = .max
     var tellomiHeldUnpins = TellomiHeldUnpins<String>()
+    /// Tellomi（#1186）：屏上每条消息上次画的勾，用来只在看到变化时动。
+    var tellomiShownChecks = TellomiShownChecks()
 
     public var collectionViewActiveContextMenuInteraction: ChatHistoryContextMenuInteraction?
     public var longPressHandler: CVLongPressHandler?
