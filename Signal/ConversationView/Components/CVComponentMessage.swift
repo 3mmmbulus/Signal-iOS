@@ -2422,6 +2422,25 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
             return handler
         }
 
+        // Tellomi（TF43 P1，同 Telegram）：按在链接卡片上弹链接菜单（见 `CVComponentLinkPreview.findLongPressHandler`）。
+        if
+            !isShowingSelectionUI,
+            let componentAndView = findActiveComponentAndView(
+                key: .linkPreview,
+                messageView: componentView,
+                ignoreMissing: true,
+            ),
+            componentAndView.componentView.rootView.containsGestureLocation(sender),
+            let handler = componentAndView.component.findLongPressHandler(
+                sender: sender,
+                componentDelegate: componentDelegate,
+                componentView: componentAndView.componentView,
+                renderItem: renderItem,
+            )
+        {
+            return handler
+        }
+
         let longPressKeys: [CVComponentKey: CVLongPressHandler.GestureLocation] = [
             .sticker: .sticker,
             .bodyMedia: .media,

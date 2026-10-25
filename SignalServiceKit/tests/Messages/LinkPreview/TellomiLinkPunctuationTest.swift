@@ -70,4 +70,46 @@ final class TellomiLinkPunctuationTest: XCTestCase {
         XCTAssertEqual(links("Visit https://signal.org."), ["https://signal.org"])
         XCTAssertEqual(links("https://en.wikipedia.org/wiki/Foo_(bar)"), ["https://en.wikipedia.org/wiki/Foo_(bar)"])
     }
+
+    // MARK: - Tellomi（TF43 P1）：没写协议的链接
+
+    private func urls(_ text: String) -> [String] {
+        return TextCheckingDataItem.detectedItems(in: text, using: detector)
+            .filter { $0.dataType == .link }
+            .map { $0.url.absoluteString }
+    }
+
+    func testBareDomainIsALinkAndOpensWithHttps() {
+        XCTAssertEqual(links("baidu.com"), ["baidu.com"])
+        XCTAssertEqual(urls("baidu.com"), ["https://baidu.com"])
+        XCTAssertEqual(urls("去 www.jd.com/a?b=1 看看"), ["https://www.jd.com/a?b=1"])
+        XCTAssertEqual(urls("tell.cc"), ["https://tell.cc"])
+    }
+
+    func testExplicitSchemeIsKept() {
+        XCTAssertEqual(urls("http://example.org/a"), ["http://example.org/a"])
+        XCTAssertEqual(urls("https://baidu.com"), ["https://baidu.com"])
+    }
+
+    func testBareDomainStillStopsAtChinesePunctuation() {
+        XCTAssertEqual(urls("看 baidu.com。"), ["https://baidu.com"])
+        XCTAssertEqual(urls("（baidu.com）"), ["https://baidu.com"])
+    }
+
+    func testFileNamesAndVersionsAreNotLinks() {
+        XCTAssertEqual(links("运行 setup.py 就行"), [])
+        XCTAssertEqual(links("看 README.md"), [])
+        XCTAssertEqual(links("下载 photos.zip"), [])
+        XCTAssertEqual(links("升级到 1.2.3 或 v2.0.1"), [])
+    }
+
+    func testResolve() {
+        XCTAssertNil(TellomiSchemelessLink.resolve(snippet: "setup.py", url: URL(string: "http://setup.py")))
+        XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "www.setup.py", url: URL(string: "http://www.setup.py")), URL(string: "https://www.setup.py"))
+        XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "a.py/docs", url: URL(string: "http://a.py/docs")), URL(string: "https://a.py/docs"))
+        XCTAssertNil(TellomiSchemelessLink.resolve(snippet: "1.2.3", url: URL(string: "http://1.2.3")))
+        let mail = URL(string: "mailto:a@b.com")
+        XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "a@b.com", url: mail), mail)
+        XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "http://x.py", url: URL(string: "http://x.py")), URL(string: "http://x.py"))
+    }
 }

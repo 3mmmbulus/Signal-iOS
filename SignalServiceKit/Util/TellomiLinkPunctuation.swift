@@ -49,3 +49,49 @@ public enum TellomiLinkPunctuation {
         return (NSRange(location: range.location, length: match.range.length), match.url)
     }
 }
+
+/// Tellomi（TF43 P1，产品 2026-10-25）：正文里没写协议的链接（`baidu.com`、`www.jd.com/a`）。
+///
+/// NSDataDetector 认得出这种写法，但给的是 `http://`；点开要默认走 https（同 Telegram）。
+/// 另外排除一些长得像文件名的写法（`setup.py`、`README.md`、`a.zip`）：顶级域恰好也是常见扩展名，
+/// 而且后面没有路径、前面没有 `www.` 时不算链接。版本号（`1.2.3`、`v2.0`）NSDataDetector 本来就不认，这里再兜一层：
+/// 顶级域必须是字母。「CJK 标点不进链接」由 `TellomiLinkPunctuation` 先处理，这里不变。
+public enum TellomiSchemelessLink {
+
+    /// 同时是顶级域和常见文件扩展名的后缀（`.cc`、`.ai`、`.io` 是常用网址后缀，不在表里：`tell.cc` 要认）。
+    public static let fileLikeTopLevelDomains: Set<String> = [
+        "zip", "mov", "py", "md", "sh", "rs", "pl", "gz", "kt", "js", "ts", "swift",
+        "txt", "pdf", "doc", "docx", "png", "jpg", "jpeg", "gif", "mp3", "mp4", "apk", "ipa", "exe", "dmg",
+    ]
+
+    /// 用户写的这段文字没有协议（不含 `://`，也不是 `mailto:` 之类）吗。
+    public static func isSchemeless(_ snippet: String) -> Bool {
+        let lower = snippet.lowercased()
+        if lower.contains("://") { return false }
+        for prefix in ["mailto:", "tel:", "sms:", "tellomi:", "sgnl:"] where lower.hasPrefix(prefix) {
+            return false
+        }
+        return true
+    }
+
+    /// 处理一条没写协议的链接：返回要用的 URL（https），nil 表示这段不算链接。
+    /// 有协议的原样返回 `url`。
+    public static func resolve(snippet: String, url: URL?) -> URL?? {
+        guard isSchemeless(snippet) else { return .some(url) }
+        guard let url, let host = url.host?.lowercased(), !host.isEmpty else { return .some(url) }
+        let labels = host.split(separator: ".")
+        guard labels.count >= 2, let tld = labels.last.map(String.init) else { return nil }
+        // 顶级域必须是字母（排除版本号、IP）。
+        guard tld.count >= 2, tld.unicodeScalars.allSatisfy({ ("a"..."z").contains($0) }) || tld.hasPrefix("xn--") else {
+            return nil
+        }
+        let hasPath = !(url.path.isEmpty || url.path == "/") || url.query != nil || url.fragment != nil
+        if fileLikeTopLevelDomains.contains(tld), !host.hasPrefix("www."), !hasPath {
+            return nil
+        }
+        guard url.scheme?.lowercased() == "http" else { return .some(url) }
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        components?.scheme = "https"
+        return .some(components?.url ?? url)
+    }
+}

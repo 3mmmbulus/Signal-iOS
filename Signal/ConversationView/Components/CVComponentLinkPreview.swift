@@ -119,6 +119,32 @@ class CVComponentLinkPreview: CVComponentBase, CVComponent {
         return true
     }
 
+    /// Tellomi（TF43 P1，同 Telegram）：长按卡片弹链接菜单（完整网址 / 打开 / 复制链接 / 分享），
+    /// 和长按正文里的链接一样；卡片不响应点击时（消息请求里的域名卡）照旧弹整条消息的菜单。
+    override func findLongPressHandler(
+        sender: UIGestureRecognizer,
+        componentDelegate: CVComponentDelegate,
+        componentView: CVComponentView,
+        renderItem: CVRenderItem,
+    ) -> CVLongPressHandler? {
+        guard let url = Self.longPressLinkUrl(linkPreview) else {
+            return nil
+        }
+        return CVLongPressHandler(
+            delegate: componentDelegate,
+            renderItem: renderItem,
+            gestureLocation: .bodyText(item: .dataItem(dataItem: .tellomiLink(url: url))),
+        )
+    }
+
+    /// 长按卡片时链接菜单用的网址；nil 表示不弹链接菜单。
+    static func longPressLinkUrl(_ linkPreview: LinkPreviewState) -> URL? {
+        guard respondsToTap(linkPreview), let urlString = linkPreview.urlString else {
+            return nil
+        }
+        return URL(string: urlString)
+    }
+
     /// 卡片响应点击吗。消息请求里的域名卡不响应（card-visual §7.3；同 Telegram iOS 对可疑发件人的处理：
     /// 卡片的点击动作是 `.none`），陌生人发来的链接不能一点就打开；接受以后才是完整的卡片。
     static func respondsToTap(_ linkPreview: LinkPreviewState) -> Bool {
