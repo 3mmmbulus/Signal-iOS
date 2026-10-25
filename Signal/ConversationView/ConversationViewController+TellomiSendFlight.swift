@@ -50,8 +50,8 @@ extension ConversationViewController {
             onChange: { [weak self] _ in
                 self?.tellomiApplySendFlightFieldAlpha()
             },
-            onReveal: { [weak self] _, interactionUniqueId in
-                self?.tellomiRevealSendFlightRow(interactionUniqueId: interactionUniqueId)
+            onReveal: { [weak self] flight, interactionUniqueId in
+                self?.tellomiRevealSendFlightRow(interactionUniqueId: interactionUniqueId, releasing: flight)
             },
             onFinish: { [weak self] flight in
                 guard let self else {
@@ -111,16 +111,28 @@ extension ConversationViewController {
         return TellomiSendFlight.Target(bubbleView: bubbleView, bodyTextView: bodyTextView, renderItem: renderItem)
     }
 
-    private func tellomiRevealSendFlightRow(interactionUniqueId: String) {
+    /// `releasing`：正在放这一格的那一次飞行，不管它现在的 phase 都不再算它（P0 TF43：别让它自己把格子藏回去）。
+    private func tellomiRevealSendFlightRow(interactionUniqueId: String, releasing: TellomiSendFlight) {
         guard
             let indexPath = indexPath(forInteractionUniqueId: interactionUniqueId),
             let cell = collectionView.cellForItem(at: indexPath) as? CVCell
         else {
             return
         }
-        cell.tellomiIsHeldForSendFlight = viewState.tellomiSendFlights.contains {
-            $0.isHoldingRow(interactionUniqueId: interactionUniqueId)
-        }
+        cell.tellomiIsHeldForSendFlight = Self.tellomiIsRowStillHeld(
+            interactionUniqueId: interactionUniqueId,
+            flights: viewState.tellomiSendFlights,
+            releasing: releasing,
+        )
+    }
+
+    /// 放出一格时它还该不该藏着：只看别的、还在等或在飞的那几次。
+    static func tellomiIsRowStillHeld(
+        interactionUniqueId: String,
+        flights: [TellomiSendFlight],
+        releasing: TellomiSendFlight,
+    ) -> Bool {
+        flights.contains { $0 !== releasing && $0.isHoldingRow(interactionUniqueId: interactionUniqueId) }
     }
 
     /// 输入框的透明度：还在等、在飞的那几次里最透明的那个；都完了就是 1。

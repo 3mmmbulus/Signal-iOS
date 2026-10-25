@@ -129,6 +129,27 @@ class TellomiMessageStatusTest: SignalBaseTest {
         }
     }
 
+    /// P0 TF43：连发 5 条，服务器收下、对方设备送达了都只是一个勾；对方没读就没有两个勾。
+    func testFiveSentAndDeliveredMessagesAreAllOneCheck() {
+        write { tx in
+            let aci = Aci.randomForTesting()
+            for n in 1...5 {
+                let message = textMessage(to: aci, timestamp: UInt64(100 + n), tx: tx)
+                message.updateWithSentRecipients([aci], wasSentByUD: false, tx: tx)
+                XCTAssertEqual(MessageRecipientStatusUtils.recipientStatus(outgoingMessage: message, hasBodyAttachments: false), .sent, "message \(n) sent")
+                message.update(
+                    withDeliveredRecipient: SignalServiceAddress(aci),
+                    deviceId: DeviceId(validating: 1)!,
+                    deliveryTimestamp: UInt64(200 + n),
+                    context: PassthroughDeliveryReceiptContext(),
+                    tx: tx,
+                )
+                XCTAssertEqual(MessageRecipientStatusUtils.recipientStatus(outgoingMessage: message, hasBodyAttachments: false), .sent, "message \(n) delivered is still one check")
+                XCTAssertTrue(message.readRecipientAddresses().isEmpty)
+            }
+        }
+    }
+
     func testWithMyReadReceiptsOffNobodysReadShowsIncludingEarlierOnes() {
         write { tx in
             let aci = Aci.randomForTesting()
