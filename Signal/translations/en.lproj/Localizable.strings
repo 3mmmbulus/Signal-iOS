@@ -11274,6 +11274,9 @@
 /* Link at the bottom of the cross-border notice that opens the Third-Party Sharing and SDK List. */
 "TELLOMI_CROSS_BORDER_THIRD_PARTY_LINK" = "Read the Third-Party Sharing and SDK List";
 
+/* Accessibility label for the row of emoji suggestions shown above the message input while typing. */
+"TELLOMI_EMOJI_SUGGESTIONS_ACCESSIBILITY_LABEL" = "Emoji suggestions";
+
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_ACTION_FAILED" = "Couldn't complete that. Try again.";
 

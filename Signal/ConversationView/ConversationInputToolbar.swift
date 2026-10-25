@@ -641,6 +641,16 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         return view
     }()
 
+    /// Tellomi（Telegram 对照 3.4 / F22）：打字时输入框上方的表情建议栏；没有建议时隐藏。
+    private lazy var tellomiEmojiSuggestBar: TellomiEmojiSuggestBar = {
+        let bar = TellomiEmojiSuggestBar()
+        bar.accessibilityIdentifier = UIView.accessibilityIdentifier(in: self, name: "tellomiEmojiSuggestBar")
+        bar.onSelect = { [weak self] emoji in
+            self?.tellomiApplyEmojiSuggestion(emoji)
+        }
+        return bar
+    }()
+
     private lazy var voiceMemoContentView: UIView = {
         let view = UIView.container()
         view.isHidden = true
@@ -829,6 +839,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             editMessageLabelWrapper,
             quotedReplyWrapper,
             linkPreviewWrapper,
+            tellomiEmojiSuggestBar,
             inputTextViewContainer,
         ])
         messageComponentsView.axis = .vertical
@@ -1754,6 +1765,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         // wrapper view *and* changing the height of the input textView
         ensureTextViewHeight()
         updateInputLinkPreview()
+        tellomiUpdateEmojiSuggestions()
 
         if let text = messageBody?.text, !text.isEmpty {
             clearDesiredKeyboard()
@@ -2642,6 +2654,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
     private var isShowingVoiceMemoUI: Bool = false {
         didSet {
             guard isShowingVoiceMemoUI != oldValue else { return }
+            tellomiUpdateEmojiSuggestions()
             ensureButtonVisibility(withAnimation: true, doLayout: true)
         }
     }
@@ -3515,9 +3528,55 @@ extension ConversationInputToolbar: ConversationTextViewToolbarDelegate {
         updateHeightWithTextView(textView)
         ensureButtonVisibility(withAnimation: true, doLayout: true)
         updateInputLinkPreview()
+        tellomiUpdateEmojiSuggestions()
     }
 
-    func textViewDidChangeSelection(_ textView: UITextView) { }
+    func textViewDidChangeSelection(_ textView: UITextView) {
+        guard isConfigurationComplete else { return }
+        tellomiUpdateEmojiSuggestions()
+    }
+
+    // MARK: Tellomi emoji suggestions（Telegram 对照 3.4 / F22）
+
+    /// 按当前文字和光标刷新建议栏；录音界面显示时不出。
+    fileprivate func tellomiUpdateEmojiSuggestions() {
+        let emoji: [String]
+        if isShowingVoiceMemoUI {
+            emoji = []
+        } else {
+            emoji = TellomiEmojiSuggestBarModel.visibleEmoji(
+                text: inputTextView.text ?? "",
+                selectedRange: inputTextView.selectedRange,
+            )
+        }
+        guard tellomiEmojiSuggestBar.update(emoji: emoji) else { return }
+        // 栏出现 / 消失会改输入栏高度。
+        invalidateIntrinsicContentSize()
+        setNeedsLayout()
+    }
+
+    /// 点了建议栏里的一个表情：用 `TellomiEmojiSuggest.apply` 换掉查询词并把光标放到表情后面。
+    private func tellomiApplyEmojiSuggestion(_ emoji: String) {
+        let text = inputTextView.text ?? ""
+        guard
+            let result = TellomiEmojiSuggestBarModel.applying(
+                emoji: emoji,
+                text: text,
+                selectedRange: inputTextView.selectedRange,
+            ),
+            let start = inputTextView.position(from: inputTextView.beginningOfDocument, offset: result.replacedRange.location),
+            let end = inputTextView.position(from: start, offset: result.replacedRange.length),
+            let range = inputTextView.textRange(from: start, to: end)
+        else {
+            tellomiUpdateEmojiSuggestions()
+            return
+        }
+        // 走 UITextInput 替换，保留其余文字里的 @提及 和样式。
+        inputTextView.replace(range, withText: emoji)
+        owsAssertDebug(inputTextView.text == result.text)
+        inputTextView.selectedRange = NSRange(location: result.cursor, length: 0)
+        textViewDidChange(inputTextView)
+    }
 }
 
 extension ConversationInputToolbar: StickerKeyboardDelegate {
