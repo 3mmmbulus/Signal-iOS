@@ -83,4 +83,20 @@ final class TellomiLinkPressTests: SignalBaseTest {
         feedback.moved(toWindowPoint: CGPoint(x: 100, y: 130))
         XCTAssertNil(feedback.pressedTextLabel, "挪出 10 pt 是在滚动：收回")
     }
+
+    // MARK: - TF43 P1：长按链接菜单
+
+    func testLinkMenuCopiesTheFullUrl() throws {
+        let card = TextCheckingDataItem.tellomiLink(url: try XCTUnwrap(URL(string: "https://baidu.com/a?b=1")))
+        XCTAssertEqual(card.dataType, .link)
+        XCTAssertEqual(ConversationViewController.tellomiCopyableLink(card), "https://baidu.com/a?b=1")
+    }
+
+    func testBareDomainInBodyTextOpensWithHttps() throws {
+        let detector = try NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let item = try XCTUnwrap(TextCheckingDataItem.detectedItems(in: "看 baidu.com", using: detector).first)
+        XCTAssertEqual(item.snippet, "baidu.com")
+        XCTAssertEqual(item.url.absoluteString, "https://baidu.com")
+        XCTAssertEqual(ConversationViewController.tellomiCopyableLink(item), "https://baidu.com")
+    }
 }

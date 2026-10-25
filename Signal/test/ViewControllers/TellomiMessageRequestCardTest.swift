@@ -169,6 +169,8 @@ final class TellomiMessageRequestCardTest: SignalBaseTest {
         // 不响应点击；正文里的链接文字不隐藏
         XCTAssertTrue(state.isInert, file: file, line: line)
         XCTAssertFalse(CVComponentLinkPreview.respondsToTap(state), file: file, line: line)
+        // TF43 P1：不响应点击的卡片长按也不弹链接菜单，照旧是整条消息的菜单。
+        XCTAssertNil(CVComponentLinkPreview.longPressLinkUrl(state), file: file, line: line)
         XCTAssertFalse(state.isCardOnly, file: file, line: line)
         XCTAssertNotNil(componentState.bodyText, "正文还在", file: file, line: line)
         // 统一样式（产品经理 2026-10-19）：只有域名的横条（域名 + 指南针），中性灰，不取图标主色；照原样留在气泡里（不代替气泡）
@@ -353,6 +355,8 @@ final class TellomiMessageRequestCardTest: SignalBaseTest {
         XCTAssertEqual(state.displayDomain, "wikipedia.org")
         XCTAssertFalse(state.isInert)
         XCTAssertTrue(CVComponentLinkPreview.respondsToTap(state))
+        // TF43 P1：完整卡片长按弹链接菜单，网址就是卡片的网址。
+        XCTAssertEqual(CVComponentLinkPreview.longPressLinkUrl(state)?.absoluteString, state.urlString)
         XCTAssertTrue(state.isCardOnly, "只有这一条链接时只显示卡片")
         // 统一样式：没有图的文字横条（标题 + 域名 + 指南针），卡片代替气泡
         XCTAssertEqual(state.cardStyle, .textStrip)

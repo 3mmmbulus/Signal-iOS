@@ -130,7 +130,8 @@ extension ConversationViewController {
                     comment: "Title for message actions for a group invite link.",
                 )
             }
-            return dataItem.snippet.strippedOrNil
+            // Tellomi（TF43 P1，同 Telegram）：顶部显示完整网址（没写协议的也显示补上的 https）。
+            return dataItem.url.absoluteString.nilIfEmpty ?? dataItem.snippet.strippedOrNil
         }()
 
         let actionSheet = ActionSheetController(title: title)
@@ -183,11 +184,12 @@ extension ConversationViewController {
         }
 
         actionSheet.addAction(ActionSheetAction(
-            title: CommonStrings.copyButton,
+            title: OWSLocalizedString("TELLOMI_FEED_MENU_COPY_LINK", comment: "Tellomi: menu item that copies a link"),
             style: .default,
-            handler: { _ in
-                UIPasteboard.general.string = dataItem.snippet
-                // TODO: Show toast?
+            handler: { [weak self] _ in
+                // Tellomi（TF43 P1）：复制完整网址，底部小提示「链接已复制」（同 Telegram）。
+                UIPasteboard.general.string = Self.tellomiCopyableLink(dataItem)
+                self?.tellomiPresentLinkCopiedToast()
             },
         ))
         actionSheet.addAction(ActionSheetAction(
@@ -200,6 +202,21 @@ extension ConversationViewController {
         actionSheet.addAction(OWSActionSheets.cancelAction)
 
         presentActionSheet(actionSheet)
+    }
+
+    /// Tellomi（TF43 P1）：长按链接复制的文字——完整网址；邮件地址复制地址本身。
+    static func tellomiCopyableLink(_ dataItem: TextCheckingDataItem) -> String {
+        let absolute = dataItem.url.absoluteString
+        if absolute.lowercased().hasPrefix("mailto:") {
+            return dataItem.snippet
+        }
+        return absolute.isEmpty ? dataItem.snippet : absolute
+    }
+
+    private func tellomiPresentLinkCopiedToast() {
+        let toast = ToastController(text: OWSLocalizedString("TELLOMI_FEED_LINK_COPIED", comment: "Tellomi: toast after a link was copied"))
+        let bottomInset = 10 + collectionView.contentInset.bottom + view.layoutMargins.bottom
+        toast.presentToastView(from: .bottom, of: view, inset: bottomInset)
     }
 
     private func didLongPressAddress(dataItem: TextCheckingDataItem) {
