@@ -17,6 +17,9 @@ enum FeedMinorTime {
     static let nightEndHour = 6
     /// 多久记一次用了多少（也是到点后多快锁上）。
     static let tickMillis: Int64 = 15_000
+    /// 锁定提示页的文案（`TELLOMI_FEED_MINOR_LOCK_*` 标题和说明）是占位，**法务待审**，已列入法务清单（产品 2026-10-25）。
+    /// 审过之前 `TellomiFeed.isMinorTimeEnabled` 必须保持关（默认关，只有内部构建认）；审过、文案定稿后再把这里改成 false。
+    static let lockCopyPendingLegalReview = true
 
     enum Lock: Equatable {
         case night

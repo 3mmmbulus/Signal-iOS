@@ -98,18 +98,18 @@ final class FeedMinorLockView: UIView {
     static func title(_ lock: FeedMinorTime.Lock) -> String {
         switch lock {
         case .night:
-            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE", comment: "Feed minor mode: title of the page covering the feed between 22:00 and 6:00 (rest time).")
+            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE", comment: "Feed minor mode: title of the page covering the feed between 22:00 and 6:00 (rest time). PENDING LEGAL REVIEW: placeholder wording, do not ship with the minor time limit on until legal signs off.")
         case .daily:
-            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE", comment: "Feed minor mode: title of the page covering the feed after 40 minutes of use today.")
+            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE", comment: "Feed minor mode: title of the page covering the feed after 40 minutes of use today. PENDING LEGAL REVIEW: placeholder wording, do not ship with the minor time limit on until legal signs off.")
         }
     }
 
     static func body(_ lock: FeedMinorTime.Lock) -> String {
         switch lock {
         case .night:
-            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY", comment: "Feed minor mode: explanation that the feed can't be used between 22:00 and 6:00; chats still work.")
+            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY", comment: "Feed minor mode: explanation that the feed can't be used between 22:00 and 6:00; chats still work. PENDING LEGAL REVIEW: placeholder wording, do not ship with the minor time limit on until legal signs off.")
         case .daily:
-            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_DAILY_BODY", comment: "Feed minor mode: explanation that the feed can be used 40 minutes a day; chats still work.")
+            return OWSLocalizedString("TELLOMI_FEED_MINOR_LOCK_DAILY_BODY", comment: "Feed minor mode: explanation that the feed can be used 40 minutes a day; chats still work. PENDING LEGAL REVIEW: placeholder wording, do not ship with the minor time limit on until legal signs off.")
         }
     }
 }

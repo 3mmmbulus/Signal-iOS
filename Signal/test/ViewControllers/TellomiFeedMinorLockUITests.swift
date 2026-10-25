@@ -46,6 +46,13 @@ final class TellomiFeedMinorLockUITests: XCTestCase {
         super.tearDown()
     }
 
+    /// 锁定提示的文案还在法务待审：标记不能被悄悄去掉，开关也必须还是关的（默认值，不是测试里关的）。
+    func testLockCopyIsMarkedPendingLegalReviewAndTheSwitchStaysOff() {
+        XCTAssertTrue(FeedMinorTime.lockCopyPendingLegalReview, "文案法务审过之前不能去掉这个标记")
+        UserDefaults.standard.removeObject(forKey: "TellomiFeed.minorTime")
+        XCTAssertFalse(TellomiFeed.isMinorTimeEnabled, "开关默认关")
+    }
+
     @MainActor
     func testTheSwitchIsOffByDefaultAndOffMeansNothingIsInstalled() {
         XCTAssertFalse(TellomiFeed.isMinorTimeEnabled)

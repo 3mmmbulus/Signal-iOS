@@ -11520,16 +11520,16 @@
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
 "TELLOMI_FEED_MINE_TITLE" = "我的动态";
 
-/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+/* Tellomi (M11 feed, tellomi/tellomi#1355). 法务待审 / pending legal review: placeholder wording. */
 "TELLOMI_FEED_MINOR_LOCK_DAILY_BODY" = "未成年人每天可以浏览动态 40 分钟，明天再来吧。聊天不受影响。";
 
-/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+/* Tellomi (M11 feed, tellomi/tellomi#1355). 法务待审 / pending legal review: placeholder wording. */
 "TELLOMI_FEED_MINOR_LOCK_DAILY_TITLE" = "今天的动态时间已用完";
 
-/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+/* Tellomi (M11 feed, tellomi/tellomi#1355). 法务待审 / pending legal review: placeholder wording. */
 "TELLOMI_FEED_MINOR_LOCK_NIGHT_BODY" = "22:00 到次日 6:00 不能使用动态，早点休息。聊天不受影响。";
 
-/* Tellomi (M11 feed, tellomi/tellomi#1355) */
+/* Tellomi (M11 feed, tellomi/tellomi#1355). 法务待审 / pending legal review: placeholder wording. */
 "TELLOMI_FEED_MINOR_LOCK_NIGHT_TITLE" = "现在是休息时间";
 
 /* Tellomi (M11 feed, tellomi/tellomi#1355) */
