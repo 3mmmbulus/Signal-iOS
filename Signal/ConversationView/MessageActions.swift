@@ -56,7 +56,8 @@ enum MessageActionBuilder {
             .info,
             accessibilityLabel: OWSLocalizedString("MESSAGE_ACTION_DETAILS", comment: "Action sheet button title"),
             accessibilityIdentifier: UIView.accessibilityIdentifier(containerName: "message_action", name: "show_details"),
-            contextMenuTitle: OWSLocalizedString("CONTEXT_MENU_DETAILS", comment: "Context menu button title"),
+            contextMenuTitle: TellomiReadByMenuTitle.title(for: itemViewModel.interaction, thread: itemViewModel.thread)
+                ?? OWSLocalizedString("CONTEXT_MENU_DETAILS", comment: "Context menu button title"),
             contextMenuAttributes: [],
             block: { [weak delegate] _ in
                 delegate?.messageActionsShowDetailsForItem(itemViewModel)
@@ -633,5 +634,39 @@ enum TellomiSavedMessagesStrings {
                 comment: "Tellomi (#1174): message of the confirmation shown before deleting Saved Messages, when there are no linked devices",
             )
         return (title, message)
+    }
+}
+
+/// Tellomi（审计 1.3 / F19 的一部分）：群里长按自己发的消息，「信息」那一项直接写已读人数，
+/// 例如「已读 3/5」，点了还是进「信息」页看名单。只参照 Telegram 的行为，没有用它的代码。
+/// 私聊、收到的消息、还没发出去的消息仍显示「信息」。
+enum TellomiReadByMenuTitle {
+    struct Counts: Equatable {
+        let read: Int
+        let total: Int
+    }
+
+    /// 只数真正的收件人：跳过（skipped）的不算，已读和已看（viewed）都算已读。
+    static func counts(statuses: [OWSOutgoingMessageRecipientStatus]) -> Counts {
+        let recipients = statuses.filter { $0 != .skipped }
+        let read = recipients.filter { $0 == .read || $0 == .viewed }.count
+        return Counts(read: read, total: recipients.count)
+    }
+
+    /// 没有收件人时返回 nil，调用方退回「信息」。
+    static func title(counts: Counts) -> String? {
+        guard counts.total > 0 else { return nil }
+        let format = OWSLocalizedString(
+            "CONTEXT_MENU_TELLOMI_READ_BY_FORMAT",
+            value: "Read %1$@/%2$@",
+            comment: "Tellomi: group context menu item for own message, shows read count / recipient count. Embeds {{read}}, {{total}}.",
+        )
+        return String(format: format, OWSFormat.formatInt(counts.read), OWSFormat.formatInt(counts.total))
+    }
+
+    static func title(for interaction: TSInteraction, thread: TSThread) -> String? {
+        guard thread.isGroupThread, let message = interaction as? TSOutgoingMessage else { return nil }
+        guard let states = message.recipientAddressStates, !states.isEmpty else { return nil }
+        return title(counts: counts(statuses: states.values.map { $0.status }))
     }
 }
