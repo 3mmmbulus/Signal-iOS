@@ -51,9 +51,6 @@ public class LinkPreviewFetchState {
 
     private var _currentState: (State, URL?) {
         didSet {
-            if !isLoading {
-                resumeLoadingWaiters()
-            }
             onStateChange?()
         }
     }
@@ -87,56 +84,6 @@ public class LinkPreviewFetchState {
         case .loaded(let linkPreviewDraft):
             return linkPreviewDraft
         }
-    }
-
-    // MARK: - Waiting at send time
-
-    /// True while the preview for `currentUrl` is still being fetched.
-    public var isLoading: Bool {
-        if case .loading = currentState {
-            return true
-        }
-        return false
-    }
-
-    /// Tellomi (link cards P1, option a): continuations waiting for the current
-    /// fetch to settle, keyed so each one is resumed exactly once.
-    private var loadingWaiters = [Int: CheckedContinuation<Void, Never>]()
-    private var nextLoadingWaiterId = 0
-
-    /// Tellomi (link cards P1, option a): returns as soon as the state stops
-    /// being `.loading` (loaded, failed, dismissed or the URL was removed), or
-    /// after `timeout` seconds, whichever comes first. Returns at once if
-    /// nothing is loading. It never cancels the fetch: a preview that arrives
-    /// after the timeout still shows up in the composer as before.
-    @MainActor
-    public func waitWhileLoading(timeout: TimeInterval) async {
-        guard isLoading else {
-            return
-        }
-        let waiterId = nextLoadingWaiterId
-        nextLoadingWaiterId += 1
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            loadingWaiters[waiterId] = continuation
-            // Holds `self` for at most `timeout`, so a waiter can never be left hanging.
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(max(0, timeout) * 1_000_000_000))
-                self.resumeLoadingWaiter(waiterId)
-            }
-        }
-    }
-
-    private func resumeLoadingWaiter(_ waiterId: Int) {
-        loadingWaiters.removeValue(forKey: waiterId)?.resume()
-    }
-
-    private func resumeLoadingWaiters() {
-        guard !loadingWaiters.isEmpty else {
-            return
-        }
-        let waiters = loadingWaiters
-        loadingWaiters.removeAll()
-        waiters.values.forEach { $0.resume() }
     }
 
     // MARK: - Fetching
@@ -238,73 +185,6 @@ public class LinkPreviewFetchState {
             return body
         }
         return body.prepending(schemePrefix)
-    }
-}
-
-// MARK: -
-
-/// Tellomi (link cards P1, option a; product decision 2026-10-19): when Send is
-/// tapped while the link card is still loading, wait up to `defaultTimeout`
-/// seconds. If the card finishes in time the message goes out with it,
-/// otherwise without it. No card is added to the message later (no edit).
-///
-/// While waiting, `isWaiting` is true: the composer shows its loading state and
-/// further taps are ignored, so the message is sent only once.
-///
-/// Telegram doesn't need this: it sends at once and its server attaches the
-/// preview afterwards. Tellomi has no preview server (ADR-0063 §6.5), so the
-/// card has to be ready on the sender before the message leaves.
-@MainActor
-public final class TellomiLinkPreviewSendGate {
-
-    public nonisolated static let defaultTimeout: TimeInterval = 3
-
-    private let timeout: TimeInterval
-
-    public init(timeout: TimeInterval = TellomiLinkPreviewSendGate.defaultTimeout) {
-        self.timeout = timeout
-    }
-
-    /// Invoked when `isWaiting` changes.
-    public var onWaitingChange: (() -> Void)?
-
-    public private(set) var isWaiting = false {
-        didSet {
-            if oldValue != isWaiting {
-                onWaitingChange?()
-            }
-        }
-    }
-
-    /// The pending wait, if any (exposed for tests).
-    private(set) var waitTask: Task<Void, Never>?
-
-    /// Runs `send` now if no link card is loading; otherwise waits (see the type
-    /// comment) and then runs it. `send` should read the composer's current
-    /// link preview draft when it runs.
-    ///
-    /// - Returns: false if the tap was ignored because a wait is already in progress.
-    @discardableResult
-    public func send(
-        waitingFor fetchState: LinkPreviewFetchState,
-        _ send: @escaping @MainActor () -> Void,
-    ) -> Bool {
-        guard !isWaiting else {
-            return false
-        }
-        guard fetchState.isLoading else {
-            send()
-            return true
-        }
-        isWaiting = true
-        let timeout = self.timeout
-        waitTask = Task { @MainActor in
-            await fetchState.waitWhileLoading(timeout: timeout)
-            self.isWaiting = false
-            self.waitTask = nil
-            send()
-        }
-        return true
     }
 }
 

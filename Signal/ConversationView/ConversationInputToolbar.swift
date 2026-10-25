@@ -97,15 +97,10 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             linkPreviewFetcher: SUIEnvironment.shared.linkPreviewFetcher,
             linkPreviewSettingStore: DependenciesBridge.shared.linkPreviewSettingStore,
         )
-        self.tellomiLinkPreviewSendGate = TellomiLinkPreviewSendGate()
 
         super.init(frame: .zero)
 
         self.linkPreviewFetchState.onStateChange = { [weak self] in self?.updateLinkPreviewView() }
-        self.tellomiLinkPreviewSendGate.onWaitingChange = { [weak self] in
-            guard let self else { return }
-            self.ensureButtonVisibility(withAnimation: self.window != nil, doLayout: true)
-        }
 
         setupContentView()
 
@@ -1692,11 +1687,6 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             return false
         }
 
-        // Tellomi（信息卡片 P1）：在等卡片的时候，发送键灰掉、回车键也不发，第二下不会再发一条。
-        if tellomiLinkPreviewSendGate.isWaiting {
-            return false
-        }
-
         if isEditingMessage {
             return hasUnsavedDraft
         }
@@ -2218,19 +2208,6 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         AssertIsOnMainThread()
 
         return linkPreviewFetchState.linkPreviewDraftIfLoaded
-    }
-
-    /// Tellomi（信息卡片 P1，产品 2026-10-19 定的「简单」做法）：按发送时卡片还在加载，就最多等 3 秒；
-    /// 等到了带卡片发，等不到就不带卡片发，事后不补（不走编辑）。等的时候预览条照旧转圈、发送键灰掉，
-    /// 再按也不会多发。`send` 在真正发的那一刻再读输入框和 `linkPreviewDraft`。
-    private let tellomiLinkPreviewSendGate: TellomiLinkPreviewSendGate
-
-    /// - Returns: false 表示正在等卡片，这一下被忽略了。
-    @discardableResult
-    func tellomiSendAfterLinkPreviewSettles(_ send: @escaping @MainActor () -> Void) -> Bool {
-        AssertIsOnMainThread()
-
-        return tellomiLinkPreviewSendGate.send(waitingFor: linkPreviewFetchState, send)
     }
 
     private func updateInputLinkPreview() {
