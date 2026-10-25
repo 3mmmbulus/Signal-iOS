@@ -654,7 +654,9 @@ enum TellomiReadByMenuTitle {
     }
 
     /// 没有收件人时返回 nil，调用方退回「信息」。
-    static func title(counts: Counts) -> String? {
+    /// 按 M7：我自己关了已读回执时不显示已读状态，也返回 nil，菜单照旧显示「信息」。
+    static func title(counts: Counts, readReceiptsEnabled: Bool = true) -> String? {
+        guard readReceiptsEnabled else { return nil }
         guard counts.total > 0 else { return nil }
         let format = OWSLocalizedString(
             "CONTEXT_MENU_TELLOMI_READ_BY_FORMAT",
@@ -667,6 +669,9 @@ enum TellomiReadByMenuTitle {
     static func title(for interaction: TSInteraction, thread: TSThread) -> String? {
         guard thread.isGroupThread, let message = interaction as? TSOutgoingMessage else { return nil }
         guard let states = message.recipientAddressStates, !states.isEmpty else { return nil }
-        return title(counts: counts(statuses: states.values.map { $0.status }))
+        let readReceiptsEnabled = SSKEnvironment.shared.databaseStorageRef.read { tx in
+            OWSReceiptManager.areReadReceiptsEnabled(transaction: tx)
+        }
+        return title(counts: counts(statuses: states.values.map { $0.status }), readReceiptsEnabled: readReceiptsEnabled)
     }
 }

@@ -33,4 +33,9 @@ final class TellomiReadByMenuTitleTests: XCTestCase {
         XCTAssertTrue(title.contains("5"), title)
         XCTAssertNotEqual(title, OWSLocalizedString("CONTEXT_MENU_DETAILS", comment: ""))
     }
+
+    /// M7：自己关了已读回执时不显示「已读 N/M」，退回「信息」。
+    func testReadReceiptsDisabledGivesNilTitle() {
+        XCTAssertNil(TellomiReadByMenuTitle.title(counts: .init(read: 3, total: 5), readReceiptsEnabled: false))
+    }
 }
