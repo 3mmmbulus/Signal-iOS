@@ -64,6 +64,33 @@ public enum TellomiSchemelessLink {
         "txt", "pdf", "doc", "docx", "png", "jpg", "jpeg", "gif", "mp3", "mp4", "apk", "ipa", "exe", "dmg",
     ]
 
+    /// 中日韩文字没有空格，「打开baidu.com」里系统可能把「打开」也算进域名。没写协议的链接从中日韩文字后第一个
+    /// ASCII 字母或数字开始；返回要跳过的长度（UTF-16），不用跳时 0。真正的中文域名（「中文.com」）不动。
+    public static func leadingCjkLength(_ snippet: String) -> Int {
+        guard isSchemeless(snippet) else { return 0 }
+        var length = 0
+        var sawCjk = false
+        for scalar in snippet.unicodeScalars {
+            if isCjk(scalar) {
+                sawCjk = true
+                length += scalar.utf16.count
+                continue
+            }
+            let isAsciiAlnum = scalar.isASCII && (CharacterSet.alphanumerics.contains(scalar))
+            return sawCjk && isAsciiAlnum ? length : 0
+        }
+        return 0
+    }
+
+    static func isCjk(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.value {
+        case 0x3040...0x30FF, 0x3400...0x4DBF, 0x4E00...0x9FFF, 0xF900...0xFAFF, 0xAC00...0xD7AF, 0x1100...0x11FF, 0x20000...0x2FA1F:
+            return true
+        default:
+            return false
+        }
+    }
+
     /// 用户写的这段文字没有协议（不含 `://`，也不是 `mailto:` 之类）吗。
     public static func isSchemeless(_ snippet: String) -> Bool {
         let lower = snippet.lowercased()

@@ -96,6 +96,17 @@ final class TellomiLinkPunctuationTest: XCTestCase {
         XCTAssertEqual(urls("（baidu.com）"), ["https://baidu.com"])
     }
 
+    func testBareDomainGluedAfterChineseText() {
+        XCTAssertEqual(TellomiSchemelessLink.leadingCjkLength("打开baidu.com"), 2)
+        XCTAssertEqual(TellomiSchemelessLink.leadingCjkLength("中文.com"), 0)
+        XCTAssertEqual(TellomiSchemelessLink.leadingCjkLength("https://x.com"), 0)
+        XCTAssertEqual(TellomiSchemelessLink.leadingCjkLength("baidu.com"), 0)
+        for item in TextCheckingDataItem.detectedItems(in: "打开baidu.com，然后", using: detector) where item.dataType == .link {
+            XCTAssertEqual(item.snippet, "baidu.com")
+            XCTAssertEqual(item.url.absoluteString, "https://baidu.com")
+        }
+    }
+
     func testFileNamesAndVersionsAreNotLinks() {
         XCTAssertEqual(links("运行 setup.py 就行"), [])
         XCTAssertEqual(links("看 README.md"), [])
