@@ -230,3 +230,83 @@ extension ConversationInputToolbar {
         }
     }
 }
+
+// MARK: - Tellomi（Telegram 对照 3.3 / F12）：锁定录音时的暂停 / 继续按钮
+
+/// 输入栏只通过这个接口碰正在录的那条（[VoiceMessageInProgressDraft] 实现）。
+protocol TellomiVoicePauseControlling: AnyObject {
+    var isPaused: Bool { get }
+    var tellomiElapsed: TimeInterval { get }
+    @discardableResult
+    func pauseRecording() -> Bool
+    @discardableResult
+    func resumeRecording() -> Bool
+}
+
+extension VoiceMessageInProgressDraft: TellomiVoicePauseControlling {}
+
+/// 暂停按钮的纯逻辑（图标、无障碍文字、计时文字、点按后的动作），方便单测。
+enum TellomiVoicePauseUI {
+    enum Action: Equatable {
+        case pause
+        case resume
+    }
+
+    /// 录音中显示“暂停”，暂停中显示“继续”。
+    static func imageName(isPaused: Bool) -> String {
+        isPaused ? "play-fill" : "pause-fill"
+    }
+
+    static func accessibilityLabel(isPaused: Bool) -> String {
+        isPaused
+            ? OWSLocalizedString("VOICE_MESSAGE_RESUME_RECORDING", comment: "Accessibility label for the button that resumes a paused voice message recording.")
+            : OWSLocalizedString("VOICE_MESSAGE_PAUSE_RECORDING", comment: "Accessibility label for the button that pauses a voice message recording.")
+    }
+
+    static func action(isPaused: Bool) -> Action {
+        isPaused ? .resume : .pause
+    }
+
+    /// 计时标签：只算真正在录的时间（暂停不涨），四舍五入到秒。
+    static func durationText(elapsed: TimeInterval) -> String {
+        OWSFormat.formatDurationSeconds(Int(round(max(0, elapsed))))
+    }
+
+    /// 点一下：录音中 → 暂停，暂停中 → 继续。返回点完以后是否处于暂停（没生效时保持原样）。
+    @discardableResult
+    static func toggle(_ control: TellomiVoicePauseControlling) -> Bool {
+        switch action(isPaused: control.isPaused) {
+        case .pause: control.pauseRecording()
+        case .resume: control.resumeRecording()
+        }
+        return control.isPaused
+    }
+}
+
+extension ConversationInputToolbar {
+
+    /// 锁定录音后，「取消」左边的暂停 / 继续按钮。
+    final class TellomiVoicePauseButton: UIButton {
+
+        var onToggle: (() -> Void)?
+
+        init() {
+            super.init(frame: .zero)
+            var configuration = UIButton.Configuration.borderless()
+            configuration.baseForegroundColor = .Signal.red
+            configuration.contentInsets = .init(margin: 8)
+            self.configuration = configuration
+            addAction(UIAction { [weak self] _ in self?.onToggle?() }, for: .primaryActionTriggered)
+            update(isPaused: false)
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        func update(isPaused: Bool) {
+            configuration?.image = UIImage(imageLiteralResourceName: TellomiVoicePauseUI.imageName(isPaused: isPaused))
+            accessibilityLabel = TellomiVoicePauseUI.accessibilityLabel(isPaused: isPaused)
+        }
+    }
+}

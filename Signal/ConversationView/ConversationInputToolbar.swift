@@ -2705,6 +2705,10 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
     /// Tellomi（A-12）：正在录的这条的峰值电平（dBFS）。
     var tellomiVoiceLevelSource: (() -> Float?)?
 
+    /// Tellomi（Telegram 对照 3.3 / F12）：正在录的这条，给暂停按钮和计时标签用；会话页给。
+    var tellomiVoicePauseSource: (() -> TellomiVoicePauseControlling?)?
+    private weak var tellomiVoiceRedMicIconView: UIView?
+
     private lazy var voiceMemoRedRecordingCircle: UIView = {
         let micIconSize: CGFloat = 32
         let circleSize: CGFloat = 88
@@ -2779,6 +2783,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         redMicIconImageView.tintColor = .Signal.red
         redMicIconImageView.autoSetDimensions(to: .square(24))
         voiceMemoContentView.addSubview(redMicIconImageView)
+        tellomiVoiceRedMicIconView = redMicIconImageView
 
         // Duration Label
         updateVoiceMemoDurationLabel()
@@ -2850,15 +2855,7 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         }
 
         // Pulse the red mic icon on the left.
-        redMicIconImageView.alpha = 1
-        UIView.animate(
-            withDuration: 0.5,
-            delay: 0.2,
-            options: [.repeat, .autoreverse, .curveEaseIn],
-            animations: {
-                redMicIconImageView.alpha = 0
-            },
-        )
+        tellomiSetVoiceMicPulsing(true)
 
         // Start recording timer.
         voiceMemoUpdateTimer?.invalidate()
@@ -2982,6 +2979,24 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
             cancelButton.trailingAnchor.constraint(equalTo: voiceMemoContentView.trailingAnchor, constant: -16),
         ])
 
+        // Tellomi（Telegram 对照 3.3 / F12）：锁定后「取消」左边加暂停 / 继续。
+        if tellomiVoicePauseSource?() != nil {
+            let pauseButton = TellomiVoicePauseButton()
+            pauseButton.onToggle = { [weak self, weak pauseButton] in
+                guard let self, let pauseButton else { return }
+                self.tellomiToggleVoicePause(pauseButton)
+            }
+            pauseButton.alpha = 0
+            pauseButton.accessibilityIdentifier = UIView.accessibilityIdentifier(in: self, name: "tellomiVoicePauseButton")
+            voiceMemoContentView.addSubview(pauseButton)
+            pauseButton.translatesAutoresizingMaskIntoConstraints = false
+            voiceMemoContentView.addConstraints([
+                pauseButton.centerYAnchor.constraint(equalTo: voiceMemoContentView.centerYAnchor),
+                pauseButton.trailingAnchor.constraint(equalTo: cancelButton.leadingAnchor, constant: -4),
+            ])
+            UIView.animate(withDuration: 0.2) { pauseButton.alpha = 1 }
+        }
+
         voiceMemoCancelLabel.removeFromSuperview()
         voiceMemoContentView.layoutIfNeeded()
 
@@ -3007,6 +3022,32 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
         )
     }
 
+    /// Tellomi（3.3）：左边红色麦克风录音时闪，暂停时停在常亮。
+    private func tellomiSetVoiceMicPulsing(_ pulsing: Bool) {
+        guard let micView = tellomiVoiceRedMicIconView else { return }
+        micView.layer.removeAllAnimations()
+        micView.alpha = 1
+        guard pulsing else { return }
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0.2,
+            options: [.repeat, .autoreverse, .curveEaseIn],
+            animations: {
+                micView.alpha = 0
+            },
+        )
+    }
+
+    /// Tellomi（3.3）：点暂停 / 继续。光晕的电平在暂停时是 nil，自己回到静止。
+    private func tellomiToggleVoicePause(_ button: TellomiVoicePauseButton) {
+        guard voiceMemoRecordingState == .recordingLocked, let control = tellomiVoicePauseSource?() else { return }
+        let isPaused = TellomiVoicePauseUI.toggle(control)
+        button.update(isPaused: isPaused)
+        tellomiSetVoiceMicPulsing(!isPaused)
+        updateVoiceMemoDurationLabel()
+        ImpactHapticFeedback.impactOccurred(style: .light, in: self)
+    }
+
     private func setVoiceMemoUICancelAlpha(_ cancelAlpha: CGFloat) {
         AssertIsOnMainThread()
 
@@ -3025,6 +3066,12 @@ public class ConversationInputToolbar: UIView, QuotedReplyPreviewDelegate {
 
         guard let voiceMemoStartTime else {
             voiceMemoDurationLabel.text = ""
+            return
+        }
+
+        // Tellomi（3.3）：有正在录的这条时用它的有效时长（暂停不涨）。
+        if let control = tellomiVoicePauseSource?() {
+            voiceMemoDurationLabel.text = TellomiVoicePauseUI.durationText(elapsed: control.tellomiElapsed)
             return
         }
 
