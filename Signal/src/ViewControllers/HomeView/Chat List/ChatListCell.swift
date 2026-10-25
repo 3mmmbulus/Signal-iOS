@@ -619,11 +619,13 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
         var messageStatusViewTintColor = snippetColor
         var shouldAnimateStatusIcon = false
         var tellomiRevealAtMs: UInt64?
+        var tellomiCheck: TellomiCheckDisplay?
 
         switch messageStatus {
         case .uploading, .sending:
             statusIndicatorImage = UIImage(named: "message_status_sending")
             shouldAnimateStatusIcon = true
+            tellomiCheck = .sending
             // Tellomi（#1184）：和气泡页脚同一套 2 秒规则（纯文字才延迟，有附件立即转圈）。
             if messageStatus == .sending {
                 tellomiRevealAtMs = SSKEnvironment.shared.databaseStorageRef.read { tx in
@@ -634,17 +636,25 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
             if outgoingMessage.wasRemotelyDeleted {
                 return nil
             }
-            statusIndicatorImage = UIImage(named: "message_status_sent")
+            // Tellomi（#1186）：品牌一勾，和气泡一致。
+            statusIndicatorImage = UIImage(named: MessageRecipientStatusUtils.tellomiOneCheckImageName)
+            tellomiCheck = .oneCheck
         case .delivered:
             if outgoingMessage.wasRemotelyDeleted {
                 return nil
             }
-            statusIndicatorImage = UIImage(named: "message_status_delivered")
+            // Tellomi（#1184/#1186）：已送达也画成一勾。
+            statusIndicatorImage = UIImage(named: MessageRecipientStatusUtils.tellomiOneCheckImageName)
+            tellomiCheck = .oneCheck
         case .read, .viewed:
             if outgoingMessage.wasRemotelyDeleted {
                 return nil
             }
-            statusIndicatorImage = UIImage(named: "message_status_read")
+            // Tellomi（#1186）：已读两勾用强调色（列表行没有底色，同电脑端 #98）。
+            // 关回执时 lastMessageOutgoingStatus 已按 #358 降成已送达，不会走到这里。
+            statusIndicatorImage = UIImage(named: MessageRecipientStatusUtils.tellomiTwoChecksImageName)
+            messageStatusViewTintColor = UIColor.Signal.accent
+            tellomiCheck = .twoChecks
         case .failed:
             statusIndicatorImage = UIImage(named: "error-circle-extra-small")
             messageStatusViewTintColor = .Signal.red
@@ -664,6 +674,8 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
             tintColor: messageStatusViewTintColor,
             shouldAnimateStatusIcon: shouldAnimateStatusIcon,
             tellomiRevealAtMs: tellomiRevealAtMs,
+            tellomiMessageId: outgoingMessage.uniqueId,
+            tellomiCheck: tellomiCheck,
         )
     }
 
@@ -684,7 +696,60 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
             ),
         )
 
+        tellomiAnimateCheckIfNeeded(token: token)
+
         return messageStatusIconView
+    }
+
+    /// Tellomi（#1186）：这一格上次画的勾（哪条消息、哪种勾）。同一格原地刷新（updateCellContent：reset + configure）
+    /// 时拿来比；格子被复用（prepareForReuse）就忘掉，所以打开列表、滚动出来的行不动。
+    private var tellomiLastShownCheck: (messageId: String, check: TellomiCheckDisplay?)?
+
+    private func tellomiAnimateCheckIfNeeded(token: CLVMessageStatusToken) {
+        let previous = tellomiLastShownCheck
+        tellomiLastShownCheck = (token.tellomiMessageId, token.tellomiCheck)
+        messageStatusIconView.layer.mask = nil
+        // 只在同一条消息、格子正在屏上时看到的变化才动；换了一条消息（新消息成了最后一条）不动。
+        guard
+            let previous,
+            previous.messageId == token.tellomiMessageId,
+            window != nil,
+            let animation = MessageRecipientStatusUtils.tellomiCheckAnimation(
+                previous: previous.check,
+                next: token.tellomiCheck,
+                reduceMotion: UIAccessibility.isReduceMotionEnabled,
+            )
+        else {
+            return
+        }
+        switch animation {
+        case .fadeInOneCheck:
+            let fade = CABasicAnimation(keyPath: "opacity")
+            fade.fromValue = 0
+            fade.toValue = 1
+            fade.duration = animation.duration
+            fade.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            messageStatusIconView.layer.add(fade, forKey: "tellomiCheckFadeIn")
+        case .growSecondCheck:
+            let iconSize = token.image.size
+            let mask = CALayer()
+            mask.backgroundColor = UIColor.black.cgColor
+            mask.anchorPoint = .zero
+            mask.frame = CGRect(origin: .zero, size: iconSize)
+            messageStatusIconView.layer.mask = mask
+            let grow = CABasicAnimation(keyPath: "bounds.size.width")
+            grow.fromValue = iconSize.width * MessageRecipientStatusUtils.tellomiGrowStartVisibleFraction
+            grow.toValue = iconSize.width
+            grow.duration = animation.duration
+            grow.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            CATransaction.begin()
+            CATransaction.setCompletionBlock { [weak self, weak mask] in
+                guard let self, let mask, messageStatusIconView.layer.mask === mask else { return }
+                messageStatusIconView.layer.mask = nil
+            }
+            mask.add(grow, forKey: "tellomiCheckGrow")
+            CATransaction.commit()
+        }
     }
 
     private var tellomiStatusRevealWorkItem: DispatchWorkItem?
@@ -964,6 +1029,8 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
 
+        tellomiLastShownCheck = nil
+
         reset()
     }
 
@@ -1071,6 +1138,9 @@ private struct CLVMessageStatusToken {
     let shouldAnimateStatusIcon: Bool
     /// Tellomi（#1184）：文字消息发送中的转圈到这个时间（毫秒）才露出来；nil = 立即。
     var tellomiRevealAtMs: UInt64? = nil
+    /// Tellomi（#1186）：画的是哪条消息、哪种勾，用来判断屏上的变化要不要动。
+    var tellomiMessageId: String = ""
+    var tellomiCheck: TellomiCheckDisplay? = nil
 }
 
 // MARK: -
