@@ -149,6 +149,7 @@ public class ChatListInfo {
                 return MessageRecipientStatusUtils.recipientStatus(
                     outgoingMessage: outgoingMessage,
                     paymentModel: paymentModel,
+                    transaction: transaction,
                 )
             } else {
                 return MessageRecipientStatusUtils.recipientStatus(

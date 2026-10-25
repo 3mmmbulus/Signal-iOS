@@ -184,24 +184,45 @@ public class MessageRecipientStatusUtils {
     public class func recipientStatus(
         outgoingMessage: TSOutgoingMessage,
         hasBodyAttachments: Bool,
+        showsReadStates: Bool = true,
     ) -> MessageReceiptStatus {
-        let (status, _) = receiptStatusAndMessage(outgoingMessage: outgoingMessage, hasBodyAttachments: hasBodyAttachments)
+        let (status, _) = receiptStatusAndMessage(
+            outgoingMessage: outgoingMessage,
+            hasBodyAttachments: hasBodyAttachments,
+            showsReadStates: showsReadStates,
+        )
         return status
     }
 
+    /// Tellomi（#1184 付款消息补齐）：付款消息的状态另走一条路（付款状态 + 消息状态合算），
+    /// 同样要守关回执规则——带事务的入口读本机已读回执开关，关着时已读 / 已查看不显示（连关之前收到的也藏）。
     public class func recipientStatus(
         outgoingMessage: TSOutgoingMessage,
         paymentModel: TSPaymentModel,
+        transaction: DBReadTransaction,
     ) -> MessageReceiptStatus {
-        return paymentModel.paymentState.combinedMessageReceiptStatus(with: outgoingMessage)
+        return recipientStatus(
+            outgoingMessage: outgoingMessage,
+            paymentModel: paymentModel,
+            showsReadStates: OWSReceiptManager.areReadReceiptsEnabled(transaction: transaction),
+        )
     }
 
-    @objc
+    /// `showsReadStates` 故意不给默认值：每个调用点都得把开关带进来，免得又漏掉。
+    public class func recipientStatus(
+        outgoingMessage: TSOutgoingMessage,
+        paymentModel: TSPaymentModel,
+        showsReadStates: Bool,
+    ) -> MessageReceiptStatus {
+        return paymentModel.paymentState.combinedMessageReceiptStatus(with: outgoingMessage, showsReadStates: showsReadStates)
+    }
+
     public class func receiptMessage(
         outgoingMessage: TSOutgoingMessage,
         paymentModel: TSPaymentModel,
+        showsReadStates: Bool,
     ) -> String {
-        let status = paymentModel.paymentState.combinedMessageReceiptStatus(with: outgoingMessage)
+        let status = paymentModel.paymentState.combinedMessageReceiptStatus(with: outgoingMessage, showsReadStates: showsReadStates)
         switch status {
         case .failed:
             // Use the "long" version of this message here.
@@ -434,8 +455,10 @@ extension TSPaymentState {
         }
     }
 
-    fileprivate func combinedMessageReceiptStatus(
+    // Tellomi：由 fileprivate 放宽到 internal，只为单测（@testable）能直接测这条付款状态路径。
+    func combinedMessageReceiptStatus(
         with message: TSOutgoingMessage,
+        showsReadStates: Bool,
     ) -> MessageReceiptStatus {
 
         // Computed with `TSPaymentModel` && `TSOutgoingMessage.messageState`.
@@ -468,9 +491,10 @@ extension TSPaymentState {
         case .sent, .delivered:
             // Compute "read"/"viewed" status if available.
             switch message {
-            case _ where message.viewedRecipientAddresses().count > 0:
+            // Tellomi（#1184）：关着已读回执时不看已读 / 已查看，跟普通消息同一条规则。
+            case _ where showsReadStates && message.viewedRecipientAddresses().count > 0:
                 return .viewed
-            case _ where message.readRecipientAddresses().count > 0:
+            case _ where showsReadStates && message.readRecipientAddresses().count > 0:
                 return .read
             case _ where message.wasDeliveredToAnyRecipient:
                 return .delivered

@@ -397,6 +397,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 return MessageRecipientStatusUtils.recipientStatus(
                     outgoingMessage: outgoingMessage,
                     paymentModel: model,
+                    showsReadStates: paymentAttachment.showsReadStates,
                 )
             }()
 
@@ -428,6 +429,7 @@ public class CVComponentMessage: CVComponentBase, CVRootComponent {
                 return MessageRecipientStatusUtils.recipientStatus(
                     outgoingMessage: outgoingMessage,
                     hasBodyAttachments: false,
+                    showsReadStates: archivedPaymentAttachment.showsReadStates,
                 )
             }()
 
