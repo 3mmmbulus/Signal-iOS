@@ -565,7 +565,7 @@ final class FeedRecommendationSettingsViewController: OWSTableViewController2 {
         }
     }
 
-    static func topicName(_ slug: FeedTopicSlug) -> String {
+    nonisolated static func topicName(_ slug: FeedTopicSlug) -> String {
         switch slug {
         case .ai:
             return OWSLocalizedString("TELLOMI_FEED_TOPIC_NAME_AI", comment: "Feed settings: name of the topic category 'ai' (interest tags, recent views, adjust by category).")

@@ -500,7 +500,7 @@ final class FeedComposeViewController: OWSViewController {
         }
     }
 
-    static func topicName(_ slug: String) -> String {
+    nonisolated static func topicName(_ slug: String) -> String {
         guard let known = FeedTopicSlug(rawValue: slug) else { return slug }
         return FeedRecommendationSettingsViewController.topicName(known)
     }

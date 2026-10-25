@@ -457,6 +457,8 @@ struct FeedMedia: Decodable, Equatable {
     var alt = ""
     /// 语音评论（`type == "audio"`）的时长，服务端从文件头读。
     var durationMs = 0
+    /// 开放内容的图片可能带自己的 `rights{basis,license}`（引擎 `moderation/worker.go` 的 `media.Rights`）；形状不对当没有。
+    var rights: FeedRights?
 
     static let typeAudio = "audio"
 
@@ -479,10 +481,11 @@ struct FeedMedia: Decodable, Equatable {
         h = try c.decodeIfPresent(Int.self, forKey: .h) ?? 0
         alt = try c.decodeIfPresent(String.self, forKey: .alt) ?? ""
         durationMs = try c.decodeIfPresent(Int.self, forKey: .durationMs) ?? 0
+        rights = (try? c.decodeIfPresent(FeedRights.self, forKey: .rights)) ?? nil
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, type, w, h, alt
+        case key, type, w, h, alt, rights
         case durationMs = "duration_ms"
     }
 
@@ -493,9 +496,32 @@ struct FeedMedia: Decodable, Equatable {
     }
 }
 
+/// 卡片上的话题。引擎卡片里是 slug 字符串数组（`moderation/worker.go`：`"topics": ["hiking"]`，契约第五节），
+/// 显示名由客户端的话题表给（`FeedComposeViewController.topicName`，不认识的 slug 直接显示 slug）。
+/// 也认 `{"slug","label"}` 对象（样例数据、旧草稿用的形状）；两样都不是的那一项丢掉，不让整张卡片失败。
 struct FeedTopic: Decodable, Equatable {
     var slug: String
     var label: String
+}
+
+extension FeedTopic {
+    init(from decoder: Decoder) throws {
+        if let single = try? decoder.singleValueContainer(), let slug = try? single.decode(String.self) {
+            guard !slug.isEmpty else {
+                throw DecodingError.dataCorruptedError(in: single, debugDescription: "empty topic slug")
+            }
+            self.init(slug: slug, label: FeedComposeViewController.topicName(slug))
+            return
+        }
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let slug = try c.decode(String.self, forKey: .slug)
+        let label = try c.decodeIfPresent(String.self, forKey: .label)
+        self.init(slug: slug, label: label ?? FeedComposeViewController.topicName(slug))
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case slug, label
+    }
 }
 
 /// 投票的题面（卡片里，审核时定下）。

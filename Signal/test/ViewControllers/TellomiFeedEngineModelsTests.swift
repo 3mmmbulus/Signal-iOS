@@ -125,4 +125,109 @@ final class TellomiFeedEngineModelsTests: XCTestCase {
         let partial = try decode(FeedCard.self, #"{"kind":"post","rights":{"basis":7}}"#)
         XCTAssertEqual(partial.rights, FeedRights())
     }
+
+    // MARK: - B-8：卡片字段按内容引擎 main 66ce9cb（moderation/worker.go 的 card()、api/cards.go 的 Card）
+
+    /// 引擎卡片里的 `topics` 是 slug 字符串数组；以前只认 `{"slug","label"}` 对象，引擎的卡片上话题全被丢掉。
+    func testTopicsDecodeFromEngineSlugStrings() throws {
+        let card = try decode(FeedCard.self, #"{"kind":"post","topics":["food","no-such-topic",""]}"#)
+        XCTAssertEqual(card.topics.map(\.slug), ["food", "no-such-topic"], "空串那一项丢掉，其余保留")
+        XCTAssertEqual(card.topics[0].label, FeedComposeViewController.topicName("food"))
+        XCTAssertFalse(card.topics[0].label.isEmpty)
+        XCTAssertEqual(card.topics[1].label, "no-such-topic", "不认识的 slug 直接显示 slug")
+    }
+
+    /// 对象形状照样认；没有 label 的用话题表补；两样都不是的那一项丢掉，卡片不失败。
+    func testTopicsAcceptObjectsAndDropJunk() throws {
+        let card = try decode(FeedCard.self, #"{"kind":"post","text":"hi","topics":[{"slug":"hiking","label":"徒步"},{"slug":"food"},7,{"label":"x"},"news"]}"#)
+        XCTAssertEqual(card.topics.map(\.slug), ["hiking", "food", "news"])
+        XCTAssertEqual(card.topics[0].label, "徒步")
+        XCTAssertEqual(card.topics[1].label, FeedComposeViewController.topicName("food"))
+        XCTAssertEqual(card.text, "hi")
+    }
+
+    /// 开放内容的图片可以带自己的 `rights`；形状不对当没有，图片不丢。
+    func testMediaRights() throws {
+        let card = try decode(FeedCard.self, """
+        {"kind":"post","media":[{"type":"image","key":"m/1","w":10,"h":20,"rights":{"basis":"license","license":"CC-BY-4.0"}},
+                                {"type":"image","key":"m/2","rights":"bad"}]}
+        """)
+        XCTAssertEqual(card.media.count, 2)
+        XCTAssertEqual(card.media[0].rights, FeedRights(basis: "license", license: "CC-BY-4.0"))
+        XCTAssertNil(card.media[1].rights)
+    }
+
+    /// 一条语音回复，形状照 `card()` 对评论的写法：有 root_id / parent_id、audio 媒体带 duration_ms、transcript；
+    /// 外层 held。原生作者没设 handle 时给 tellomi_number。
+    func testVoiceReplyCardFromEngine() throws {
+        let response = try decode(FeedCardsResponse.self, """
+        {"cards":[{"id":"cm1","state":"ok","version":1,
+          "card":{"kind":"comment","display_mode":"text","source_url":null,"ai_generated":false,"edited":false,
+                  "root_id":"post-1","parent_id":"cm0","text":"",
+                  "media":[{"type":"audio","key":"m/a1","duration_ms":12500}],"transcript":"",
+                  "author":{"id":"p1","display_name":"山风","tellomi_number":"10001","native":true}},
+          "stats":{"likes":0,"comments":0,"reposts":0},"me":{"liked":false,"saved":false,"reposted":false},
+          "held":true}]}
+        """)
+        let card = try XCTUnwrap(response.cards.first?.toCard())
+        XCTAssertEqual(card.kind, "comment")
+        XCTAssertEqual(card.rootId, "post-1")
+        XCTAssertEqual(card.parentId, "cm0")
+        XCTAssertTrue(card.held)
+        XCTAssertFalse(card.shareable, "没带 shareable 就是不能分享")
+        XCTAssertFalse(card.pinned)
+        XCTAssertNil(card.quoted)
+        XCTAssertEqual(card.transcript, "")
+        XCTAssertEqual(card.media.first?.isAudio, true)
+        XCTAssertEqual(card.media.first?.durationMs, 12500)
+        XCTAssertNil(card.author?.handle)
+        XCTAssertEqual(card.author?.tellomiNumber, "10001")
+    }
+
+    /// 回复帖子本身（不是回复某条评论）时引擎不给 parent_id；转写有文字时原样读。
+    func testTopLevelCommentHasNoParent() throws {
+        let card = try decode(FeedCard.self, #"{"kind":"comment","root_id":"post-1","media":[{"type":"audio","key":"m/a","duration_ms":3000}],"transcript":"你好"}"#)
+        XCTAssertEqual(card.rootId, "post-1")
+        XCTAssertNil(card.parentId)
+        XCTAssertEqual(card.transcript, "你好")
+    }
+
+    /// 外部作者：native=false，带 id、avatar_url、provider；开放内容带 rights / attribution / published_at / source_url。
+    func testExternalAuthorCard() throws {
+        let card = try decode(FeedCard.self, """
+        {"kind":"video","display_mode":"link","source_url":"https://example.com/v/1","ai_generated":false,"edited":false,
+         "published_at":"2026-10-13T11:00:00Z","title":"t",
+         "author":{"id":"x1","display_name":"Ext","handle":"ext","avatar_url":"https://example.com/a.png","provider":"youtube","native":false},
+         "attribution":{"name":"Ext"},"rights":{"basis":"license","license":"CC-BY-4.0"}}
+        """)
+        let author = try XCTUnwrap(card.author)
+        XCTAssertFalse(author.isNative)
+        XCTAssertEqual(author.profileId, "x1")
+        XCTAssertEqual(author.avatarUrl, "https://example.com/a.png")
+        XCTAssertEqual(author.provider, "youtube")
+        XCTAssertEqual(card.sourceUrl, "https://example.com/v/1")
+        XCTAssertNotNil(card.publishedDate)
+        XCTAssertEqual(card.rights?.license, "CC-BY-4.0")
+    }
+
+    /// 外层 quoted 三种 state：ok 带卡片（话题是字符串也能读），deleted / unavailable 只有 id；不认识的 state 当看不到。
+    func testQuotedStates() throws {
+        let response = try decode(FeedCardsResponse.self, """
+        {"cards":[
+          {"id":"a","state":"ok","card":{"kind":"post","quote_of":"q1"},"shareable":true,
+           "quoted":{"id":"q1","state":"ok","card":{"kind":"post","text":"inner","topics":["food"]}}},
+          {"id":"b","state":"ok","card":{"kind":"post","quote_of":"q2"},"quoted":{"id":"q2","state":"unavailable"}},
+          {"id":"c","state":"ok","card":{"kind":"post","quote_of":"q3"},"quoted":{"id":"q3","state":"gone"}}]}
+        """)
+        let cards = response.cards.compactMap { $0.toCard() }
+        XCTAssertEqual(cards.count, 3)
+        XCTAssertEqual(cards[0].quoteOf, "q1")
+        XCTAssertEqual(cards[0].quoted?.card?.text, "inner")
+        XCTAssertEqual(cards[0].quoted?.card?.topics.map(\.slug), ["food"])
+        XCTAssertFalse(cards[0].quoted?.deleted ?? true)
+        XCTAssertNil(cards[1].quoted?.card)
+        XCTAssertFalse(cards[1].quoted?.deleted ?? true)
+        XCTAssertNil(cards[2].quoted?.card)
+        XCTAssertFalse(cards[2].quoted?.deleted ?? true)
+    }
 }
