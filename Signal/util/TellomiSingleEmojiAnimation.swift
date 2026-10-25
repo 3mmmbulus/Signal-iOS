@@ -42,7 +42,7 @@ public enum TellomiSingleEmojiAnimation {
         jumbomojiCount: UInt?,
         trigger: Trigger,
         reduceMotion: Bool,
-        alreadyPlayedOnAppear: Bool
+        alreadyPlayedOnAppear: Bool,
     ) -> Bool {
         guard jumbomojiCount == 1 else { return false }
         guard !reduceMotion else { return false }
