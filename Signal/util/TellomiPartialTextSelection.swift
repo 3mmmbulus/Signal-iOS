@@ -21,7 +21,7 @@ enum TellomiPartialTextSelection {
         let hi = max(lo, min(range.location + max(0, range.length), ns.length))
         let start = lo == ns.length ? lo : ns.rangeOfComposedCharacterSequence(at: lo).location
         var end = hi
-        if hi > 0 && hi < ns.length {
+        if hi > 0, hi < ns.length {
             let r = ns.rangeOfComposedCharacterSequence(at: hi)
             if r.location < hi { end = NSMaxRange(r) }
         }
@@ -37,7 +37,8 @@ enum TellomiPartialTextSelection {
         let ch = ns.rangeOfComposedCharacterSequence(at: o)
         let scalar = ns.substring(with: ch).unicodeScalars.first!
         if isCJK(scalar) || !isWordScalar(scalar) { return ch }
-        var s = ch.location, e = NSMaxRange(ch)
+        var s = ch.location
+        var e = NSMaxRange(ch)
         while s > 0 {
             let p = ns.rangeOfComposedCharacterSequence(at: s - 1)
             guard let u = ns.substring(with: p).unicodeScalars.first, isWordScalar(u), !isCJK(u) else { break }
@@ -59,7 +60,8 @@ enum TellomiPartialTextSelection {
         guard ns.length > 0 else { return (NSRange(location: 0, length: 0), handle) }
         let o = max(0, min(offset, ns.length))
         let fixed = handle == .start ? NSMaxRange(current) : current.location
-        var lo = min(o, fixed), hi = max(o, fixed)
+        var lo = min(o, fixed)
+        var hi = max(o, fixed)
         let held: Handle = (handle == .start) == (o <= fixed) ? handle : (handle == .start ? .end : .start)
         if lo == hi {
             if hi < ns.length { hi = NSMaxRange(ns.rangeOfComposedCharacterSequence(at: hi)) }
