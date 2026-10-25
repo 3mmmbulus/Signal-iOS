@@ -3592,7 +3592,7 @@ extension ConversationInputToolbar: ConversationTextViewToolbarDelegate {
             emoji = []
         } else {
             emoji = TellomiEmojiSuggestBarModel.visibleEmoji(
-                text: inputTextView.text ?? "",
+                text: inputTextView.untrimmedText,
                 selectedRange: inputTextView.selectedRange,
             )
         }
@@ -3604,7 +3604,7 @@ extension ConversationInputToolbar: ConversationTextViewToolbarDelegate {
 
     /// 点了建议栏里的一个表情：用 `TellomiEmojiSuggest.apply` 换掉查询词并把光标放到表情后面。
     private func tellomiApplyEmojiSuggestion(_ emoji: String) {
-        let text = inputTextView.text ?? ""
+        let text = inputTextView.untrimmedText
         guard
             let result = TellomiEmojiSuggestBarModel.applying(
                 emoji: emoji,
@@ -3620,7 +3620,7 @@ extension ConversationInputToolbar: ConversationTextViewToolbarDelegate {
         }
         // 走 UITextInput 替换，保留其余文字里的 @提及 和样式。
         inputTextView.replace(range, withText: emoji)
-        owsAssertDebug(inputTextView.text == result.text)
+        owsAssertDebug(inputTextView.untrimmedText == result.text)
         inputTextView.selectedRange = NSRange(location: result.cursor, length: 0)
         textViewDidChange(inputTextView)
     }
