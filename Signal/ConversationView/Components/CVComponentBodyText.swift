@@ -450,6 +450,20 @@ public class CVComponentBodyText: CVComponentBase, CVComponent {
             cellMeasurement: cellMeasurement,
             spoilerAnimationManager: componentDelegate.spoilerState.animationManager,
         )
+
+        // Tellomi (audit 4.2): a single-emoji message pops once when it first appears.
+        if
+            TellomiSingleEmojiAnimationPlayer.shared.consumeAppear(
+                messageId: interaction.uniqueId,
+                jumbomojiCount: bodyText.jumbomojiCount,
+                reduceMotion: UIAccessibility.isReduceMotionEnabled,
+            )
+        {
+            let labelView = componentView.bodyTextLabel.view
+            DispatchQueue.main.async {
+                TellomiSingleEmojiAnimationPlayer.play(on: labelView)
+            }
+        }
     }
 
     private func configureForBodyTextLabel(
@@ -772,6 +786,16 @@ public class CVComponentBodyText: CVComponentBase, CVComponent {
         if let item = bodyTextLabel.itemForGesture(sender: sender) {
             bodyTextLabel.animate(selectedItem: item)
             componentDelegate.didTapBodyTextItem(item)
+            return true
+        }
+        // Tellomi (audit 4.2): tapping a single-emoji message replays its pop.
+        if
+            TellomiSingleEmojiAnimationPlayer.shared.shouldPlayOnTap(
+                jumbomojiCount: bodyText.jumbomojiCount,
+                reduceMotion: UIAccessibility.isReduceMotionEnabled,
+            )
+        {
+            TellomiSingleEmojiAnimationPlayer.play(on: bodyTextLabel.view)
             return true
         }
         switch bodyText {
