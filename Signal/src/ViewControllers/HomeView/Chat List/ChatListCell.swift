@@ -623,7 +623,8 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
 
         switch messageStatus {
         case .uploading, .sending:
-            statusIndicatorImage = UIImage(named: "message_status_sending")
+            // Tellomi（固定状态位）：转圈居中放进 18×12，和一勾、两勾同宽，变已读时时间不挪。
+            statusIndicatorImage = UIImage(named: "message_status_sending").map(MessageRecipientStatusUtils.tellomiImageFittingStatusSlot)
             shouldAnimateStatusIcon = true
             tellomiCheck = .sending
             // Tellomi（#1184）：和气泡页脚同一套 2 秒规则（纯文字才延迟，有附件立即转圈）。
@@ -684,7 +685,7 @@ class ChatListCell: UITableViewCell, ReusableTableViewCell {
         messageStatusIconView.tintColor = token.tintColor
 
         if token.shouldAnimateStatusIcon || InMemorySettings.spinningCheckmarks {
-            messageStatusIconView.startSpinning()
+            messageStatusIconView.startSpinning(duration: MessageRecipientStatusUtils.tellomiSendingSpinSeconds)
         } else {
             messageStatusIconView.stopSpinning()
         }

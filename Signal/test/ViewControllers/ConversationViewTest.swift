@@ -344,6 +344,42 @@ class TellomiMessageStatusTest: SignalBaseTest {
         XCTAssertLessThanOrEqual(two?.size.width ?? 99, 18)
     }
 
+    func testStatusSlotIsFixedSoTimeDoesNotMoveWhenRead() {
+        typealias U = MessageRecipientStatusUtils
+        // 产品经理裁定：三端 18×12 画布 + 固定状态位，一勾、两勾、发送中同宽。
+        XCTAssertEqual(U.tellomiStatusSlotSize, CGSize(width: 18, height: 12))
+        let one = UIImage(named: U.tellomiOneCheckImageName)
+        let two = UIImage(named: U.tellomiTwoChecksImageName)
+        XCTAssertEqual(one?.size, U.tellomiStatusSlotSize)
+        XCTAssertEqual(two?.size, U.tellomiStatusSlotSize)
+        XCTAssertEqual(one?.size.width, two?.size.width)
+
+        // 会话列表：发送中的转圈（12×12）居中放进同样大小的位里；本来就是 18×12 的图原样返回。
+        let sending = try! XCTUnwrap(UIImage(named: "message_status_sending"))
+        let paddedSending = U.tellomiImageFittingStatusSlot(sending)
+        XCTAssertEqual(paddedSending.size, U.tellomiStatusSlotSize)
+        XCTAssertEqual(paddedSending.renderingMode, .alwaysTemplate)
+        XCTAssertEqual(U.tellomiImageFittingStatusSlot(two!).size, U.tellomiStatusSlotSize)
+    }
+
+    func testSendingSpinnerIsOneAndAHalfSecondsPerTurn() {
+        XCTAssertEqual(MessageRecipientStatusUtils.tellomiSendingSpinSeconds, 1.5, accuracy: 0.0001)
+    }
+
+    func testFirstSendHintCountsStraightToReadButNotOffScreen() {
+        typealias U = MessageRecipientStatusUtils
+        // 在屏上：发送中 → 一勾、发送中 → 直接两勾都算「第一次在屏上变成已发出」。
+        XCTAssertTrue(U.tellomiIsSeenSent(previous: .sending, next: .oneCheck))
+        XCTAssertTrue(U.tellomiIsSeenSent(previous: .sending, next: .twoChecks))
+        // 不在屏上时变的（回来时第一次画出来，上次没记）不算；已经是勾再变两勾也不算。
+        var shown = TellomiShownChecks()
+        XCTAssertNil(shown.record(.sending, for: "m"))
+        shown.forget("m")
+        let previous = shown.record(.twoChecks, for: "m")
+        XCTAssertFalse(U.tellomiIsSeenSent(previous: previous, next: .twoChecks))
+        XCTAssertFalse(U.tellomiIsSeenSent(previous: .oneCheck, next: .twoChecks))
+    }
+
     func testChecksHintIsRememberedOnThisDevice() {
         read { tx in XCTAssertFalse(TellomiChecksHint.hasShown(tx: tx)) }
         write { tx in TellomiChecksHint.markShown(tx: tx) }

@@ -23,7 +23,8 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
         /// Tellomi（#1186）：画的是哪一种勾，用来判断屏上的变化要不要动、已读用不用强调色。
         var tellomiCheck: TellomiCheckDisplay? = nil
 
-        static var size: CGSize { .init(width: 18, height: 12) }
+        /// Tellomi：固定状态位，发送中、一勾、两勾同宽（三端统一 18×12）。
+        static var size: CGSize { MessageRecipientStatusUtils.tellomiStatusSlotSize }
     }
 
     public enum TapForMoreState {
@@ -1057,7 +1058,8 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
         fileprivate func animateSpinningIcon() {
             let animation = CABasicAnimation(keyPath: "transform.rotation.z")
             animation.toValue = CGFloat.pi * 2
-            animation.duration = TimeInterval.second
+            // Tellomi（产品经理裁定）：一圈 1.5 秒，三端统一。
+            animation.duration = MessageRecipientStatusUtils.tellomiSendingSpinSeconds
             animation.isCumulative = true
             animation.repeatCount = .greatestFiniteMagnitude
             statusIndicatorImageView.layer.add(animation, forKey: "animation")

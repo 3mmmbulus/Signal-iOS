@@ -393,6 +393,33 @@ extension MessageRecipientStatusUtils {
     /// 长出动画开始时露出的宽度比例（只露第一个勾），和电脑端 clip-path inset 38% 一致。
     public static let tellomiGrowStartVisibleFraction: CGFloat = 0.62
 
+    /// Tellomi（产品经理裁定，三端统一）：状态位固定 18×12。一勾、两勾的图都画在 18×12 画布上
+    /// （一勾和两勾的第一个勾同一位置），发送中转圈居中放进同样大小的位里，变已读时时间不挪。
+    public static let tellomiStatusSlotSize = CGSize(width: 18, height: 12)
+
+    /// Tellomi（产品经理裁定，三端统一）：发送中转圈一圈 1.5 秒。
+    public static let tellomiSendingSpinSeconds: TimeInterval = 1.5
+
+    /// 把比状态位小的图标（发送中转圈 12×12）水平、垂直居中画进 18×12 的画布，保持 template 渲染。
+    /// 已经是状态位大小（或更大）的图原样返回。居中是为了整张图绕中心转圈时转圈本身不晃。
+    public static func tellomiImageFittingStatusSlot(_ image: UIImage) -> UIImage {
+        let slot = tellomiStatusSlotSize
+        guard image.size.width < slot.width || image.size.height < slot.height else {
+            return image
+        }
+        let format = UIGraphicsImageRendererFormat.preferred()
+        format.opaque = false
+        let renderer = UIGraphicsImageRenderer(size: slot, format: format)
+        let padded = renderer.image { _ in
+            let origin = CGPoint(
+                x: ((slot.width - image.size.width) / 2).rounded(),
+                y: ((slot.height - image.size.height) / 2).rounded(),
+            )
+            image.draw(in: CGRect(origin: origin, size: image.size))
+        }
+        return padded.withRenderingMode(.alwaysTemplate)
+    }
+
     /// 新手提示停留的秒数。
     public static let tellomiChecksHintSeconds: Int = 8
 

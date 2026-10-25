@@ -160,11 +160,12 @@ open class CVImageView: UIImageView, CVView {
 
     // MARK: - Animation
 
-    public func startSpinning() {
+    /// [duration]：转一整圈的秒数（Tellomi 会话列表转圈传 1.5，三端统一）。
+    public func startSpinning(duration: TimeInterval = 1) {
         if spinningAnimation != nil {
             stopSpinning()
         }
-        spinningAnimation = UIViewPropertyAnimator(duration: 1, curve: .linear) { [weak self] in
+        spinningAnimation = UIViewPropertyAnimator(duration: duration, curve: .linear) { [weak self] in
             self?.transform = .init(rotationAngle: .pi)
         }
         // UIViewPropertyAnimator aggressively drops animations it thinks aren't needed;
@@ -175,7 +176,7 @@ open class CVImageView: UIImageView, CVView {
         }
         spinningAnimation?.addCompletion { [weak self] _ in
             self?.transform = .identity
-            self?.startSpinning()
+            self?.startSpinning(duration: duration)
         }
         spinningAnimation?.startAnimation()
     }
