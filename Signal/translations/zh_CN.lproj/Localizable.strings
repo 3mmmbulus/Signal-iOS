@@ -13321,6 +13321,12 @@
 /* Indicates how to cancel a voice message. */
 "VOICE_MESSAGE_CANCEL_INSTRUCTIONS" = "滑动取消";
 
+/* Accessibility label for the button that pauses a voice message recording. */
+"VOICE_MESSAGE_PAUSE_RECORDING" = "暂停录音";
+
+/* Accessibility label for the button that resumes a paused voice message recording. */
+"VOICE_MESSAGE_RESUME_RECORDING" = "继续录音";
+
 /* Message for the tooltip indicating the 'voice message' needs to be held to be held down to record. */
 "VOICE_MESSAGE_TOO_SHORT_TOOLTIP" = "长按以录音。";
 

@@ -31,6 +31,10 @@ extension ConversationViewController {
             self.inputToolbar?.tellomiVoiceLevelSource = { [weak self] in
                 self?.viewState.inProgressVoiceMessage?.tellomiPeakPower()
             }
+            // Tellomi（Telegram 对照 3.3 / F12）：锁定后的暂停按钮和计时标签跟着这一条。
+            self.inputToolbar?.tellomiVoicePauseSource = { [weak self] in
+                self?.viewState.inProgressVoiceMessage
+            }
             self.inputToolbar?.showVoiceMemoUI()
         }
 

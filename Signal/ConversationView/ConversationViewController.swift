@@ -539,7 +539,8 @@ public final class ConversationViewController: OWSViewController {
 
     override public var shouldAutorotate: Bool {
         // Don't allow orientation changes while recording voice messages.
-        if viewState.inProgressVoiceMessage?.isRecording == true {
+        // Tellomi（3.3）：暂停中也算在录，不转屏。
+        if viewState.inProgressVoiceMessage?.isRecording == true || viewState.inProgressVoiceMessage?.isPaused == true {
             return false
         }
 
