@@ -2641,6 +2641,9 @@
 /* Context menu button title */
 "CONTEXT_MENU_DETAILS" = "Info";
 
+/* Tellomi: group context menu item for own message, shows read count / recipient count. Embeds {{read}}, {{total}}. */
+"CONTEXT_MENU_TELLOMI_READ_BY_FORMAT" = "Read %1$@/%2$@";
+
 /* Context menu edit button title */
 "CONTEXT_MENU_EDIT_MESSAGE" = "Edit";
 

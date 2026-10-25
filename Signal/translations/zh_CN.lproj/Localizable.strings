@@ -2628,6 +2628,9 @@
 /* Context menu button title */
 "CONTEXT_MENU_DETAILS" = "信息";
 
+/* Tellomi: group context menu item for own message, shows read count / recipient count. Embeds {{read}}, {{total}}. */
+"CONTEXT_MENU_TELLOMI_READ_BY_FORMAT" = "已读 %1$@/%2$@";
+
 /* Context menu edit button title */
 "CONTEXT_MENU_EDIT_MESSAGE" = "编辑";
 
