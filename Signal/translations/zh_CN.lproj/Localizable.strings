@@ -12475,6 +12475,9 @@
 /* Tellomi (chat-telegram-parity F03): title of the calendar that jumps to a day in the conversation, and the search bar's button that opens it. */
 "TELLOMI_JUMP_TO_DATE" = "跳到日期";
 
+/* Tellomi (audit 7.2, F03b): accessibility label of a day in the jump-to-date calendar that shows a photo or video thumbnail. Embeds {{ the date }}. */
+"TELLOMI_JUMP_TO_DATE_DAY_HAS_MEDIA_FORMAT" = "%@，有图片或视频";
+
 /* Tellomi (ADR-0063 §5.5): toast after the link was copied because nothing could open it */
 "TELLOMI_LINKS_LINK_COPIED" = "已复制链接";
 

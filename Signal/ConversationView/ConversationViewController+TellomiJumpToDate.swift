@@ -33,7 +33,16 @@ extension ConversationViewController {
         let days = SSKEnvironment.shared.databaseStorageRef.read { tx in
             TellomiConversationDays.daysWithMessages(threadUniqueId: threadUniqueId, tx: tx)
         }
-        TellomiJumpToDateViewController.present(from: self, days: days, initialDay: initialDay) { [weak self] day in
+        // 清单 7.2（F03b）：月历每天铺那天第一张图片或视频的缩略图，按月显示到时才查。
+        var loadThumbnails: TellomiJumpToDateViewController.ThumbnailLoader?
+        if let threadRowId = thread.sqliteRowId {
+            loadThumbnails = { days -> [Date: ReferencedAttachment] in
+                SSKEnvironment.shared.databaseStorageRef.read { tx in
+                    TellomiConversationDayThumbnails.firstVisualMedia(threadRowId: threadRowId, days: days, tx: tx)
+                }
+            }
+        }
+        TellomiJumpToDateViewController.present(from: self, days: days, initialDay: initialDay, loadThumbnails: loadThumbnails) { [weak self] day in
             beforeJump?()
             self?.tellomiJumpToDay(day)
         }
