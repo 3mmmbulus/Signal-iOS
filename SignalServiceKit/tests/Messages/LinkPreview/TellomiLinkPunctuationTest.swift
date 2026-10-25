@@ -115,10 +115,10 @@ final class TellomiLinkPunctuationTest: XCTestCase {
     }
 
     func testResolve() {
-        XCTAssertNil(TellomiSchemelessLink.resolve(snippet: "setup.py", url: URL(string: "http://setup.py")))
+        XCTAssertNil(TellomiSchemelessLink.resolve(snippet: "setup.py", url: URL(string: "http://setup.py")) ?? nil)
         XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "www.setup.py", url: URL(string: "http://www.setup.py")), URL(string: "https://www.setup.py"))
         XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "a.py/docs", url: URL(string: "http://a.py/docs")), URL(string: "https://a.py/docs"))
-        XCTAssertNil(TellomiSchemelessLink.resolve(snippet: "1.2.3", url: URL(string: "http://1.2.3")))
+        XCTAssertNil(TellomiSchemelessLink.resolve(snippet: "1.2.3", url: URL(string: "http://1.2.3")) ?? nil)
         let mail = URL(string: "mailto:a@b.com")
         XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "a@b.com", url: mail), mail)
         XCTAssertEqual(TellomiSchemelessLink.resolve(snippet: "http://x.py", url: URL(string: "http://x.py")), URL(string: "http://x.py"))
