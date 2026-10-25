@@ -885,6 +885,7 @@
 		34A954E8271B4F6A00B05242 /* VideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A954E5271B4F6A00B05242 /* VideoPlayer.swift */; };
 		34A95501271B503E00B05242 /* DisplayableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A95500271B503E00B05242 /* DisplayableText.swift */; };
 		C38038B2CF1617387223E88C /* TellomiSingleEmojiAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4D46714F10DCCCB936CDC3 /* TellomiSingleEmojiAnimation.swift */; };
+		15F79B9D2C73D33CED3B0897 /* TellomiEmojiSuggestBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A64AE7A82657725BE9928DFE /* TellomiEmojiSuggestBar.swift */; };
 		34A955AE271B533000B05242 /* FullTextSearcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A955AD271B532F00B05242 /* FullTextSearcher.swift */; };
 		34A955B2271B53F600B05242 /* GroupManager+GroupInvites.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A955AF271B53F500B05242 /* GroupManager+GroupInvites.swift */; };
 		34A955B9271B553D00B05242 /* PaymentsFormat+MobileCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A955B8271B553D00B05242 /* PaymentsFormat+MobileCoin.swift */; };
@@ -4630,6 +4631,7 @@
 		698ECC2C786E398CD7FD789E /* TellomiLinkPreviewSettingsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 712D22414E42F9EC1D87773C /* TellomiLinkPreviewSettingsTest.swift */; };
 		991545238F1010BAC230A624 /* TellomiLinkCardFormatsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CD70870671B3E67EDC9BEB /* TellomiLinkCardFormatsTest.swift */; };
 		3DF880B3D504B16B82AFA070 /* TellomiSingleEmojiAnimationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D23A2B4F377FA013359686D /* TellomiSingleEmojiAnimationTest.swift */; };
+		B7A81EE43671F957EAA36D66 /* TellomiEmojiSuggestBarTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F886DF67D016BA210E4FFC /* TellomiEmojiSuggestBarTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -5598,6 +5600,7 @@
 		34A954E5271B4F6A00B05242 /* VideoPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
 		34A95500271B503E00B05242 /* DisplayableText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayableText.swift; sourceTree = "<group>"; };
 		BA4D46714F10DCCCB936CDC3 /* TellomiSingleEmojiAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiSingleEmojiAnimation.swift; sourceTree = "<group>"; };
+		A64AE7A82657725BE9928DFE /* TellomiEmojiSuggestBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiEmojiSuggestBar.swift; sourceTree = "<group>"; };
 		34A95506271B510400B05242 /* ConversationStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationStyle.swift; sourceTree = "<group>"; };
 		34A95507271B510400B05242 /* GroupViewUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupViewUtils.swift; sourceTree = "<group>"; };
 		34A9550A271B510400B05242 /* NonContactTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonContactTableViewCell.swift; sourceTree = "<group>"; };
@@ -9558,6 +9561,7 @@
 		712D22414E42F9EC1D87773C /* TellomiLinkPreviewSettingsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkPreviewSettingsTest.swift; sourceTree = "<group>"; };
 		F8CD70870671B3E67EDC9BEB /* TellomiLinkCardFormatsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkCardFormatsTest.swift; sourceTree = "<group>"; };
 		2D23A2B4F377FA013359686D /* TellomiSingleEmojiAnimationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiSingleEmojiAnimationTest.swift; sourceTree = "<group>"; };
+		99F886DF67D016BA210E4FFC /* TellomiEmojiSuggestBarTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiEmojiSuggestBarTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -12812,6 +12816,7 @@
 				505347F82DA08548004AF0B5 /* DeviceSleepManagerImpl.swift */,
 				34A95500271B503E00B05242 /* DisplayableText.swift */,
 				BA4D46714F10DCCCB936CDC3 /* TellomiSingleEmojiAnimation.swift */,
+				A64AE7A82657725BE9928DFE /* TellomiEmojiSuggestBar.swift */,
 				45CB2FA71CB7146C00E1B343 /* Launch Screen.storyboard */,
 				F93461B8291ED28900366682 /* PaymentDetailsValidity.swift */,
 				FA6773E480B922A8C6D70339 /* TellomiPartialTextSelection.swift */,
@@ -13434,6 +13439,7 @@
 				45A3579727DAAC6A0051CE8B /* UserProfileTest.swift */,
 				F8CD70870671B3E67EDC9BEB /* TellomiLinkCardFormatsTest.swift */,
 				2D23A2B4F377FA013359686D /* TellomiSingleEmojiAnimationTest.swift */,
+				99F886DF67D016BA210E4FFC /* TellomiEmojiSuggestBarTest.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -20484,6 +20490,7 @@
 				D92812DE2FA94B7200667DCF /* DisplayableAccountEntropyPool.swift in Sources */,
 				34A95501271B503E00B05242 /* DisplayableText.swift in Sources */,
 				C38038B2CF1617387223E88C /* TellomiSingleEmojiAnimation.swift in Sources */,
+				15F79B9D2C73D33CED3B0897 /* TellomiEmojiSuggestBar.swift in Sources */,
 				5011D1CB293FC7E000064098 /* DomainFrontingCountryViewController.swift in Sources */,
 				F96B66AA2912B88B004FFFAA /* DonateChoosePaymentMethodSheet.swift in Sources */,
 				F96B66AC2912B88B004FFFAA /* DonateViewController+DonationMode.swift in Sources */,
@@ -21268,6 +21275,7 @@
 				698ECC2C786E398CD7FD789E /* TellomiLinkPreviewSettingsTest.swift in Sources */,
 				991545238F1010BAC230A624 /* TellomiLinkCardFormatsTest.swift in Sources */,
 				3DF880B3D504B16B82AFA070 /* TellomiSingleEmojiAnimationTest.swift in Sources */,
+				B7A81EE43671F957EAA36D66 /* TellomiEmojiSuggestBarTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
