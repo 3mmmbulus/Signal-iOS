@@ -4599,6 +4599,7 @@
 		82DEBADC6E9149261C34EF33 /* TellomiLinkOnlyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20FE44DC92552B435F446BDC /* TellomiLinkOnlyTest.swift */; };
 		7FE296C68318636B6DFCED22 /* TellomiBareDomainTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FCA71D048C47C2F675E7E35 /* TellomiBareDomainTest.swift */; };
 		4CC969BD1C48E2889C9BFB3C /* TellomiLinkPunctuationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44CE6643E55D703DAA266FC3 /* TellomiLinkPunctuationTest.swift */; };
+		7FA46C3485FAFCB99466ABF8 /* TellomiLinkRegressionDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339226DFA95C52C13C48ECBF /* TellomiLinkRegressionDraft.swift */; };
 		3E7FB4213AC4A1E8611931FB /* TellomiLinkCardStyleTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D0BF01D8EC68AE56E4F1F2 /* TellomiLinkCardStyleTest.swift */; };
 		B506A9D27E6CE0C687C4EB4E /* TellomiLinkVisualTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D559105FA52BC8A4F665F722 /* TellomiLinkVisualTest.swift */; };
 		74AD945FA388897AD95E1E51 /* TellomiLinkDisplayTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C57E4BBB11F44C30331D6C1 /* TellomiLinkDisplayTest.swift */; };
@@ -9514,6 +9515,7 @@
 		20FE44DC92552B435F446BDC /* TellomiLinkOnlyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkOnlyTest.swift; sourceTree = "<group>"; };
 		8FCA71D048C47C2F675E7E35 /* TellomiBareDomainTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiBareDomainTest.swift; sourceTree = "<group>"; };
 		44CE6643E55D703DAA266FC3 /* TellomiLinkPunctuationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkPunctuationTest.swift; sourceTree = "<group>"; };
+		339226DFA95C52C13C48ECBF /* TellomiLinkRegressionDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkRegressionDraft.swift; sourceTree = "<group>"; };
 		E6D0BF01D8EC68AE56E4F1F2 /* TellomiLinkCardStyleTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkCardStyleTest.swift; sourceTree = "<group>"; };
 		D559105FA52BC8A4F665F722 /* TellomiLinkVisualTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkVisualTest.swift; sourceTree = "<group>"; };
 		3C57E4BBB11F44C30331D6C1 /* TellomiLinkDisplayTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLinkDisplayTest.swift; sourceTree = "<group>"; };
@@ -12234,6 +12236,7 @@
 				20FE44DC92552B435F446BDC /* TellomiLinkOnlyTest.swift */,
 				8FCA71D048C47C2F675E7E35 /* TellomiBareDomainTest.swift */,
 				44CE6643E55D703DAA266FC3 /* TellomiLinkPunctuationTest.swift */,
+				339226DFA95C52C13C48ECBF /* TellomiLinkRegressionDraft.swift */,
 				E6D0BF01D8EC68AE56E4F1F2 /* TellomiLinkCardStyleTest.swift */,
 				D559105FA52BC8A4F665F722 /* TellomiLinkVisualTest.swift */,
 				3C57E4BBB11F44C30331D6C1 /* TellomiLinkDisplayTest.swift */,
@@ -22804,6 +22807,7 @@
 				82DEBADC6E9149261C34EF33 /* TellomiLinkOnlyTest.swift in Sources */,
 				7FE296C68318636B6DFCED22 /* TellomiBareDomainTest.swift in Sources */,
 				4CC969BD1C48E2889C9BFB3C /* TellomiLinkPunctuationTest.swift in Sources */,
+				7FA46C3485FAFCB99466ABF8 /* TellomiLinkRegressionDraft.swift in Sources */,
 				3E7FB4213AC4A1E8611931FB /* TellomiLinkCardStyleTest.swift in Sources */,
 				B506A9D27E6CE0C687C4EB4E /* TellomiLinkVisualTest.swift in Sources */,
 				74AD945FA388897AD95E1E51 /* TellomiLinkDisplayTest.swift in Sources */,

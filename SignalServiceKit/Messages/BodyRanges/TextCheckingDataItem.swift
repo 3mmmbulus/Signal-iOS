@@ -39,6 +39,11 @@ public struct TextCheckingDataItem: Equatable {
     public let snippet: String
     public let url: URL
 
+    /// Tellomi（TF43 P1）：长按链接卡片时用，弹和正文链接同一个链接菜单。
+    public static func tellomiLink(url: URL) -> TextCheckingDataItem {
+        TextCheckingDataItem(dataType: .link, range: NSRange(location: 0, length: 0), snippet: url.absoluteString, url: url)
+    }
+
     private init(dataType: DataType, range: NSRange, snippet: String, url: URL) {
         self.dataType = dataType
         self.range = range
@@ -78,9 +83,28 @@ public struct TextCheckingDataItem: Equatable {
                 matchUrl = trimmed.url
             }
 
+            if match.resultType.contains(.link) {
+                // Tellomi（TF43 P1）：「打开baidu.com」从 baidu.com 开始（`TellomiSchemelessLink.leadingCjkLength`）。
+                let raw = (text as NSString).substring(with: matchRange)
+                let skip = TellomiSchemelessLink.leadingCjkLength(raw)
+                if skip > 0 {
+                    matchRange = NSRange(location: matchRange.location + skip, length: matchRange.length - skip)
+                    let rest = (text as NSString).substring(with: matchRange)
+                    matchUrl = URL(string: "http://" + rest) ?? matchUrl
+                }
+            }
+
             guard let snippet = (text as NSString).substring(with: matchRange).strippedOrNil else {
                 owsFailDebug("Invalid snippet.")
                 return nil
+            }
+
+            // Tellomi（TF43 P1）：没写协议的链接默认 https，像文件名的不算（`TellomiSchemelessLink`）。
+            if match.resultType.contains(.link) {
+                guard let resolved = TellomiSchemelessLink.resolve(snippet: snippet, url: matchUrl) else {
+                    return nil
+                }
+                matchUrl = resolved
             }
 
             let dataType: DataType
