@@ -842,6 +842,20 @@ extension CVLoadCoordinator: UICollectionViewDelegate {
         }
         cell.isCellVisible = false
         delegate?.updateScrollingContent()
+
+        // Tellomi（#1186）：消息真离开屏幕才忘掉它上次画的勾。状态更新时 reloadItems 也会让旧格子 didEndDisplaying，
+        // 但那时新格子已经接着显示同一条消息，所以等一轮再看它还在不在屏上。
+        if let interactionId = cell.renderItem?.interactionUniqueId {
+            DispatchQueue.main.async { [weak self, weak collectionView] in
+                guard let self, let collectionView else { return }
+                let isStillOnScreen = collectionView.visibleCells.contains {
+                    ($0 as? CVCell)?.renderItem?.interactionUniqueId == interactionId
+                }
+                if !isStillOnScreen {
+                    self.componentDelegate?.tellomiForgetShownCheck(interactionId: interactionId)
+                }
+            }
+        }
     }
 }
 

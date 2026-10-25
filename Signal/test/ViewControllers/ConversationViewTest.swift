@@ -214,4 +214,81 @@ class TellomiMessageStatusTest: SignalBaseTest {
             XCTAssertEqual(MessageRecipientStatusUtils.tellomiSendingIndicatorRevealTimestamp(outgoingMessage: message, transaction: tx), 12_000)
         }
     }
+
+    // MARK: - Tellomi（#1186）：品牌勾、动画、新手提示
+
+    func testChecksAnimateOnlyForAChangeSeenOnScreen() {
+        typealias U = MessageRecipientStatusUtils
+        XCTAssertEqual(U.tellomiCheckAnimation(previous: .sending, next: .oneCheck, reduceMotion: false), .fadeInOneCheck)
+        XCTAssertEqual(U.tellomiCheckAnimation(previous: .oneCheck, next: .twoChecks, reduceMotion: false), .growSecondCheck)
+        XCTAssertEqual(U.tellomiCheckAnimation(previous: .sending, next: .twoChecks, reduceMotion: false), .growSecondCheck)
+        // 刚画出来（打开会话、回翻历史）不动；没变不动；倒退不动。
+        XCTAssertNil(U.tellomiCheckAnimation(previous: nil, next: .oneCheck, reduceMotion: false))
+        XCTAssertNil(U.tellomiCheckAnimation(previous: nil, next: .twoChecks, reduceMotion: false))
+        XCTAssertNil(U.tellomiCheckAnimation(previous: .oneCheck, next: .oneCheck, reduceMotion: false))
+        XCTAssertNil(U.tellomiCheckAnimation(previous: .twoChecks, next: .oneCheck, reduceMotion: false))
+        XCTAssertNil(U.tellomiCheckAnimation(previous: .oneCheck, next: .sending, reduceMotion: false))
+        XCTAssertNil(U.tellomiCheckAnimation(previous: .oneCheck, next: nil, reduceMotion: false))
+        // 减少动态时什么都不动。
+        XCTAssertNil(U.tellomiCheckAnimation(previous: .sending, next: .oneCheck, reduceMotion: true))
+        XCTAssertNil(U.tellomiCheckAnimation(previous: .oneCheck, next: .twoChecks, reduceMotion: true))
+    }
+
+    func testCheckAnimationDurationsMatchDesktop() {
+        XCTAssertEqual(TellomiCheckAnimation.fadeInOneCheck.duration, 0.15, accuracy: 0.0001)
+        XCTAssertEqual(TellomiCheckAnimation.growSecondCheck.duration, 0.22, accuracy: 0.0001)
+        XCTAssertEqual(MessageRecipientStatusUtils.tellomiGrowStartVisibleFraction, 0.62, accuracy: 0.0001)
+        XCTAssertEqual(MessageRecipientStatusUtils.tellomiChecksHintSeconds, 8)
+    }
+
+    func testShownChecksRememberUntilTheMessageLeavesTheScreen() {
+        var shown = TellomiShownChecks()
+        XCTAssertNil(shown.record(.sending, for: "a"))
+        XCTAssertEqual(shown.record(.oneCheck, for: "a"), .sending)
+        XCTAssertEqual(shown.record(.twoChecks, for: "a"), .oneCheck)
+        XCTAssertNil(shown.record(.oneCheck, for: "b"))
+        // 失败（没画勾）记成 nil，重发时从「发送中」开始比。
+        XCTAssertEqual(shown.record(nil, for: "b"), .oneCheck)
+        XCTAssertNil(shown.record(.sending, for: "b"))
+        shown.forget("a")
+        XCTAssertNil(shown.record(.twoChecks, for: "a"))
+        shown.forgetAll()
+        XCTAssertEqual(shown.count, 0)
+    }
+
+    func testSeenSentIsOnlySendingToChecks() {
+        typealias U = MessageRecipientStatusUtils
+        XCTAssertTrue(U.tellomiIsSeenSent(previous: .sending, next: .oneCheck))
+        XCTAssertTrue(U.tellomiIsSeenSent(previous: .sending, next: .twoChecks))
+        XCTAssertFalse(U.tellomiIsSeenSent(previous: nil, next: .oneCheck))
+        XCTAssertFalse(U.tellomiIsSeenSent(previous: .oneCheck, next: .twoChecks))
+        XCTAssertFalse(U.tellomiIsSeenSent(previous: .sending, next: nil))
+    }
+
+    func testChecksHintOnceAndNotForNoteToSelfEditsOrStoryReplies() {
+        typealias U = MessageRecipientStatusUtils
+        XCTAssertTrue(U.tellomiShouldShowChecksHint(alreadyShown: false, isNoteToSelf: false, isEdit: false, isStoryReply: false))
+        XCTAssertFalse(U.tellomiShouldShowChecksHint(alreadyShown: true, isNoteToSelf: false, isEdit: false, isStoryReply: false))
+        XCTAssertFalse(U.tellomiShouldShowChecksHint(alreadyShown: false, isNoteToSelf: true, isEdit: false, isStoryReply: false))
+        XCTAssertFalse(U.tellomiShouldShowChecksHint(alreadyShown: false, isNoteToSelf: false, isEdit: true, isStoryReply: false))
+        XCTAssertFalse(U.tellomiShouldShowChecksHint(alreadyShown: false, isNoteToSelf: false, isEdit: false, isStoryReply: true))
+    }
+
+    func testTellomiCheckIconsAreBundledWithoutCircles() {
+        let one = UIImage(named: MessageRecipientStatusUtils.tellomiOneCheckImageName)
+        let two = UIImage(named: MessageRecipientStatusUtils.tellomiTwoChecksImageName)
+        XCTAssertNotNil(one)
+        XCTAssertNotNil(two)
+        // 气泡上的状态位是 18×12：高度必须是 12，宽度不超过 18。
+        XCTAssertEqual(one?.size.height, 12)
+        XCTAssertEqual(two?.size.height, 12)
+        XCTAssertLessThanOrEqual(one?.size.width ?? 99, 18)
+        XCTAssertLessThanOrEqual(two?.size.width ?? 99, 18)
+    }
+
+    func testChecksHintIsRememberedOnThisDevice() {
+        read { tx in XCTAssertFalse(TellomiChecksHint.hasShown(tx: tx)) }
+        write { tx in TellomiChecksHint.markShown(tx: tx) }
+        read { tx in XCTAssertTrue(TellomiChecksHint.hasShown(tx: tx)) }
+    }
 }

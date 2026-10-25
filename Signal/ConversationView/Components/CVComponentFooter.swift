@@ -20,6 +20,8 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
         let isAnimated: Bool
         /// Tellomi（#1184）：文字消息发送中的转圈到这个时间（毫秒）才露出来；nil = 立即。
         var tellomiRevealAtMs: UInt64? = nil
+        /// Tellomi（#1186）：画的是哪一种勾，用来判断屏上的变化要不要动、已读用不用强调色。
+        var tellomiCheck: TellomiCheckDisplay? = nil
 
         static var size: CGSize { .init(width: 18, height: 12) }
     }
@@ -245,7 +247,7 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
 
                 let statusIndicatorImageView = componentView.statusIndicatorImageView
                 statusIndicatorImageView.image = icon.withRenderingMode(.alwaysTemplate)
-                statusIndicatorImageView.tintColor = textColor
+                statusIndicatorImageView.tintColor = tellomiStatusIndicatorColor(statusIndicator, textColor: textColor)
 
                 // We need exactly the same amount of space for all status indicator images.
                 // Can't bake the space into icons because some icons are animated.
@@ -267,9 +269,33 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                         nowMs: Date.ows_millisecondTimestamp(),
                     ),
                 )
+
+                // Tellomi（#1186）：同一个气泡留在屏上时看到的变化才动（一个勾淡入、第二个勾长出）。
+                // 状态一变 CVC 会 reloadItems 换一个格子，所以「上次画的勾」记在会话页（componentDelegate）上，不记在视图上。
+                let check = statusIndicator.tellomiCheck
+                let previousCheck = componentDelegate.tellomiRecordShownCheck(check, interactionId: interaction.uniqueId)
+                if
+                    let animation = MessageRecipientStatusUtils.tellomiCheckAnimation(
+                        previous: previousCheck,
+                        next: check,
+                        reduceMotion: UIAccessibility.isReduceMotionEnabled,
+                    )
+                {
+                    componentView.tellomiAnimateCheck(animation, iconSize: iconSize)
+                }
+                if
+                    interaction is TSOutgoingMessage,
+                    MessageRecipientStatusUtils.tellomiIsSeenSent(previous: previousCheck, next: check)
+                {
+                    componentDelegate.tellomiDidSeeOutgoingMessageSent(interaction, isEdit: displayEditedLabel)
+                }
             } else {
                 owsFailDebug("Missing statusIndicatorImage.")
             }
+        }
+
+        if statusIndicator?.tellomiCheck == nil {
+            _ = componentDelegate.tellomiRecordShownCheck(nil, interactionId: interaction.uniqueId)
         }
 
         innerStack.configure(
@@ -400,27 +426,32 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                 statusIndicator = StatusIndicator(
                     imageName: "message_status_sending",
                     isAnimated: true,
+                    tellomiCheck: .sending,
                 )
             case .pending:
                 statusIndicator = StatusIndicator(
                     imageName: "message_status_sending",
                     isAnimated: false,
+                    tellomiCheck: .sending,
                 )
             case .sent, .skipped:
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_sent",
+                    imageName: MessageRecipientStatusUtils.tellomiOneCheckImageName,
                     isAnimated: false,
+                    tellomiCheck: .oneCheck,
                 )
             case .delivered:
                 // Tellomi（#1184）：两档勾，已送达画成一个勾（送达只在「信息」里看）。
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_sent",
+                    imageName: MessageRecipientStatusUtils.tellomiOneCheckImageName,
                     isAnimated: false,
+                    tellomiCheck: .oneCheck,
                 )
             case .read, .viewed:
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_read",
+                    imageName: MessageRecipientStatusUtils.tellomiTwoChecksImageName,
                     isAnimated: false,
+                    tellomiCheck: .twoChecks,
                 )
             case .failed:
                 // No status indicator icon.
@@ -550,27 +581,32 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
                     imageName: "message_status_sending",
                     isAnimated: true,
                     tellomiRevealAtMs: MessageRecipientStatusUtils.tellomiSendingIndicatorRevealTimestamp(outgoingMessage: outgoingMessage, transaction: tx),
+                    tellomiCheck: .sending,
                 )
             case .pending:
                 statusIndicator = StatusIndicator(
                     imageName: "message_status_sending",
                     isAnimated: false,
+                    tellomiCheck: .sending,
                 )
             case .sent, .skipped:
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_sent",
+                    imageName: MessageRecipientStatusUtils.tellomiOneCheckImageName,
                     isAnimated: false,
+                    tellomiCheck: .oneCheck,
                 )
             case .delivered:
                 // Tellomi（#1184）：两档勾，已送达画成一个勾（送达只在「信息」里看）。
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_sent",
+                    imageName: MessageRecipientStatusUtils.tellomiOneCheckImageName,
                     isAnimated: false,
+                    tellomiCheck: .oneCheck,
                 )
             case .read, .viewed:
                 statusIndicator = StatusIndicator(
-                    imageName: "message_status_read",
+                    imageName: MessageRecipientStatusUtils.tellomiTwoChecksImageName,
                     isAnimated: false,
+                    tellomiCheck: .twoChecks,
                 )
             case .failed:
                 // No status indicator icon.
@@ -609,6 +645,21 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
             adminDeleteRecipientAddressStates: adminDeleteRecipientStates,
             expiration: expiration,
         )
+    }
+
+    /// Tellomi（#1186）：已读两个勾在没有底色的地方（贴纸、大表情等气泡外的时间）用强调色；
+    /// 有底色的发出气泡上、盖在图片上时沿用时间的颜色（强调色会和气泡同色看不见）。
+    private func tellomiStatusIndicatorColor(_ statusIndicator: StatusIndicator, textColor: UIColor) -> UIColor {
+        guard
+            statusIndicator.tellomiCheck == .twoChecks,
+            isOutsideBubble,
+            !conversationStyle.hasWallpaper,
+            !isOverlayingMedia,
+            !wasRemotelyDeleted
+        else {
+            return textColor
+        }
+        return UIColor.Signal.accent
     }
 
     private func editedLabelConfig(textColor: UIColor) -> CVLabelConfig {
@@ -919,6 +970,40 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
 
         public func setIsCellVisible(_ isCellVisible: Bool) {}
 
+        fileprivate func tellomiAnimateCheck(_ animation: TellomiCheckAnimation, iconSize: CGSize) {
+            switch animation {
+            case .fadeInOneCheck:
+                let fade = CABasicAnimation(keyPath: "opacity")
+                fade.fromValue = 0
+                fade.toValue = 1
+                fade.duration = animation.duration
+                fade.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                statusIndicatorImageView.layer.add(fade, forKey: "tellomiCheckFadeIn")
+            case .growSecondCheck:
+                // 遮罩从只露第一个勾展开到整张图，第二个勾像是从第一个勾处长出来。
+                let fullBounds = CGRect(origin: .zero, size: iconSize)
+                let startWidth = iconSize.width * MessageRecipientStatusUtils.tellomiGrowStartVisibleFraction
+                let mask = CALayer()
+                mask.backgroundColor = UIColor.black.cgColor
+                mask.anchorPoint = .zero
+                mask.frame = fullBounds
+                statusIndicatorImageView.layer.mask = mask
+
+                let grow = CABasicAnimation(keyPath: "bounds.size.width")
+                grow.fromValue = startWidth
+                grow.toValue = iconSize.width
+                grow.duration = animation.duration
+                grow.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                CATransaction.begin()
+                CATransaction.setCompletionBlock { [weak self, weak mask] in
+                    guard let self, let mask, statusIndicatorImageView.layer.mask === mask else { return }
+                    statusIndicatorImageView.layer.mask = nil
+                }
+                mask.add(grow, forKey: "tellomiCheckGrow")
+                CATransaction.commit()
+            }
+        }
+
         public func reset() {
             outerStack.reset()
             innerStack.reset()
@@ -930,6 +1015,7 @@ public class CVComponentFooter: CVComponentBase, CVComponent {
             statusIndicatorImageView.image = nil
 
             statusIndicatorImageView.layer.removeAllAnimations()
+            statusIndicatorImageView.layer.mask = nil
             tellomiRevealStatusIndicator(after: 0)
 
             messageTimerView.prepareForReuse()

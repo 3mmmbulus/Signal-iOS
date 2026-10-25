@@ -28,6 +28,17 @@ public protocol CVComponentDelegate: AnyObject, AudioMessageViewDelegate, CVPoll
     /// while scrolling through that day (then jump to the day's first message), not the one in its place (then open the calendar).
     func tellomiDidTapDateHeader(timestamp: UInt64, isStuck: Bool)
 
+    /// Tellomi (M7 #1186, message-status spec 3.1): an outgoing message on screen just went from sending to sent
+    /// (one or two checks). The chat uses it for the one-time "one check: sent; two checks: read" hint.
+    func tellomiDidSeeOutgoingMessageSent(_ interaction: TSInteraction, isEdit: Bool)
+
+    /// Tellomi (M7 #1186): remember which check was just drawn for this message while it is on screen; returns the one
+    /// drawn before (nil = first time on screen). Only the chat keeps this; elsewhere nothing animates.
+    func tellomiRecordShownCheck(_ check: TellomiCheckDisplay?, interactionId: String) -> TellomiCheckDisplay?
+
+    /// Tellomi (M7 #1186): this message left the screen; forget its check so it does not animate when it comes back.
+    func tellomiForgetShownCheck(interactionId: String)
+
     // MARK: - Body Text Items
 
     func didTapBodyTextItem(_ item: CVTextLabel.Item)
@@ -443,4 +454,11 @@ public extension CVComponentDelegate {
 
     /// 只有会话页按日期跳转；别的地方（编辑记录、消息详情等）点日期不动。
     func tellomiDidTapDateHeader(timestamp: UInt64, isStuck: Bool) {}
+
+    /// 只有会话页弹勾的新手提示；别的地方（编辑记录、消息详情等）不弹。
+    func tellomiDidSeeOutgoingMessageSent(_ interaction: TSInteraction, isEdit: Bool) {}
+
+    func tellomiRecordShownCheck(_ check: TellomiCheckDisplay?, interactionId: String) -> TellomiCheckDisplay? { nil }
+
+    func tellomiForgetShownCheck(interactionId: String) {}
 }
