@@ -42,6 +42,7 @@
 		B7F3ECCC901AAF47CD1E7619 /* TellomiTransferHandoffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FBB634B31F60E4EA1E0F05 /* TellomiTransferHandoffTests.swift */; };
 		E5ADD3E1FE8E1BA2D8BA1218 /* TellomiTransferHandoff.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA94FB62304BE8EB2D16FD9C /* TellomiTransferHandoff.swift */; };
 		087034E7417F96B59CA68F50 /* TellomiSendFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D92436364DDFB0C8BBCB0E5 /* TellomiSendFlightTests.swift */; };
+		F26764D1E236A4FD0423EADA /* TellomiSendVisibilityRegressionDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9681DC62ADAF32633D429A21 /* TellomiSendVisibilityRegressionDraft.swift */; };
 		4C61A75530506FF504238252 /* TellomiSendFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1D428A05F8531518F7D1B9 /* TellomiSendFlight.swift */; };
 		4A8E8774FE6281375A39A2B9 /* ConversationViewController+TellomiSendFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FFE2E35A5959B0DC03ABB32 /* ConversationViewController+TellomiSendFlight.swift */; };
 		377D6A0C87C17AAEB271E56D /* TellomiLocationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D08E3ACAE3D81060FC1D99 /* TellomiLocationMessage.swift */; };
@@ -4782,6 +4783,7 @@
 		64FBB634B31F60E4EA1E0F05 /* TellomiTransferHandoffTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTransferHandoffTests.swift; sourceTree = "<group>"; };
 		CA94FB62304BE8EB2D16FD9C /* TellomiTransferHandoff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiTransferHandoff.swift; sourceTree = "<group>"; };
 		0D92436364DDFB0C8BBCB0E5 /* TellomiSendFlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiSendFlightTests.swift; sourceTree = "<group>"; };
+		9681DC62ADAF32633D429A21 /* TellomiSendVisibilityRegressionDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiSendVisibilityRegressionDraft.swift; sourceTree = "<group>"; };
 		DB1D428A05F8531518F7D1B9 /* TellomiSendFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiSendFlight.swift; sourceTree = "<group>"; };
 		7FFE2E35A5959B0DC03ABB32 /* ConversationViewController+TellomiSendFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConversationViewController+TellomiSendFlight.swift"; sourceTree = "<group>"; };
 		B1D08E3ACAE3D81060FC1D99 /* TellomiLocationMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellomiLocationMessage.swift; sourceTree = "<group>"; };
@@ -10968,6 +10970,7 @@
 				8B0570935FC9CB5F688847FD /* TellomiReactionAnimationsTest.swift */,
 				40D6A00E5CE25181E30FF0C0 /* TellomiConversationItemAnimationTest.swift */,
 				0D92436364DDFB0C8BBCB0E5 /* TellomiSendFlightTests.swift */,
+				9681DC62ADAF32633D429A21 /* TellomiSendVisibilityRegressionDraft.swift */,
 				CD03BF2BDF521B7DFE441EB0 /* TellomiRecordingGestureTests.swift */,
 				2A5945B497963E1B64677714 /* TellomiTransferHandoffCellTests.swift */,
 				64FBB634B31F60E4EA1E0F05 /* TellomiTransferHandoffTests.swift */,
@@ -21207,6 +21210,7 @@
 				3A8881D28A31DD78A26C36D0 /* TellomiReactionAnimationsTest.swift in Sources */,
 				7DE3BB5B930D647AAE1D924A /* TellomiConversationItemAnimationTest.swift in Sources */,
 				087034E7417F96B59CA68F50 /* TellomiSendFlightTests.swift in Sources */,
+				F26764D1E236A4FD0423EADA /* TellomiSendVisibilityRegressionDraft.swift in Sources */,
 				268662CFEE5FD8F61E2F2EF1 /* TellomiRecordingGestureTests.swift in Sources */,
 				B29BF826B80B6799F176675E /* TellomiTransferHandoffCellTests.swift in Sources */,
 				B7F3ECCC901AAF47CD1E7619 /* TellomiTransferHandoffTests.swift in Sources */,
