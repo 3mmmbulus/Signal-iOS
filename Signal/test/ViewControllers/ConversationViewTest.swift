@@ -149,6 +149,43 @@ class TellomiMessageStatusTest: SignalBaseTest {
         }
     }
 
+    /// 付款消息另走一条路算状态（付款状态 + 消息状态），同样守关回执规则：关着时已读 / 已查看降为「已送达」（同普通消息），重新打开恢复。
+    func testPaymentMessageStatusHidesReadWhenMyReadReceiptsAreOff() {
+        write { tx in
+            let aci = Aci.randomForTesting()
+            let message = readMessage(by: aci, tx: tx)
+
+            for paymentState: TSPaymentState in [.outgoingSent, .outgoingVerified, .outgoingComplete] {
+                XCTAssertEqual(paymentState.combinedMessageReceiptStatus(with: message, showsReadStates: true), .read, "\(paymentState)")
+                XCTAssertEqual(paymentState.combinedMessageReceiptStatus(with: message, showsReadStates: false), .delivered, "\(paymentState)")
+            }
+            // 失败 / 发送中不受开关影响。
+            XCTAssertEqual(TSPaymentState.outgoingFailed.combinedMessageReceiptStatus(with: message, showsReadStates: false), .failed)
+
+            message.update(withViewedRecipient: SignalServiceAddress(aci), deviceId: DeviceId(validating: 1)!, viewedTimestamp: 400, tx: tx)
+            XCTAssertEqual(TSPaymentState.outgoingComplete.combinedMessageReceiptStatus(with: message, showsReadStates: true), .viewed)
+            XCTAssertEqual(TSPaymentState.outgoingComplete.combinedMessageReceiptStatus(with: message, showsReadStates: false), .delivered)
+        }
+    }
+
+    /// 付款消息遇到「已送达」时照旧是已送达（页脚 / 列表画成一个勾），关回执不会把它变成别的。
+    func testPaymentMessageDeliveredStaysDeliveredWithReadReceiptsOff() {
+        write { tx in
+            let aci = Aci.randomForTesting()
+            let message = textMessage(to: aci, timestamp: 100, tx: tx)
+            message.updateWithSentRecipients([aci], wasSentByUD: false, tx: tx)
+            message.update(
+                withDeliveredRecipient: SignalServiceAddress(aci),
+                deviceId: DeviceId(validating: 1)!,
+                deliveryTimestamp: 200,
+                context: PassthroughDeliveryReceiptContext(),
+                tx: tx,
+            )
+            XCTAssertEqual(TSPaymentState.outgoingComplete.combinedMessageReceiptStatus(with: message, showsReadStates: false), .delivered)
+            XCTAssertEqual(TSPaymentState.outgoingComplete.combinedMessageReceiptStatus(with: message, showsReadStates: true), .delivered)
+        }
+    }
+
     func testDowngradedReadShowsDeliveredWithoutLeakingReadTime() {
         write { tx in
             let aci = Aci.randomForTesting()
