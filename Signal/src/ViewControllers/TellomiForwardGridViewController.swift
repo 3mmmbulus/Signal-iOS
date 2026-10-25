@@ -24,6 +24,8 @@ final class TellomiForwardGridViewController: UIViewController {
         var share: (@MainActor (_ sourceView: UIView) -> Void)?
         /// 没发、关掉面板
         var cancel: @MainActor () -> Void
+        /// Tellomi（清单 5.4）：「隐藏说明文字」开关拨动时回调；nil = 没有可隐藏的说明文字，不显示开关。默认关。
+        var hideCaptionDidChange: (@MainActor (_ isOn: Bool) -> Void)? = nil
     }
 
     /// 同上游 `kMaxPickerSelection`：Signal 一次最多转给 5 个聊天（owner D4 保留）
@@ -49,6 +51,7 @@ final class TellomiForwardGridViewController: UIViewController {
         static let revealBottomPadding: CGFloat = 14
         static let dismissPullDistance: CGFloat = 30
         static let commentBarHeight: CGFloat = 56
+        static let hideCaptionRowHeight: CGFloat = 44
         static let cardTopSpacing: CGFloat = 8
 
         let cardWidth: CGFloat
@@ -157,6 +160,8 @@ final class TellomiForwardGridViewController: UIViewController {
     private let commentSeparator = UIView()
     private let commentFieldBackground = UIView()
     private let commentField = UITextField()
+    private let hideCaptionLabel = UILabel()
+    private let hideCaptionSwitch = UISwitch()
 
     private let actionButton = UIButton(type: .custom)
     private let actionTitleLabel = UILabel()
@@ -362,7 +367,36 @@ final class TellomiForwardGridViewController: UIViewController {
         commentField.delegate = self
         commentBar.addSubview(commentField)
 
+        buildHideCaptionRow()
+
         commentBar.isHidden = true
+    }
+
+    /// 附言框上面一行「隐藏说明文字」＋开关（只在有可隐藏的说明文字时出现，默认关）
+    private func buildHideCaptionRow() {
+        let isAvailable = actions.hideCaptionDidChange != nil
+        hideCaptionLabel.text = Strings.hideCaption
+        hideCaptionLabel.font = .systemFont(ofSize: 15)
+        hideCaptionLabel.textColor = UIColor.Signal.label
+        hideCaptionLabel.isAccessibilityElement = false
+        hideCaptionLabel.isHidden = !isAvailable
+        commentBar.addSubview(hideCaptionLabel)
+
+        hideCaptionSwitch.isOn = false
+        hideCaptionSwitch.onTintColor = UIColor.Signal.accent
+        hideCaptionSwitch.accessibilityLabel = Strings.hideCaption
+        hideCaptionSwitch.addTarget(self, action: #selector(hideCaptionSwitchDidChange), for: .valueChanged)
+        hideCaptionSwitch.isHidden = !isAvailable
+        commentBar.addSubview(hideCaptionSwitch)
+    }
+
+    @objc
+    private func hideCaptionSwitchDidChange() {
+        actions.hideCaptionDidChange?(hideCaptionSwitch.isOn)
+    }
+
+    private var commentBarHeight: CGFloat {
+        Metrics.commentBarHeight + (actions.hideCaptionDidChange != nil ? Metrics.hideCaptionRowHeight : 0)
     }
 
     private func buildActionButton() {
@@ -669,10 +703,19 @@ final class TellomiForwardGridViewController: UIViewController {
         setUntransformedFrame(CGRect(x: cardX, y: cardTop, width: metrics.cardWidth, height: max(0, cardBottom - cardTop)), of: cardClipView)
         let cardSize = cardClipView.bounds.size
 
-        let commentHeight = commentBar.isHidden ? 0 : Metrics.commentBarHeight
+        let commentHeight = commentBar.isHidden ? 0 : commentBarHeight
         commentBar.frame = CGRect(x: 0, y: cardSize.height - commentHeight, width: cardSize.width, height: commentHeight)
         commentSeparator.frame = CGRect(x: 0, y: 0, width: cardSize.width, height: hairlineWidth)
-        commentFieldBackground.frame = CGRect(x: 12, y: 10, width: cardSize.width - 24, height: 36)
+        let hideCaptionRowHeight = commentBarHeight - Metrics.commentBarHeight
+        let switchSize = hideCaptionSwitch.intrinsicContentSize
+        hideCaptionSwitch.frame = CGRect(
+            x: cardSize.width - 16 - switchSize.width,
+            y: floor(4 + (hideCaptionRowHeight - switchSize.height) / 2),
+            width: switchSize.width,
+            height: switchSize.height,
+        )
+        hideCaptionLabel.frame = CGRect(x: 16, y: 4, width: max(0, hideCaptionSwitch.frame.minX - 16 - 8), height: hideCaptionRowHeight)
+        commentFieldBackground.frame = CGRect(x: 12, y: hideCaptionRowHeight + 10, width: cardSize.width - 24, height: 36)
         commentField.frame = commentFieldBackground.frame.insetBy(dx: 14, dy: 0)
 
         if collectionView.frame != cardClipView.bounds {
@@ -1008,6 +1051,10 @@ final class TellomiForwardGridViewController: UIViewController {
             OWSLocalizedString("FORWARD_MESSAGE_TELLOMI_GRID_SECTION_CONTACTS", comment: "Tellomi: section title of matching contacts in forward search.")
         }
 
+        static var hideCaption: String {
+            OWSLocalizedString("FORWARD_MESSAGE_TELLOMI_GRID_HIDE_CAPTION", comment: "Tellomi: label of the switch in the forward grid that forwards media without its caption.")
+        }
+
         static var sectionGroups: String {
             OWSLocalizedString("FORWARD_MESSAGE_TELLOMI_GRID_SECTION_GROUPS", comment: "Tellomi: section title of matching groups in forward search.")
         }
@@ -1179,6 +1226,16 @@ extension TellomiForwardGridViewController {
     var badgeTextForTesting: String? { badgeView.isHidden ? nil : badgeLabel.text }
     var isCommentBarVisibleForTesting: Bool { !commentBar.isHidden }
     var isShareButtonVisibleForTesting: Bool { !shareButton.isHidden }
+    var isHideCaptionSwitchVisibleForTesting: Bool { !commentBar.isHidden && !hideCaptionSwitch.isHidden }
+    var isHideCaptionOnForTesting: Bool { hideCaptionSwitch.isOn }
+    var hideCaptionLabelForTesting: String? { hideCaptionLabel.isHidden ? nil : hideCaptionLabel.text }
+    var commentBarHeightForTesting: CGFloat { commentBar.bounds.height }
+
+    func setHideCaptionForTesting(_ isOn: Bool) {
+        hideCaptionSwitch.isOn = isOn
+        hideCaptionSwitch.sendActions(for: .valueChanged)
+    }
+
     var isSearchingForTesting: Bool { isSearching }
     var metricsForTesting: Metrics { metrics }
     var cardFrameForTesting: CGRect { restingCardFrame }

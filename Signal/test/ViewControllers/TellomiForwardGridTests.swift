@@ -196,6 +196,67 @@ final class TellomiForwardGridTests: SignalBaseTest {
         XCTAssertEqual(collectionView.cellForItem(at: IndexPath(item: metrics.columns, section: 0))?.frame.minY, metrics.itemHeight, "第二行从格子高度处开始")
     }
 
+    /// 清单 5.4：没有可隐藏的说明文字（发起方不给回调）时，附言栏上没有「隐藏说明文字」开关，高度不变。
+    @MainActor
+    func testHideCaptionSwitchAbsentWhenNothingToHide() throws {
+        register()
+        let lin = makeContactChat("小林")
+        let hosted = try host()
+        let grid = hosted.grid
+        grid.tapTargetForTesting(id: contactId(lin))
+        grid.view.layoutIfNeeded()
+
+        XCTAssertTrue(grid.isCommentBarVisibleForTesting)
+        XCTAssertFalse(grid.isHideCaptionSwitchVisibleForTesting)
+        XCTAssertNil(grid.hideCaptionLabelForTesting)
+        XCTAssertEqual(grid.commentBarHeightForTesting, TellomiForwardGridViewController.Metrics.commentBarHeight)
+    }
+
+    /// 清单 5.4：有说明文字时，选了聊天后附言栏上方出现「隐藏说明文字」开关，默认关；拨动把值交给发起方。
+    @MainActor
+    func testHideCaptionSwitchDefaultsOffAndReportsChanges() throws {
+        register()
+        let lin = makeContactChat("小林")
+        var reported: [Bool] = []
+        let hosted = try host(hideCaptionDidChange: { reported.append($0) })
+        let grid = hosted.grid
+        XCTAssertFalse(grid.isHideCaptionSwitchVisibleForTesting, "没选聊天时附言栏整个不出现")
+
+        grid.tapTargetForTesting(id: contactId(lin))
+        grid.view.layoutIfNeeded()
+
+        XCTAssertTrue(grid.isHideCaptionSwitchVisibleForTesting)
+        XCTAssertFalse(grid.isHideCaptionOnForTesting)
+        XCTAssertEqual(grid.hideCaptionLabelForTesting, TellomiForwardGridViewController.Strings.hideCaption)
+        XCTAssertEqual(
+            grid.commentBarHeightForTesting,
+            TellomiForwardGridViewController.Metrics.commentBarHeight + TellomiForwardGridViewController.Metrics.hideCaptionRowHeight,
+        )
+
+        grid.setHideCaptionForTesting(true)
+        grid.setHideCaptionForTesting(false)
+        XCTAssertEqual(reported, [true, false])
+    }
+
+    /// 清单 5.4：开关的值在点「发送」之后仍由发起方持有；发送回调本身不变（附言照常单独发）。
+    @MainActor
+    func testHideCaptionDoesNotChangeTheSendCallback() async throws {
+        register()
+        let lin = makeContactChat("小林")
+        var isOn = false
+        let hosted = try host(hideCaptionDidChange: { isOn = $0 })
+        let grid = hosted.grid
+        grid.tapTargetForTesting(id: contactId(lin))
+        grid.setHideCaptionForTesting(true)
+        grid.typeCommentForTesting("看看")
+        grid.tapActionButtonForTesting()
+        try await settle()
+
+        XCTAssertTrue(isOn)
+        XCTAssertEqual(hosted.recorder.sent.count, 1)
+        XCTAssertEqual(hosted.recorder.sent.first?.comment, "看看")
+    }
+
     /// F-3 / F-6：点头像切换选中；副标题换成已选名字（「、」连接）；选中态 = 缩小 + 环 + 勾 + 强调色名字；
     /// F-7：底部出现附言栏，「取消」变成带数量的「发送」。
     @MainActor
@@ -679,7 +740,12 @@ final class TellomiForwardGridTests: SignalBaseTest {
 
     /// 同真机：会话页（这里是一个空白页）把网格弹出来，窗口接在真实屏幕上（安全区算进去）。
     @MainActor
-    private func host(forceDarkTheme: Bool = false, canShare: Bool = true, sendResult: Bool = true) throws -> Hosted {
+    private func host(
+        forceDarkTheme: Bool = false,
+        canShare: Bool = true,
+        sendResult: Bool = true,
+        hideCaptionDidChange: (@MainActor (Bool) -> Void)? = nil,
+    ) throws -> Hosted {
         let recorder = Recorder()
         var share: (@MainActor (UIView) -> Void)?
         if canShare {
@@ -694,6 +760,7 @@ final class TellomiForwardGridTests: SignalBaseTest {
                 },
                 share: share,
                 cancel: { recorder.cancelCount += 1 },
+                hideCaptionDidChange: hideCaptionDidChange,
             ),
         )
         grid.prefetchIdentityKeys = { recorder.prefetched.append($0) }

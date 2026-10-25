@@ -4162,6 +4162,9 @@
 /* Indicates that multiple messages were forwarded. */
 "FORWARD_MESSAGE_MESSAGES_SENT_N" = "Messages sent";
 
+/* Tellomi: label of the switch in the forward grid that forwards media without its caption. */
+"FORWARD_MESSAGE_TELLOMI_GRID_HIDE_CAPTION" = "Hide Caption";
+
 /* Tellomi: placeholder of the message field that is sent before the forwarded content. */
 "FORWARD_MESSAGE_TELLOMI_GRID_COMMENT_PLACEHOLDER" = "Add a message…";
 
