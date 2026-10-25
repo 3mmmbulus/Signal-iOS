@@ -47,6 +47,33 @@ final class VoiceMessageInProgressDraft: VoiceMessageSendableDraft {
 
     var isRecording: Bool { audioRecorder?.isRecording ?? false }
 
+    /// Tellomi（Telegram 对照 3.3 / F12）：暂停 / 继续。暂停时 isRecording 为 false，isPaused 为 true。
+    private var tellomiPauseClock = TellomiVoicePauseClock()
+    private static func tellomiNow() -> TimeInterval { ProcessInfo.processInfo.systemUptime }
+
+    var isPaused: Bool { audioRecorder != nil && tellomiPauseClock.isPaused }
+
+    /// 录音中暂停；不在录音中什么也不做，返回 false。
+    @discardableResult
+    func pauseRecording() -> Bool {
+        AssertIsOnMainThread()
+        guard let audioRecorder, audioRecorder.isRecording else { return false }
+        audioRecorder.pause()
+        return tellomiPauseClock.pause(at: Self.tellomiNow())
+    }
+
+    /// 暂停中继续录（接在同一个文件后面）；不在暂停中返回 false。
+    @discardableResult
+    func resumeRecording() -> Bool {
+        AssertIsOnMainThread()
+        guard let audioRecorder, tellomiPauseClock.isPaused else { return false }
+        guard audioRecorder.record() else { return false }
+        return tellomiPauseClock.resume(at: Self.tellomiNow())
+    }
+
+    /// 有效录音时长（暂停期间不计），给计时标签用。
+    var tellomiElapsed: TimeInterval { tellomiPauseClock.elapsed(at: Self.tellomiNow()) }
+
     /// Tellomi（交互审计 A-12）：现在的峰值电平（dBFS，-160…0），给录音按钮后面的光晕用；没在录返回 nil。
     func tellomiPeakPower() -> Float? {
         guard let audioRecorder, audioRecorder.isRecording else { return nil }
@@ -99,6 +126,7 @@ final class VoiceMessageInProgressDraft: VoiceMessageSendableDraft {
         guard audioRecorder.record() else {
             throw OWSAssertionError("audioRecorder couldn't record.")
         }
+        tellomiPauseClock.start(at: Self.tellomiNow())
     }
 
     func stopRecording() {
@@ -111,7 +139,9 @@ final class VoiceMessageInProgressDraft: VoiceMessageSendableDraft {
         guard let audioRecorder else { return }
         self.audioRecorder = nil
 
-        self.duration = audioRecorder.currentTime
+        // Tellomi：暂停后 currentTime 可能不可靠，取两者中较大的。
+        let tellomiTotal = tellomiPauseClock.stop(at: Self.tellomiNow()) ?? 0
+        self.duration = max(audioRecorder.currentTime, tellomiTotal)
 
         audioRecorder.stop()
 
@@ -131,7 +161,9 @@ final class VoiceMessageInProgressDraft: VoiceMessageSendableDraft {
         guard let audioRecorder else { return }
         self.audioRecorder = nil
 
-        self.duration = audioRecorder.currentTime
+        // Tellomi：暂停后 currentTime 可能不可靠，取两者中较大的。
+        let tellomiTotal = tellomiPauseClock.stop(at: Self.tellomiNow()) ?? 0
+        self.duration = max(audioRecorder.currentTime, tellomiTotal)
 
         // This is expensive. We can safely do it in the background
         // if we're not relying on the recorded audio (e.g. we canceled)
