@@ -4149,6 +4149,9 @@
 /* Indicates that multiple messages were forwarded. */
 "FORWARD_MESSAGE_MESSAGES_SENT_N" = "消息已发送";
 
+/* Tellomi: label of the switch in the forward grid that forwards media without its caption. */
+"FORWARD_MESSAGE_TELLOMI_GRID_HIDE_CAPTION" = "隐藏说明文字";
+
 /* Tellomi: placeholder of the message field that is sent before the forwarded content. */
 "FORWARD_MESSAGE_TELLOMI_GRID_COMMENT_PLACEHOLDER" = "添加消息…";
 

@@ -23,6 +23,8 @@ class ForwardMessageViewController: OWSNavigationController {
     private let attachmentLimits: OutgoingAttachmentLimits
 
     private var textMessage: String?
+    /// Tellomi（清单 5.4）：网格上「隐藏说明文字」开关；开着时带附件的消息不带说明文字发出
+    private var tellomiHideCaption = false
 
     private let selection = ConversationPickerSelection()
     var selectedConversations: [ConversationItem] { selection.conversations }
@@ -379,7 +381,11 @@ extension ForwardMessageViewController {
             let conversations = selectedConversations
             _ = try await AttachmentMultisend.enqueueApprovedMedia(
                 conversations: conversations,
-                approvedMessageBody: item.messageBody,
+                approvedMessageBody: TellomiForwardCaptionPolicy.outgoingBody(
+                    item.messageBody,
+                    hasAttachments: true,
+                    hideCaption: tellomiHideCaption,
+                ),
                 approvedAttachments: ApprovedAttachments(nonViewOnceAttachments: item.attachments, imageQuality: .high),
                 attachmentLimits: attachmentLimits,
             )
@@ -924,8 +930,16 @@ extension ForwardMessageViewController {
         // 打开网格的页面可能先不在了（例如长文页：消息被删，会话页把它弹出去，它一释放，delegate 就空了）。
         // 没人来收，网格就得自己关：它全屏透明、盖在最上面，不关就吞掉所有触摸。
         let gridReference = TellomiForwardGridReference()
+        let hideCaption = TellomiForwardHideCaptionState()
         let send: @MainActor ([ConversationItem], String?) async -> Bool = { items, comment in
-            let didSend = await tellomiSend(content: content, attachmentLimits: attachmentLimits, items: items, comment: comment, delegate: weakDelegate)
+            let didSend = await tellomiSend(
+                content: content,
+                attachmentLimits: attachmentLimits,
+                items: items,
+                comment: comment,
+                hideCaption: hideCaption.isOn,
+                delegate: weakDelegate,
+            )
             if didSend, weakDelegate == nil {
                 gridReference.grid?.dismiss(animated: true)
             }
@@ -945,9 +959,20 @@ extension ForwardMessageViewController {
                 gridReference.grid?.dismiss(animated: true)
             }
         }
+        var hideCaptionDidChange: (@MainActor (Bool) -> Void)?
+        if content.tellomiShowsHideCaptionToggle {
+            hideCaptionDidChange = { isOn in
+                hideCaption.isOn = isOn
+            }
+        }
         let grid = TellomiForwardGridViewController(
             forceDarkTheme: forceDarkTheme,
-            actions: TellomiForwardGridViewController.Actions(send: send, share: share, cancel: cancel),
+            actions: TellomiForwardGridViewController.Actions(
+                send: send,
+                share: share,
+                cancel: cancel,
+                hideCaptionDidChange: hideCaptionDidChange,
+            ),
         )
         gridReference.grid = grid
         // 新功能提示卡「转发给多个聊天」（docs/product/specs/whats-new-cards.md），只在第一次打开时弹。
@@ -966,6 +991,7 @@ extension ForwardMessageViewController {
         attachmentLimits: OutgoingAttachmentLimits,
         items: [ConversationItem],
         comment: String?,
+        hideCaption: Bool,
         delegate: ForwardMessageDelegate?,
     ) async -> Bool {
         let engine = ForwardMessageViewController(content: content, attachmentLimits: attachmentLimits)
@@ -973,6 +999,7 @@ extension ForwardMessageViewController {
             engine.selection.add(item)
         }
         engine.textMessage = comment
+        engine.tellomiHideCaption = hideCaption
         let relay = TellomiForwardGridRelay(delegate: delegate)
         engine.forwardMessageDelegate = relay
         await engine._tryToSend()
@@ -1134,6 +1161,21 @@ private struct TellomiForwardShareItems {
             return
         }
         AttachmentSharing.showShareUIForActivityItems(activityItems, sender: sender)
+    }
+}
+
+/// 「隐藏说明文字」开关的当前值：网格回调写、点「发送」时读（默认关）
+@MainActor
+private final class TellomiForwardHideCaptionState {
+    var isOn = false
+}
+
+extension ForwardMessageContent {
+    /// 选中的内容里至少有一条带附件、且有非空白说明文字，才显示「隐藏说明文字」开关
+    var tellomiShowsHideCaptionToggle: Bool {
+        TellomiForwardCaptionPolicy.showsHideCaptionToggle(allItems.map { item in
+            (body: item.messageBody, hasAttachments: !item.attachments.isEmpty)
+        })
     }
 }
 
