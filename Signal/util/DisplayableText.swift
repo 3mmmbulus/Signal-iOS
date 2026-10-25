@@ -138,7 +138,11 @@ public class DisplayableText: NSObject {
             return false
         }
 
-        func isValidLink(linkText: String) -> Bool {
+        func isValidLink(linkText rawLinkText: String) -> Bool {
+            // Tellomi（TF43 P1）：「打开baidu.com」只看 baidu.com，不因为中文贴在前面就整条消息不出链接
+            // （正文和带格式的正文两条路都经过这里；`TellomiSchemelessLink.leadingCjkLength`）。
+            let skip = TellomiSchemelessLink.leadingCjkLength(rawLinkText)
+            let linkText = skip > 0 ? (rawLinkText as NSString).substring(from: skip) : rawLinkText
             guard LinkValidator.isValidLink(linkText: linkText) else {
                 return false
             }

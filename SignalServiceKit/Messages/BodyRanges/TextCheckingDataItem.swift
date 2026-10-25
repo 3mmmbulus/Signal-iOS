@@ -83,6 +83,17 @@ public struct TextCheckingDataItem: Equatable {
                 matchUrl = trimmed.url
             }
 
+            if match.resultType.contains(.link) {
+                // Tellomi（TF43 P1）：「打开baidu.com」从 baidu.com 开始（`TellomiSchemelessLink.leadingCjkLength`）。
+                let raw = (text as NSString).substring(with: matchRange)
+                let skip = TellomiSchemelessLink.leadingCjkLength(raw)
+                if skip > 0 {
+                    matchRange = NSRange(location: matchRange.location + skip, length: matchRange.length - skip)
+                    let rest = (text as NSString).substring(with: matchRange)
+                    matchUrl = URL(string: "http://" + rest) ?? matchUrl
+                }
+            }
+
             guard let snippet = (text as NSString).substring(with: matchRange).strippedOrNil else {
                 owsFailDebug("Invalid snippet.")
                 return nil
