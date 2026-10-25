@@ -171,4 +171,69 @@ final class TellomiSendFlightTests: XCTestCase {
         flight.cancel()
         XCTAssertEqual(finished, 1, "only once")
     }
+
+    // MARK: - P0 TF43：连发时隔一条看不见
+
+    private func makeFlight(timestamp: UInt64, window: UIWindow, onReveal: @escaping (TellomiSendFlight, String) -> Void) -> TellomiSendFlight {
+        TellomiSendFlight(
+            messageTimestamp: timestamp,
+            source: TellomiSendFlight.Source(textSnapshot: UIView(), textSnapshotFrame: .zero, textOrigin: .zero, fontSize: 17, box: fromBox),
+            window: window,
+            findTarget: { _ in nil },
+            makeContent: { _ in nil },
+            onChange: { _ in },
+            onReveal: onReveal,
+            onFinish: { _ in },
+        )
+    }
+
+    /// 收掉的那一刻放出格子时，这一次自己已经不算「藏着」——原来先放后改 phase，格子被它自己藏回去。
+    func testWhenAFlightFinishesItNoLongerHoldsTheRowItReveals() {
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.isHidden = false
+        defer { window.isHidden = true }
+        var heldAtReveal = [Bool]()
+        let flight = makeFlight(timestamp: 1, window: window) { flight, id in
+            heldAtReveal.append(flight.isHoldingRow(interactionUniqueId: id))
+        }
+        flight.claim(interactionUniqueId: "m1")
+        flight.cancelImmediately()
+        XCTAssertEqual(heldAtReveal, [false])
+    }
+
+    /// 连发 5 条：每一条落定（或不飞）时都放出来，不会隔一条被藏着。
+    func testFiveMessagesInARowAreAllRevealed() {
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.isHidden = false
+        defer { window.isHidden = true }
+        var flights = [TellomiSendFlight]()
+        var stillHeld = [String: Bool]()
+        for n in 1...5 {
+            let flight = makeFlight(timestamp: UInt64(n), window: window) { flight, id in
+                stillHeld[id] = ConversationViewController.tellomiIsRowStillHeld(interactionUniqueId: id, flights: flights, releasing: flight)
+            }
+            flights.append(flight)
+            flight.claim(interactionUniqueId: "m\(n)")
+        }
+        // 先发的先落定；后面的还在等时，前面的照样放出来。
+        for flight in flights {
+            flight.cancelImmediately()
+        }
+        XCTAssertEqual(stillHeld, ["m1": false, "m2": false, "m3": false, "m4": false, "m5": false])
+    }
+
+    /// 别的、还在飞的那一次认的是同一条时，这一格仍然藏着（换格子时的老规则不变）。
+    func testAnotherFlightStillHoldingTheSameRowKeepsItHidden() {
+        let window = UIWindow.tellomiTestWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.isHidden = false
+        defer { window.isHidden = true }
+        let a = makeFlight(timestamp: 1, window: window) { _, _ in }
+        let b = makeFlight(timestamp: 2, window: window) { _, _ in }
+        a.claim(interactionUniqueId: "m")
+        b.claim(interactionUniqueId: "m")
+        XCTAssertTrue(ConversationViewController.tellomiIsRowStillHeld(interactionUniqueId: "m", flights: [a, b], releasing: a))
+        XCTAssertFalse(ConversationViewController.tellomiIsRowStillHeld(interactionUniqueId: "m", flights: [a], releasing: a))
+        a.cancelImmediately()
+        b.cancelImmediately()
+    }
 }

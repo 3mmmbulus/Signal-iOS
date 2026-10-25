@@ -351,8 +351,11 @@ final class TellomiSendFlight {
             return
         }
         // 先放出那一格、再收掉这一层：同一帧里换过去，不闪。
-        revealRow()
+        // Tellomi（P0 TF43 隔一条看不见）：先改成 .done 再放出。原来先 revealRow() 后改 phase，
+        // 放出时这一次自己还算「藏着」（isHoldingRow 认 .waiting / .flying），格子又被藏回 alpha 0，
+        // 之后没人再放它，要等下一次整行刷新（再发一条、加回应）才露出来。
         phase = .done
+        revealRow()
         fieldAlpha = 1
         displayLink?.invalidate()
         displayLink = nil
